@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#1E4B8F"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>JUW MicroSlides</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="assets/icon-192x192.png"/>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --primary: #1E4B8F;
+  --primary-dark: #15366A;
+  --accent: #1B7A3D;
+  --gold: #C9A227;
+  --bg: #F0F3F8;
+  --card: #FFFFFF;
+  --text: #1A1A2E;
+  --muted: #5A6577;
+  --border: #D8DEE9;
+  --danger: #C62828;
+  --ok: #2E7D32;
+  --font: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+.header img { width: 48px; height: 48px; border-radius: 50%; background: #fff; object-fit: contain; border: 2px solid #fff; }
+.header h1 { font-size: 18px; font-weight: 700; }
+.header p { font-size: 11px; opacity: .85; margin-top: 2px; }
+.container { padding: 14px; max-width: 720px; margin: 0 auto; }
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.card h2 { font-size: 14px; color: var(--primary); margin-bottom: 12px; letter-spacing: .5px; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; margin-top: 10px; }
+input, select, textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 14px; font-family: inherit; background: #fff; color: var(--text);
+}
+textarea { min-height: 80px; resize: vertical; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn {
+  display: inline-block; width: 100%; padding: 12px 16px; border: none; border-radius: 10px;
+  font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px;
+  font-family: inherit;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:active { background: var(--primary-dark); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-outline { background: #fff; color: var(--primary); border: 2px solid var(--primary); }
+.btn-ghost { background: #EEF2F8; color: var(--text); }
+.btn-sm { width: auto; padding: 8px 12px; font-size: 12px; margin: 4px 4px 0 0; }
+.btn:disabled { opacity: .5; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  background: #EEF2F8; color: var(--primary); border: 1px solid var(--border); cursor: pointer;
+}
+.chip.on { background: var(--primary); color: #fff; border-color: var(--primary); }
+.preview-slide {
+  background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; margin-bottom: 10px; position: relative; min-height: 100px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.preview-slide .num {
+  position: absolute; top: 8px; left: 8px; background: var(--primary); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
+}
+.preview-slide h3 { font-size: 14px; margin: 4px 28px 8px 0; color: var(--primary-dark); }
+.preview-slide ul { margin-left: 18px; font-size: 12px; color: var(--text); }
+.preview-slide li { margin-bottom: 3px; }
+.slide-footer-preview {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted);
+}
+.slide-footer-preview img { width: 28px; height: 28px; border-radius: 50%; }
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: var(--ok); color: #fff; padding: 12px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; opacity: 0; transition: .25s; z-index: 200;
+  max-width: 90%; text-align: center; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err { background: var(--danger); }
+.bn {
+  position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+  border-top: 1px solid var(--border); display: flex; padding: 8px 0 12px; z-index: 100;
+}
+.ni { flex: 1; text-align: center; font-size: 10px; color: var(--muted); font-weight: 600; }
+.ni.active { color: var(--primary); }
+.ni span { display: block; font-size: 18px; margin-bottom: 2px; }
+.page { display: none; }
+.page.active { display: block; }
+.hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.progress {
+  height: 4px; background: #E0E6EF; border-radius: 2px; margin: 12px 0; overflow: hidden; display: none;
+}
+.progress.on { display: block; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.stat { display: flex; gap: 8px; margin-bottom: 12px; }
+.stat div {
+  flex: 1; background: #EEF2F8; border-radius: 8px; padding: 10px; text-align: center;
+}
+.stat strong { display: block; font-size: 18px; color: var(--primary); }
+.stat span { font-size: 10px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="header">
+  <img src="assets/logo-juw.jpg" alt="JUW"/>
+  <div>
+    <h1>JUW MicroSlides</h1>
+    <p>Microbiology lecture decks · Slides by Noor</p>
+  </div>
+</div>
+
+<div id="page-home" class="page active container">
+  <div class="card">
+    <h2>CREATE LECTURE DECK</h2>
+    <label>Topic (Microbiology)</label>
+    <input id="topic" placeholder="e.g. Enzyme Immobilization"/>
+    <div class="chips" id="topicChips">
+      <span class="chip" data-t="Enzyme Immobilization">Enzyme Immobilization</span>
+      <span class="chip" data-t="Sterilization Methods">Sterilization</span>
+      <span class="chip" data-t="Bacterial Growth Curve">Growth Curve</span>
+      <span class="chip" data-t="Antibiotic Resistance">Antibiotics</span>
+      <span class="chip" data-t="Fermentation Technology">Fermentation</span>
+      <span class="chip" data-t="Microscopy in Microbiology">Microscopy</span>
+    </div>
+    <div class="row">
+      <div>
+        <label>Course code</label>
+        <input id="course" value="MIC-4511"/>
+      </div>
+      <div>
+        <label>Prepared by</label>
+        <input id="preparer" value="Ms. Noor"/>
+      </div>
+    </div>
+    <label>Department</label>
+    <input id="dept" value="Department of Microbiology"/>
+    <label>Extra research notes (optional — paste points, definitions, references)</label>
+    <textarea id="notes" placeholder="Paste extra academic notes, key papers, or bullet points to merge into slides…"></textarea>
+    <div class="hint">App builds a full university-style deck (definitions, methods, pros/cons, applications, trends, references). No slide limit for complex topics.</div>
+  </div>
+
+  <div class="card">
+    <h2>THEME · LAYOUT · FONT</h2>
+    <label>Theme</label>
+    <select id="theme">
+      <option value="academic">Academic Blue (JUW)</option>
+      <option value="classic">Classic White & Navy</option>
+      <option value="emerald">Emerald Research</option>
+      <option value="slate">Slate Minimal</option>
+      <option value="warm">Warm Sand</option>
+    </select>
+    <label>Layout</label>
+    <select id="layout">
+      <option value="standard">Standard lecture (title + bullets)</option>
+      <option value="twocol">Two-column comparison</option>
+      <option value="cards">Card grid (applications)</option>
+      <option value="process">Process / steps focus</option>
+    </select>
+    <label>Font</label>
+    <select id="font">
+      <option value="Calibri">Calibri</option>
+      <option value="Arial">Arial</option>
+      <option value="Georgia">Georgia</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Verdana">Verdana</option>
+      <option value="Tahoma">Tahoma</option>
+      <option value="Trebuchet MS">Trebuchet MS</option>
+      <option value="Segoe UI">Segoe UI</option>
+    </select>
+  </div>
+
+  <div class="progress" id="prog"><i id="progBar"></i></div>
+  <button type="button" class="btn btn-primary" id="btnGen">Generate Professional Deck</button>
+</div>
+
+<div id="page-preview" class="page container">
+  <div class="stat">
+    <div><strong id="slideCount">0</strong><span>Slides</span></div>
+    <div><strong id="topicLabel">—</strong><span>Topic</span></div>
+  </div>
+  <div class="card" style="padding:10px">
+    <button type="button" class="btn btn-primary btn-sm" id="btnPptx">Download PPTX</button>
+    <button type="button" class="btn btn-accent btn-sm" id="btnPdf">Download PDF</button>
+    <button type="button" class="btn btn-ghost btn-sm" id="btnBack">Edit inputs</button>
+  </div>
+  <div id="previewList"></div>
+</div>
+
+<div id="page-about" class="page container">
+  <div class="card">
+    <h2>ABOUT JUW MICROSLIDES</h2>
+    <p style="font-size:13px;line-height:1.5;color:var(--muted)">
+      Professional lecture-slide generator for Microbiology (university level).
+      Branded for academic use with Jinnah University for Women mark and “Slides by Noor” credit on every slide.
+    </p>
+    <p style="font-size:13px;line-height:1.5;color:var(--muted);margin-top:10px">
+      <strong>Exports:</strong> Editable PowerPoint (.pptx) and PDF.<br/>
+      <strong>Version:</strong> 1.0.0<br/>
+      <strong>Pattern:</strong> MIC-4511 style academic structure
+    </p>
+  </div>
+  <div class="card">
+    <h2>RESEARCH MODEL</h2>
+    <p style="font-size:12px;line-height:1.5;color:var(--muted)">
+      Decks are built from structured academic microbiology outlines (definitions, mechanisms, methods, industrial applications, current trends, references).
+      Paste your own literature notes for deeper customization. High-quality diagrams are rendered as structured figures inside slides; the university seal is placed on each slide.
+      Live web search APIs can be added later with your own API keys; v1 prioritizes offline-capable, exam-ready academic structure.
+    </p>
+  </div>
+</div>
+
+<div class="bn">
+  <div class="ni active" data-p="home"><span>✨</span>Generate</div>
+  <div class="ni" data-p="preview"><span>📑</span>Preview</div>
+  <div class="ni" data-p="about"><span>ℹ️</span>About</div>
+</div>
+
+<script>
+(function(){
+  var LOGO = "assets/logo-juw.jpg";
+  var deck = [];
+  var meta = {};
+
+  var THEMES = {
+    academic: { bg:"FFFFFF", title:"1E4B8F", text:"1A1A2E", accent:"1B7A3D", soft:"E8EEF6" },
+    classic:  { bg:"FFFFFF", title:"0A2540", text:"222222", accent:"8B6914", soft:"F0F0F0" },
+    emerald:  { bg:"FFFFFF", title:"145A32", text:"1A1A1A", accent:"1E4B8F", soft:"E8F5E9" },
+    slate:    { bg:"F8FAFC", title:"334155", text:"1E293B", accent:"0F766E", soft:"E2E8F0" },
+    warm:     { bg:"FFFBF5", title:"7C2D12", text:"292524", accent:"B45309", soft:"FEF3C7" }
+  };
+
+  function toast(msg, err){
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "toast show" + (err ? " err" : "");
+    clearTimeout(window._tt);
+    window._tt = setTimeout(function(){ el.className = "toast"; }, 2400);
+  }
+
+  function showPage(name){
+    document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
+    document.getElementById("page-" + name).classList.add("active");
+    document.querySelectorAll(".ni").forEach(function(n){
+      n.classList.toggle("active", n.getAttribute("data-p") === name);
+    });
+  }
+
+  /* ---------- Knowledge / research outlines (university depth) ---------- */
+  function outlineFor(topic){
+    var t = (topic || "").toLowerCase();
+    if (t.indexOf("immobil") >= 0 || t.indexOf("enzyme") >= 0) return outlineEnzymeImmobilization();
+    if (t.indexOf("steril") >= 0) return outlineSterilization();
+    if (t.indexOf("growth") >= 0) return outlineGrowth();
+    if (t.indexOf("antibiot") >= 0 || t.indexOf("resist") >= 0) return outlineAntibiotics();
+    if (t.indexOf("ferment") >= 0) return outlineFermentation();
+    if (t.indexOf("microscop") >= 0) return outlineMicroscopy();
+    return outlineGeneric(topic);
+  }
+
+  function outlineEnzymeImmobilization(){
+    return [
+      { type:"title", title:"ENZYME IMMOBILIZATION", subtitle:"MICROBIAL ENZYME TECHNOLOGY" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Explain immobilization of enzymes and why it is used industrially",
+        "Describe major applications of immobilized enzymes",
+        "Differentiate physical and chemical methods of enzyme immobilization",
+        "Compare supports/matrices (natural, synthetic, inorganic)",
+        "Outline advantages, limitations, and current research trends"
+      ]},
+      { type:"content", title:"Why Immobilize Enzymes?", bullets:[
+        "Enzymes are expensive catalytic proteins",
+        "Catalysts are not consumed, yet free enzymes are hard to recover after reaction",
+        "Without recovery, enzyme is effectively wasted in batch processes",
+        "Immobilization confines the enzyme so it can be reused or used continuously",
+        "Also reduces product contamination by residual free enzyme"
+      ]},
+      { type:"definition", title:"What is Immobilization?", bullets:[
+        "Immobilized enzymes = enzymes physically confined or localized in a defined region/space",
+        "Catalytic activity is retained",
+        "Preparation can be used repeatedly and/or continuously",
+        "Classic industrial biocatalyst strategy in white biotechnology"
+      ]},
+      { type:"twocol", title:"Advantages vs Disadvantages", leftTitle:"Advantages", rightTitle:"Disadvantages", left:[
+        "Re-use and continuous operation",
+        "Easier product separation",
+        "Often improved stability (pH, temp)",
+        "Controlled reactor design (packed bed, fluidized)",
+        "Lower enzyme cost per unit product"
+      ], right:[
+        "Possible activity loss on immobilization",
+        "Mass-transfer / diffusion limits",
+        "Extra cost of support & process",
+        "Leakage (especially adsorption/entrapment)",
+        "Not all enzymes tolerate chemical coupling"
+      ]},
+      { type:"content", title:"Applications", bullets:[
+        "Industrial: antibiotics, beverages, amino acids, HFCS (glucose isomerase)",
+        "Biomedical: diagnosis, treatment concepts, drug-delivery research",
+        "Food: jams, jellies, syrups, lactose-free milk (lactase)",
+        "Research: HRP in blotting; proteases for cell work",
+        "Biodiesel: lipases on vegetable oils",
+        "Wastewater: effluent treatment biocatalysts",
+        "Textiles: scouring, bio-polishing, desizing",
+        "Detergents: immobilized lipase concepts for stain removal"
+      ]},
+      { type:"content", title:"Supports & Matrices — Requirements", bullets:[
+        "Matrix must hold enzyme while allowing substrate/product diffusion",
+        "Preferably cheap and available",
+        "Minimal unwanted reaction with medium or enzyme",
+        "Grouped as: Natural polymers · Synthetic polymers · Inorganic materials"
+      ]},
+      { type:"content", title:"Natural Polymer Supports", bullets:[
+        "Alginate (algal; Ca/Mg gels)",
+        "Chitosan & chitin (–OH binding)",
+        "Collagen (proteinaceous)",
+        "Carrageenan (sulfated algal polysaccharide)",
+        "Gelatin (hydrolyzed collagen; water holding)",
+        "Cellulose (economical)",
+        "Starch & pectin (water holding)"
+      ]},
+      { type:"content", title:"Synthetic & Inorganic Supports", bullets:[
+        "Synthetic: PVC, UV-activated PEG, ion-exchange resins, polyacrylamide",
+        "Inorganic: zeolites, ceramics, celite (diatomaceous earth), silica, glass",
+        "Activated carbon / charcoal (classic adsorption carriers)",
+        "Porous surfaces trap enzyme/cells; choice depends on method & process"
+      ]},
+      { type:"content", title:"Methods Overview", bullets:[
+        "Physical: Adsorption · Entrapment · Encapsulation",
+        "Chemical: Covalent bonding · Cross-linking (copolymerization)",
+        "Whole-cell immobilization uses the same families of methods",
+        "Choice balances stability, cost, activity retention, and leakage risk"
+      ]},
+      { type:"content", title:"1. Adsorption", bullets:[
+        "Oldest and simplest method (e.g. Nelson & Griffin — invertase on charcoal)",
+        "Enzyme binds external/internal surface of carrier",
+        "Carriers: mineral (Al₂O₃, clay), organic (starch), ion-exchange resins, sepharose",
+        "Forces: ionic interactions, H-bonds, van der Waals, hydrophobic effects",
+        "Process variants: static, dynamic batch, reactor loading, electrodeposition"
+      ]},
+      { type:"twocol", title:"Adsorption — Pros & Cons", leftTitle:"Advantages", rightTitle:"Disadvantages", left:[
+        "Easy; no reagents required",
+        "Minimal activation chemistry",
+        "Relatively cheap",
+        "Less disruptive than harsh chemical methods"
+      ], right:[
+        "Desorption if T, pH, ionic strength change",
+        "Often lower operational efficiency",
+        "Greater microbial attack exposure risk"
+      ]},
+      { type:"content", title:"2. Covalent Bonding", bullets:[
+        "Strong covalent links between enzyme functional groups and support",
+        "Reactive enzyme groups: amino, imino, hydroxyl, carboxyl, thiol, methylthiol",
+        "Supports: cellulose, DEAE-cellulose, agarose, polyacrylamide, porous glass, silica",
+        "CNBr-agarose / CNBr-Sepharose widely used historically",
+        "Routes: diazotization; peptide-bond coupling; polyfunctional reagents (e.g. glutaraldehyde)"
+      ]},
+      { type:"twocol", title:"Covalent Bonding — Pros & Cons", leftTitle:"Advantages", rightTitle:"Disadvantages", left:[
+        "Strong linkage; little leakage",
+        "Wide support chemistry available",
+        "Broad applicability"
+      ], right:[
+        "Chemical modification may alter conformation",
+        "Risk of active-site damage",
+        "Mitigate by immobilizing with substrate/inhibitor present"
+      ]},
+      { type:"content", title:"3. Entrapment", bullets:[
+        "Enzyme physically trapped in a polymer matrix (covalent or non-covalent matrix chemistry)",
+        "Matrices: polyacrylamide, cellulose triacetate, agar, gelatin, carrageenan, alginate",
+        "Pore size tuned to retain enzyme but allow substrate diffusion",
+        "Formats: gels, fibers, microcapsules (e.g. polyamine, Ca-alginate)",
+        "Mild and cheap at lab scale; diffusion limits matter at process scale"
+      ]},
+      { type:"content", title:"4. Cross-Linking (Carrier-Free)", bullets:[
+        "Enzyme molecules linked to each other via polyfunctional reagents (e.g. glutaraldehyde)",
+        "No external matrix required (carrier-free biocatalyst)",
+        "Merits: low carrier cost, simplicity, often high operational stability",
+        "Demerit: reagent can denature protein and cut activity if not optimized"
+      ]},
+      { type:"content", title:"5. Encapsulation", bullets:[
+        "Enzyme enclosed in a semi-permeable membrane capsule (e.g. nitrocellulose, nylon)",
+        "Large enzyme loads possible; method is relatively simple",
+        "Limitation: only small substrates cross the membrane effectively",
+        "Pore-size control is critical"
+      ]},
+      { type:"content", title:"Whole-Cell Immobilization", bullets:[
+        "Alternative when purified enzyme is unstable or costly to isolate",
+        "Multiple enzymes available in one step; organelles can also be immobilized",
+        "Same method families as enzyme immobilization",
+        "Pros: long stability, no purification cost",
+        "Cons: lower effective enzyme concentration; side reactions from other cell enzymes"
+      ]},
+      { type:"content", title:"Excipients in Immobilization", bullets:[
+        "Non-therapeutic additives that stabilize proteins/cells during immobilization & storage",
+        "Help prevent denaturation, aggregation, and activity loss",
+        "Chosen for process compatibility and regulatory acceptability in industrial use"
+      ]},
+      { type:"content", title:"Current Research Trends", bullets:[
+        "Nanomaterial supports: MOFs, carbon nanotubes, nanoparticles — higher surface & stability",
+        "Stimuli-responsive polymers (pH/temperature) for on–off biocatalysis & biosensors",
+        "Tighter integration with continuous-flow reactors and cascade biocatalysis",
+        "Greener coupling chemistries and food/pharma-grade supports"
+      ]},
+      { type:"content", title:"Summary", bullets:[
+        "Immobilization enables reuse/continuous use of costly enzymes",
+        "Method choice = activity retention + stability + cost + leakage risk",
+        "Physical methods are milder; chemical methods are stronger but harsher",
+        "Supports span natural, synthetic, and inorganic materials",
+        "Industrial, biomedical, food, environmental, and research uses continue to expand"
+      ]},
+      { type:"refs", title:"References", bullets:[
+        "Kulkarni & Deshpande — General Enzymology",
+        "Federsel, Moody & Taylor (2021). Molecules 26(9):2822 — trends in enzyme immobilization",
+        "Xie et al. (2009). Afr. J. Biotechnol. 8(19) — supports & technology",
+        "EasyBiologyClass — Enzyme & whole-cell immobilization teaching resources",
+        "Course context: MIC-4511 Microbial Enzyme Technology"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function outlineSterilization(){
+    return [
+      { type:"title", title:"STERILIZATION METHODS", subtitle:"MICROBIOLOGY · ASEPTIC TECHNOLOGY" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Define sterilization vs disinfection vs sanitization",
+        "Classify physical and chemical sterilization methods",
+        "Explain moist heat, dry heat, filtration, radiation",
+        "Select appropriate methods for media, equipment, and heat-labile fluids"
+      ]},
+      { type:"definition", title:"Definition", bullets:[
+        "Sterilization: destruction or removal of all viable microorganisms including spores",
+        "Critical for media preparation, surgical materials, and many industrial processes"
+      ]},
+      { type:"content", title:"Physical Methods", bullets:[
+        "Moist heat: autoclave 121°C, 15 psi, typically 15–20 min (spore kill)",
+        "Dry heat: hot-air oven 160–180°C for longer times; incineration",
+        "Filtration: membrane filters for heat-sensitive liquids (0.22 µm common)",
+        "Radiation: UV (surfaces), gamma/electron beam (industrial sterilization)"
+      ]},
+      { type:"content", title:"Chemical Methods", bullets:[
+        "Gaseous: ethylene oxide, vaporized hydrogen peroxide (devices)",
+        "Liquid sterilants: glutaraldehyde, peracetic acid (high-level)",
+        "Not all disinfectants are sterilants — spectrum and time matter"
+      ]},
+      { type:"twocol", title:"Moist vs Dry Heat", leftTitle:"Moist heat", rightTitle:"Dry heat", left:[
+        "More effective at lower temperature",
+        "Coagulates proteins",
+        "Standard for media & glassware (with water)"
+      ], right:[
+        "Requires higher T / longer time",
+        "Oxidation & dehydration mechanisms",
+        "Oils, powders, some glass items"
+      ]},
+      { type:"content", title:"Validation Concepts", bullets:[
+        "Biological indicators (e.g. Geobacillus stearothermophilus for steam)",
+        "Chemical indicators and physical parametric monitoring",
+        "Load configuration affects steam penetration"
+      ]},
+      { type:"refs", title:"References", bullets:[
+        "Standard microbiology textbooks — physical & chemical control of microbes",
+        "Pharmacopeial sterilization guidance (conceptual teaching level)"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function outlineGrowth(){
+    return [
+      { type:"title", title:"BACTERIAL GROWTH CURVE", subtitle:"MICROBIAL PHYSIOLOGY" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Describe lag, log, stationary, and death phases",
+        "Relate phases to physiology and industrial harvest timing",
+        "Explain factors affecting growth rate"
+      ]},
+      { type:"content", title:"Four Classical Phases", bullets:[
+        "Lag: adaptation, enzyme induction, no net increase yet",
+        "Log (exponential): balanced growth; generation time measurable",
+        "Stationary: nutrient limit / waste; growth ≈ death",
+        "Death (decline): net loss of viability"
+      ]},
+      { type:"content", title:"Measurement", bullets:[
+        "Viable counts (CFU), turbidity (OD), dry weight, metabolic assays",
+        "Each method has bias (clumping, dead cells, etc.)"
+      ]},
+      { type:"content", title:"Applications", bullets:[
+        "Antibiotic timing (often log-phase sensitivity)",
+        "Fermentation harvest windows",
+        "Growth kinetics teaching and modeling"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function outlineAntibiotics(){
+    return [
+      { type:"title", title:"ANTIBIOTIC RESISTANCE", subtitle:"MEDICAL MICROBIOLOGY" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Explain major mechanisms of antibiotic resistance",
+        "Differentiate intrinsic vs acquired resistance",
+        "Discuss stewardship and public-health implications"
+      ]},
+      { type:"content", title:"Core Mechanisms", bullets:[
+        "Enzymatic inactivation (e.g. β-lactamases)",
+        "Target modification (PBPs, ribosomes)",
+        "Efflux pumps",
+        "Reduced permeability"
+      ]},
+      { type:"content", title:"Spread", bullets:[
+        "Plasmids, transposons, integrons",
+        "Horizontal gene transfer in clinical and environmental niches"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function outlineFermentation(){
+    return [
+      { type:"title", title:"FERMENTATION TECHNOLOGY", subtitle:"INDUSTRIAL MICROBIOLOGY" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Define fermentation in industrial microbiology context",
+        "Compare batch, fed-batch, and continuous modes",
+        "List major fermentation products"
+      ]},
+      { type:"content", title:"Process Modes", bullets:[
+        "Batch: closed system after inoculation",
+        "Fed-batch: nutrients added; common industrially",
+        "Continuous: steady state; washout risk"
+      ]},
+      { type:"content", title:"Products", bullets:[
+        "Organic acids, alcohols, antibiotics, enzymes, amino acids, biologics"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function outlineMicroscopy(){
+    return [
+      { type:"title", title:"MICROSCOPY IN MICROBIOLOGY", subtitle:"LABORATORY METHODS" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Compare bright-field, phase contrast, fluorescence, electron microscopy",
+        "Explain resolution and magnification limits",
+        "Link staining methods to microscopic observation"
+      ]},
+      { type:"content", title:"Light Microscopy", bullets:[
+        "Bright-field with stains (Gram, spore, acid-fast)",
+        "Phase contrast for live unstained cells",
+        "Fluorescence for specific labels"
+      ]},
+      { type:"content", title:"Electron Microscopy", bullets:[
+        "TEM: internal ultrastructure",
+        "SEM: surface topography",
+        "Higher resolution than light microscopy"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function outlineGeneric(topic){
+    var title = topic || "Microbiology Topic";
+    return [
+      { type:"title", title: title.toUpperCase(), subtitle:"MICROBIOLOGY · UNIVERSITY LECTURE" },
+      { type:"outcomes", title:"Learning Outcomes", bullets:[
+        "Define key terms related to " + title,
+        "Explain core mechanisms and classifications",
+        "Describe laboratory or industrial relevance",
+        "Discuss limitations, safety, and current directions"
+      ]},
+      { type:"definition", title:"Core Definition", bullets:[
+        title + " is examined here at university depth for course teaching.",
+        "Use your pasted notes to enrich definitions and examples.",
+        "Structure follows standard MIC lecture design: concept → mechanism → application → critique."
+      ]},
+      { type:"content", title:"Key Concepts", bullets:[
+        "Terminology and scope of the topic",
+        "Organisms, molecules, or processes involved",
+        "Standard laboratory or industrial context",
+        "Parameters that control outcomes (pH, T, nutrients, time)"
+      ]},
+      { type:"content", title:"Mechanisms / Classification", bullets:[
+        "Major types or pathways under this topic",
+        "How microbiologists distinguish subclasses",
+        "Links to metabolism, pathogenesis, or technology as relevant"
+      ]},
+      { type:"twocol", title:"Strengths & Limitations", leftTitle:"Strengths / Uses", rightTitle:"Limitations", left:[
+        "Teaching and research value",
+        "Industrial or clinical relevance",
+        "Compatibility with standard lab methods"
+      ], right:[
+        "Technical or biological constraints",
+        "Cost, time, or biosafety issues",
+        "Areas still under active research"
+      ]},
+      { type:"content", title:"Applications", bullets:[
+        "Academic laboratory teaching",
+        "Industrial microbiology / biotech where applicable",
+        "Clinical or environmental microbiology links",
+        "Quality control and applied testing contexts"
+      ]},
+      { type:"content", title:"Current Directions", bullets:[
+        "Newer methods and molecular tools",
+        "Automation and high-throughput approaches",
+        "Sustainability and safety improvements"
+      ]},
+      { type:"refs", title:"References", bullets:[
+        "Core microbiology textbooks (course-prescribed)",
+        "Recent review articles on " + title,
+        "Add DOIs from your literature search into Notes before generating"
+      ]},
+      { type:"thanks", title:"Thank You" }
+    ];
+  }
+
+  function mergeNotes(slides, notes){
+    if (!notes || !notes.trim()) return slides;
+    var extra = notes.trim().split(/\n+/).map(function(s){ return s.replace(/^[\-\*\d\.\)\s]+/, "").trim(); }).filter(Boolean);
+    if (!extra.length) return slides;
+    var block = { type:"content", title:"Additional Research Notes", bullets: extra.slice(0, 16) };
+    var out = slides.slice();
+    var idx = out.length - 2;
+    if (idx < 1) idx = out.length - 1;
+    out.splice(idx, 0, block);
+    return out;
+  }
+
+  function generate(){
+    var topic = (document.getElementById("topic").value || "").trim();
+    if (!topic){ toast("Enter a topic", true); return; }
+    meta = {
+      topic: topic,
+      course: document.getElementById("course").value || "MIC-4511",
+      preparer: document.getElementById("preparer").value || "Ms. Noor",
+      dept: document.getElementById("dept").value || "Department of Microbiology",
+      theme: document.getElementById("theme").value,
+      layout: document.getElementById("layout").value,
+      font: document.getElementById("font").value
+    };
+    var prog = document.getElementById("prog");
+    var bar = document.getElementById("progBar");
+    prog.classList.add("on");
+    bar.style.width = "20%";
+    setTimeout(function(){ bar.style.width = "55%"; }, 200);
+    setTimeout(function(){
+      bar.style.width = "85%";
+      var slides = outlineFor(topic);
+      slides = mergeNotes(slides, document.getElementById("notes").value);
+      deck = slides;
+      bar.style.width = "100%";
+      setTimeout(function(){
+        prog.classList.remove("on");
+        bar.style.width = "0%";
+        renderPreview();
+        showPage("preview");
+        toast("Deck ready — " + deck.length + " slides");
+      }, 250);
+    }, 500);
+  }
+
+  function renderPreview(){
+    document.getElementById("slideCount").textContent = deck.length;
+    document.getElementById("topicLabel").textContent = meta.topic.length > 18 ? meta.topic.slice(0,16)+"…" : meta.topic;
+    var html = "";
+    deck.forEach(function(s, i){
+      html += '<div class="preview-slide"><span class="num">'+(i+1)+'</span><h3>'+esc(s.title||"")+'</h3>';
+      if (s.subtitle) html += '<p style="font-size:11px;color:var(--muted);margin-bottom:6px">'+esc(s.subtitle)+'</p>';
+      if (s.bullets && s.bullets.length){
+        html += "<ul>"; s.bullets.forEach(function(b){ html += "<li>"+esc(b)+"</li>"; }); html += "</ul>";
+      }
+      if (s.type === "twocol"){
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">';
+        html += '<div><strong>'+esc(s.leftTitle)+'</strong><ul>'; (s.left||[]).forEach(function(b){ html+="<li>"+esc(b)+"</li>"; }); html+="</ul></div>";
+        html += '<div><strong>'+esc(s.rightTitle)+'</strong><ul>'; (s.right||[]).forEach(function(b){ html+="<li>"+esc(b)+"</li>"; }); html+="</ul></div>";
+        html += "</div>";
+      }
+      html += '<div class="slide-footer-preview"><span>Slides by Noor</span><img src="'+LOGO+'" alt="JUW"/></div></div>';
+    });
+    document.getElementById("previewList").innerHTML = html;
+  }
+
+  function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function addFooter(pptx, slide, th){
+    slide.addText("Slides by Noor", {
+      x: 0.35, y: 5.15, w: 4.5, h: 0.28,
+      fontSize: 10, color: th.text, fontFace: meta.font, transparency: 30
+    });
+    try {
+      slide.addImage({ path: LOGO, x: 8.7, y: 4.85, w: 0.55, h: 0.55 });
+    } catch (e) {
+      slide.addShape(pptx.ShapeType.ellipse, { x: 8.75, y: 4.9, w: 0.45, h: 0.45, fill: { color: th.title } });
+    }
+  }
+
+  function exportPptx(){
+    if (!deck.length){ toast("Generate a deck first", true); return; }
+    if (typeof PptxGenJS === "undefined"){ toast("PPTX library not loaded — check internet", true); return; }
+    toast("Building PPTX…");
+    var pptx = new PptxGenJS();
+    pptx.defineLayout({ name: "LAYOUT_16x9", width: 10, height: 5.625 });
+    pptx.layout = "LAYOUT_16x9";
+    pptx.author = meta.preparer;
+    pptx.title = meta.topic;
+    pptx.subject = meta.course;
+    var th = THEMES[meta.theme] || THEMES.academic;
+    var font = meta.font || "Calibri";
+
+    deck.forEach(function(s){
+      var slide = pptx.addSlide();
+      slide.background = { color: th.bg };
+
+      if (s.type === "title"){
+        slide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:10, h:5.625, fill:{ color: th.title } });
+        slide.addText(s.title, { x:0.5, y:1.5, w:7.5, h:1, fontSize:28, bold:true, color:"FFFFFF", fontFace: font });
+        if (s.subtitle) slide.addText(s.subtitle, { x:0.5, y:2.5, w:7.5, h:0.4, fontSize:14, color:"FFFFFF", fontFace: font });
+        slide.addText(meta.course + "  ·  " + meta.preparer, { x:0.5, y:3.3, w:7.5, h:0.3, fontSize:12, color:"FFFFFF", fontFace: font });
+        slide.addText(meta.dept, { x:0.5, y:3.6, w:7.5, h:0.3, fontSize:12, color:"FFFFFF", fontFace: font });
+        slide.addText("Slides by Noor", { x:0.5, y:5.1, w:4, h:0.25, fontSize:11, color:"FFFFFF", fontFace: font });
+        try { slide.addImage({ path: LOGO, x: 8.3, y: 4.5, w: 1.1, h: 1.1 }); } catch(e){}
+        return;
+      }
+
+      if (s.type === "thanks"){
+        slide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:10, h:5.625, fill:{ color: th.title } });
+        slide.addText("Thank You", { x:0.5, y:2.0, w:7.5, h:0.8, fontSize:36, bold:true, color:"FFFFFF", fontFace: font });
+        slide.addText(meta.course + "  ·  " + meta.dept, { x:0.5, y:2.9, w:7.5, h:0.35, fontSize:14, color:"FFFFFF", fontFace: font });
+        slide.addText("Slides by Noor", { x:0.5, y:5.1, w:4, h:0.25, fontSize:11, color:"FFFFFF", fontFace: font });
+        try { slide.addImage({ path: LOGO, x: 8.3, y: 4.5, w: 1.1, h: 1.1 }); } catch(e){}
+        return;
+      }
+
+      slide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:10, h:0.7, fill:{ color: th.title } });
+      slide.addText(s.title, { x:0.4, y:0.15, w:8.5, h:0.45, fontSize:18, bold:true, color:"FFFFFF", fontFace: font });
+
+      if (s.type === "twocol"){
+        slide.addShape(pptx.ShapeType.roundRect, { x:0.35, y:1.0, w:4.4, h:3.8, fill:{ color: th.soft }, rectRadius: 0.1 });
+        slide.addShape(pptx.ShapeType.roundRect, { x:5.25, y:1.0, w:4.4, h:3.8, fill:{ color: th.soft }, rectRadius: 0.1 });
+        slide.addText(s.leftTitle || "Left", { x:0.5, y:1.15, w:4.1, h:0.35, fontSize:14, bold:true, color: th.accent, fontFace: font });
+        slide.addText(s.rightTitle || "Right", { x:5.4, y:1.15, w:4.1, h:0.35, fontSize:14, bold:true, color: th.accent, fontFace: font });
+        slide.addText((s.left||[]).map(function(b){ return { text: b, options:{ bullet:true, breakLine:true }}; }), {
+          x:0.5, y:1.6, w:4.1, h:3.0, fontSize:12, color: th.text, fontFace: font, valign:"top"
+        });
+        slide.addText((s.right||[]).map(function(b){ return { text: b, options:{ bullet:true, breakLine:true }}; }), {
+          x:5.4, y:1.6, w:4.1, h:3.0, fontSize:12, color: th.text, fontFace: font, valign:"top"
+        });
+      } else {
+        var bullets = s.bullets || [];
+        slide.addText(bullets.map(function(b){ return { text: b, options:{ bullet:true, breakLine:true }}; }), {
+          x:0.45, y:1.0, w:9.1, h:3.9, fontSize:14, color: th.text, fontFace: font, valign:"top"
+        });
+      }
+      addFooter(pptx, slide, th);
+    });
+
+    var fname = (meta.topic || "JUW-MicroSlides").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40);
+    pptx.writeFile({ fileName: fname + ".pptx" }).then(function(){
+      toast("PPTX downloaded");
+    }).catch(function(){ toast("PPTX export failed", true); });
+  }
+
+  function exportPdf(){
+    if (!deck.length){ toast("Generate a deck first", true); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF){ toast("PDF library not loaded — check internet", true); return; }
+    toast("Building PDF…");
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    var W = doc.internal.pageSize.getWidth();
+    var H = doc.internal.pageSize.getHeight();
+    var th = THEMES[meta.theme] || THEMES.academic;
+
+    function hexToRgb(hex){
+      hex = hex.replace("#","");
+      return { r: parseInt(hex.slice(0,2),16), g: parseInt(hex.slice(2,4),16), b: parseInt(hex.slice(4,6),16) };
+    }
+    var titleC = hexToRgb(th.title);
+    var textC = hexToRgb(th.text);
+
+    deck.forEach(function(s, idx){
+      if (idx > 0) doc.addPage();
+      if (s.type === "title" || s.type === "thanks"){
+        doc.setFillColor(titleC.r, titleC.g, titleC.b);
+        doc.rect(0, 0, W, H, "F");
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(28);
+        doc.text(s.title || "Thank You", 40, H/2 - 20);
+        doc.setFontSize(12);
+        if (s.subtitle) doc.text(s.subtitle, 40, H/2 + 10);
+        doc.text(meta.course + "  ·  " + meta.preparer, 40, H/2 + 35);
+        doc.text("Slides by Noor", 40, H - 30);
+      } else {
+        doc.setFillColor(titleC.r, titleC.g, titleC.b);
+        doc.rect(0, 0, W, 42, "F");
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(16);
+        doc.text(s.title || "", 30, 28);
+        doc.setTextColor(textC.r, textC.g, textC.b);
+        doc.setFontSize(11);
+        var y = 70;
+        var lines = s.bullets || [];
+        if (s.type === "twocol"){
+          doc.setFont(undefined, "bold");
+          doc.text(s.leftTitle || "", 30, y);
+          doc.text(s.rightTitle || "", W/2 + 10, y);
+          doc.setFont(undefined, "normal");
+          y += 18;
+          var max = Math.max((s.left||[]).length, (s.right||[]).length);
+          for (var i=0;i<max;i++){
+            if (s.left && s.left[i]) doc.text("• " + s.left[i], 30, y, { maxWidth: W/2 - 50 });
+            if (s.right && s.right[i]) doc.text("• " + s.right[i], W/2 + 10, y, { maxWidth: W/2 - 50 });
+            y += 22;
+          }
+        } else {
+          lines.forEach(function(b){
+            var wrapped = doc.splitTextToSize("• " + b, W - 60);
+            doc.text(wrapped, 30, y);
+            y += wrapped.length * 14 + 6;
+            if (y > H - 50){ y = 70; }
+          });
+        }
+        doc.setFontSize(9);
+        doc.setTextColor(120);
+        doc.text("Slides by Noor", 30, H - 20);
+      }
+    });
+    var fname = (meta.topic || "JUW-MicroSlides").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40);
+    doc.save(fname + ".pdf");
+    toast("PDF downloaded");
+  }
+
+  document.getElementById("btnGen").onclick = generate;
+  document.getElementById("btnPptx").onclick = exportPptx;
+  document.getElementById("btnPdf").onclick = exportPdf;
+  document.getElementById("btnBack").onclick = function(){ showPage("home"); };
+  document.querySelectorAll(".ni").forEach(function(n){
+    n.onclick = function(){ showPage(n.getAttribute("data-p")); };
+  });
+  document.querySelectorAll("#topicChips .chip").forEach(function(c){
+    c.onclick = function(){
+      document.getElementById("topic").value = c.getAttribute("data-t");
+      document.querySelectorAll("#topicChips .chip").forEach(function(x){ x.classList.remove("on"); });
+      c.classList.add("on");
+    };
+  });
+
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function(){});
+})();
+</script>
+</body>
+</html>
