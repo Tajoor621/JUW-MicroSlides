@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#1E4B8F"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>JUW MicroSlides</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="assets/icon-192x192.png"/>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<style>
+:root{--p:#1E4B8F;--pd:#15366A;--a:#1B7A3D;--bg:#EEF2F7;--c:#fff;--t:#1A1A2E;--m:#5A6577;--b:#D0D7E2;--ok:#2E7D32;--er:#C62828;--f:system-ui,Segoe UI,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--f);background:var(--bg);color:var(--t);min-height:100vh;padding-bottom:86px}
+.header{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.header img{width:44px;height:44px;border-radius:50%;background:#fff;object-fit:contain;border:2px solid #fff}
+.header h1{font-size:17px;font-weight:700}.header p{font-size:11px;opacity:.9}
+.container{padding:12px;max-width:960px;margin:0 auto}
+.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card h2{font-size:11px;color:var(--p);margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase}
+label{display:block;font-size:11px;font-weight:600;color:var(--m);margin:8px 0 3px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--b);border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+textarea{min-height:64px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{display:block;width:100%;padding:12px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;font-family:inherit}
+.btn-p{background:var(--p);color:#fff}.btn-a{background:var(--a);color:#fff}.btn-g{background:#E8EEF6;color:var(--t)}
+.btn-sm{display:inline-block;width:auto;padding:8px 12px;font-size:12px;margin:3px 3px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.chip{padding:5px 10px;border-radius:16px;font-size:11px;font-weight:600;background:#E8EEF6;color:var(--p);border:1px solid var(--b);cursor:pointer}
+.chip.on{background:var(--p);color:#fff}
+.hint{font-size:10px;color:var(--m);margin-top:4px;line-height:1.4}
+.toast{position:fixed;bottom:94px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ok);color:#fff;padding:11px 16px;border-radius:10px;font-size:12px;font-weight:600;opacity:0;transition:.25s;z-index:200;max-width:92%;text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.err{background:var(--er)}
+.bn{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--b);display:flex;padding:7px 0 10px;z-index:100}
+.ni{flex:1;text-align:center;font-size:10px;color:var(--m);font-weight:600}.ni.active{color:var(--p)}.ni span{display:block;font-size:17px}
+.page{display:none}.page.active{display:block}
+.prog{height:3px;background:#E0E6EF;border-radius:2px;margin:10px 0;overflow:hidden;display:none}.prog.on{display:block}.prog i{display:block;height:100%;width:0;background:var(--a);transition:width .35s}
+.stat{display:flex;gap:6px;margin-bottom:10px}
+.stat div{flex:1;background:#E8EEF6;border-radius:8px;padding:8px;text-align:center}
+.stat strong{display:block;font-size:15px;color:var(--p)}.stat span{font-size:9px;color:var(--m)}
+.ps{background:#fff;border:1px solid var(--b);border-radius:8px;padding:10px;margin-bottom:8px;position:relative}
+.ps .n{position:absolute;top:6px;left:6px;background:var(--p);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
+.ps h3{font-size:13px;margin:2px 26px 6px 0;color:var(--pd)}
+.ps ul{margin-left:16px;font-size:11px}.ps li{margin-bottom:2px}
+.ps .media{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.ps .media img{max-width:100%;max-height:120px;border-radius:6px;border:1px solid var(--b);object-fit:cover}
+.ps .attr{font-size:8px;color:var(--m);margin-top:4px}
+.sf{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--b);font-size:9px;color:var(--m)}
+.sf img{width:24px;height:24px;border-radius:50%}
+.user-thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.user-thumbs .ut{position:relative;width:64px;height:64px}
+.user-thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--b)}
+.user-thumbs button{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;border:none;background:var(--er);color:#fff;font-size:10px;line-height:18px}
+.engines{font-size:10px;line-height:1.45;color:var(--m)}
+.engines b{color:var(--p)}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="header">
+  <img src="assets/logo-juw.jpg" alt="JUW"/>
+  <div><h1>JUW MicroSlides</h1><p>Premium Microbiology lecture decks · Slides by Noor</p></div>
+</div>
+
+<div id="page-home" class="page active container">
+  <div class="card">
+    <h2>Topic & depth</h2>
+    <label>Microbiology topic</label>
+    <input id="topic" placeholder="e.g. Enzyme Immobilization"/>
+    <div class="chips" id="topicChips">
+      <span class="chip" data-t="Enzyme Immobilization">Enzyme Immobilization</span>
+      <span class="chip" data-t="Sterilization Methods">Sterilization</span>
+      <span class="chip" data-t="Bacterial Growth Curve">Growth Curve</span>
+      <span class="chip" data-t="Gram Staining">Gram Stain</span>
+      <span class="chip" data-t="Antibiotic Resistance">Antibiotics</span>
+      <span class="chip" data-t="Bacterial Morphology">Morphology</span>
+      <span class="chip" data-t="Fermentation Technology">Fermentation</span>
+      <span class="chip" data-t="Microscopy Techniques">Microscopy</span>
+    </div>
+    <div class="row">
+      <div><label>Course</label><input id="course" value="MIC-4511"/></div>
+      <div><label>Level</label>
+        <select id="level"><option value="ug">Undergrad</option><option value="grad">Graduate</option><option value="med">Med school</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Prepared by</label><input id="preparer" value="Ms. Noor"/></div>
+      <div><label>Research slides (5–50)</label><input id="slideN" type="number" min="5" max="50" value="25"/></div>
+    </div>
+    <label>Department</label>
+    <input id="dept" value="Department of Microbiology"/>
+    <label>Extra notes (optional)</label>
+    <textarea id="notes" placeholder="Paste extra points, DOIs…"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Your media (camera / gallery)</h2>
+    <div class="hint">Add your own photos, screenshots, or lab camera shots. They are placed on early research slides (unique, never repeated).</div>
+    <div class="row" style="margin-top:8px">
+      <div>
+        <label>Gallery / file</label>
+        <input type="file" id="fileIn" accept="image/*" multiple/>
+      </div>
+      <div>
+        <label>Camera</label>
+        <input type="file" id="camIn" accept="image/*" capture="environment"/>
+      </div>
+    </div>
+    <div class="user-thumbs" id="userThumbs"></div>
+  </div>
+
+  <div class="card">
+    <h2>Open media engines (free)</h2>
+    <div class="engines">
+      <b>1. Wikimedia Commons API</b> — diagrams, micrographs, many scientific GIFs (CC / PD)<br/>
+      <b>2. Openverse API</b> — broad Creative Commons search<br/>
+      <b>3. Wikipedia REST</b> — lead educational images<br/>
+      <b>4. Built-in scientific diagrams</b> — unique vector figures when APIs miss<br/>
+      <b>5. Your uploads / camera</b> — highest priority on assigned slides<br/>
+      Every image keeps <b>licence + attribution</b>. No repeated media across slides.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Theme · font</h2>
+    <div class="row">
+      <div>
+        <label>Theme</label>
+        <select id="theme">
+          <option value="academic">JUW Academic</option>
+          <option value="classic">Classic Navy</option>
+          <option value="emerald">Research Emerald</option>
+          <option value="slate">Slate Minimal</option>
+          <option value="warm">Warm Seminar</option>
+          <option value="contrast">High Contrast Lecture</option>
+        </select>
+      </div>
+      <div>
+        <label>Slide layout</label>
+        <select id="layout">
+          <option value="lecture">Lecture (text + figure)</option>
+          <option value="seminar">Seminar wide title</option>
+          <option value="split">Split 50/50 media</option>
+          <option value="focus">Media focus</option>
+          <option value="compact">Compact bullets</option>
+        </select>
+      </div>
+      </div>
+      <div class="row">
+      <div>
+        <label>Font</label>
+        <select id="font">
+          <option value="Calibri">Calibri</option>
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Verdana">Verdana</option>
+        </select>
+      </div>
+    </div>
+    <label><input type="checkbox" id="fetchMedia" checked/> Fetch open-source images (needs internet)</label>
+  </div>
+
+  <div class="prog" id="prog"><i id="progBar"></i></div>
+  <button type="button" class="btn btn-p" id="btnGen">Generate Premium Deck</button>
+</div>
+
+<div id="page-preview" class="page container">
+  <div class="stat">
+    <div><strong id="slideCount">0</strong><span>Total</span></div>
+    <div><strong id="contentCount">0</strong><span>Research</span></div>
+    <div><strong id="mediaCount">0</strong><span>Unique media</span></div>
+  </div>
+  <div class="card" style="padding:8px">
+    <button type="button" class="btn btn-p btn-sm" id="btnPptx">PPTX</button>
+    <button type="button" class="btn btn-a btn-sm" id="btnPdf">PDF</button>
+    <button type="button" class="btn btn-g btn-sm" id="btnShare">Share</button>
+    <button type="button" class="btn btn-g btn-sm" id="btnBack">Edit</button>
+  </div>
+  <div id="previewList"></div>
+</div>
+
+<div id="page-about" class="page container">
+  <div class="card">
+    <h2>JUW MicroSlides</h2>
+    <p class="engines">JUW MicroSlides — premium Microbiology decks for laptop generation (internet required for open media). Unique open-licence images/diagrams per slide, camera or gallery uploads, multiple themes & layouts, PPTX/PDF export. Logo left · microscope + Slides by Noor on the right.</p>
+    <p class="engines" style="margin-top:8px"><b>Version 2.1.0</b> · No ads · No account · Attribution on every open image</p>
+  </div>
+</div>
+
+<div class="bn">
+  <div class="ni active" data-p="home"><span>✨</span>Generate</div>
+  <div class="ni" data-p="preview"><span>📑</span>Preview</div>
+  <div class="ni" data-p="about"><span>ℹ️</span>About</div>
+</div>
+
+<script>
+(function(){
+  var LOGO="assets/logo-juw.jpg";
+  var deck=[], meta={}, userMedia=[], usedMediaUrls={};
+
+  var THEMES={
+    academic:{bg:"FFFFFF",title:"1E4B8F",text:"1A1A2E",accent:"1B7A3D",soft:"E8EEF6",bar:"15366A"},
+    classic:{bg:"FFFFFF",title:"0A2540",text:"1C1C1C",accent:"8B6914",soft:"F2F4F7",bar:"061628"},
+    emerald:{bg:"FFFFFF",title:"145A32",text:"1A1A1A",accent:"1E4B8F",soft:"E8F5E9",bar:"0E3D22"},
+    slate:{bg:"F8FAFC",title:"334155",text:"1E293B",accent:"0F766E",soft:"E2E8F0",bar:"1E293B"},
+    warm:{bg:"FFFBF5",title:"7C2D12",text:"292524",accent:"B45309",soft:"FEF3C7",bar:"5C1F0A"},
+    contrast:{bg:"FFFFFF",title:"000000",text:"111111",accent:"C62828",soft:"EEEEEE",bar:"000000"}
+  };
+
+  function toast(m,e){var el=document.getElementById("toast");el.textContent=m;el.className="toast show"+(e?" err":"");clearTimeout(window._tt);window._tt=setTimeout(function(){el.className="toast"},2600)}
+  function showPage(n){document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});document.getElementById("page-"+n).classList.add("active");document.querySelectorAll(".ni").forEach(function(x){x.classList.toggle("active",x.getAttribute("data-p")===n)})}
+  function esc(t){return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+  /* ---- User media ---- */
+  function addUserFiles(files){
+    Array.prototype.forEach.call(files||[],function(f){
+      if(!f.type||f.type.indexOf("image")!==0) return;
+      var r=new FileReader();
+      r.onload=function(){
+        userMedia.push({dataUrl:r.result,name:f.name||"upload",source:"User upload",license:"User provided"});
+        renderUserThumbs();
+      };
+      r.readAsDataURL(f);
+    });
+  }
+  function renderUserThumbs(){
+    var box=document.getElementById("userThumbs");
+    box.innerHTML="";
+    userMedia.forEach(function(m,i){
+      var d=document.createElement("div");d.className="ut";
+      d.innerHTML='<img src="'+m.dataUrl+'" alt=""/><button type="button" data-i="'+i+'">×</button>';
+      box.appendChild(d);
+    });
+    box.querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){userMedia.splice(+b.getAttribute("data-i"),1);renderUserThumbs()};
+    });
+  }
+  document.getElementById("fileIn").onchange=function(e){addUserFiles(e.target.files);e.target.value=""};
+  document.getElementById("camIn").onchange=function(e){addUserFiles(e.target.files);e.target.value=""};
+
+  /* ---- Open media engines ---- */
+  function commonsSearch(q){
+    var url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&gsrsearch="+encodeURIComponent(q)+"&prop=imageinfo&iiprop=url|extmetadata|mime|size&iiurlwidth=800";
+    return fetch(url).then(function(r){return r.json()}).then(function(data){
+      var pages=(data.query&&data.query.pages)||{};
+      var out=[];
+      Object.keys(pages).forEach(function(k){
+        var p=pages[k], ii=p.imageinfo&&p.imageinfo[0];
+        if(!ii||!ii.url) return;
+        if(ii.mime&&ii.mime.indexOf("image")!==0) return;
+        var meta=ii.extmetadata||{};
+        var lic=(meta.LicenseShortName&&meta.LicenseShortName.value)||(meta.License&&meta.License.value)||"Commons";
+        var artist=(meta.Artist&&meta.Artist.value)||"";
+        artist=artist.replace(/<[^>]+>/g,"").slice(0,80);
+        out.push({url:ii.thumburl||ii.url,full:ii.url,source:"Wikimedia Commons",license:lic,artist:artist,title:p.title||q});
+      });
+      return out;
+    }).catch(function(){return[]});
+  }
+
+  function openverseSearch(q){
+    var url="https://api.openverse.org/v1/images/?q="+encodeURIComponent(q)+"&page_size=8&license_type=commercial,modification";
+    return fetch(url,{headers:{"Accept":"application/json"}}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(data){
+      return (data.results||[]).map(function(it){
+        return {url:it.thumbnail||it.url,full:it.url,source:"Openverse / "+(it.source||"CC"),license:it.license||"CC",artist:it.creator||"",title:it.title||q};
+      });
+    }).catch(function(){return[]});
+  }
+
+  function wikiLead(q){
+    var url="https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(q.replace(/ /g,"_"));
+    return fetch(url).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(d){
+      if(d.thumbnail&&d.thumbnail.source){
+        return [{url:d.thumbnail.source,full:(d.originalimage&&d.originalimage.source)||d.thumbnail.source,source:"Wikipedia",license:"See Wikipedia file page",artist:"",title:d.title||q}];
+      }
+      return [];
+    }).catch(function(){return[]});
+  }
+
+  function pickUnique(candidates){
+    for(var i=0;i<candidates.length;i++){
+      var c=candidates[i];
+      var key=c.full||c.url;
+      if(key&&!usedMediaUrls[key]){usedMediaUrls[key]=1;return c}
+    }
+    return null;
+  }
+
+  async function mediaForQuery(queries){
+    var all=[];
+    for(var i=0;i<queries.length;i++){
+      var q=queries[i];
+      var a=await commonsSearch(q);
+      all=all.concat(a);
+      if(all.length<3){var b=await openverseSearch(q);all=all.concat(b)}
+      if(all.length<2){var c=await wikiLead(q);all=all.concat(c)}
+      var hit=pickUnique(all);
+      if(hit) return hit;
+    }
+    return pickUnique(all);
+  }
+
+  /* ---- Content pools (unique slides up to 50) ---- */
+  function enzymePool(){
+    var titles=[
+      ["Industrial need for biocatalysts","need","enzyme industrial biocatalyst"],
+      ["Definition of enzyme immobilization","define","enzyme immobilization diagram"],
+      ["Design goals of immobilized biocatalysts","goals","biocatalyst reactor"],
+      ["Advantages of immobilization","compare","enzyme reuse continuous"],
+      ["Limitations and challenges","compare","diffusion limitation enzyme"],
+      ["Food industry applications","apps","glucose isomerase HFCS"],
+      ["Pharmaceutical applications","apps","antibiotic enzyme biocatalysis"],
+      ["Environmental and textile uses","apps","wastewater enzyme treatment"],
+      ["Support selection criteria","support","enzyme support matrix"],
+      ["Natural polymer supports","natural","alginate beads enzyme"],
+      ["Alginate and chitosan systems","natural","calcium alginate beads"],
+      ["Synthetic polymer supports","synthetic","polyacrylamide gel electrophoresis"],
+      ["Inorganic supports silica glass","inorganic","porous silica enzyme"],
+      ["Adsorption principle","adsorb","enzyme adsorption charcoal"],
+      ["Adsorption process variants","adsorb2","batch reactor enzyme"],
+      ["Adsorption strengths and limits","adsorb3","surface adsorption protein"],
+      ["Covalent bonding principle","covalent","covalent immobilization enzyme"],
+      ["Covalent coupling chemistries","covalent2","glutaraldehyde crosslink"],
+      ["Covalent bonding evaluation","covalent3","agarose chromatography beads"],
+      ["Entrapment principle","entrap","enzyme entrapment gel"],
+      ["Entrapment practical notes","entrap2","alginate hydrogel beads"],
+      ["Cross-linking carrier-free","cross","CLEA cross linked enzyme"],
+      ["Encapsulation methods","encap","microcapsule enzyme membrane"],
+      ["Whole-cell immobilization","cells","immobilized yeast cells"],
+      ["Excipients and stabilizers","excip","protein stabilizer cryoprotectant"],
+      ["Packed-bed reactors","reactor","packed bed bioreactor"],
+      ["Fluidized bed and membrane reactors","reactor","fluidized bed reactor"],
+      ["Kinetics and mass transfer","metrics","Michaelis Menten kinetics graph"],
+      ["Operational stability metrics","metrics","enzyme half life activity"],
+      ["Current research nanomaterials","trends","MOF metal organic framework"],
+      ["Stimuli-responsive supports","trends","smart polymer hydrogel"],
+      ["Cascade multi-enzyme systems","trends","multi enzyme cascade"],
+      ["Quality control of biocatalysts","metrics","enzyme assay laboratory"],
+      ["Teaching summary — methods map","summary","enzyme immobilization methods"],
+      ["Case study glucose isomerase","apps","corn syrup industrial"],
+      ["Case study lactase immobilization","apps","lactose free milk"],
+      ["Biosensor applications","apps","glucose biosensor electrode"],
+      ["Safety and regulatory notes","summary","food enzyme regulation"],
+      ["Scale-up considerations","reactor","industrial fermenter bioreactor"],
+      ["Compare physical vs chemical methods","compare","physical chemical immobilization"],
+      ["Pore size and leakage","entrap","porous membrane filtration"],
+      ["Surface chemistry of supports","support","silica surface chemistry"],
+      ["Glutaraldehyde chemistry care","cross","glutaraldehyde molecule"],
+      ["Cell immobilization vs pure enzyme","cells","biofilm reactor"],
+      ["Cost structure of immobilization","goals","process economics chart"],
+      ["Green chemistry angle","trends","green chemistry biocatalysis"],
+      ["Future directions continuous flow","trends","continuous flow chemistry"],
+      ["Exam focus definitions","summary","microbiology textbook"],
+      ["Exam focus method choice","summary","laboratory pipette microbiology"],
+      ["Integrated research synthesis","summary","scientific research laboratory"]
+    ];
+    return titles.map(function(row,idx){
+      return {
+        type: idx===3||idx===4||idx===15||idx===18||idx===39?"twocol":"content",
+        title: row[0],
+        diagram: row[1],
+        imgQuery: row[2],
+        bullets: bulletsFor(row[0], row[1])
+      };
+    });
+  }
+
+  function bulletsFor(title, kind){
+    var map={
+      need:["Free enzymes are costly at industrial scale","Recovery after batch reaction is rarely economical","Immobilization enables reuse and continuous processing","Product streams stay freer of residual catalyst"],
+      define:["Enzyme confined in a defined region or support","Catalytic activity retained after immobilization","Usable repeatedly or continuously","Core strategy in industrial biotechnology"],
+      goals:["High retained activity after immobilization","Operational stability to pH, temperature, solvents","Minimal leakage into product","Adequate mass transfer for substrates"],
+      compare:["Reuse lowers enzyme cost per product unit","Separation of product is simplified","Diffusion limits can reduce apparent activity","Chemical coupling may damage active sites"],
+      apps:["Food processing and sweetener production","Semi-synthetic pharmaceuticals","Effluent treatment and textiles","Biosensors and diagnostics"],
+      support:["Mechanical strength for chosen reactor","Chemical inertness and controlled porosity","Compatible surface chemistry","Cost matched to product value"],
+      natural:["Alginate, chitosan, collagen, gelatin","Carrageenan and cellulose matrices","Generally mild and biocompatible","Pore size depends on polymer concentration"],
+      synthetic:["Polyacrylamide and acrylic copolymers","Functionalized PEG and PVC systems","Ion-exchange resins for charge binding","Tunable cross-link density"],
+      inorganic:["Silica and controlled-pore glass","Ceramics, zeolites, celite","Activated carbon for adsorption","High mechanical robustness"],
+      adsorb:["Oldest practical immobilization style","Weak forces: ionic, H-bond, hydrophobic","Carriers include charcoal, clays, resins","Simple and reagent-light"],
+      adsorb2:["Static contact or dynamic mixing","Reactor loading of pre-packed carriers","Electrodeposition variants in research","Wash step removes unbound enzyme"],
+      adsorb3:["Mild on protein structure","Risk of desorption with pH/T shifts","Low material cost","Efficiency varies by surface"],
+      covalent:["Stable covalent enzyme–support bonds","Reactive groups: amino, carboxyl, thiol","Agarose, cellulose, glass, silica supports","Low leakage when chemistry succeeds"],
+      covalent2:["Diazotization and peptide-type coupling","Glutaraldehyde and epoxy activations","Protect active site during coupling","Commercial pre-activated resins available"],
+      covalent3:["Strong operational hold","Possible conformational damage","Wide support chemistry","Optimize to retain activity"],
+      entrap:["Enzyme trapped in polymer network","Substrates diffuse; enzyme retained","Alginate, agar, polyacrylamide gels","Beads, fibers, membranes"],
+      entrap2:["Mild lab methods are fast","Diffusion path length limits rates","Small enzymes may slowly leak","Tune polymer % for pore size"],
+      cross:["Carrier-free enzyme–enzyme links","CLEAs used in industry","High catalyst density","Reagent excess can denature protein"],
+      encap:["Semi-permeable membrane around enzyme","Nylon and polymer interfacial systems","High loading possible","Only small substrates cross well"],
+      cells:["Avoids costly enzyme purification","Multi-enzyme pathways in one particle","Side reactions from other cell enzymes","Same method families as pure enzymes"],
+      excip:["Stabilizers reduce denaturation","Must suit food or technical grade","Chosen for storage and process stress","Case-by-case optimization"],
+      reactor:["Packed beds for high conversion","Fluidized beds lower pressure drop","Membrane reactors retain catalyst","Match kinetics to particle mechanics"],
+      metrics:["Retained activity vs free enzyme","Operational half-life","Product per enzyme per time","Leakage assays in product"],
+      trends:["MOFs, nanoparticles, smart polymers","Cascade multi-enzyme designs","Continuous-flow biocatalysis","Greener activation chemistries"],
+      summary:["Method choice balances mildness and hold","Support class must match industry rules","Diffusion and activity trade-offs matter","Industrial cases guide teaching examples"]
+    };
+    return map[kind]||["Key concept for "+title,"Link to laboratory practice","Industrial or clinical relevance","Points for examination focus"];
+  }
+
+  function genericPool(topic){
+    var seeds=["Introduction","Definitions","Classification","Mechanisms","Laboratory methods","Culture characteristics","Morphology","Staining reactions","Pathogenesis","Virulence factors","Clinical features","Diagnosis","Treatment principles","Epidemiology","Prevention","Industrial relevance","Quality control","Biosafety","Current research","Case discussion","Compare and contrast","Summary map","Exam focus A","Exam focus B","Applied problem"];
+    var out=[];
+    for(var i=0;i<50;i++){
+      var s=seeds[i%seeds.length]+(i>=seeds.length?" ("+(Math.floor(i/seeds.length)+1)+")":"");
+      out.push({type:"content",title:topic+" — "+s,diagram:"summary",imgQuery:topic+" microbiology "+s,bullets:[
+        "Core idea related to "+s.toLowerCase(),
+        "Microbiological basis and terminology",
+        "Laboratory or clinical connection",
+        "Point for discussion or assessment"
+      ]});
+    }
+    return out;
+  }
+
+  function formalSlides(topic){
+    return {
+      title:{type:"title",title:topic.toUpperCase(),subtitle:"MICROBIOLOGY · PREMIUM LECTURE DECK"},
+      outcomes:{type:"outcomes",title:"Learning Outcomes",bullets:[
+        "Explain core concepts of "+topic+" at the selected academic level",
+        "Differentiate major methods, structures, or mechanisms",
+        "Connect theory to laboratory and applied practice",
+        "Use figures and open sources with correct attribution"
+      ]},
+      refs:{type:"refs",title:"References & Media Sources",bullets:[
+        "Wikimedia Commons — open scientific images (licence per file)",
+        "Openverse — Creative Commons media index",
+        "Wikipedia educational summaries (where used)",
+        "Course materials — "+(meta.course||"MIC"),
+        "User-supplied laboratory images (if any)"
+      ]},
+      thanks:{type:"thanks",title:"Thank You"}
+    };
+  }
+
+  function buildContent(topic,n){
+    var t=(topic||"").toLowerCase();
+    var pool=(t.indexOf("immobil")>=0||t.indexOf("enzyme")>=0)?enzymePool():genericPool(topic);
+    n=Math.max(5,Math.min(50,parseInt(n,10)||25));
+    var content=pool.slice(0,n);
+    while(content.length<n){
+      content.push({type:"content",title:topic+" — Extended point "+(content.length+1),diagram:"summary",imgQuery:topic+" microbiology laboratory",bullets:["Extended research angle","Add primary literature in notes","Link to practical class","Assessment-style takeaway"]});
+    }
+    // twocol fills
+    content.forEach(function(s){
+      if(s.type==="twocol"){
+        s.leftTitle="Key strengths";s.rightTitle="Key limits";
+        s.left=s.bullets.slice(0,3);s.right=["Diffusion or cost limits","Optimization required","Context-specific choice"];
+      }
+    });
+    return content;
+  }
+
+  async function attachMedia(content){
+    usedMediaUrls={};
+    var userIdx=0;
+    var fetchOn=document.getElementById("fetchMedia").checked;
+    for(var i=0;i<content.length;i++){
+      var s=content[i];
+      // User media first (unique)
+      if(userIdx<userMedia.length){
+        s.media=userMedia[userIdx++];
+        s.mediaKind="user";
+        continue;
+      }
+      if(!fetchOn){s.media=null;s.mediaKind="diagram";continue}
+      toast("Media "+(i+1)+"/"+content.length+"…");
+      var queries=[s.imgQuery, meta.topic+" "+s.title, meta.topic+" microbiology"];
+      var hit=await mediaForQuery(queries);
+      if(hit){s.media=hit;s.mediaKind="open"}
+      else {s.media=null;s.mediaKind="diagram"}
+      // small delay to respect APIs
+      await new Promise(function(res){setTimeout(res,120)});
+    }
+    return content;
+  }
+
+  async function generate(){
+    var topic=(document.getElementById("topic").value||"").trim();
+    if(!topic){toast("Enter a topic",true);return}
+    meta={
+      topic:topic,
+      course:document.getElementById("course").value||"MIC-4511",
+      preparer:document.getElementById("preparer").value||"Ms. Noor",
+      dept:document.getElementById("dept").value||"Department of Microbiology",
+      level:document.getElementById("level").value,
+      theme:document.getElementById("theme").value,
+      layout:(document.getElementById("layout")&&document.getElementById("layout").value)||"lecture",
+      font:document.getElementById("font").value,
+      n:parseInt(document.getElementById("slideN").value,10)||25
+    };
+    var prog=document.getElementById("prog"),bar=document.getElementById("progBar");
+    prog.classList.add("on");bar.style.width="15%";
+    try{
+      var content=buildContent(topic,meta.n);
+      bar.style.width="35%";
+      content=await attachMedia(content);
+      bar.style.width="85%";
+      var f=formalSlides(topic);
+      deck=[f.title,f.outcomes].concat(content).concat([f.refs,f.thanks]);
+      bar.style.width="100%";
+      setTimeout(function(){
+        prog.classList.remove("on");bar.style.width="0";
+        renderPreview();showPage("preview");
+        var mc=deck.filter(function(s){return s.media}).length;
+        toast("Deck ready · "+meta.n+" research slides · "+mc+" media");
+      },200);
+    }catch(err){
+      prog.classList.remove("on");
+      toast("Generation error — try again",true);
+      console.error(err);
+    }
+  }
+
+  function renderPreview(){
+    var research=deck.filter(function(s){return ["title","outcomes","refs","thanks"].indexOf(s.type)<0});
+    document.getElementById("slideCount").textContent=deck.length;
+    document.getElementById("contentCount").textContent=research.length;
+    document.getElementById("mediaCount").textContent=deck.filter(function(s){return s.media}).length;
+    var html="";
+    deck.forEach(function(s,i){
+      html+='<div class="ps"><span class="n">'+(i+1)+'</span><h3>'+esc(s.title)+'</h3>';
+      if(s.bullets){html+="<ul>";s.bullets.forEach(function(b){html+="<li>"+esc(b)+"</li>"});html+="</ul>"}
+      if(s.media){
+        html+='<div class="media"><img src="'+esc(s.media.dataUrl||s.media.url)+'" alt=""/></div>';
+        html+='<div class="attr">'+esc(s.media.source||"")+" · "+esc(s.media.license||"")+(s.media.artist?(" · "+esc(s.media.artist)):"")+"</div>";
+      } else if(s.diagram){
+        html+='<div class="hint">Vector scientific diagram panel in export ('+esc(s.diagram)+')</div>';
+      }
+      html+='<div class="sf"><span><img src="'+LOGO+'" alt=""/> JUW</span><span>🔬 Slides by Noor</span></div></div>';
+    });
+    document.getElementById("previewList").innerHTML=html;
+  }
+
+  function addBrandFooter(pptx,slide,th){
+    try{slide.addImage({path:LOGO,x:0.28,y:5.05,w:0.4,h:0.4})}catch(e){}
+    slide.addText("🔬",{x:8.55,y:4.95,w:0.4,h:0.28,fontSize:14});
+    slide.addText("Slides by Noor",{x:7.2,y:5.22,w:2.5,h:0.2,fontSize:9,color:th.text,fontFace:meta.font||"Calibri",align:"right",transparency:25});
+    slide.addText((meta.course||"")+" · "+(meta.dept||""),{x:0.8,y:5.28,w:5.8,h:0.16,fontSize:8,color:th.text,fontFace:meta.font||"Calibri",transparency:40});
+  }
+
+  function drawDiagram(pptx,slide,kind,th){
+    var x0=6.9,y0=1.05,w=2.8,h=3.5;
+    slide.addShape(pptx.ShapeType.roundRect,{x:x0,y:y0,w:w,h:h,fill:{color:th.soft},rectRadius:0.08,line:{color:th.title,width:1}});
+    slide.addText("FIGURE",{x:x0+0.1,y:y0+0.08,w:w-0.2,h:0.2,fontSize:9,bold:true,color:th.title,align:"center",fontFace:meta.font||"Calibri"});
+    var boxes=[{t:"Input",y:0.45},{t:"Process",y:1.35},{t:"Result",y:2.25}];
+    if(kind==="methods"||kind==="adsorb"||kind==="covalent"||kind==="entrap") boxes=[{t:"Enzyme",y:0.45},{t:"Support",y:1.35},{t:"Immobilized",y:2.25}];
+    if(kind==="reactor") boxes=[{t:"Feed",y:0.45},{t:"Reactor",y:1.35},{t:"Product",y:2.25}];
+    if(kind==="apps") boxes=[{t:"Food",y:0.4},{t:"Pharma",y:1.15},{t:"Environment",y:1.9},{t:"Sensors",y:2.65}];
+    boxes.forEach(function(b,i){
+      slide.addShape(pptx.ShapeType.roundRect,{x:x0+0.35,y:y0+0.4+b.y,w:w-0.7,h:0.5,fill:{color:th.title},rectRadius:0.06});
+      slide.addText(b.t,{x:x0+0.35,y:y0+0.42+b.y,w:w-0.7,h:0.45,fontSize:11,color:"FFFFFF",align:"center",valign:"middle",fontFace:meta.font||"Calibri"});
+      if(i<boxes.length-1) slide.addShape(pptx.ShapeType.downArrow,{x:x0+w/2-0.12,y:y0+0.95+b.y,w:0.24,h:0.28,fill:{color:th.accent}});
+    });
+  }
+
+  async function exportPptx(){
+    if(!deck.length){toast("Generate first",true);return}
+    if(typeof PptxGenJS==="undefined"){toast("Need network for PPTX library",true);return}
+    toast("Building PPTX…");
+    var pptx=new PptxGenJS();
+    pptx.defineLayout({name:"LAYOUT_16x9",width:10,height:5.625});
+    pptx.layout="LAYOUT_16x9";
+    pptx.author=meta.preparer;pptx.title=meta.topic;
+    var th=THEMES[meta.theme]||THEMES.academic;
+    var font=meta.font||"Calibri";
+
+    for(var si=0;si<deck.length;si++){
+      var s=deck[si];
+      var slide=pptx.addSlide();
+      slide.background={color:th.bg};
+      if(s.type==="title"){
+        slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:5.625,fill:{color:th.title}});
+        slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.16,h:5.625,fill:{color:th.accent}});
+        slide.addText(s.title,{x:0.5,y:1.6,w:7.3,h:1,fontSize:26,bold:true,color:"FFFFFF",fontFace:font});
+        if(s.subtitle) slide.addText(s.subtitle,{x:0.5,y:2.6,w:7.3,h:0.35,fontSize:13,color:"FFFFFF",fontFace:font});
+        slide.addText(meta.course+" · "+meta.preparer,{x:0.5,y:3.25,w:7.3,h:0.28,fontSize:12,color:"FFFFFF",fontFace:font});
+        slide.addText(meta.dept,{x:0.5,y:3.55,w:7.3,h:0.28,fontSize:12,color:"FFFFFF",fontFace:font});
+        try{slide.addImage({path:LOGO,x:0.5,y:4.55,w:0.7,h:0.7})}catch(e){}
+        slide.addText("🔬  Slides by Noor",{x:6.5,y:5.05,w:3.2,h:0.25,fontSize:11,color:"FFFFFF",fontFace:font,align:"right"});
+        continue;
+      }
+      if(s.type==="thanks"){
+        slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:5.625,fill:{color:th.title}});
+        slide.addText("Thank You",{x:0.5,y:2.15,w:7.5,h:0.7,fontSize:34,bold:true,color:"FFFFFF",fontFace:font});
+        slide.addText(meta.course+" · "+meta.dept,{x:0.5,y:2.95,w:7.5,h:0.35,fontSize:13,color:"FFFFFF",fontFace:font});
+        try{slide.addImage({path:LOGO,x:0.5,y:4.55,w:0.7,h:0.7})}catch(e){}
+        slide.addText("🔬  Slides by Noor",{x:6.5,y:5.05,w:3.2,h:0.25,fontSize:11,color:"FFFFFF",fontFace:font,align:"right"});
+        continue;
+      }
+      var _bh=(meta.layout==="seminar")?0.88:0.7;
+      slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:_bh,fill:{color:th.title}});
+      slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.12,h:_bh,fill:{color:th.accent}});
+      slide.addText(s.title,{x:0.35,y:0.12,w:9.3,h:_bh-0.2,fontSize:lay==="seminar"?18:16,bold:true,color:"FFFFFF",fontFace:font,valign:"middle"});
+
+      var hasMedia=!!(s.media&&(s.media.dataUrl||s.media.url));
+      var lay=meta.layout||"lecture";
+      var textW=9.2, imgX=6.85, imgW=2.85, imgH=2.85;
+      if(lay==="split"&&(hasMedia||s.diagram)){ textW=4.6; imgX=5.2; imgW=4.4; imgH=3.4; }
+      else if(lay==="focus"&&(hasMedia||s.diagram)){ textW=4.2; imgX=4.9; imgW=4.7; imgH=3.5; }
+      else if(hasMedia||s.diagram){ textW=6.35; }
+      var barH=lay==="seminar"?0.88:0.7;
+
+      if(s.type==="twocol"){
+        slide.addShape(pptx.ShapeType.roundRect,{x:0.3,y:1.0,w:4.5,h:3.7,fill:{color:th.soft},rectRadius:0.08});
+        slide.addShape(pptx.ShapeType.roundRect,{x:5.2,y:1.0,w:4.5,h:3.7,fill:{color:th.soft},rectRadius:0.08});
+        slide.addText(s.leftTitle||"",{x:0.45,y:1.12,w:4.2,h:0.3,fontSize:13,bold:true,color:th.accent,fontFace:font});
+        slide.addText(s.rightTitle||"",{x:5.35,y:1.12,w:4.2,h:0.3,fontSize:13,bold:true,color:th.accent,fontFace:font});
+        slide.addText((s.left||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:0.45,y:1.5,w:4.2,h:3.0,fontSize:12,color:th.text,fontFace:font,valign:"top"});
+        slide.addText((s.right||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:5.35,y:1.5,w:4.2,h:3.0,fontSize:12,color:th.text,fontFace:font,valign:"top"});
+      } else {
+        slide.addText((s.bullets||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:0.35,y:0.95,w:textW,h:3.5,fontSize:13,color:th.text,fontFace:font,valign:"top"});
+        if(hasMedia){
+          try{
+            var src=s.media.dataUrl||s.media.url;
+            slide.addImage({path:src,x:imgX,y:1.0,w:imgW,h:imgH});
+            slide.addText((s.media.source||"")+" · "+(s.media.license||""),{x:imgX,y:1.05+imgH,w:imgW,h:0.3,fontSize:7,color:th.text,fontFace:font});
+          }catch(e){drawDiagram(pptx,slide,s.diagram||"summary",th)}
+        } else if(s.diagram) drawDiagram(pptx,slide,s.diagram,th);
+      }
+      addBrandFooter(pptx,slide,th);
+    }
+    var fname=(meta.topic||"JUW-MicroSlides").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40);
+    await pptx.writeFile({fileName:fname+".pptx"});
+    toast("PPTX downloaded");
+    window._lastPptxName=fname+".pptx";
+  }
+
+  function exportPdf(){
+    if(!deck.length){toast("Generate first",true);return}
+    if(!window.jspdf||!window.jspdf.jsPDF){toast("Need network for PDF library",true);return}
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
+    var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
+    var th=THEMES[meta.theme]||THEMES.academic;
+    function rgb(hex){hex=hex.replace("#","");return{r:parseInt(hex.slice(0,2),16),g:parseInt(hex.slice(2,4),16),b:parseInt(hex.slice(4,6),16)}}
+    var tc=rgb(th.title),tx=rgb(th.text);
+    deck.forEach(function(s,idx){
+      if(idx) doc.addPage();
+      if(s.type==="title"||s.type==="thanks"){
+        doc.setFillColor(tc.r,tc.g,tc.b);doc.rect(0,0,W,H,"F");
+        doc.setTextColor(255,255,255);doc.setFontSize(26);doc.text(s.title||"Thank You",40,H/2-10);
+        doc.setFontSize(11);doc.text(meta.course+" · "+meta.preparer,40,H/2+20);
+        doc.text("Slides by Noor",W-130,H-24);
+      } else {
+        doc.setFillColor(tc.r,tc.g,tc.b);doc.rect(0,0,W,40,"F");
+        doc.setTextColor(255,255,255);doc.setFontSize(14);doc.text(s.title||"",28,26);
+        doc.setTextColor(tx.r,tx.g,tx.b);doc.setFontSize(11);
+        var y=58;(s.bullets||[]).forEach(function(b){var w=doc.splitTextToSize("• "+b,W-60);doc.text(w,28,y);y+=w.length*13+4});
+        if(s.media) {doc.setFontSize(8);doc.setTextColor(100);doc.text((s.media.source||"")+" · "+(s.media.license||""),28,H-36)}
+        doc.setFontSize(8);doc.setTextColor(120);doc.text("Slides by Noor · "+(meta.course||""),28,H-18);
+      }
+    });
+    var fname=(meta.topic||"JUW-MicroSlides").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40);
+    doc.save(fname+".pdf");toast("PDF downloaded");
+  }
+
+  async function shareDeck(){
+    toast("Export PPTX then share from your files app, or use Share after download on supported browsers");
+    await exportPptx();
+  }
+
+  document.getElementById("btnGen").onclick=generate;
+  document.getElementById("btnPptx").onclick=function(){exportPptx()};
+  document.getElementById("btnPdf").onclick=exportPdf;
+  document.getElementById("btnShare").onclick=shareDeck;
+  document.getElementById("btnBack").onclick=function(){showPage("home")};
+  document.querySelectorAll(".ni").forEach(function(n){n.onclick=function(){showPage(n.getAttribute("data-p"))}});
+  document.querySelectorAll("#topicChips .chip").forEach(function(c){c.onclick=function(){document.getElementById("topic").value=c.getAttribute("data-t");document.querySelectorAll("#topicChips .chip").forEach(function(x){x.classList.remove("on")});c.classList.add("on")}});
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function(){});
+})();
+</script>
+</body>
+</html>
