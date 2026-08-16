@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JUW-MicroSlides — Editor</title>
+<meta name="theme-color" content="#0E1A2B">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="appshell">
+
+  <!-- ===================== Top App Bar ===================== -->
+  <header class="appbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="iconbtn" id="btn-toggle-rail" title="Slides" style="display:none;">☰</button>
+      <div class="appbar__brand"><img src="icons/icon-192.png" alt=""> JUW-MicroSlides</div>
+    </div>
+    <input id="deck-title-input" aria-label="Deck title" style="flex:1;max-width:320px;margin:0 12px;background:transparent;border:1px solid var(--ink-700);color:#fff;padding:8px 12px;border-radius:8px;font-size:0.9rem;">
+    <div class="appbar__actions">
+      <span class="keybadge keybadge--off" id="key-badge">No API key</span>
+      <button class="iconbtn" id="btn-share">Share</button>
+      <button class="iconbtn" id="btn-export-pdf">Download PDF</button>
+      <button class="iconbtn iconbtn--accent" id="btn-export-pptx">Download PPTX</button>
+      <button class="iconbtn" id="btn-settings" title="Settings">⚙</button>
+      <button class="iconbtn" id="btn-toggle-inspector" title="Panel" style="display:none;">☷</button>
+    </div>
+  </header>
+
+  <div class="appbody">
+
+    <!-- ===================== Left Rail: slide list ===================== -->
+    <aside class="rail" id="rail">
+      <div class="rail__head">
+        <h3>Slides</h3>
+        <span class="slidecount" id="slidecount">0 slides</span>
+      </div>
+      <div class="slidelist" id="slidelist"></div>
+      <button class="addslide" id="btn-add-slide">+ Add slide</button>
+      <p style="font-size:0.72rem;color:var(--text-muted);margin-top:14px;line-height:1.5;">
+        No slide limit, no daily limit. Drag to reorder. Delete with ✕.
+      </p>
+    </aside>
+
+    <!-- ===================== Center: generator + stage ===================== -->
+    <main class="canvaswrap">
+
+      <section class="generator">
+        <h2>Generate a deck</h2>
+        <p>Grounded in PubMed citations, illustrated from Wikimedia Commons / Openverse / CDC PHIL.</p>
+        <div class="generator__row">
+          <div class="field" style="flex:2;">
+            <label for="gen-topic">Topic</label>
+            <input id="gen-topic" type="text" placeholder="e.g. Clostridioides difficile pathogenesis">
+          </div>
+          <div class="field">
+            <label for="gen-level">Level</label>
+            <select id="gen-level">
+              <option>Undergraduate</option>
+              <option>Graduate</option>
+              <option>Medical school</option>
+              <option>PhD / research seminar</option>
+            </select>
+          </div>
+          <div class="field" style="max-width:140px;">
+            <label for="gen-count">Slide count</label>
+            <input id="gen-count" type="number" min="1" placeholder="Auto">
+          </div>
+        </div>
+        <button class="btn btn--primary" id="btn-generate">Generate deck</button>
+      </section>
+
+      <div class="stagebar">
+        <div class="stagebar__group">
+          <label for="stagebar-layout" style="font-size:0.78rem;color:var(--text-muted);">Layout:</label>
+          <select id="stagebar-layout" class="chip-select"></select>
+        </div>
+      </div>
+
+      <div class="stage" id="stage" data-layout="blank"></div>
+      <input type="file" id="cover-badge-input" accept="image/*" class="hidden">
+
+    </main>
+
+    <!-- ===================== Right Inspector ===================== -->
+    <aside class="inspector" id="inspector">
+      <div class="tabs">
+        <button class="tab active" data-tab="pubmed">PubMed</button>
+        <button class="tab" data-tab="media">Media</button>
+        <button class="tab" data-tab="notes">Notes</button>
+        <button class="tab" data-tab="design">Design</button>
+        <button class="tab" data-tab="copilot">Copilot</button>
+      </div>
+
+      <div class="tabpanel active" id="panel-pubmed">
+        <div class="panel-block">
+          <h4>Search PubMed</h4>
+          <div style="display:flex;gap:6px;">
+            <input id="pubmed-query" type="text" placeholder="e.g. MRSA virulence factors" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border-hair);">
+            <button class="iconbtn" style="background:var(--ink-900);color:#fff;" id="btn-pubmed-search">Go</button>
+          </div>
+        </div>
+        <div id="pubmed-results"></div>
+      </div>
+
+      <div class="tabpanel" id="panel-media">
+        <div class="panel-block">
+          <h4>Search diagrams / micrographs / GIFs</h4>
+          <div style="display:flex;gap:6px;">
+            <input id="media-query" type="text" placeholder="e.g. Gram stain E. coli" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border-hair);">
+            <button class="iconbtn" style="background:var(--ink-900);color:#fff;" id="btn-media-search">Go</button>
+          </div>
+          <p style="font-size:0.68rem;color:var(--text-muted);margin:8px 0 0;">Sources: Wikimedia Commons, Openverse, Wikipedia. All free/CC — attribution shown automatically.</p>
+        </div>
+        <div id="media-results"></div>
+        <div class="panel-block">
+          <h4>Your own media</h4>
+          <div class="uploadzone" id="upload-zone">Click to upload an image for this slide</div>
+          <input type="file" id="upload-input" accept="image/*" class="hidden">
+        </div>
+      </div>
+
+      <div class="tabpanel" id="panel-notes">
+        <div class="panel-block notesbox">
+          <h4>Speaker notes for this slide</h4>
+          <textarea id="notes-textarea" placeholder="What you'll say aloud when presenting this slide…"></textarea>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="panel-design">
+        <div class="panel-block">
+          <div class="design-row">
+            <label for="design-font">Font pair</label>
+            <select id="design-font"></select>
+          </div>
+          <div class="design-row">
+            <label for="design-size">Font size (deck-wide)</label>
+            <input id="design-size" type="range" min="0.8" max="1.4" step="0.05" value="1">
+          </div>
+          <div class="design-row">
+            <label>Accent palette</label>
+            <div class="swatchrow" id="design-swatches"></div>
+          </div>
+          <p style="font-size:0.68rem;color:var(--text-muted);margin:4px 0 0;">Change the layout of the current slide from the dropdown above the stage — 8 layouts available.</p>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="panel-copilot">
+        <div class="panel-block" style="display:flex;flex-direction:column;height:340px;">
+          <h4>AI Copilot</h4>
+          <div id="copilot-log" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+          <textarea id="copilot-input" placeholder="Ask a question, or type an instruction like “make this slide more clinical”…" style="min-height:56px;padding:8px;border-radius:8px;border:1px solid var(--border-hair);font-size:0.85rem;"></textarea>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button class="iconbtn" style="flex:1;background:var(--ink-900);color:#fff;" id="btn-copilot-ask">Ask</button>
+            <button class="iconbtn iconbtn--accent" style="flex:1;" id="btn-copilot-refine">Revise this slide</button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<!-- ===================== Settings modal ===================== -->
+<div class="hidden" id="settings-modal" style="position:fixed;inset:0;background:rgba(14,26,43,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--paper-0);border-radius:var(--radius-md);padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow-2);">
+    <h3 style="font-family:var(--font-display);margin:0 0 6px;">Settings</h3>
+    <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 16px;">Keys are stored only in this browser's local storage — never sent anywhere but Anthropic/NCBI directly.</p>
+    <div class="field" style="margin-bottom:12px;">
+      <label for="anthropic-key-input">Anthropic API key (required for AI generation)</label>
+      <input id="anthropic-key-input" type="password" placeholder="sk-ant-...">
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label for="ncbi-key-input">NCBI API key (optional — raises PubMed rate limit)</label>
+      <input id="ncbi-key-input" type="password" placeholder="optional">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn--ghost" id="settings-close">Cancel</button>
+      <button class="btn btn--primary" id="settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export libraries (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgenjs.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="js/config.js"></script>
+<script src="js/pubmed.js"></script>
+<script src="js/media.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/deck-model.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/export-pptx.js"></script>
+<script src="js/export-pdf.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+// Show mobile rail/inspector toggles only on small screens
+function syncMobileToggles(){
+  const isMobile = window.innerWidth <= 1000;
+  document.getElementById('btn-toggle-rail').style.display = isMobile ? 'inline-flex' : 'none';
+  document.getElementById('btn-toggle-inspector').style.display = isMobile ? 'inline-flex' : 'none';
+}
+syncMobileToggles();
+window.addEventListener('resize', syncMobileToggles);
+</script>
+
+</body>
+</html>
