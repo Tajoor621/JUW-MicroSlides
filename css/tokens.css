@@ -1,0 +1,46 @@
+/* ============================================================
+   JUW-MicroSlides — Design Tokens
+   Signature: Gram-stain palette (crystal violet + safranin)
+   on an academic-journal paper background.
+   ============================================================ */
+:root{
+  --ink-900:#0E1A2B;
+  --ink-800:#132038;
+  --ink-700:#1D2E4A;
+  --paper-0:#F5F3EE;
+  --paper-1:#EDEAE1;
+  --violet-600:#5B3A9E;
+  --violet-500:#7A56C9;
+  --violet-100:#EFE8FB;
+  --safranin-600:#C13B2C;
+  --safranin-500:#E8604C;
+  --safranin-100:#FBE6E2;
+  --text-ink:#14202F;
+  --text-muted:#5B6472;
+  --text-onDark:#F5F3EE;
+  --success:#2E7D5B;
+  --border-hair:#DAD5C8;
+
+  --font-display:'Source Serif 4', Georgia, serif;
+  --font-body:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono:'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  --radius-sm:8px;
+  --radius-md:14px;
+  --radius-lg:24px;
+  --shadow-1:0 1px 2px rgba(14,26,43,0.06), 0 8px 24px rgba(14,26,43,0.06);
+  --shadow-2:0 4px 12px rgba(14,26,43,0.10), 0 16px 40px rgba(14,26,43,0.10);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;font-family:var(--font-body);color:var(--text-ink);background:var(--paper-0);}
+img{max-width:100%;display:block;}
+a{color:inherit;}
+button{font-family:inherit;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+}
+
+:focus-visible{outline:3px solid var(--violet-500); outline-offset:2px;}
