@@ -4,7 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#1E4B8F"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
 <title>JUW MicroSlides</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="assets/icon-192x192.png"/>
@@ -22,7 +21,7 @@ body{font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--
 .card h2{font-size:11px;color:var(--p);margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase}
 label{display:block;font-size:11px;font-weight:600;color:var(--m);margin:8px 0 3px}
 input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--b);border-radius:8px;font-size:14px;font-family:inherit}
-textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+textarea{min-height:56px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn{display:block;width:100%;padding:12px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;font-family:inherit}
 .btn-p{background:var(--p);color:#fff}.btn-a{background:var(--a);color:#fff}.btn-g{background:#E8EEF6;color:var(--t)}
 .btn-sm{display:inline-block;width:auto;padding:8px 12px;font-size:12px;margin:3px}
@@ -42,8 +41,10 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
 .ps{background:#fff;border:1px solid var(--b);border-radius:8px;padding:10px;margin-bottom:8px;position:relative}
 .ps .n{position:absolute;top:6px;left:6px;background:var(--p);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
 .ps h3{font-size:13px;margin:2px 28px 6px 0;color:var(--pd)}
-.ps ul{margin-left:16px;font-size:11px}.ps .media img{max-width:100%;max-height:140px;border-radius:6px;margin-top:6px}
-.ps .attr{font-size:8px;color:var(--m)}.sf{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--b);font-size:9px;color:var(--m)}
+.ps ul{margin-left:16px;font-size:11px}
+.ps .media img{max-width:100%;max-height:120px;border-radius:6px;margin-top:6px}
+.ps .attr{font-size:8px;color:var(--m)}
+.sf{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--b);font-size:9px;color:var(--m)}
 .sf img{width:24px;height:24px;border-radius:50%}
 .user-thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .user-thumbs .ut{position:relative;width:64px;height:64px}
@@ -55,45 +56,52 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
 <div id="toast" class="toast"></div>
 <div class="header">
   <img src="assets/logo-juw.jpg" alt="JUW"/>
-  <div><h1>JUW MicroSlides</h1><p>University Microbiology decks · Slides by Noor</p></div>
+  <div><h1>JUW MicroSlides</h1><p>University Microbiology · Slides by Noor</p></div>
 </div>
 
 <div id="page-home" class="page active container">
   <div class="card">
     <h2>Create deck</h2>
-    <label>Topic</label>
-    <input id="topic" value="Enzyme Immobilization"/>
+    <label>Topic (full lecture title)</label>
+    <textarea id="topic" rows="3" placeholder="e.g. Enzyme Immobilization — or Genome architecture in bacteria…">Enzyme Immobilization</textarea>
     <div class="chips" id="topicChips">
       <span class="chip on" data-t="Enzyme Immobilization">Enzyme Immobilization</span>
+      <span class="chip" data-t="Genome Architecture in Bacteria, Archaea and Fungi">Genome Architecture</span>
       <span class="chip" data-t="Sterilization Methods">Sterilization</span>
       <span class="chip" data-t="Gram Staining">Gram Stain</span>
-      <span class="chip" data-t="Bacterial Growth Curve">Growth Curve</span>
     </div>
     <div class="row">
-      <div><label>Course</label><input id="course" value="MIC-4511"/></div>
-      <div><label>Research slides</label><input id="slideN" type="number" min="8" max="40" value="22"/></div>
+      <div><label>Course code</label><input id="course" value="MIC-4511"/></div>
+      <div><label>Research slides</label><input id="slideN" type="number" min="8" max="35" value="20"/></div>
     </div>
     <div class="row">
       <div><label>Prepared by</label><input id="preparer" value="Ms. Noor"/></div>
-      <div><label>Department</label><input id="dept" value="Department of Microbiology"/></div>
+      <div><label>Department line</label><input id="dept" value="Department of Microbiology"/></div>
     </div>
+    <label>Course title line (under topic on title slide)</label>
+    <input id="courseTitle" value="MICROBIAL ENZYME TECHNOLOGY"/>
   </div>
+
   <div class="card">
-    <h2>Your images (optional)</h2>
+    <h2>Your photos / camera (references & figures)</h2>
+    <div class="hint">Add lab photos or screenshot references. They embed on early research slides. For text on a photo, type key points in Notes below (phone OCR is optional later).</div>
     <div class="row">
       <div><label>Gallery</label><input type="file" id="fileIn" accept="image/*" multiple/></div>
       <div><label>Camera</label><input type="file" id="camIn" accept="image/*" capture="environment"/></div>
     </div>
     <div class="user-thumbs" id="userThumbs"></div>
+    <label>Manual notes / references from scanned material</label>
+    <textarea id="notes" placeholder="Paste text you read from a photo or paper…"></textarea>
   </div>
+
   <div class="card">
-    <h2>Theme · layout · font</h2>
+    <h2>Design</h2>
     <div class="row">
       <div>
         <label>Theme</label>
         <select id="theme">
           <option value="academic">JUW Academic Blue</option>
-          <option value="classic">Classic White Lecture</option>
+          <option value="classic">Classic White (sample style)</option>
           <option value="emerald">Research Emerald</option>
           <option value="slate">Slate</option>
         </select>
@@ -107,16 +115,33 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
         </select>
       </div>
     </div>
-    <label>Font</label>
-    <select id="font">
-      <option value="Calibri">Calibri</option>
-      <option value="Arial">Arial</option>
-      <option value="Georgia">Georgia</option>
-      <option value="Times New Roman">Times New Roman</option>
-    </select>
-    <label style="margin-top:10px"><input type="checkbox" id="fetchMedia" checked/> Fetch scientific images (internet required — embeds into PPTX)</label>
-    <div class="hint">Images are downloaded and embedded so they display after save (no broken links). Prefer Enzyme Immobilization for full university-depth content matching your sample deck.</div>
+    <div class="row">
+      <div>
+        <label>Font</label>
+        <select id="font">
+          <option value="Calibri">Calibri</option>
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Verdana">Verdana</option>
+        </select>
+      </div>
+      <div>
+        <label>Body font size</label>
+        <select id="fontSize">
+          <option value="12">12 (compact)</option>
+          <option value="13">13</option>
+          <option value="14" selected>14 (standard)</option>
+          <option value="15">15</option>
+          <option value="16">16 (large)</option>
+          <option value="18">18 (extra large)</option>
+        </select>
+      </div>
+    </div>
+    <label><input type="checkbox" id="fetchMedia" checked/> Fetch open scientific images & embed in PPTX</label>
+    <div class="hint">Uses Wikimedia Commons + Wikipedia (open licence). If none fit, a professional vector diagram is drawn for that slide. Google Image scrape and paid AI image APIs are not bundled (ToS/keys); you can still upload your own HD figures.</div>
   </div>
+
   <div class="prog" id="prog"><i id="progBar"></i></div>
   <button type="button" class="btn btn-p" id="btnGen">Generate University Deck</button>
 </div>
@@ -125,11 +150,11 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
   <div class="stat">
     <div><strong id="slideCount">0</strong><span>Total</span></div>
     <div><strong id="contentCount">0</strong><span>Research</span></div>
-    <div><strong id="mediaCount">0</strong><span>Embedded media</span></div>
+    <div><strong id="mediaCount">0</strong><span>Embedded</span></div>
   </div>
   <div class="card" style="padding:8px">
-    <button type="button" class="btn btn-p btn-sm" id="btnPptx">Download PPTX</button>
-    <button type="button" class="btn btn-a btn-sm" id="btnPdf">Download PDF</button>
+    <button type="button" class="btn btn-p btn-sm" id="btnPptx">PPTX</button>
+    <button type="button" class="btn btn-a btn-sm" id="btnPdf">PDF</button>
     <button type="button" class="btn btn-g btn-sm" id="btnBack">Edit</button>
   </div>
   <div id="previewList"></div>
@@ -137,8 +162,8 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
 
 <div id="page-about" class="page container">
   <div class="card">
-    <h2>JUW MicroSlides v3</h2>
-    <p class="hint">Designed to match professional MIC lecture decks: definition slides, method trees, adsorption/covalent/entrapment depth, advantages/disadvantages, supports, and embedded open-licence scientific figures. Logo left · microscope + Slides by Noor right.</p>
+    <h2>JUW MicroSlides v3.1</h2>
+    <p class="hint">Title slide: institute logo top-left, department microscope mark + “Slides by Noor” top-right. Content follows the topic you type (not stuck on enzymes). Works on laptop and any phone browser.</p>
   </div>
 </div>
 
@@ -154,10 +179,10 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
   var deck=[], meta={}, userMedia=[], usedUrls={};
 
   var THEMES={
-    academic:{bg:"FFFFFF",title:"1E4B8F",text:"1A1A2E",accent:"1B7A3D",soft:"E8EEF6"},
-    classic:{bg:"FFFFFF",title:"1A365D",text:"1A202C",accent:"2B6CB0",soft:"EDF2F7"},
-    emerald:{bg:"FFFFFF",title:"276749",text:"1A202C",accent:"38A169",soft:"F0FFF4"},
-    slate:{bg:"F7FAFC",title:"2D3748",text:"1A202C",accent:"4A5568",soft:"EDF2F7"}
+    academic:{bg:"FFFFFF",title:"1E4B8F",text:"1A1A2E",accent:"1B7A3D",soft:"E8EEF6",frame:"C4A574"},
+    classic:{bg:"FFFFFF",title:"1A365D",text:"1A202C",accent:"2B6CB0",soft:"EDF2F7",frame:"B7791F"},
+    emerald:{bg:"FFFFFF",title:"276749",text:"1A202C",accent:"38A169",soft:"F0FFF4",frame:"276749"},
+    slate:{bg:"F7FAFC",title:"2D3748",text:"1A202C",accent:"4A5568",soft:"EDF2F7",frame:"718096"}
   };
 
   function toast(m,e){var el=document.getElementById("toast");el.textContent=m;el.className="toast show"+(e?" err":"");clearTimeout(window._tt);window._tt=setTimeout(function(){el.className="toast"},2800)}
@@ -184,270 +209,132 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
   document.getElementById("fileIn").onchange=function(e){addFiles(e.target.files);e.target.value=""};
   document.getElementById("camIn").onchange=function(e){addFiles(e.target.files);e.target.value=""};
 
-  /* Embed remote image as data URL so PPTX never shows broken picture */
   function toDataUrl(url){
-    return fetch(url,{mode:"cors"}).then(function(r){
-      if(!r.ok) throw new Error("fetch fail");
-      return r.blob();
-    }).then(function(blob){
-      if(blob.size>2500000) throw new Error("too large");
-      return new Promise(function(res,rej){
-        var fr=new FileReader();
-        fr.onload=function(){res(fr.result)};
-        fr.onerror=rej;
-        fr.readAsDataURL(blob);
-      });
+    return fetch(url,{mode:"cors"}).then(function(r){if(!r.ok)throw new Error("x");return r.blob()}).then(function(blob){
+      if(blob.size>2200000)throw new Error("big");
+      return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result)};fr.onerror=rej;fr.readAsDataURL(blob)});
     });
   }
-
   function commonsSearch(q){
-    var url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch="+encodeURIComponent(q)+"&prop=imageinfo&iiprop=url|extmetadata|mime|size&iiurlwidth=640";
+    var url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=10&gsrsearch="+encodeURIComponent(q)+"&prop=imageinfo&iiprop=url|extmetadata|mime|size&iiurlwidth=640";
     return fetch(url).then(function(r){return r.json()}).then(function(data){
-      var pages=(data.query&&data.query.pages)||{}, out=[];
+      var pages=(data.query&&data.query.pages)||{},out=[];
       Object.keys(pages).forEach(function(k){
-        var p=pages[k], ii=p.imageinfo&&p.imageinfo[0];
-        if(!ii||!ii.url) return;
-        if(!ii.mime||ii.mime.indexOf("image/")!==0) return;
-        if(ii.mime.indexOf("svg")>=0) return;
+        var p=pages[k],ii=p.imageinfo&&p.imageinfo[0];
+        if(!ii||!ii.url||!ii.mime||ii.mime.indexOf("image/")!==0||ii.mime.indexOf("svg")>=0)return;
         var meta=ii.extmetadata||{};
-        var lic=(meta.LicenseShortName&&meta.LicenseShortName.value)||"Commons";
-        var artist=((meta.Artist&&meta.Artist.value)||"").replace(/<[^>]+>/g,"").slice(0,60);
-        out.push({url:ii.thumburl||ii.url,full:ii.url,source:"Wikimedia Commons",license:lic,artist:artist,title:p.title||""});
+        out.push({url:ii.thumburl||ii.url,full:ii.url,source:"Wikimedia Commons",license:(meta.LicenseShortName&&meta.LicenseShortName.value)||"Commons",artist:((meta.Artist&&meta.Artist.value)||"").replace(/<[^>]+>/g,"").slice(0,50)});
       });
       return out;
     }).catch(function(){return[]});
   }
-
-  function wikiSummaryImage(title){
-    return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(title.replace(/ /g,"_")))
+  function wikiImg(q){
+    return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(q.replace(/ /g,"_")))
       .then(function(r){return r.ok?r.json():Promise.reject()})
       .then(function(d){
-        if(d.originalimage&&d.originalimage.source) return [{url:d.thumbnail&&d.thumbnail.source||d.originalimage.source,full:d.originalimage.source,source:"Wikipedia",license:"See file page",artist:"",title:d.title}];
-        if(d.thumbnail) return [{url:d.thumbnail.source,full:d.thumbnail.source,source:"Wikipedia",license:"See file page",artist:"",title:d.title}];
-        return [];
+        var src=(d.originalimage&&d.originalimage.source)||(d.thumbnail&&d.thumbnail.source);
+        if(!src)return[];
+        return [{url:(d.thumbnail&&d.thumbnail.source)||src,full:src,source:"Wikipedia",license:"See file page",artist:""}];
       }).catch(function(){return[]});
   }
-
   async function resolveMedia(queries){
-    var candidates=[];
+    var cand=[];
     for(var i=0;i<queries.length;i++){
-      var list=await commonsSearch(queries[i]);
-      candidates=candidates.concat(list);
-      if(candidates.length<4){
-        var w=await wikiSummaryImage(queries[i]);
-        candidates=candidates.concat(w);
-      }
-      for(var j=0;j<candidates.length;j++){
-        var c=candidates[j];
-        var key=c.full||c.url;
-        if(!key||usedUrls[key]) continue;
-        try{
-          var dataUrl=await toDataUrl(c.url);
-          usedUrls[key]=1;
-          c.dataUrl=dataUrl;
-          return c;
-        }catch(e){ /* try next */ }
+      cand=cand.concat(await commonsSearch(queries[i]));
+      if(cand.length<3)cand=cand.concat(await wikiImg(queries[i]));
+      for(var j=0;j<cand.length;j++){
+        var c=cand[j],key=c.full||c.url;
+        if(!key||usedUrls[key])continue;
+        try{c.dataUrl=await toDataUrl(c.url);usedUrls[key]=1;return c}catch(e){}
       }
     }
     return null;
   }
 
-  /* ===== University-depth Enzyme Immobilization (sample PPT pattern) ===== */
-  function enzymeDeck(){
+  /* Topic-aware content */
+  function isEnzyme(t){t=(t||"").toLowerCase();return t.indexOf("immobil")>=0||(t.indexOf("enzyme")>=0&&t.indexOf("genome")<0)}
+  function isGenome(t){t=(t||"").toLowerCase();return t.indexOf("genome")>=0||t.indexOf("nucleoid")>=0||t.indexOf("chromatin")>=0||t.indexOf("chromosome")>=0||t.indexOf("prokaryot")>=0}
+
+  function enzymeContent(){
     return [
-      {type:"content",title:"Why immobilize enzymes?",imgQ:["enzyme catalysis industrial","biocatalyst reactor"],bullets:[
-        "Enzymes are expensive catalytic proteins",
-        "Catalysts are not consumed, yet free enzyme is hard to recover after reaction",
-        "Without recovery the enzyme is effectively wasted in batch processes",
-        "Immobilization confines the enzyme for re-use or continuous use",
-        "Separation also reduces product contamination by residual free enzyme"
-      ]},
-      {type:"definition",title:"What is immobilization?",imgQ:["immobilized enzyme support bead","enzyme immobilization schematic"],bullets:[
-        "Immobilized enzymes = enzymes physically confined or localized in a defined region/space",
-        "Catalytic activity is retained",
-        "The preparation can be used repeatedly and continuously",
-        "Central strategy in industrial (white) biotechnology and MIC-4511"
-      ]},
-      {type:"twocol",title:"Advantages and disadvantages",leftTitle:"Advantages",rightTitle:"Disadvantages",left:[
-        "Reusability of enzyme",
-        "Often improved stability",
-        "Enzyme-free product stream",
-        "Continuous use possible",
-        "Reduced labour / cost per unit product"
-      ],right:[
-        "Possible catalytic activity loss",
-        "Mass-transfer / diffusion limits",
-        "Support and process cost",
-        "Leakage risk (some methods)",
-        "Not all enzymes tolerate harsh chemistry"
-      ],imgQ:["enzyme immobilization advantages","biocatalysis industrial"]},
-      {type:"content",title:"Applications overview",imgQ:["glucose isomerase industrial","lactase milk enzyme"],bullets:[
-        "Industrial: antibiotics, beverages, amino acids, HFCS (glucose isomerase)",
-        "Biomedical: diagnosis concepts, drug-delivery research",
-        "Food: jams, jellies, syrups, lactose hydrolysis",
-        "Research: HRP in blotting; proteases for cell work",
-        "Biodiesel (lipases), wastewater, textiles, detergents"
-      ]},
-      {type:"content",title:"Supports and matrices — requirements",imgQ:["porous support material beads","chromatography resin beads"],bullets:[
-        "Matrix must hold enzyme while allowing substrate/product diffusion",
-        "Preferably cheap and available",
-        "Minimal unwanted reaction with medium or enzyme",
-        "Three major groups: natural polymers, synthetic polymers, inorganic materials"
-      ]},
-      {type:"content",title:"1. Natural polymer supports",imgQ:["alginate beads hydrogel","chitosan polymer powder"],bullets:[
-        "Alginate — algal cell wall; Ca/Mg alginate gels",
-        "Chitosan and chitin — binding via –OH / amino groups",
-        "Collagen — proteinaceous support",
-        "Carrageenan — sulfated algal polysaccharide",
-        "Gelatin, cellulose, starch, pectin — water-holding capacity"
-      ]},
-      {type:"content",title:"2. Synthetic polymer supports",imgQ:["polyacrylamide gel","ion exchange resin beads"],bullets:[
-        "Insoluble supports with porous surface that trap enzymes/cells",
-        "Examples: polyvinyl chloride (PVC)",
-        "UV-activated polyethylene glycol (PEG)",
-        "Ion-exchange resins / acrylic copolymers",
-        "Tunable porosity and surface chemistry"
-      ]},
-      {type:"content",title:"3. Inorganic materials",imgQ:["silica porous material","activated charcoal carbon"],bullets:[
-        "Zeolites and ceramics",
-        "Diatomaceous earth (celite)",
-        "Silica and glass (including controlled-pore glass)",
-        "Activated carbon and charcoal",
-        "High mechanical strength; classic adsorption carriers"
-      ]},
-      {type:"content",title:"Methods overview — physical vs chemical",imgQ:["enzyme immobilization methods flowchart","biocatalyst immobilization scheme"],bullets:[
-        "Physical methods: Adsorption · Entrapment · Encapsulation",
-        "Chemical methods: Covalent bonding · Cross-linking",
-        "Choice balances mildness, leakage risk, cost, and operational strength",
-        "Whole-cell immobilization uses the same method families"
-      ],diagram:"methods"},
-      {type:"content",title:"1. Adsorption — principle",imgQ:["enzyme adsorption surface","protein adsorption isotherm"],bullets:[
-        "Oldest and simplest method (Nelson & Griffin — invertase on charcoal)",
-        "Enzyme adsorbed to external (or internal) surface of support",
-        "Supports: mineral (alumina, clay), organic (starch), ion-exchange resins, sepharose",
-        "Forces: ionic interactions, hydrogen bonds, van der Waals, hydrophobic effects"
-      ],diagram:"adsorb"},
-      {type:"content",title:"Adsorption — process variants",imgQ:["stirred tank bioreactor","laboratory magnetic stirrer beaker"],bullets:[
-        "Static process: enzyme solution contacts carrier without stirring",
-        "Dynamic batch: carrier mixed in enzyme solution by agitation",
-        "Reactor loading: carrier in reactor, then enzyme solution added",
-        "Electrodeposition: carrier near electrode; enzyme migrates and deposits",
-        "Wash loosely bound enzyme before use"
-      ]},
-      {type:"twocol",title:"Adsorption — evaluation",leftTitle:"Advantages",rightTitle:"Disadvantages",left:[
-        "Easy to carry out",
-        "No reagents required",
-        "Minimum activation steps",
-        "Comparatively cheap",
-        "Less disruptive than harsh chemistry"
-      ],right:[
-        "Desorption if T, pH, ionic strength change",
-        "Often lower efficiency",
-        "Greater exposure to microbial attack"
-      ],imgQ:["adsorption isotherm graph","surface chemistry laboratory"]},
-      {type:"content",title:"2. Covalent bonding — principle",imgQ:["covalent bond molecule diagram","protein crosslinking chemistry"],bullets:[
-        "Strong covalent links between enzyme functional groups and support",
-        "Widely used industrial method",
-        "Reactive enzyme groups: amino, imino, hydroxyl, carboxyl, thiol, methylthiol",
-        "Stable hold with minimal leakage when chemistry succeeds"
-      ],diagram:"covalent"},
-      {type:"content",title:"Covalent bonding — carriers",imgQ:["agarose beads chromatography","cellulose powder laboratory"],bullets:[
-        "Carbohydrates: cellulose, DEAE-cellulose, agarose",
-        "Synthetic: polyacrylamide",
-        "Protein carriers; amino-benzyl cellulose",
-        "Inorganic: porous glass, silica",
-        "CNBr-agarose and CNBr-Sepharose (classic activations)"
-      ]},
-      {type:"content",title:"Methods of covalent bonding",imgQ:["glutaraldehyde chemical structure","peptide bond formation chemistry"],bullets:[
-        "Diazotization: amino group of support with tyrosyl/histidyl of enzyme",
-        "Peptide-type bond between amino/carboxyl groups of support and enzyme",
-        "Polyfunctional reagents (e.g. glutaraldehyde) bridging amino groups",
-        "Protect active site with substrate or competitive inhibitor during coupling"
-      ]},
-      {type:"twocol",title:"Covalent bonding — evaluation",leftTitle:"Advantages",rightTitle:"Disadvantages",left:[
-        "Strong linkage; little leakage",
-        "Wide support chemistry",
-        "Broad applicability"
-      ],right:[
-        "Chemical modification may alter conformation",
-        "Risk of active-site damage",
-        "More complex activation chemistry"
-      ],imgQ:["protein denaturation structure","enzyme active site"]},
-      {type:"content",title:"3. Entrapment — principle",imgQ:["alginate hydrogel beads","gel entrapment cells"],bullets:[
-        "Enzymes physically trapped inside a matrix",
-        "Bonds may be covalent or non-covalent within the matrix chemistry",
-        "Water-soluble polymer gels: polyacrylamide, cellulose triacetate, agar, gelatin, carrageenan, alginate",
-        "Pore size tuned to retain enzyme while allowing substrate diffusion"
-      ],diagram:"entrap"},
-      {type:"content",title:"Entrapment — practical notes",imgQ:["calcium alginate beads preparation","polymer gel laboratory"],bullets:[
-        "Form and nature of matrix vary with polymer and concentration",
-        "Agar and carrageenan can have large pores — leakage risk for small enzymes",
-        "Useful for sensing applications at small scale",
-        "Industrial success limited by diffusion and scale-up",
-        "Formats: gels, fibers, microcapsules (e.g. polyamine, Ca-alginate)"
-      ]},
-      {type:"content",title:"Methods of entrapment",imgQ:["microencapsulation process","fiber spinning polymer"],bullets:[
-        "Inclusion in gels: enzymes trapped in gel network",
-        "Inclusion in fibers: enzymes supported in fiber format",
-        "Inclusion in microcapsules: monomer systems such as polyamine, calcium alginate",
-        "Mild conditions; relatively cheap matrices"
-      ]},
-      {type:"content",title:"4. Cross-linking (carrier-free)",imgQ:["cross linked enzyme aggregate","glutaraldehyde crosslinking protein"],bullets:[
-        "Covalent links between enzyme molecules via polyfunctional reagents",
-        "No external bead/matrix required (carrier-free biocatalyst)",
-        "CLEAs used industrially; high catalyst density",
-        "Merit: cost-effective and often highly stable",
-        "Demerit: reagent can denature protein if not optimized"
-      ]},
-      {type:"content",title:"5. Encapsulation",imgQ:["microcapsule membrane","semi permeable membrane dialysis"],bullets:[
-        "Enzyme enclosed in a semi-permeable membrane capsule",
-        "Capsule materials e.g. nylon, nitrocellulose",
-        "Large enzyme quantity can be immobilized",
-        "Limitation: only small substrate molecules cross effectively",
-        "Pore-size control is critical"
-      ]},
-      {type:"content",title:"Whole-cell immobilization",imgQ:["immobilized yeast cells bioreactor","biofilm reactor microorganisms"],bullets:[
-        "Useful when purified enzyme is unstable or costly to isolate",
-        "Multiple enzymes available in one step; organelles can be immobilized",
-        "Same method families as enzyme immobilization",
-        "Pros: long stability, no purification cost",
-        "Cons: lower effective enzyme concentration; side reactions from other cell enzymes"
-      ]},
-      {type:"content",title:"Current research trends",imgQ:["metal organic framework MOF crystal","nanoparticle catalysis"],bullets:[
-        "Nanomaterial supports: MOFs, carbon nanotubes, nanoparticles",
-        "Stimuli-responsive (pH/temperature) smart supports",
-        "Cascade multi-enzyme immobilization",
-        "Continuous-flow biocatalysis and greener coupling chemistries"
-      ]},
-      {type:"content",title:"Summary for examination",imgQ:["microbiology laboratory teaching","enzyme assay test tube"],bullets:[
-        "Immobilization = confinement + retained catalysis + re-use",
-        "Physical methods milder; chemical methods stronger hold",
-        "Support class must match method and industry constraints",
-        "Diffusion and activity retention dominate process design",
-        "Match method to enzyme value, product specs, and scale"
-      ]}
+      {title:"Why immobilize enzymes?",imgQ:["industrial biocatalyst","enzyme reactor"],bullets:["Enzymes are expensive catalytic proteins","Free enzyme is hard to recover after batch reaction","Immobilization allows re-use or continuous use","Reduces product contamination by residual enzyme"]},
+      {title:"Definition of immobilization",imgQ:["immobilized enzyme bead","enzyme on support schematic"],bullets:["Enzymes physically confined in a defined region/space","Catalytic activity retained","Usable repeatedly and continuously","Core of industrial biocatalysis (MIC-4511)"]},
+      {type:"twocol",title:"Advantages and disadvantages",leftTitle:"Advantages",rightTitle:"Disadvantages",left:["Reusability","Often higher stability","Enzyme-free products","Continuous operation","Lower cost per product unit"],right:["Possible activity loss","Diffusion limits","Support cost","Leakage (some methods)","Harsh chemistry risk"],imgQ:["biocatalysis process"]},
+      {title:"Applications",imgQ:["glucose isomerase","lactase dairy"],bullets:["HFCS / glucose isomerase; lactose hydrolysis","Antibiotics and amino acids","Textiles, detergents, biodiesel","Biosensors and research enzymes (e.g. HRP)"]},
+      {title:"Natural polymer supports",imgQ:["alginate hydrogel beads","chitosan powder"],bullets:["Alginate (Ca/Mg gels)","Chitosan & chitin","Collagen, gelatin, carrageenan","Cellulose, starch, pectin"]},
+      {title:"Synthetic and inorganic supports",imgQ:["silica porous beads","activated carbon"],bullets:["Synthetic: PVC, PEG, polyacrylamide, ion-exchange resins","Inorganic: silica, glass, zeolites, ceramics, celite","Activated carbon / charcoal for adsorption"]},
+      {title:"Methods overview",imgQ:["enzyme immobilization methods"],diagram:"methods",bullets:["Physical: adsorption, entrapment, encapsulation","Chemical: covalent bonding, cross-linking","Choose by stability, leakage, cost, scale"]},
+      {title:"Adsorption",imgQ:["protein adsorption surface"],diagram:"adsorb",bullets:["Oldest method (e.g. invertase on charcoal)","Weak forces: ionic, H-bond, van der Waals","Static, dynamic, reactor loading, electrodeposition","Risk of desorption with pH/T/ionic shifts"]},
+      {title:"Covalent bonding",imgQ:["covalent immobilization enzyme"],diagram:"covalent",bullets:["Strong enzyme–support covalent links","Groups: amino, carboxyl, hydroxyl, thiol","Supports: agarose, cellulose, glass, CNBr-Sepharose","Glutaraldehyde and other polyfunctional reagents"]},
+      {title:"Entrapment",imgQ:["alginate beads cells"],diagram:"entrap",bullets:["Enzyme trapped in polymer matrix","Gels, fibers, microcapsules","Pore size controls leakage vs diffusion","Mild; scale-up can be limited"]},
+      {title:"Cross-linking and encapsulation",imgQ:["cross linked enzyme aggregate"],bullets:["Cross-linking: carrier-free (e.g. CLEAs)","Encapsulation: semi-permeable membrane","Only small substrates cross capsules well"]},
+      {title:"Whole-cell immobilization & trends",imgQ:["immobilized cells bioreactor"],bullets:["Useful when purification is costly","Nanomaterial supports, smart polymers","Cascade enzymes and continuous flow"]}
     ];
   }
 
-  function formal(topic){
-    return {
-      title:{type:"title",title:topic.toUpperCase(),subtitle:"MICROBIAL ENZYME TECHNOLOGY"},
-      outcomes:{type:"outcomes",title:"Learning outcomes",bullets:[
-        "Explain immobilization of enzymes and why it is used",
-        "Describe applications of immobilized enzymes",
-        "Differentiate physical and chemical immobilization methods",
-        "Compare natural, synthetic and inorganic supports",
-        "Outline advantages, limitations and research trends"
-      ]},
-      refs:{type:"refs",title:"References",bullets:[
-        "Kulkarni & Deshpande — General Enzymology",
-        "Federsel, Moody & Taylor (2021). Molecules 26(9):2822",
-        "Xie et al. (2009). Afr. J. Biotechnol. 8(19)",
-        "Course context: MIC-4511 Microbial Enzyme Technology",
-        "Open figures: Wikimedia Commons (licence per file)"
-      ]},
-      thanks:{type:"thanks",title:"Thank You"}
-    };
+  function genomeContent(){
+    return [
+      {title:"Scope of microbial genome architecture",imgQ:["bacterial nucleoid","microbial genome"],bullets:["Compare genome organization in bacteria, archaea and fungi","Prokaryotic vs eukaryotic microbial genomes","DNA packaging: nucleoid vs chromatin","Organization of the bacterial chromosome"]},
+      {title:"Bacterial genome — general features",imgQ:["circular bacterial chromosome","Escherichia coli genome"],bullets:["Typically single circular chromosome (many exceptions exist)","Haploid; high coding density","Plasmids and secondary chromosomes in some species","Replication from oriC, often bidirectional"]},
+      {title:"The nucleoid",imgQ:["bacterial nucleoid microscopy","nucleoid associated proteins"],bullets:["Nucleoid = DNA + proteins compacted in cytoplasm (no nuclear membrane)","NAPs (e.g. HU, FIS, H-NS, IHF) shape topology","Supercoiling critical for compaction and transcription","Dynamic structure during growth and stress"]},
+      {title:"Archaeal genomes",imgQ:["archaea cell structure","archaeal histone"],bullets:["Often circular chromosomes; some have histones","Replication/transcription machinery closer to eukaryotes in parts","Unique membrane lipids; distinct from bacteria","Useful evolutionary bridge for teaching"]},
+      {title:"Fungal (eukaryotic microbial) genomes",imgQ:["yeast nucleus chromosomes","Saccharomyces cerevisiae"],bullets:["Linear chromosomes in a membrane-bound nucleus","Chromatin: DNA + histones (nucleosomes)","Introns more common than in bacteria","Organelle genomes (mito, sometimes others)"]},
+      {title:"Prokaryotic vs eukaryotic microbial genomes",imgQ:["prokaryote eukaryote comparison"],bullets:["Nucleus absent vs present","Circular vs linear chromosomes (typical cases)","Operons common in bacteria; rare in fungi","Coupled transcription–translation in prokaryotes"]},
+      {title:"DNA packaging in bacteria",imgQ:["DNA supercoiling diagram","topoisomerase DNA"],bullets:["Supercoiling by DNA gyrase / topoisomerases","Nucleoid-associated proteins fold domains","Macrodomains in E. coli (Ori, Ter, etc.)","Packaging must still allow replication and repair"]},
+      {title:"Chromatin in eukaryotic microbes",imgQ:["nucleosome structure DNA histone"],bullets:["Nucleosome = histone octamer + DNA","Higher-order folding to chromatin fibers","Epigenetic marks regulate access","Mitosis segregates condensed chromosomes"]},
+      {title:"Organization of the bacterial chromosome",imgQ:["bacterial chromosome map oriC"],bullets:["oriC and ter regions organize the map","Gene orientation often co-directional with replication","rRNA operons and highly expressed genes positioned strategically","Horizontal gene transfer adds islands and plasmids"]},
+      {title:"Plasmids and mobile elements",imgQ:["plasmid DNA bacteria"],bullets:["Extrachromosomal replicons","Virulence and resistance genes often plasmid-borne","Transposons and integrons reshape genomes","Important for clinical microbiology teaching"]},
+      {title:"Methods to study microbial genomes",imgQ:["DNA sequencing laboratory","agarose gel electrophoresis DNA"],bullets:["PFGE, genome sequencing, Hi-C/contact maps","qPCR and reporter fusions for locus behaviour","Microscopy of nucleoid morphology","Comparative genomics across species"]},
+      {title:"Summary — exam focus",imgQ:["microbiology textbook genome"],bullets:["Nucleoid ≠ nucleus","Packaging differs: NAPs/supercoiling vs histones/chromatin","Bacteria/archaea/fungi each have distinctive architecture","Link structure to replication, expression and evolution"]}
+    ];
+  }
+
+  function genericContent(topic){
+    var seeds=["Introduction and scope","Key definitions","Classification","Core mechanisms","Laboratory methods","Structure and organization","Physiology links","Applied importance","Clinical or industrial relevance","Comparison table points","Current research","Summary for exams"];
+    return seeds.map(function(s){
+      return {title:topic+" — "+s,imgQ:[topic+" microbiology",topic+" diagram",s+" microbiology"],bullets:[
+        "Define and frame \""+s.toLowerCase()+"\" for "+topic,
+        "Core microbiological principles students must state",
+        "Laboratory or applied connection",
+        "Points suitable for short-answer assessment"
+      ]};
+    });
+  }
+
+  function buildResearch(topic,n){
+    var pool;
+    if(isEnzyme(topic)) pool=enzymeContent();
+    else if(isGenome(topic)) pool=genomeContent();
+    else pool=genericContent(topic);
+    n=Math.max(8,Math.min(35,n||20));
+    var out=pool.slice(0,n);
+    while(out.length<n){
+      out.push({title:topic+" — Extended point "+(out.length+1),imgQ:[topic+" microbiology laboratory"],bullets:["Extended discussion point","Link to practical class","Primary literature angle","Exam-style takeaway"]});
+    }
+    return out;
+  }
+
+  function learningOutcomes(topic){
+    if(isEnzyme(topic)) return [
+      "Explain immobilization of enzymes and why it is used",
+      "Describe applications of immobilized enzymes",
+      "Differentiate physical and chemical immobilization methods",
+      "Compare natural, synthetic and inorganic supports",
+      "Outline advantages, limitations and research trends"
+    ];
+    if(isGenome(topic)) return [
+      "Describe genome architecture in bacteria, archaea and fungi",
+      "Differentiate prokaryotic and eukaryotic microbial genomes",
+      "Explain DNA packaging: nucleoid versus chromatin",
+      "Outline organization of the bacterial chromosome",
+      "Relate structure to replication, expression and teaching examples"
+    ];
+    return [
+      "Explain core concepts of "+topic+" at university level",
+      "Use correct microbiological terminology",
+      "Connect theory to laboratory or applied practice",
+      "Compare related systems and evaluate limitations"
+    ];
   }
 
   async function generate(){
@@ -457,47 +344,38 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
       course:document.getElementById("course").value||"MIC-4511",
       preparer:document.getElementById("preparer").value||"Ms. Noor",
       dept:document.getElementById("dept").value||"Department of Microbiology",
+      courseTitle:document.getElementById("courseTitle").value||"MICROBIOLOGY",
       theme:document.getElementById("theme").value,
       layout:document.getElementById("layout").value,
       font:document.getElementById("font").value,
-      n:Math.max(8,Math.min(40,parseInt(document.getElementById("slideN").value,10)||22))
+      fontSize:parseInt(document.getElementById("fontSize").value,10)||14,
+      n:parseInt(document.getElementById("slideN").value,10)||20
     };
     var prog=document.getElementById("prog"),bar=document.getElementById("progBar");
-    prog.classList.add("on");bar.style.width="10%";
-    usedUrls={};
-    var content = (topic.toLowerCase().indexOf("immobil")>=0||topic.toLowerCase().indexOf("enzyme")>=0)
-      ? enzymeDeck().slice(0, meta.n)
-      : enzymeDeck().slice(0, Math.min(12,meta.n)); // fallback quality still enzyme-style structure if wrong topic
-    if(topic.toLowerCase().indexOf("immobil")<0 && topic.toLowerCase().indexOf("enzyme")<0){
-      // keep structure but retitle lightly for other topics — still better than empty generics
-      content=enzymeDeck().slice(0,meta.n).map(function(s,i){
-        var copy=Object.assign({},s);
-        if(i>2) copy.title=topic+" — "+s.title;
-        return copy;
-      });
+    prog.classList.add("on");bar.style.width="8%";usedUrls={};
+    var content=buildResearch(topic,meta.n);
+    var notes=(document.getElementById("notes").value||"").trim();
+    if(notes){
+      var extra=notes.split(/\n+/).map(function(s){return s.replace(/^[\-\*\d\.\)\s]+/,"").trim()}).filter(Boolean).slice(0,10);
+      if(extra.length) content.push({title:"Notes from references / scanned material",imgQ:[topic+" laboratory"],bullets:extra});
     }
-    var fetchOn=document.getElementById("fetchMedia").checked;
-    var ui=0;
+    var fetchOn=document.getElementById("fetchMedia").checked, ui=0;
     for(var i=0;i<content.length;i++){
-      bar.style.width=String(12+Math.round(80*(i+1)/content.length))+"%";
-      toast("Slide media "+(i+1)+"/"+content.length+"…");
-      if(ui<userMedia.length){
-        content[i].media=userMedia[ui++];
-        continue;
-      }
-      if(!fetchOn){content[i].media=null;continue}
-      var q=content[i].imgQ||[topic+" microbiology"];
-      content[i].media=await resolveMedia(q);
-      await new Promise(function(r){setTimeout(r,80)});
+      bar.style.width=String(10+Math.round(75*(i+1)/content.length))+"%";
+      toast("Media "+(i+1)+"/"+content.length+"…");
+      if(ui<userMedia.length){content[i].media=userMedia[ui++];continue}
+      if(fetchOn) content[i].media=await resolveMedia(content[i].imgQ||[topic]);
+      await new Promise(function(r){setTimeout(r,60)});
     }
-    var f=formal(topic);
-    deck=[f.title,f.outcomes].concat(content).concat([f.refs,f.thanks]);
+    deck=[
+      {type:"title"},
+      {type:"outcomes",title:"Learning outcomes",bullets:learningOutcomes(topic)}
+    ].concat(content.map(function(s){s.type=s.type||"content";return s})).concat([
+      {type:"refs",title:"References",bullets:["Course materials — "+meta.course,"Open figures: Wikimedia Commons / Wikipedia (licence per file)","User-supplied images where added","Standard MIC textbooks for "+topic]},
+      {type:"thanks",title:"Thank You"}
+    ]);
     bar.style.width="100%";
-    setTimeout(function(){
-      prog.classList.remove("on");bar.style.width="0";
-      renderPreview();showPage("preview");
-      toast("Ready — embedded media: "+deck.filter(function(s){return s.media&&s.media.dataUrl}).length);
-    },200);
+    setTimeout(function(){prog.classList.remove("on");bar.style.width="0";renderPreview();showPage("preview");toast("Deck ready")},150);
   }
 
   function renderPreview(){
@@ -506,124 +384,132 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
     document.getElementById("mediaCount").textContent=deck.filter(function(s){return s.media&&s.media.dataUrl}).length;
     var html="";
     deck.forEach(function(s,i){
-      html+='<div class="ps"><span class="n">'+(i+1)+'</span><h3>'+esc(s.title)+'</h3>';
+      html+='<div class="ps"><span class="n">'+(i+1)+'</span><h3>'+esc(s.type==="title"?meta.topic:s.title)+'</h3>';
       if(s.bullets){html+="<ul>";s.bullets.forEach(function(b){html+="<li>"+esc(b)+"</li>"});html+="</ul>"}
-      if(s.type==="twocol"){html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px"><div><b>'+esc(s.leftTitle)+'</b><ul>';(s.left||[]).forEach(function(b){html+="<li>"+esc(b)+"</li>"});html+='</ul></div><div><b>'+esc(s.rightTitle)+'</b><ul>';(s.right||[]).forEach(function(b){html+="<li>"+esc(b)+"</li>"});html+="</ul></div></div>"}
-      if(s.media&&s.media.dataUrl){html+='<div class="media"><img src="'+s.media.dataUrl+'"/></div><div class="attr">'+esc(s.media.source)+" · "+esc(s.media.license)+"</div>"}
-      else if(s.diagram) html+='<div class="hint">Scientific diagram panel in PPTX export</div>';
-      html+='<div class="sf"><span><img src="'+LOGO+'"/> JUW</span><span>🔬 Slides by Noor</span></div></div>';
+      if(s.type==="twocol"){html+='<div style="font-size:11px"><b>'+esc(s.leftTitle)+'</b> / <b>'+esc(s.rightTitle)+'</b></div>'}
+      if(s.media&&s.media.dataUrl)html+='<div class="media"><img src="'+s.media.dataUrl+'"/></div>';
+      html+='<div class="sf"><span><img src="'+LOGO+'"/> top-left logo on title</span><span>🔬 Slides by Noor top-right</span></div></div>';
     });
     document.getElementById("previewList").innerHTML=html;
   }
 
-  function footer(pptx,slide,th){
-    try{slide.addImage({path:LOGO,x:0.28,y:5.05,w:0.4,h:0.4})}catch(e){}
-    slide.addText("🔬",{x:8.55,y:4.95,w:0.35,h:0.28,fontSize:13});
-    slide.addText("Slides by Noor",{x:7.15,y:5.22,w:2.55,h:0.2,fontSize:9,color:th.text,fontFace:meta.font,align:"right",transparency:20});
-    slide.addText((meta.course||"")+" · "+(meta.dept||""),{x:0.8,y:5.28,w:5.8,h:0.16,fontSize:8,color:th.text,fontFace:meta.font,transparency:40});
-  }
-
   function drawFig(pptx,slide,kind,th,x,y,w,h){
     slide.addShape(pptx.ShapeType.roundRect,{x:x,y:y,w:w,h:h,fill:{color:th.soft},line:{color:th.title,width:1},rectRadius:0.08});
-    slide.addText("FIGURE",{x:x,y:y+0.08,w:w,h:0.22,fontSize:9,bold:true,color:th.title,align:"center",fontFace:meta.font});
-    var steps= kind==="methods" ? ["Physical","Chemical","Immobilized\nenzyme"] : kind==="adsorb" ? ["Enzyme","Support\nsurface","Adsorbed\ncomplex"] : kind==="covalent" ? ["Enzyme","Covalent\nlink","Support"] : kind==="entrap" ? ["Enzyme","Polymer\nmatrix","Entrapped"] : ["Concept","Process","Outcome"];
+    slide.addText("FIGURE",{x:x,y:y+0.08,w:w,h:0.2,fontSize:9,bold:true,color:th.title,align:"center",fontFace:meta.font});
+    var steps=kind==="methods"?["Physical","Chemical","Product"]:kind==="adsorb"?["Enzyme","Surface","Bound"]:kind==="covalent"?["Enzyme","Link","Support"]:kind==="entrap"?["Enzyme","Matrix","Trapped"]:["Input","Process","Result"];
     steps.forEach(function(t,i){
       var yy=y+0.45+i*0.95;
-      slide.addShape(pptx.ShapeType.roundRect,{x:x+0.25,y:yy,w:w-0.5,h:0.55,fill:{color:th.title},rectRadius:0.06});
-      slide.addText(t,{x:x+0.25,y:yy,w:w-0.5,h:0.55,fontSize:11,color:"FFFFFF",align:"center",valign:"middle",fontFace:meta.font});
-      if(i<steps.length-1) slide.addShape(pptx.ShapeType.downArrow,{x:x+w/2-0.12,y:yy+0.58,w:0.24,h:0.28,fill:{color:th.accent}});
+      slide.addShape(pptx.ShapeType.roundRect,{x:x+0.25,y:yy,w:w-0.5,h:0.5,fill:{color:th.title},rectRadius:0.06});
+      slide.addText(t,{x:x+0.25,y:yy,w:w-0.5,h:0.5,fontSize:12,color:"FFFFFF",align:"center",valign:"middle",fontFace:meta.font});
+      if(i<steps.length-1)slide.addShape(pptx.ShapeType.downArrow,{x:x+w/2-0.12,y:yy+0.55,w:0.24,h:0.28,fill:{color:th.accent}});
     });
   }
 
   async function exportPptx(){
     if(!deck.length){toast("Generate first",true);return}
-    if(typeof PptxGenJS==="undefined"){toast("PPTX library needs network once",true);return}
+    if(typeof PptxGenJS==="undefined"){toast("Need network for PPTX lib",true);return}
     toast("Building PPTX…");
     var pptx=new PptxGenJS();
     pptx.defineLayout({name:"LAYOUT_16x9",width:10,height:5.625});
     pptx.layout="LAYOUT_16x9";
     pptx.author=meta.preparer;pptx.title=meta.topic;
-    var th=THEMES[meta.theme]||THEMES.academic;
+    var th=THEMES[meta.theme]||THEMES.classic;
     var font=meta.font||"Calibri";
+    var fs=meta.fontSize||14;
     var lay=meta.layout||"lecture";
 
     deck.forEach(function(s){
       var slide=pptx.addSlide();
       slide.background={color:th.bg};
+
       if(s.type==="title"){
-        slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:5.625,fill:{color:th.title}});
-        slide.addText(s.title,{x:0.5,y:1.7,w:7.5,h:1,fontSize:28,bold:true,color:"FFFFFF",fontFace:font});
-        slide.addText(s.subtitle||"",{x:0.5,y:2.7,w:7.5,h:0.35,fontSize:14,color:"FFFFFF",fontFace:font});
-        slide.addText(meta.course+" · "+meta.preparer,{x:0.5,y:3.3,w:7.5,h:0.3,fontSize:13,color:"FFFFFF",fontFace:font});
-        slide.addText(meta.dept,{x:0.5,y:3.65,w:7.5,h:0.3,fontSize:13,color:"FFFFFF",fontFace:font});
-        try{slide.addImage({path:LOGO,x:0.5,y:4.5,w:0.75,h:0.75})}catch(e){}
-        slide.addText("🔬  Slides by Noor",{x:6.5,y:5.05,w:3.2,h:0.25,fontSize:12,color:"FFFFFF",fontFace:font,align:"right"});
+        /* Sample-style: frame, logo TOP LEFT, microscope block TOP RIGHT, clean title center */
+        slide.addShape(pptx.ShapeType.rect,{x:0.15,y:0.15,w:9.7,h:5.325,fill:{color:th.bg},line:{color:th.frame,width:2}});
+        slide.addShape(pptx.ShapeType.rect,{x:0.28,y:0.28,w:9.44,h:5.065,fill:{color:th.bg},line:{color:"A0AEC0",width:1}});
+        try{slide.addImage({path:LOGO,x:0.45,y:0.4,w:1.05,h:1.05})}catch(e){}
+        /* Right top: microscope emoji mark + dept + Slides by Noor */
+        slide.addText("🔬",{x:8.35,y:0.35,w:1.1,h:0.4,fontSize:22,align:"center"});
+        slide.addText("DEPARTMENT OF\nMICROBIOLOGY\nJUW",{x:7.6,y:0.75,w:1.9,h:0.7,fontSize:9,color:th.title,fontFace:font,align:"center",bold:true});
+        slide.addText("Slides by Noor",{x:7.6,y:1.45,w:1.9,h:0.25,fontSize:10,color:th.text,fontFace:font,align:"center"});
+        /* Center title */
+        var shortTitle=meta.topic.length>90?meta.topic.slice(0,87)+"…":meta.topic;
+        slide.addText(shortTitle.toUpperCase(),{x:0.6,y:2.15,w:8.8,h:1.3,fontSize:meta.topic.length>50?20:28,bold:true,color:"111111",fontFace:font,align:"center",valign:"middle"});
+        slide.addShape(pptx.ShapeType.rect,{x:4.6,y:3.55,w:0.8,h:0.06,fill:{color:th.accent}});
+        slide.addText(meta.courseTitle,{x:5.2,y:3.85,w:4.2,h:0.28,fontSize:12,color:th.text,fontFace:font,align:"right"});
+        slide.addText(meta.course,{x:5.2,y:4.15,w:4.2,h:0.25,fontSize:12,color:th.text,fontFace:font,align:"right"});
+        slide.addText("PREPARED BY: "+meta.preparer.toUpperCase(),{x:5.2,y:4.45,w:4.2,h:0.25,fontSize:12,color:th.text,fontFace:font,align:"right"});
+        slide.addText(meta.dept.toUpperCase(),{x:5.2,y:4.75,w:4.2,h:0.25,fontSize:11,color:th.text,fontFace:font,align:"right"});
         return;
       }
+
       if(s.type==="thanks"){
         slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:5.625,fill:{color:th.title}});
-        slide.addText("Thank You",{x:0.5,y:2.2,w:8,h:0.7,fontSize:36,bold:true,color:"FFFFFF",fontFace:font});
-        slide.addText(meta.course+" · "+meta.dept,{x:0.5,y:3.0,w:8,h:0.35,fontSize:14,color:"FFFFFF",fontFace:font});
-        try{slide.addImage({path:LOGO,x:0.5,y:4.5,w:0.75,h:0.75})}catch(e){}
-        slide.addText("🔬  Slides by Noor",{x:6.5,y:5.05,w:3.2,h:0.25,fontSize:12,color:"FFFFFF",fontFace:font,align:"right"});
+        try{slide.addImage({path:LOGO,x:0.4,y:0.35,w:0.7,h:0.7})}catch(e){}
+        slide.addText("🔬",{x:8.7,y:0.35,w:0.8,h:0.4,fontSize:20,align:"center"});
+        slide.addText("Slides by Noor",{x:7.5,y:0.8,w:2,h:0.25,fontSize:11,color:"FFFFFF",fontFace:font,align:"right"});
+        slide.addText("Thank You",{x:0.5,y:2.3,w:9,h:0.7,fontSize:36,bold:true,color:"FFFFFF",fontFace:font,align:"center"});
+        slide.addText(meta.course+" · "+meta.dept,{x:0.5,y:3.2,w:9,h:0.35,fontSize:14,color:"FFFFFF",fontFace:font,align:"center"});
         return;
       }
-      slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:0.72,fill:{color:th.title}});
-      slide.addText(s.title,{x:0.35,y:0.15,w:9.3,h:0.45,fontSize:17,bold:true,color:"FFFFFF",fontFace:font});
+
+      /* Content slides: header bar; logos small top corners optional */
+      slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:0.7,fill:{color:th.title}});
+      slide.addText(s.title,{x:0.35,y:0.15,w:9.3,h:0.45,fontSize:16,bold:true,color:"FFFFFF",fontFace:font});
+      try{slide.addImage({path:LOGO,x:0.2,y:5.15,w:0.32,h:0.32})}catch(e){}
+      slide.addText("🔬 Slides by Noor",{x:7.2,y:5.2,w:2.5,h:0.22,fontSize:9,color:th.text,fontFace:font,align:"right",transparency:15});
+      slide.addText(meta.course+" · "+meta.dept,{x:0.6,y:5.22,w:5.5,h:0.18,fontSize:8,color:th.text,fontFace:font,transparency:35});
 
       var has=s.media&&s.media.dataUrl;
-      var textW=9.2, ix=6.9, iy=1.0, iw=2.8, ih=3.2;
+      var textW=9.2,ix=6.9,iy=1.0,iw=2.8,ih=3.2;
       if(lay==="split"){textW=4.7;ix=5.15;iw=4.5;ih=3.5}
       if(lay==="focus"){textW=4.4;ix=4.95;iw=4.7;ih=3.55}
-      if(!has&&!s.diagram) textW=9.2;
 
       if(s.type==="twocol"){
         slide.addShape(pptx.ShapeType.roundRect,{x:0.3,y:1.0,w:4.5,h:3.7,fill:{color:th.soft},rectRadius:0.08});
         slide.addShape(pptx.ShapeType.roundRect,{x:5.2,y:1.0,w:4.5,h:3.7,fill:{color:th.soft},rectRadius:0.08});
         slide.addText(s.leftTitle,{x:0.45,y:1.12,w:4.2,h:0.3,fontSize:13,bold:true,color:th.accent,fontFace:font});
         slide.addText(s.rightTitle,{x:5.35,y:1.12,w:4.2,h:0.3,fontSize:13,bold:true,color:th.accent,fontFace:font});
-        slide.addText((s.left||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:0.45,y:1.5,w:4.2,h:3.0,fontSize:13,color:th.text,fontFace:font,valign:"top"});
-        slide.addText((s.right||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:5.35,y:1.5,w:4.2,h:3.0,fontSize:13,color:th.text,fontFace:font,valign:"top"});
+        slide.addText((s.left||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:0.45,y:1.5,w:4.2,h:3.0,fontSize:fs,color:th.text,fontFace:font,valign:"top"});
+        slide.addText((s.right||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:5.35,y:1.5,w:4.2,h:3.0,fontSize:fs,color:th.text,fontFace:font,valign:"top"});
       } else {
-        slide.addText((s.bullets||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:0.35,y:0.95,w:(has||s.diagram)?textW:9.2,h:3.85,fontSize:14,color:th.text,fontFace:font,valign:"top"});
+        slide.addText((s.bullets||[]).map(function(b){return{text:b,options:{bullet:true,breakLine:true}}}),{x:0.35,y:0.95,w:(has||s.diagram)?textW:9.2,h:3.9,fontSize:fs,color:th.text,fontFace:font,valign:"top"});
         if(has){
-          try{
-            slide.addImage({data:s.media.dataUrl,x:ix,y:iy,w:iw,h:ih});
-            slide.addText((s.media.source||"")+" · "+(s.media.license||""),{x:ix,y:iy+ih+0.05,w:iw,h:0.25,fontSize:7,color:th.text,fontFace:font});
+          try{slide.addImage({data:s.media.dataUrl,x:ix,y:iy,w:iw,h:ih});
+            slide.addText((s.media.source||"")+" · "+(s.media.license||""),{x:ix,y:iy+ih+0.05,w:iw,h:0.22,fontSize:7,color:th.text,fontFace:font});
           }catch(e){drawFig(pptx,slide,s.diagram||"summary",th,ix,iy,iw,ih)}
         } else if(s.diagram) drawFig(pptx,slide,s.diagram,th,ix,iy,iw,ih);
+        else if(!has) drawFig(pptx,slide,"summary",th,ix,iy,iw,Math.min(ih,3.2));
       }
-      footer(pptx,slide,th);
     });
-    var fname=(meta.topic||"JUW-MicroSlides").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40);
+    var fname=meta.topic.replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40)||"JUW-MicroSlides";
     await pptx.writeFile({fileName:fname+".pptx"});
-    toast("PPTX saved with embedded images");
+    toast("PPTX downloaded");
   }
 
   function exportPdf(){
     if(!deck.length){toast("Generate first",true);return}
-    if(!window.jspdf||!window.jspdf.jsPDF){toast("PDF library needs network",true);return}
-    var jsPDF=window.jspdf.jsPDF, doc=new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
+    if(!window.jspdf||!window.jspdf.jsPDF){toast("PDF lib needs network",true);return}
+    var doc=new window.jspdf.jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
     var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
-    var th=THEMES[meta.theme]||THEMES.academic;
+    var th=THEMES[meta.theme]||THEMES.classic;
     function rgb(h){h=h.replace("#","");return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}}
     var tc=rgb(th.title),tx=rgb(th.text);
     deck.forEach(function(s,i){
       if(i)doc.addPage();
       if(s.type==="title"||s.type==="thanks"){
         doc.setFillColor(tc.r,tc.g,tc.b);doc.rect(0,0,W,H,"F");
-        doc.setTextColor(255,255,255);doc.setFontSize(26);doc.text(s.title||"Thank You",40,H/2-5);
-        doc.setFontSize(12);doc.text(meta.course+" · "+meta.preparer,40,H/2+25);
-        doc.text("Slides by Noor",W-130,H-24);
+        doc.setTextColor(255,255,255);doc.setFontSize(22);
+        doc.text(s.type==="title"?meta.topic.slice(0,80):(s.title||"Thank You"),40,H/2, {maxWidth:W-80});
+        doc.setFontSize(11);doc.text("Slides by Noor · "+meta.course,40,H-28);
       } else {
         doc.setFillColor(tc.r,tc.g,tc.b);doc.rect(0,0,W,40,"F");
         doc.setTextColor(255,255,255);doc.setFontSize(14);doc.text(s.title||"",28,26);
-        doc.setTextColor(tx.r,tx.g,tx.b);doc.setFontSize(11);
-        var y=58;(s.bullets||s.left||[]).forEach(function(b){var w=doc.splitTextToSize("• "+b,W-60);doc.text(w,28,y);y+=w.length*13+4});
-        doc.setFontSize(8);doc.setTextColor(120);doc.text("Slides by Noor · "+meta.course,28,H-18);
+        doc.setTextColor(tx.r,tx.g,tx.b);doc.setFontSize(meta.fontSize||12);
+        var y=58;(s.bullets||[]).forEach(function(b){var lines=doc.splitTextToSize("• "+b,W-60);doc.text(lines,28,y);y+=lines.length*14+3});
+        doc.setFontSize(8);doc.setTextColor(120);doc.text("Slides by Noor · "+meta.dept,28,H-18);
       }
     });
-    doc.save((meta.topic||"JUW-MicroSlides").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_")+".pdf");
+    doc.save((meta.topic||"JUW").replace(/[^\w\s\-]/g,"").replace(/\s+/g,"_").slice(0,40)+".pdf");
     toast("PDF downloaded");
   }
 
@@ -633,7 +519,7 @@ textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px
   document.getElementById("btnBack").onclick=function(){showPage("home")};
   document.querySelectorAll(".ni").forEach(function(n){n.onclick=function(){showPage(n.getAttribute("data-p"))}});
   document.querySelectorAll("#topicChips .chip").forEach(function(c){c.onclick=function(){document.getElementById("topic").value=c.getAttribute("data-t");document.querySelectorAll("#topicChips .chip").forEach(function(x){x.classList.remove("on")});c.classList.add("on")}});
-  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function(){});
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(function(){});
 })();
 </script>
 </body>
