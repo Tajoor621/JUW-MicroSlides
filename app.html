@@ -58,6 +58,16 @@
       <section class="generator">
         <h2>Generate a deck</h2>
         <p>Grounded in PubMed citations, illustrated from Wikimedia Commons / Openverse / CDC PHIL.</p>
+
+        <div class="mode-toggle" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.88rem;">
+            <input type="radio" name="gen-mode" value="manual" checked> Manual Mode <span style="font-size:0.75rem;color:var(--text-muted);">(no API key needed)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.88rem;">
+            <input type="radio" name="gen-mode" value="ai"> AI Mode <span style="font-size:0.75rem;color:var(--text-muted);">(requires Anthropic key)</span>
+          </label>
+        </div>
+
         <div class="generator__row">
           <div class="field" style="flex:2;">
             <label for="gen-topic">Topic</label>
@@ -78,6 +88,7 @@
           </div>
         </div>
         <button class="btn btn--primary" id="btn-generate">Generate deck</button>
+        <div id="gen-progress" style="display:none;margin-top:10px;font-size:0.82rem;color:var(--text-muted);"></div>
       </section>
 
       <div class="stagebar">
@@ -177,7 +188,7 @@
     <h3 style="font-family:var(--font-display);margin:0 0 6px;">Settings</h3>
     <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 16px;">Keys are stored only in this browser's local storage — never sent anywhere but Anthropic/NCBI directly.</p>
     <div class="field" style="margin-bottom:12px;">
-      <label for="anthropic-key-input">Anthropic API key (required for AI generation)</label>
+      <label for="anthropic-key-input">Anthropic API key (required only for AI Mode &amp; Copilot)</label>
       <input id="anthropic-key-input" type="password" placeholder="sk-ant-...">
     </div>
     <div class="field" style="margin-bottom:16px;">
@@ -200,6 +211,7 @@
 <script src="js/pubmed.js"></script>
 <script src="js/media.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/manual.js"></script>
 <script src="js/deck-model.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/export-pptx.js"></script>
