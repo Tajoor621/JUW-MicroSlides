@@ -5,6 +5,17 @@
    ============================================================ */
 
 const CONFIG = {
+const CONFIG = {
+  VERSION: '2.2.0',
+  STORAGE_KEYS: {
+    anthropicKey: 'juw_anthropic_key',
+    ncbiKey: 'juw_ncbi_key',
+    deckPrefix: 'juw_deck_',
+    lastDeck: 'juw_last_deck_id',
+    prefs: 'juw_prefs'
+  },
+  // ... rest of the file stays exactly the same
+   
   STORAGE_KEYS: {
     anthropicKey: 'juw_anthropic_key',
     ncbiKey: 'juw_ncbi_key',        // optional, raises PubMed rate limit
