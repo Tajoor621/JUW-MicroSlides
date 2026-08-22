@@ -1,7 +1,7 @@
 /* ============================================================
    JUW-MicroSlides — app.js
    Application state + event wiring. Ties together config,
-   pubmed, media, ai, deck-model, editor, and export modules.
+   pubmed, media, ai, manual, deck-model, editor, and export modules.
    ============================================================ */
 
 const App = {
@@ -31,6 +31,16 @@ const App = {
     this.bindMobileToggles();
     this.renderAll();
     this.refreshKeyBadge();
+
+    // Populate layout dropdown
+    const layoutSel = document.getElementById('stagebar-layout');
+    layoutSel.innerHTML = '';
+    CONFIG.LAYOUTS.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l.id;
+      opt.textContent = l.label;
+      layoutSel.appendChild(opt);
+    });
   },
 
   renderAll(){
@@ -39,6 +49,7 @@ const App = {
     document.getElementById('stagebar-layout').value = this.currentSlide().layout;
     this.syncDesignUI();
     document.getElementById('deck-title-input').value = this.deck.title;
+    this.syncNotesUI();
     DeckModel.save(this.deck);
   },
 
@@ -84,60 +95,99 @@ const App = {
     });
   },
 
-  /* ---------------- Generator (AI) ---------------- */
+  /* ---------------- Generator (Manual + AI) ---------------- */
   bindGenerator(){
     document.getElementById('btn-generate').addEventListener('click', async ()=>{
       const topic = document.getElementById('gen-topic').value.trim();
       const level = document.getElementById('gen-level').value;
       const countRaw = document.getElementById('gen-count').value.trim();
-      const slideCount = countRaw ? parseInt(countRaw,10) : 0; // 0/blank = unlimited/AI-decided
+      const slideCount = countRaw ? parseInt(countRaw, 10) : 0;
+      const mode = (document.querySelector('input[name="gen-mode"]:checked') || {}).value || 'manual';
+
       if(!topic){ this.toast('Enter a topic first.', true); return; }
-      if(!AI.hasKey()){ this.toast('Add your Anthropic API key in Settings first.', true); document.getElementById('settings-modal').classList.remove('hidden'); return; }
+      if(mode === 'ai' && !AI.hasKey()){
+        this.toast('AI Mode needs an Anthropic key. Switch to Manual Mode or add a key in Settings.', true);
+        document.getElementById('settings-modal').classList.remove('hidden');
+        return;
+      }
 
       const btn = document.getElementById('btn-generate');
-      btn.disabled = true; btn.textContent = 'Researching PubMed…';
+      const progress = document.getElementById('gen-progress');
+      btn.disabled = true;
+      progress.style.display = 'block';
+      progress.textContent = 'Researching PubMed…';
+
       try{
-        const citations = await PubMed.search(topic, 10).catch(()=>[]);
+        const citations = await PubMed.search(topic, 10).catch(() => []);
         this.lastPubmedResults = citations;
         this.renderPubmedPanel(citations);
 
-        btn.textContent = 'Drafting slides…';
-        const result = await AI.generateDeck({ topic, level, slideCount, citations });
-        if(!result || !Array.isArray(result.slides)) throw new Error('AI returned an unexpected format.');
-
-        btn.textContent = 'Fetching diagrams & micrographs…';
-        const newSlides = [];
-        for(const s of result.slides){
-          const slide = DeckModel.newSlide({
-            title: s.title || 'Untitled',
-            layout: CONFIG.LAYOUTS.some(l=>l.id===s.layout) ? s.layout : 'title-bullets-image',
-            bullets: s.bullets || [],
-            notes: s.notes || '',
-            citedPmids: s.citedPmids || []
-          });
-          if(s.imageQuery && slide.layout !== 'references' && slide.layout !== 'comparison' && slide.layout !== 'divider'){
-            try{
-              const media = await Media.searchAll(s.imageQuery);
-              if(media && media[0]) slide.image = media[0];
-            }catch(e){ /* non-fatal */ }
-          }
-          newSlides.push(slide);
+        let result;
+        if(mode === 'ai'){
+          progress.textContent = 'Drafting slides with AI…';
+          result = await AI.generateDeck({ topic, level, slideCount, citations });
+          if(!result || !Array.isArray(result.slides)) throw new Error('AI returned an unexpected format.');
+        } else {
+          progress.textContent = 'Building structured lecture (Manual Mode)…';
+          result = await Manual.generateDeck({ topic, level, slideCount });
         }
+
+        progress.textContent = 'Fetching diagrams & micrographs…';
+        let newSlides = [];
+
+        if(mode === 'ai'){
+          const tasks = result.slides.map(async (s) => {
+            const slide = DeckModel.newSlide({
+              title: s.title || 'Untitled',
+              layout: CONFIG.LAYOUTS.some(l => l.id === s.layout) ? s.layout : 'title-bullets-image',
+              bullets: s.bullets || [],
+              notes: s.notes || '',
+              citedPmids: s.citedPmids || []
+            });
+            if(s.imageQuery && !['references','comparison','divider'].includes(slide.layout)){
+              try{
+                const media = await Media.searchAll(s.imageQuery);
+                if(media && media[0]) slide.image = media[0];
+              }catch(e){}
+            }
+            return slide;
+          });
+          const concurrency = 4;
+          for(let i = 0; i < tasks.length; i += concurrency){
+            const batch = await Promise.all(tasks.slice(i, i + concurrency));
+            newSlides.push(...batch);
+          }
+        } else {
+          newSlides = result.slides;
+        }
+
         this.deck.title = result.title || topic;
-        const coverSlide = DeckModel.newSlide({
-          title: this.deck.title,
-          layout: 'juw-cover',
-          cover: { courseName: level || 'COURSE NAME', courseCode: 'COURSE CODE', preparedBy: 'PREPARED BY: ', department: 'DEPARTMENT OF MICROBIOLOGY' }
-        });
-        this.deck.slides = [coverSlide, ...newSlides];
+        if(newSlides[0] && newSlides[0].layout !== 'juw-cover'){
+          const coverSlide = DeckModel.newSlide({
+            title: this.deck.title,
+            layout: 'juw-cover',
+            cover: {
+              courseName: level || 'COURSE NAME',
+              courseCode: 'COURSE CODE',
+              preparedBy: 'PREPARED BY: ',
+              department: 'DEPARTMENT OF MICROBIOLOGY'
+            }
+          });
+          this.deck.slides = [coverSlide, ...newSlides];
+        } else {
+          this.deck.slides = newSlides;
+        }
+
         this.activeIndex = 0;
         this.renderAll();
-        this.toast(`Generated ${newSlides.length} slides, grounded in ${citations.length} PubMed sources.`);
+        this.toast(`Generated \( {this.deck.slides.length} slides ( \){mode === 'ai' ? 'AI' : 'Manual'} mode) · ${citations.length} PubMed sources.`);
       }catch(e){
         console.error(e);
         this.toast(e.message, true);
       }finally{
-        btn.disabled = false; btn.textContent = 'Generate deck';
+        btn.disabled = false;
+        btn.textContent = 'Generate deck';
+        progress.style.display = 'none';
       }
     });
   },
@@ -159,7 +209,6 @@ const App = {
       DeckModel.save(this.deck);
     });
 
-    // Click the department badge on a cover slide to replace it with your own image
     stage.addEventListener('click', e=>{
       if(e.target.dataset && e.target.dataset.coverBadge){
         document.getElementById('cover-badge-input').click();
@@ -213,7 +262,6 @@ const App = {
       this.renderAll();
     });
 
-    // drag reorder — unlimited slides, user can freely reorder
     let dragFrom = null;
     list.addEventListener('dragstart', e=>{
       const chip = e.target.closest('.slidechip');
@@ -245,7 +293,7 @@ const App = {
     });
   },
 
-  /* ---------------- Design controls: fonts, size, accent, layouts list ---------------- */
+  /* ---------------- Design controls ---------------- */
   bindDesignControls(){
     const fontSel = document.getElementById('design-font');
     CONFIG.FONT_OPTIONS.forEach(f=>{
@@ -322,7 +370,7 @@ const App = {
       <div class="citeitem">
         <b>${escapeAttr(r.title)}</b><br>
         ${escapeAttr(r.citation)}<br>
-        <a href="${r.url}" target="_blank" rel="noopener">${r.url}</a>
+        <a href="\( {r.url}" target="_blank" rel="noopener"> \){r.url}</a>
         <div style="margin-top:6px;"><button class="chip-select" data-attach-pmid="${r.pmid}">Attach to slide</button></div>
       </div>
     `).join('')}</div>`;
@@ -376,7 +424,7 @@ const App = {
     });
   },
 
-  /* ---------------- User uploads (own notes/media) ---------------- */
+  /* ---------------- User uploads ---------------- */
   bindUpload(){
     const zone = document.getElementById('upload-zone');
     const input = document.getElementById('upload-input');
@@ -387,7 +435,7 @@ const App = {
       const reader = new FileReader();
       reader.onload = () => {
         this.currentSlide().userMedia = [{ name:file.name, dataUrl:reader.result }];
-        this.currentSlide().image = null; // user media takes priority
+        this.currentSlide().image = null;
         Editor.renderStage(this.currentSlide(), this.deck);
         Editor.renderRail(this.deck, this.activeIndex);
         DeckModel.save(this.deck);
@@ -434,7 +482,7 @@ const App = {
     });
   },
 
-  /* ---------------- Settings modal (API keys) ---------------- */
+  /* ---------------- Settings modal ---------------- */
   bindSettings(){
     const modal = document.getElementById('settings-modal');
     document.getElementById('settings-close').addEventListener('click', ()=>modal.classList.add('hidden'));
@@ -447,6 +495,15 @@ const App = {
       modal.classList.add('hidden');
       this.toast('Settings saved locally on this device.');
     });
+
+    // Mobile keyboard safety for Settings modal
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', () => {
+        if(!modal.classList.contains('hidden')){
+          modal.style.paddingBottom = Math.max(20, window.innerHeight - window.visualViewport.height + 20) + 'px';
+        }
+      });
+    }
   },
   refreshKeyBadge(){
     const badge = document.getElementById('key-badge');
@@ -469,11 +526,14 @@ function escapeAttr(s){
   return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Patch active-slide sync into renderAll (notes + rail selection depend on activeIndex)
-const _origRenderAll = App.renderAll.bind(App);
-App.renderAll = function(){
-  _origRenderAll();
-  this.syncNotesUI();
-};
+// Global error handling
+window.addEventListener('error', (e) => {
+  console.error(e);
+  if(App && App.toast) App.toast('Unexpected error — check console', true);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error(e.reason);
+  if(App && App.toast) App.toast(e.reason?.message || 'Request failed', true);
+});
 
 document.addEventListener('DOMContentLoaded', ()=> App.init());
