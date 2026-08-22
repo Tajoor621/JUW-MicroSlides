@@ -6,39 +6,38 @@
 
 const DeckModel = {
 
-  newDeck(title='Untitled Deck'){
+  newDeck(title = 'Untitled Deck'){
     return {
-      id: 'deck_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+      id: 'deck_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       title,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       design: {
         fontPairId: 'serif-plex',
-        fontScale: 1.0,          // multiplier applied to base sizes
+        fontScale: 1.0,
         accentId: 'gram'
       },
       slides: []
     };
   },
 
-  newSlide(overrides={}){
+  newSlide(overrides = {}){
     return Object.assign({
-      id: 'slide_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+      id: 'slide_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       title: 'New slide',
       layout: 'title-bullets-image',
       bullets: ['Click to edit this point'],
       notes: '',
       citedPmids: [],
-      image: null,        // { thumbUrl, fullUrl, source, license, attribution, pageUrl }
-      userMedia: [],       // user-uploaded images/files (data URLs), kept local
-      tableRows: [],         // used by 'comparison' layout: [[cellA,cellB,...], ...]
-      // used by 'juw-cover' layout — replicates the JUW departmental title-slide format
+      image: null,
+      userMedia: [],
+      tableRows: [],
       cover: {
         courseName: 'COURSE NAME',
         courseCode: 'COURSE CODE',
         preparedBy: 'PREPARED BY: ',
         department: 'DEPARTMENT OF MICROBIOLOGY',
-        deptBadge: null   // { dataUrl } — user-uploaded department badge overrides the default
+        deptBadge: null
       }
     }, overrides);
   },
@@ -60,26 +59,51 @@ const DeckModel = {
 
   listAll(){
     const decks = [];
-    for(let i=0;i<localStorage.length;i++){
+    for(let i = 0; i < localStorage.length; i++){
       const key = localStorage.key(i);
       if(key && key.startsWith(CONFIG.STORAGE_KEYS.deckPrefix)){
         const d = Store.get(key, null);
         if(d) decks.push(d);
       }
     }
-    return decks.sort((a,b)=>b.updatedAt-a.updatedAt);
+    return decks.sort((a, b) => b.updatedAt - a.updatedAt);
   },
 
   delete(id){
     localStorage.removeItem(CONFIG.STORAGE_KEYS.deckPrefix + id);
   },
 
+  duplicate(id){
+    const original = this.load(id);
+    if(!original) return null;
+    const copy = JSON.parse(JSON.stringify(original));
+    copy.id = 'deck_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    copy.title = (copy.title || 'Untitled') + ' (copy)';
+    copy.createdAt = Date.now();
+    copy.updatedAt = Date.now();
+    this.save(copy);
+    return copy;
+  },
+
+  exportJSON(deck){
+    return JSON.stringify(deck, null, 2);
+  },
+
+  importJSON(jsonString){
+    const data = JSON.parse(jsonString);
+    if(!data || !Array.isArray(data.slides)) throw new Error('Invalid deck JSON');
+    data.id = 'deck_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    data.updatedAt = Date.now();
+    this.save(data);
+    return data;
+  },
+
   getFontPair(deck){
-    return CONFIG.FONT_OPTIONS.find(f=>f.id===deck.design.fontPairId) || CONFIG.FONT_OPTIONS[0];
+    return CONFIG.FONT_OPTIONS.find(f => f.id === deck.design.fontPairId) || CONFIG.FONT_OPTIONS[0];
   },
 
   getAccent(deck){
-    return CONFIG.ACCENT_SWATCHES.find(a=>a.id===deck.design.accentId) || CONFIG.ACCENT_SWATCHES[0];
+    return CONFIG.ACCENT_SWATCHES.find(a => a.id === deck.design.accentId) || CONFIG.ACCENT_SWATCHES[0];
   }
 };
 
