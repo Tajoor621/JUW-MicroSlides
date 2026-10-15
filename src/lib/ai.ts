@@ -1,3 +1,6 @@
+import { z } from "zod";
+import { reserveAiRequest } from "./ai-limits";
+import { LEVELS } from "./types";
 import { createServerFn } from "@tanstack/react-start";
 import { lectureMeta } from "./brand";
 import { generateLocalDeck } from "./generate-deck";
@@ -26,7 +29,22 @@ const SLIDE_SCHEMA = `{
 }`;
 
 export const generateAiDeck = createServerFn({ method: "POST" })
-  .validator((input: GenerateInput) => input)
+  .validator((input: unknown) =>
+    z
+      .object({
+        topic: z.string().trim().min(1).max(500),
+        discipline: z.string().max(200),
+        count: z.number().int().min(1).max(MAX_SLIDES),
+        level: z.enum(LEVELS),
+        notes: z.string().max(10000),
+        mode: z.enum(["manual", "ai"]),
+        course: z.string().max(200).optional(),
+        courseCode: z.string().max(100).optional(),
+        preparedBy: z.string().max(200).optional(),
+        department: z.string().max(200).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }): Promise<AiOk | AiFail> => {
     const fallback = generateLocalDeck(data);
     const apiKey = process.env.XAI_API_KEY;
@@ -38,11 +56,19 @@ export const generateAiDeck = createServerFn({ method: "POST" })
       };
     }
 
+    if (!reserveAiRequest("deck"))
+      return { ok: false, error: "AI request limit reached. Retry in a minute.", deck: fallback };
     const count = Math.min(MAX_SLIDES, Math.max(1, data.count || 18));
     if (count > 36) {
-      return { ok: true, deck: fallback };
+      return {
+        ok: false,
+        error:
+          "AI generation supports up to 36 slides per request. A local deck was created instead.",
+        deck: fallback,
+      };
     }
     const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      signal: AbortSignal.timeout(45000),
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,13 +104,23 @@ First slide MUST be layout=title (official JUW intro: university crest, departme
     const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const text = body.choices?.[0]?.message?.content ?? "";
     const parsed = parseDeckJson(text, data);
-    if (!parsed) return { ok: false, error: "The model returned an unreadable deck.", deck: fallback };
+    if (!parsed)
+      return { ok: false, error: "The model returned an unreadable deck.", deck: fallback };
     const padded = padWithLocal(parsed, fallback, count);
-    return { ok: true, deck: attachUniqueMedia(padded) };
+    return { ok: true, deck: { ...attachUniqueMedia(padded), generationSource: "cloud-ai" } };
   });
 
 export const askCopilot = createServerFn({ method: "POST" })
-  .validator((input: { question: string; slideTitle: string; slideBody: string; refine: boolean }) => input)
+  .validator((input: unknown) =>
+    z
+      .object({
+        question: z.string().max(2000),
+        slideTitle: z.string().max(1000),
+        slideBody: z.string().max(10000),
+        refine: z.boolean(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }): Promise<AiAskOk | AiFail> => {
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) {
@@ -93,7 +129,10 @@ export const askCopilot = createServerFn({ method: "POST" })
         error: "AI copilot is unavailable here. Try Edit to rewrite bullets by hand.",
       };
     }
+    if (!reserveAiRequest("copilot"))
+      return { ok: false, error: "Copilot request limit reached. Retry in a minute." };
     const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      signal: AbortSignal.timeout(45000),
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +161,9 @@ export const askCopilot = createServerFn({ method: "POST" })
   });
 
 export const searchPubmed = createServerFn({ method: "POST" })
-  .validator((input: { query: string }) => input)
+  .validator((input: unknown) =>
+    z.object({ query: z.string().trim().min(1).max(500) }).parse(input),
+  )
   .handler(async ({ data }): Promise<{ ok: true; citations: Citation[] } | AiFail> => {
     const q = data.query.trim();
     if (!q) return { ok: false, error: "Enter a search term." };
@@ -139,14 +180,32 @@ export const searchPubmed = createServerFn({ method: "POST" })
       );
       if (!sum.ok) return { ok: false, error: `PubMed summary failed (${sum.status})` };
       const r = (await sum.json()) as {
-        result?: Record<string, { title?: string; fulljournalname?: string; source?: string; pubdate?: string; sortfirstauthor?: string; authors?: { name: string }[]; volume?: string; pages?: string; elocationid?: string }>;
+        result?: Record<
+          string,
+          {
+            title?: string;
+            fulljournalname?: string;
+            source?: string;
+            pubdate?: string;
+            sortfirstauthor?: string;
+            authors?: { name: string }[];
+            volume?: string;
+            pages?: string;
+            elocationid?: string;
+          }
+        >;
       };
       const citations = ids
         .map((id) => {
           const item = r.result?.[id];
           if (!item) return null;
           const authors =
-            item.authors?.slice(0, 3).map((a) => a.name).join(", ") || item.sortfirstauthor || "Unknown";
+            item.authors
+              ?.slice(0, 3)
+              .map((a) => a.name)
+              .join(", ") ||
+            item.sortfirstauthor ||
+            "Unknown";
           const year = (item.pubdate || "").slice(0, 4);
           const doi = item.elocationid?.startsWith("doi:") ? item.elocationid.slice(4) : undefined;
           return {
@@ -169,7 +228,9 @@ export const searchPubmed = createServerFn({ method: "POST" })
   });
 
 export const searchOpenAlex = createServerFn({ method: "POST" })
-  .validator((input: { query: string }) => input)
+  .validator((input: unknown) =>
+    z.object({ query: z.string().trim().min(1).max(500) }).parse(input),
+  )
   .handler(async ({ data }): Promise<{ ok: true; citations: Citation[] } | AiFail> => {
     const q = data.query.trim();
     if (!q) return { ok: false, error: "Enter a search term." };
@@ -228,7 +289,26 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
   const match = raw.match(/\{[\s\S]*\}/);
   if (!match) return null;
   try {
-    const json = JSON.parse(match[0]) as {
+    const validated = z
+      .object({
+        title: z.string().max(1000).optional(),
+        slides: z
+          .array(
+            z.object({
+              layout: z.enum(["title", "content", "two-column", "full-image", "blank"]).optional(),
+              title: z.string().max(1000).optional(),
+              subtitle: z.string().max(2000).optional(),
+              bullets: z.array(z.string().max(3000)).max(20).optional(),
+              leftBullets: z.array(z.string().max(3000)).max(20).optional(),
+              rightBullets: z.array(z.string().max(3000)).max(20).optional(),
+              notes: z.string().max(20000).optional(),
+            }),
+          )
+          .min(1)
+          .max(MAX_SLIDES),
+      })
+      .parse(JSON.parse(match[0]));
+    const json = validated as {
       title?: string;
       slides?: Array<{
         layout?: Slide["layout"];

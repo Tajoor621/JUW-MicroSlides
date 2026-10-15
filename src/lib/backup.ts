@@ -1,0 +1,79 @@
+import { z } from "zod";
+import { LAYOUTS, LEVELS, CITATION_STYLES } from "./types";
+import { SLIDE_THEMES } from "./slide-themes";
+const text = z.string().max(100000);
+const safeSrc = z
+  .string()
+  .max(5000000)
+  .refine(
+    (s) => /^(https?:|data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]|\/(?!\/))/.test(s),
+    "Unsupported image URL",
+  );
+const media = z.object({
+  id: text,
+  kind: z.enum(["micrograph", "diagram", "icon", "photo", "gif", "chart"]),
+  title: text,
+  src: safeSrc,
+  credit: text,
+  source: text,
+  license: text,
+  licenseUrl: z
+    .string()
+    .url()
+    .refine((s) => s.startsWith("https://") || s.startsWith("http://"))
+    .optional(),
+  keywords: z.array(text).max(100),
+});
+const citation = z.object({
+  id: text,
+  authors: text,
+  title: text,
+  journal: text,
+  year: text,
+  cslAuthors: z
+    .array(z.object({ family: text.optional(), given: text.optional(), literal: text.optional() }))
+    .max(1000)
+    .optional(),
+  pmid: text.optional(),
+  doi: text.optional(),
+  volume: text.optional(),
+  pages: text.optional(),
+});
+const slide = z.object({
+  id: text,
+  layout: z.enum(LAYOUTS),
+  theme: z.enum(SLIDE_THEMES),
+  title: text,
+  subtitle: text,
+  bullets: z.array(text).max(500),
+  leftBullets: z.array(text).max(500),
+  rightBullets: z.array(text).max(500),
+  notes: text,
+  citations: z.array(citation).max(1000),
+  media: z.array(media).max(100),
+});
+export const deckSchema = z.object({
+  id: text,
+  title: text,
+  topic: text,
+  discipline: text,
+  level: z.enum(LEVELS),
+  citationStyle: z.enum(CITATION_STYLES),
+  course: text,
+  courseCode: text,
+  preparedBy: text,
+  department: text,
+  slides: z.array(slide).min(1).max(400),
+  mediaPool: z.array(media).max(1000),
+  generationSource: z.enum(["knowledge", "cloud-ai", "local-ai"]).optional(),
+  updatedAt: z.number().finite(),
+});
+export const backupSchema = z.object({
+  format: z.literal("juw-microslides"),
+  schemaVersion: z.literal(1),
+  decks: z.array(deckSchema).min(1).max(500),
+});
+export function parseBackup(raw: string) {
+  if (raw.length > 100000000) throw new Error("Backup exceeds 100 MB.");
+  return backupSchema.parse(JSON.parse(raw)).decks;
+}

@@ -1,4 +1,7 @@
 node_modules/
+dist-pages/
+.output/
+.vercel/
 .project_id
 .github_repo
 .env

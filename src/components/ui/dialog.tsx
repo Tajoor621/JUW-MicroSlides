@@ -7,14 +7,18 @@ export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 
-export function DialogContent({ className, children, ...props }: ComponentProps<typeof DialogPrimitive.Content>) {
+export function DialogContent({
+  className,
+  children,
+  ...props
+}: ComponentProps<typeof DialogPrimitive.Content>) {
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-navy/70 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
       <DialogPrimitive.Content
         className={cn(
           "fixed left-1/2 top-1/2 z-50 w-[min(560px,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2",
-          "rounded-lg border border-border bg-surface p-5 text-fg shadow-panel",
+          "max-h-[90dvh] overflow-y-auto rounded-lg border border-border bg-surface p-5 text-fg shadow-panel",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           className,
         )}
@@ -34,8 +38,13 @@ export function DialogHeader({ className, ...props }: HTMLAttributes<HTMLDivElem
   return <div className={cn("mb-4 space-y-1 pr-8", className)} {...props} />;
 }
 export function DialogTitle({ className, ...props }: ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title className={cn("font-serif text-xl text-fg", className)} {...props} />;
+  return (
+    <DialogPrimitive.Title className={cn("font-serif text-xl text-fg", className)} {...props} />
+  );
 }
-export function DialogDescription({ className, ...props }: ComponentProps<typeof DialogPrimitive.Description>) {
+export function DialogDescription({
+  className,
+  ...props
+}: ComponentProps<typeof DialogPrimitive.Description>) {
   return <DialogPrimitive.Description className={cn("text-sm text-muted", className)} {...props} />;
 }

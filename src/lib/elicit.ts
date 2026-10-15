@@ -1,3 +1,6 @@
+import Papa from "papaparse";
+import { Cite } from "@citation-js/core";
+import "@citation-js/plugin-bibtex";
 import type { Citation } from "./types";
 import { uid } from "./utils";
 
@@ -6,7 +9,8 @@ function asAuthors(value: unknown): string {
     return value
       .map((item) => {
         if (typeof item === "string") return item;
-        if (item && typeof item === "object" && "name" in item) return String((item as { name: unknown }).name);
+        if (item && typeof item === "object" && "name" in item)
+          return String((item as { name: unknown }).name);
         return "";
       })
       .filter(Boolean)
@@ -42,11 +46,12 @@ function parseJson(raw: string): Citation[] {
   const list: unknown[] = Array.isArray(json)
     ? json
     : json && typeof json === "object"
-      ? ((json as { papers?: unknown; results?: unknown; items?: unknown; data?: unknown }).papers ??
-        (json as { results?: unknown }).results ??
-        (json as { items?: unknown }).items ??
-        (json as { data?: unknown }).data ??
-        []) as unknown[]
+      ? (((json as { papers?: unknown; results?: unknown; items?: unknown; data?: unknown })
+          .papers ??
+          (json as { results?: unknown }).results ??
+          (json as { items?: unknown }).items ??
+          (json as { data?: unknown }).data ??
+          []) as unknown[])
       : [];
   if (!Array.isArray(list)) return [];
   return list
@@ -56,75 +61,37 @@ function parseJson(raw: string): Citation[] {
 }
 
 function parseCsv(raw: string): Citation[] {
-  const lines = raw.split(/\r?\n/).filter((line) => line.trim());
-  if (lines.length < 2) return [];
-  const split = (line: string) => {
-    const cells: string[] = [];
-    let cur = "";
-    let quoted = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        quoted = !quoted;
-        continue;
-      }
-      if (ch === "," && !quoted) {
-        cells.push(cur.trim());
-        cur = "";
-        continue;
-      }
-      cur += ch;
-    }
-    cells.push(cur.trim());
-    return cells;
-  };
-  const header = split(lines[0]).map((h) => h.toLowerCase());
-  const col = (names: string[]) => header.findIndex((h) => names.some((n) => h.includes(n)));
-  const iTitle = col(["title", "paper"]);
-  const iAuthors = col(["author"]);
-  const iYear = col(["year", "date"]);
-  const iJournal = col(["journal", "venue", "source", "publication"]);
-  const iDoi = col(["doi"]);
-  if (iTitle < 0) return [];
-  const out: Citation[] = [];
-  for (const line of lines.slice(1)) {
-    const cells = split(line);
-    const rec: Record<string, unknown> = {
-      title: cells[iTitle],
-      authors: iAuthors >= 0 ? cells[iAuthors] : "Unknown",
-      year: iYear >= 0 ? cells[iYear] : "",
-      journal: iJournal >= 0 ? cells[iJournal] : "",
-      doi: iDoi >= 0 ? cells[iDoi] : "",
-    };
-    const c = fromRecord(rec);
-    if (c) out.push(c);
-  }
-  return out;
+  const result = Papa.parse<Record<string, string>>(raw, {
+    header: true,
+    skipEmptyLines: "greedy",
+    transformHeader: (h) => h.trim().toLowerCase(),
+  });
+  if (result.errors.length) throw new Error(`CSV import: ${result.errors[0].message}`);
+  return result.data.map((row) => fromRecord(row)).filter((c): c is Citation => Boolean(c));
 }
 
 function parseBibtex(raw: string): Citation[] {
-  const chunks = raw.split(/@\w+\s*\{/);
-  const out: Citation[] = [];
-  for (const chunk of chunks.slice(1)) {
-    const field = (name: string) => {
-      const re = new RegExp(`${name}\\s*=\\s*[{"]([^}"]+)[}"]`, "i");
-      return re.exec(chunk)?.[1]?.trim() ?? "";
-    };
-    const rec: Record<string, unknown> = {
-      title: field("title"),
-      authors: field("author").replace(/\s+and\s+/gi, ", "),
-      year: field("year"),
-      journal: field("journal") || field("booktitle") || field("venue"),
-      doi: field("doi"),
-    };
-    const c = fromRecord(rec);
-    if (c) out.push(c);
-  }
-  return out;
+  const cite = new Cite(raw);
+  return cite.data
+    .map((record) => {
+      const names = record.author ?? [];
+      const made = fromRecord({
+        title: record.title,
+        authors: names
+          .map((name) => name.literal || [name.family, name.given].filter(Boolean).join(", "))
+          .join("; "),
+        year: record.issued?.["date-parts"]?.[0]?.[0],
+        journal: record["container-title"],
+        doi: record.DOI,
+      });
+      return made ? { ...made, cslAuthors: names } : null;
+    })
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
 }
 
 /** Parse pasted Elicit / Zotero / OpenAlex exports (JSON, CSV, or BibTeX). */
 export function parseEvidencePaste(raw: string): Citation[] {
+  if (raw.length > 2000000) throw new Error("Reference import exceeds 2 MB.");
   const text = raw.trim();
   if (!text) return [];
   if (text.startsWith("{") || text.startsWith("[")) {

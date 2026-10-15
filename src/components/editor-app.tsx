@@ -1,3 +1,4 @@
+import { storageHealth } from "@/lib/durable-storage";
 import { useEffect, useState } from "react";
 import {
   ChevronDown,
@@ -26,6 +27,9 @@ import { GeneratePanel } from "./generate-panel";
 import { InspectorPanel } from "./inspector-panel";
 import { Presenter } from "./presenter";
 import { SlideView } from "./slide-view";
+import { undo, redo } from "@/lib/history";
+import { LocalAiSettings } from "./local-ai-settings";
+import { LibraryBackup } from "./library-backup";
 import { Wordmark } from "./wordmark";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -34,6 +38,38 @@ import { Label } from "./ui/label";
 import { Tooltip, TooltipProvider } from "./ui/tooltip";
 
 export function EditorApp() {
+  const [hydrated, setHydrated] = useState(useDeckStore.persist.hasHydrated());
+  const [online, setOnline] = useState(typeof navigator === "undefined" || navigator.onLine);
+  useEffect(() => {
+    const refresh = () => setOnline(navigator.onLine);
+    window.addEventListener("online", refresh);
+    window.addEventListener("offline", refresh);
+    return () => {
+      window.removeEventListener("online", refresh);
+      window.removeEventListener("offline", refresh);
+    };
+  }, []);
+  const [saveStatus, setSaveStatus] = useState(storageHealth.warning || "Saved on this device");
+  useEffect(() => {
+    const off = useDeckStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useDeckStore.persist.hasHydrated()) setHydrated(true);
+    const failure = (event: Event) => {
+      const message = (event as CustomEvent<string>).detail;
+      setSaveStatus("Save failed — download backup");
+      toast.error(message, { duration: Infinity });
+    };
+    const saving = () => setSaveStatus("Saving…");
+    const saved = () => setSaveStatus(storageHealth.warning || "Saved on this device");
+    window.addEventListener("juw-storage", failure);
+    window.addEventListener("juw-saving", saving);
+    window.addEventListener("juw-saved", saved);
+    return () => {
+      off();
+      window.removeEventListener("juw-storage", failure);
+      window.removeEventListener("juw-saving", saving);
+      window.removeEventListener("juw-saved", saved);
+    };
+  }, []);
   const theme = useDeckStore((s) => s.chromeTheme);
   const deck = useDeckStore((s) => s.deck());
   const slide = useDeckStore((s) => s.slide());
@@ -58,7 +94,7 @@ export function EditorApp() {
 
   useEffect(() => {
     const finish = () => useDeckStore.getState().hydrateSample();
-    finish();
+    if (useDeckStore.persist.hasHydrated()) finish();
     const unsub = useDeckStore.persist.onFinishHydration(finish);
     if (useDeckStore.persist.hasHydrated()) finish();
     return unsub;
@@ -71,7 +107,24 @@ export function EditorApp() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        (e.target as HTMLElement)?.isContentEditable
+      )
+        return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
         select(index + 1);
@@ -90,7 +143,7 @@ export function EditorApp() {
     try {
       toast.message("Embedding figures into PowerPoint…");
       await exportPptx(deck);
-      toast.success("PowerPoint downloaded — figures are embedded on every slide.");
+      toast.success("PowerPoint downloaded. Check layout and figure attribution before sharing.");
     } catch {
       toast.message("Could not write the PPTX file.");
     }
@@ -109,16 +162,37 @@ export function EditorApp() {
   const cited = deck?.slides.filter((s) => s.citations.length > 0).length ?? 0;
   const total = deck?.slides.length ?? 0;
 
+  if (!hydrated)
+    return (
+      <div role="status" className="p-6">
+        Opening your saved decks…
+      </div>
+    );
   return (
     <TooltipProvider>
       <div className="flex h-[100dvh] flex-col overflow-hidden bg-bg text-fg">
+        <div role="status" className="shrink-0 border-b border-border px-3 py-1 text-xs text-muted">
+          {online ? "Online" : "Offline"} · {saveStatus} ·{" "}
+          {deck?.generationSource === "local-ai"
+            ? "Local AI draft"
+            : deck?.generationSource === "cloud-ai"
+              ? "Cloud AI draft"
+              : "Knowledge draft"}{" "}
+          · Verify scientific claims · Library → backup · Ctrl/Cmd+Z to undo
+        </div>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-2 sm:px-3">
-          <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={toggleRail} aria-label="Slides">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="lg:hidden"
+            onClick={toggleRail}
+            aria-label="Slides"
+          >
             <PanelLeft />
           </Button>
           <Wordmark compact />
           <span className="hidden rounded-full bg-accent px-2 py-0.5 text-[10px] font-medium tracking-wide text-accent-fg sm:inline">
-            v6.2.1
+            {JUW.version}
           </span>
           <Input
             value={deck?.slides[0]?.layout === "title" ? deck.slides[0].title : (deck?.title ?? "")}
@@ -134,7 +208,7 @@ export function EditorApp() {
                 : "border-border bg-elevated text-muted"
             }`}
           >
-            {generationMode === "ai" ? "AI mode" : "Manual mode"}
+            {generationMode === "ai" ? "AI mode" : "Knowledge mode"}
           </span>
           <div className="ml-auto flex items-center gap-1">
             <Tooltip content="New deck">
@@ -149,7 +223,9 @@ export function EditorApp() {
                   if (!topic) {
                     if (window.innerWidth < 1024) state.setGenerateOpen(true);
                     document.getElementById("gen-topic")?.focus();
-                    toast.message("Type a lecture topic. The title slide updates as you type, then press Generate.");
+                    toast.message(
+                      "Type a lecture topic. The title slide updates as you type, then press Generate.",
+                    );
                     return;
                   }
                   state.generate({
@@ -172,12 +248,22 @@ export function EditorApp() {
               </Button>
             </Tooltip>
             <Tooltip content="Library">
-              <Button variant="ghost" size="icon-sm" onClick={() => setLibraryOpen(true)} aria-label="Library">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setLibraryOpen(true)}
+                aria-label="Library"
+              >
                 <Library />
               </Button>
             </Tooltip>
             <Tooltip content="Present">
-              <Button variant="ghost" size="icon-sm" onClick={() => setPresenting(true)} aria-label="Present">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setPresenting(true)}
+                aria-label="Present"
+              >
                 <Play />
               </Button>
             </Tooltip>
@@ -202,11 +288,22 @@ export function EditorApp() {
               </Button>
             </Tooltip>
             <Tooltip content="Settings">
-              <Button variant="ghost" size="icon-sm" onClick={() => setSettingsOpen(true)} aria-label="Settings">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setSettingsOpen(true)}
+                aria-label="Settings"
+              >
                 <Settings />
               </Button>
             </Tooltip>
-            <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={toggleInspector} aria-label="Inspector">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="lg:hidden"
+              onClick={toggleInspector}
+              aria-label="Inspector"
+            >
               <PanelRight />
             </Button>
           </div>
@@ -254,17 +351,34 @@ export function EditorApp() {
                 <Plus className="size-3.5" />
                 Add
               </Button>
-              <Button variant="ghost" size="icon-sm" onClick={() => moveSlide(index, -1)} aria-label="Move up">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => moveSlide(index, -1)}
+                aria-label="Move up"
+              >
                 <ChevronUp />
               </Button>
-              <Button variant="ghost" size="icon-sm" onClick={() => moveSlide(index, 1)} aria-label="Move down">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => moveSlide(index, 1)}
+                aria-label="Move down"
+              >
                 <ChevronDown />
               </Button>
-              <Button variant="ghost" size="icon-sm" onClick={() => removeSlide(index)} aria-label="Delete slide">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => removeSlide(index)}
+                aria-label="Delete slide"
+              >
                 <Trash2 />
               </Button>
             </div>
-            <p className="px-3 pb-2 text-[10px] leading-snug text-faint">Arrow keys to navigate. Unlimited slides.</p>
+            <p className="px-3 pb-2 text-[10px] leading-snug text-faint">
+              Arrow keys to navigate. Back up your work in Library.
+            </p>
           </aside>
 
           <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto bg-bg p-3 sm:p-5">
@@ -291,7 +405,11 @@ export function EditorApp() {
                   <select
                     value={slide?.layout === "title" ? "classic" : (slide?.theme ?? "classic")}
                     disabled={slide?.layout === "title"}
-                    onChange={(e) => useDeckStore.getState().patchSlide(index, { theme: e.target.value as (typeof SLIDE_THEMES)[number] })}
+                    onChange={(e) =>
+                      useDeckStore.getState().patchSlide(index, {
+                        theme: e.target.value as (typeof SLIDE_THEMES)[number],
+                      })
+                    }
                     className="h-10 rounded-sm border border-border bg-elevated px-2 text-sm text-fg disabled:opacity-60"
                     aria-label="Slide theme"
                   >
@@ -305,12 +423,17 @@ export function EditorApp() {
                 <div className="flex flex-wrap gap-1">
                   {SLIDE_THEMES.map((t) => {
                     const tok = THEME_TOKENS[t];
-                    const active = (slide?.layout === "title" ? "classic" : (slide?.theme ?? "classic")) === t;
+                    const active =
+                      (slide?.layout === "title" ? "classic" : (slide?.theme ?? "classic")) === t;
                     return (
                       <button
                         key={t}
                         type="button"
-                        title={slide?.layout === "title" ? "The introduction keeps the official JUW frame" : tok.blurb}
+                        title={
+                          slide?.layout === "title"
+                            ? "The introduction keeps the official JUW frame"
+                            : tok.blurb
+                        }
                         disabled={slide?.layout === "title" && t !== "classic"}
                         onClick={() => {
                           if (slide?.layout === "title") return;
@@ -351,8 +474,8 @@ export function EditorApp() {
                     onPatchDeck={patchDeck}
                   />
                   <p className="mt-2 text-[11px] text-muted">
-                    Click any line on the slide to edit. The JUW crest stays top-left. The Department of Microbiology
-                    microscope appears only on the introductory slide.
+                    Click any line on the slide to edit. The JUW crest stays top-left. The
+                    Department of Microbiology microscope appears only on the introductory slide.
                   </p>
                 </div>
               ) : (
@@ -394,11 +517,22 @@ function LibraryDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Deck library</DialogTitle>
-          <DialogDescription>Saved on this device. Duplicate before a risky rewrite.</DialogDescription>
+          <DialogDescription>
+            Saved on this device. Duplicate before a risky rewrite.
+          </DialogDescription>
         </DialogHeader>
         <Button variant="secondary" size="sm" onClick={saveCopy}>
           Duplicate current
         </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={undo}>
+            Undo
+          </Button>
+          <Button variant="secondary" size="sm" onClick={redo}>
+            Redo
+          </Button>
+        </div>
+        <LibraryBackup />
         <ul className="mt-3 max-h-72 space-y-2 overflow-y-auto">
           {library.map((d) => (
             <li key={d.id} className="flex items-center gap-2 rounded-sm border border-border p-2">
@@ -408,7 +542,15 @@ function LibraryDialog() {
                   {d.discipline} · {d.slides.length} slides
                 </span>
               </button>
-              <Button variant="ghost" size="icon-sm" onClick={() => del(d.id)} aria-label="Delete deck">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => {
+                  if (window.confirm(`Delete “${d.title}”? Export a backup first if needed.`))
+                    del(d.id);
+                }}
+                aria-label="Delete deck"
+              >
                 <Trash2 />
               </Button>
             </li>
@@ -432,8 +574,8 @@ function SettingsDialog() {
         <DialogHeader>
           <DialogTitle>Studio settings</DialogTitle>
           <DialogDescription>
-            Course header fields print on the official title slide. Citation style applies to the inspector, footers, and
-            PPTX.
+            Course header fields print on the official title slide. Citation style applies to the
+            inspector, footers, and PPTX.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-1.5">
@@ -485,6 +627,7 @@ function SettingsDialog() {
             ))}
           </select>
         </div>
+        <LocalAiSettings />
       </DialogContent>
     </Dialog>
   );

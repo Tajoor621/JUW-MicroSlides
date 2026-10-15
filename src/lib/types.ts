@@ -1,12 +1,6 @@
 import type { SlideTheme } from "./slide-themes";
 
-export const LAYOUTS = [
-  "title",
-  "content",
-  "two-column",
-  "full-image",
-  "blank",
-] as const;
+export const LAYOUTS = ["title", "content", "two-column", "full-image", "blank"] as const;
 
 export type Layout = (typeof LAYOUTS)[number];
 
@@ -34,11 +28,13 @@ export interface MediaItem {
   credit: string;
   source: string;
   license: string;
+  licenseUrl?: string;
   keywords: string[];
 }
 
 export interface Citation {
   id: string;
+  cslAuthors?: { family?: string; given?: string; literal?: string }[];
   pmid?: string;
   authors: string;
   title: string;
@@ -76,11 +72,22 @@ export interface Deck {
   department: string;
   slides: Slide[];
   mediaPool: MediaItem[];
+  generationSource?: "knowledge" | "cloud-ai" | "local-ai";
   updatedAt: number;
 }
 
 export type DeckMetaPatch = Partial<
-  Pick<Deck, "title" | "topic" | "discipline" | "level" | "course" | "courseCode" | "preparedBy" | "department">
+  Pick<
+    Deck,
+    | "title"
+    | "topic"
+    | "discipline"
+    | "level"
+    | "course"
+    | "courseCode"
+    | "preparedBy"
+    | "department"
+  >
 >;
 
 export interface GenerateInput {

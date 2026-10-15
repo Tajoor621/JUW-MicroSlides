@@ -1,3 +1,5 @@
+import { safeImageFetch } from "./safe-image-fetch";
+import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import type { Citation, MediaItem, MediaKind } from "./types";
 import { uid } from "./utils";
@@ -44,10 +46,26 @@ function kindOf(title: string, mime = "", url = ""): MediaKind {
   return "photo";
 }
 
-const LOOSE = new Set(["microbiology", "microscopy", "micrograph", "diagram", "schematic", "illustration", "photo", "image", "with", "from", "that", "this"]);
+const LOOSE = new Set([
+  "microbiology",
+  "microscopy",
+  "micrograph",
+  "diagram",
+  "schematic",
+  "illustration",
+  "photo",
+  "image",
+  "with",
+  "from",
+  "that",
+  "this",
+]);
 
 function sharesTerm(title: string, query: string): boolean {
-  const terms = query.toLowerCase().split(/[^a-z0-9]+/).filter((term) => term.length > 3 && !LOOSE.has(term));
+  const terms = query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length > 3 && !LOOSE.has(term));
   if (!terms.length) return true;
   const hay = title.toLowerCase();
   return terms.some((term) => hay.includes(term));
@@ -60,7 +78,9 @@ function clean(value: unknown): string {
     .trim();
 }
 
-function item(partial: Omit<MediaItem, "id" | "kind"> & { kind?: MediaKind; mime?: string }): MediaItem | null {
+function item(
+  partial: Omit<MediaItem, "id" | "kind"> & { kind?: MediaKind; mime?: string },
+): MediaItem | null {
   const src = partial.src.trim();
   if (!/^https?:\/\//i.test(src)) return null;
   if (/\.(pdf|svg)(\?|$)/i.test(src)) return null;
@@ -72,7 +92,10 @@ function item(partial: Omit<MediaItem, "id" | "kind"> & { kind?: MediaKind; mime
     credit: partial.credit || "Open contributor",
     source: partial.source,
     license: partial.license || "See source",
-    keywords: partial.keywords.map((k) => k.toLowerCase()).filter((k) => k.length > 2).slice(0, 12),
+    keywords: partial.keywords
+      .map((k) => k.toLowerCase())
+      .filter((k) => k.length > 2)
+      .slice(0, 12),
   };
 }
 
@@ -177,11 +200,13 @@ function expandedQueries(topic: string): string[] {
 function taxonName(topic: string): string | null {
   const binomial = topic.match(/\b([A-Z][a-z]{2,})\s+([a-z]{3,})\b/);
   if (binomial) return `${binomial[1]} ${binomial[2]}`;
-  const known = topic.split(/[^A-Za-z]+/).find((word) =>
-    /^(staphylococcus|escherichia|plasmodium|candida|mycobacterium|salmonella|pseudomonas|vibrio|bacillus|streptococcus|aspergillus|cryptococcus|neisseria|klebsiella|clostridium|listeria|giardia|toxoplasma|trypanosoma|leishmania|schistosoma)$/i.test(
-      word,
-    ),
-  );
+  const known = topic
+    .split(/[^A-Za-z]+/)
+    .find((word) =>
+      /^(staphylococcus|escherichia|plasmodium|candida|mycobacterium|salmonella|pseudomonas|vibrio|bacillus|streptococcus|aspergillus|cryptococcus|neisseria|klebsiella|clostridium|listeria|giardia|toxoplasma|trypanosoma|leishmania|schistosoma)$/i.test(
+        word,
+      ),
+    );
   return known ?? null;
 }
 
@@ -212,7 +237,10 @@ async function searchWikimedia(query: string): Promise<MediaItem[]> {
     const info = page.imageinfo?.[0];
     const src = info?.thumburl || info?.url || "";
     const meta = info?.extmetadata ?? {};
-    const title = clean(page.title).replace(/^File:/i, "").replace(/\.[a-z0-9]+$/i, "").replace(/_/g, " ");
+    const title = clean(page.title)
+      .replace(/^File:/i, "")
+      .replace(/\.[a-z0-9]+$/i, "")
+      .replace(/_/g, " ");
     if (!sharesTerm(title, query) && out.length >= 5) continue;
     if ((info?.mime || "").includes("svg")) continue;
     const made = item({
@@ -221,7 +249,7 @@ async function searchWikimedia(query: string): Promise<MediaItem[]> {
       mime: info?.mime,
       credit: clean(meta.Artist?.value).slice(0, 80) || "Wikimedia Commons",
       source: "Wikimedia Commons",
-      license: clean(meta.LicenseShortName?.value) || "Open licence",
+      license: clean(meta.LicenseShortName?.value) || "Unknown — verify before reuse",
       keywords: query.split(/[^a-z0-9]+/i).slice(0, 6),
     });
     if (made) out.push(made);
@@ -254,7 +282,7 @@ async function searchOpenverse(query: string, gif = false): Promise<MediaItem[]>
       kind: gif ? "gif" : undefined,
       credit: clean(row.creator) || "Openverse",
       source: `Openverse / ${clean(row.source) || "open image"}`,
-      license: row.license || "Open licence",
+      license: row.license || "Unknown — verify before reuse",
       keywords: query.split(/[^a-z0-9]+/i).slice(0, 6),
     });
     if (made) out.push(made);
@@ -265,7 +293,9 @@ async function searchOpenverse(query: string, gif = false): Promise<MediaItem[]>
 async function searchWikipedia(topic: string): Promise<MediaItem[]> {
   const title = topic.trim().replace(/\s+/g, "_");
   if (title.length < 3) return [];
-  const body = (await getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)) as {
+  const body = (await getJson(
+    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+  )) as {
     title?: string;
     originalimage?: { source?: string };
     thumbnail?: { source?: string };
@@ -277,8 +307,11 @@ async function searchWikipedia(topic: string): Promise<MediaItem[]> {
     src,
     credit: "Wikipedia",
     source: "Wikipedia",
-    license: "CC BY-SA",
-    keywords: [topic, clean(body?.description)].join(" ").split(/[^a-z0-9]+/i).slice(0, 6),
+    license: "Unknown — verify the original image licence",
+    keywords: [topic, clean(body?.description)]
+      .join(" ")
+      .split(/[^a-z0-9]+/i)
+      .slice(0, 6),
   });
   return made ? [made] : [];
 }
@@ -297,13 +330,15 @@ async function searchWellcome(query: string): Promise<MediaItem[]> {
   const out: MediaItem[] = [];
   for (const row of body?.results ?? []) {
     const thumb = row.thumbnail?.url || "";
-    const iiif = row.id ? `https://iiif.wellcomecollection.org/image/${row.id}/full/800,/0/default.jpg` : thumb;
+    const iiif = row.id
+      ? `https://iiif.wellcomecollection.org/image/${row.id}/full/800,/0/default.jpg`
+      : thumb;
     const made = item({
       title: clean(row.source?.title) || query,
       src: iiif || thumb,
       credit: clean(row.source?.credit) || "Wellcome Collection",
       source: "Wellcome Collection",
-      license: row.locations?.[0]?.license?.label || "Open licence",
+      license: row.locations?.[0]?.license?.label || "Unknown — verify before reuse",
       keywords: query.split(/[^a-z0-9]+/i).slice(0, 6),
     });
     if (made) out.push(made);
@@ -312,7 +347,9 @@ async function searchWellcome(query: string): Promise<MediaItem[]> {
 }
 
 async function searchGbif(name: string): Promise<MediaItem[]> {
-  const found = (await getJson(`https://api.gbif.org/v1/species/search?limit=1&q=${encodeURIComponent(name)}`)) as {
+  const found = (await getJson(
+    `https://api.gbif.org/v1/species/search?limit=1&q=${encodeURIComponent(name)}`,
+  )) as {
     results?: Array<{ key?: number; scientificName?: string }>;
   } | null;
   const key = found?.results?.[0]?.key;
@@ -327,7 +364,7 @@ async function searchGbif(name: string): Promise<MediaItem[]> {
       src: row.identifier || "",
       credit: clean(row.creator) || "GBIF",
       source: "GBIF",
-      license: row.license || "Open licence",
+      license: row.license || "Unknown — verify before reuse",
       keywords: name.split(/\s+/),
     });
     if (made) out.push(made);
@@ -360,7 +397,7 @@ async function searchOpenI(query: string): Promise<MediaItem[]> {
       kind: "micrograph",
       credit: clean(row.authors).slice(0, 80) || "NLM Open-i",
       source: row.pmcid ? `NLM Open-i / ${row.pmcid}` : "NLM Open-i",
-      license: "PMC open access",
+      license: "Unknown — verify article and figure reuse terms",
       keywords: query.split(/[^a-z0-9]+/i).slice(0, 6),
     });
     if (made) out.push(made);
@@ -385,7 +422,7 @@ async function searchINaturalist(name: string): Promise<MediaItem[]> {
     src,
     credit: clean(row?.default_photo?.attribution) || "iNaturalist",
     source: "iNaturalist",
-    license: row?.default_photo?.license_code || "Open licence",
+    license: row?.default_photo?.license_code || "Unknown — verify before reuse",
     keywords: name.split(/\s+/),
     kind: "photo",
   });
@@ -397,7 +434,9 @@ async function searchWikipediaLoose(topic: string): Promise<MediaItem[]> {
     `https://en.wikipedia.org/w/api.php?action=opensearch&limit=3&namespace=0&format=json&search=${encodeURIComponent(topic)}`,
   )) as [string, string[]] | null;
   const titles = Array.isArray(found?.[1]) ? found[1].slice(0, 2) : [];
-  const parts = await Promise.all(titles.map((title) => searchWikipedia(title).catch(() => [] as MediaItem[])));
+  const parts = await Promise.all(
+    titles.map((title) => searchWikipedia(title).catch(() => [] as MediaItem[])),
+  );
   return dedupeMedia(parts.flat());
 }
 
@@ -421,7 +460,13 @@ async function searchLecture(queries: string[]): Promise<MediaItem[]> {
     searchWellcome(`${head} microbiology`),
     searchEuropePmcFigures(head),
   ];
-  if (taxon) jobs.push(searchGbif(taxon), searchINaturalist(taxon), searchOpenI(`${taxon} micrograph`), searchWikimedia(`${taxon} micrograph`));
+  if (taxon)
+    jobs.push(
+      searchGbif(taxon),
+      searchINaturalist(taxon),
+      searchOpenI(`${taxon} micrograph`),
+      searchWikimedia(`${taxon} micrograph`),
+    );
   for (const query of rest.slice(0, 12)) {
     jobs.push(searchWikimedia(query), searchOpenI(query));
   }
@@ -500,10 +545,16 @@ async function searchEuropePmcFigures(topic: string): Promise<MediaItem[]> {
   )) as {
     resultList?: { result?: Array<{ pmcid?: string; title?: string }> };
   } | null;
-  const ids = (found?.resultList?.result ?? []).map((row) => row.pmcid).filter((id): id is string => Boolean(id)).slice(0, 3);
+  const ids = (found?.resultList?.result ?? [])
+    .map((row) => row.pmcid)
+    .filter((id): id is string => Boolean(id))
+    .slice(0, 3);
   const figures = await Promise.all(
     ids.map(async (pmcid) => {
-      const body = (await getJson(`https://www.ebi.ac.uk/europepmc/webservices/rest/${pmcid}/figures?format=json`, 6000)) as {
+      const body = (await getJson(
+        `https://www.ebi.ac.uk/europepmc/webservices/rest/${pmcid}/figures?format=json`,
+        6000,
+      )) as {
         figure?: Array<{ label?: string; caption?: string; imageUrl?: string; url?: string }>;
       } | null;
       return (body?.figure ?? []).slice(0, 2).map((fig) =>
@@ -513,7 +564,7 @@ async function searchEuropePmcFigures(topic: string): Promise<MediaItem[]> {
           kind: "micrograph",
           credit: pmcid,
           source: `Europe PMC / ${pmcid}`,
-          license: "PMC open access",
+          license: "Unknown — verify article and figure reuse terms",
           keywords: topic.split(/[^a-z0-9]+/i).slice(0, 6),
         }),
       );
@@ -523,8 +574,7 @@ async function searchEuropePmcFigures(topic: string): Promise<MediaItem[]> {
 }
 
 async function searchCrossref(topic: string): Promise<Citation[]> {
-  const url =
-    `https://api.crossref.org/works?rows=6&mailto=microslides@juw.edu.pk&select=DOI,title,author,container-title,issued&query=${encodeURIComponent(`${topic} microbiology`)}`;
+  const url = `https://api.crossref.org/works?rows=6&mailto=microslides@juw.edu.pk&select=DOI,title,author,container-title,issued&query=${encodeURIComponent(`${topic} microbiology`)}`;
   const body = (await getJson(url)) as {
     message?: {
       items?: Array<{
@@ -570,10 +620,17 @@ async function searchSemanticScholar(topic: string): Promise<Citation[]> {
   return (body?.data ?? [])
     .filter((paper) => paper.title)
     .map((paper) => ({
-      id: paper.externalIds?.PubMed ? `pmid-${paper.externalIds.PubMed}` : `s2-${paper.paperId || uid("s2")}`,
+      id: paper.externalIds?.PubMed
+        ? `pmid-${paper.externalIds.PubMed}`
+        : `s2-${paper.paperId || uid("s2")}`,
       pmid: paper.externalIds?.PubMed,
       doi: paper.externalIds?.DOI,
-      authors: (paper.authors ?? []).map((a) => a.name).filter(Boolean).slice(0, 3).join(", ") || "Unknown",
+      authors:
+        (paper.authors ?? [])
+          .map((a) => a.name)
+          .filter(Boolean)
+          .slice(0, 3)
+          .join(", ") || "Unknown",
       title: (paper.title || "").replace(/\.$/, ""),
       journal: paper.venue || "Semantic Scholar",
       year: paper.year ? String(paper.year) : "n.d.",
@@ -610,8 +667,7 @@ async function searchEuropePmc(topic: string): Promise<Citation[]> {
 }
 
 async function searchOpenAlexWorks(topic: string): Promise<Citation[]> {
-  const url =
-    `https://api.openalex.org/works?per_page=8&mailto=microslides@juw.edu.pk&search=${encodeURIComponent(`${topic} microbiology`)}`;
+  const url = `https://api.openalex.org/works?per_page=8&mailto=microslides@juw.edu.pk&search=${encodeURIComponent(`${topic} microbiology`)}`;
   const body = (await getJson(url)) as {
     results?: Array<{
       id?: string;
@@ -652,20 +708,32 @@ function dedupeCitations(list: Citation[]): Citation[] {
 }
 
 function scoreMedia(media: MediaItem, text: string): number {
-  const terms = text.toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length > 3);
+  const terms = text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length > 3);
   const hay = `${media.title} ${media.keywords.join(" ")} ${media.source}`.toLowerCase();
   let score = 0;
   for (const term of terms) if (hay.includes(term)) score += 2;
-  if (/micrograph|diagram|schematic|stain/.test(hay) && /figure|morpholog|visible|stain|cycle|pathway/.test(text.toLowerCase())) {
+  if (
+    /micrograph|diagram|schematic|stain/.test(hay) &&
+    /figure|morpholog|visible|stain|cycle|pathway/.test(text.toLowerCase())
+  ) {
     score += 2;
   }
   return score;
 }
 
-function assignMedia(slides: DeckMediaQuery["slides"], pool: MediaItem[], topic: string): Record<string, MediaItem> {
+function assignMedia(
+  slides: DeckMediaQuery["slides"],
+  pool: MediaItem[],
+  topic: string,
+): Record<string, MediaItem> {
   const assigned: Record<string, MediaItem> = {};
   const used = new Set<string>();
-  const content = slides.filter((slide) => slide.id && !/^(title|learning objectives)\b/i.test(slide.title));
+  const content = slides.filter(
+    (slide) => slide.id && !/^(title|learning objectives)\b/i.test(slide.title),
+  );
   const ranked = content
     .map((slide) => ({ slide, weight: slide.text.length + slide.title.length }))
     .sort((a, b) => b.weight - a.weight);
@@ -686,9 +754,11 @@ function assignMedia(slides: DeckMediaQuery["slides"], pool: MediaItem[], topic:
   }
   for (const slide of content) {
     if (assigned[slide.id]) continue;
-    const fallback =
-      pool.find((media) => !used.has(media.src) && (sharesTerm(media.title, topic) || sharesTerm(media.title, slide.title))) ||
-      pool.find((media) => !used.has(media.src));
+    const fallback = pool.find(
+      (media) =>
+        !used.has(media.src) &&
+        (sharesTerm(media.title, topic) || sharesTerm(media.title, slide.title)),
+    );
     if (!fallback) continue;
     used.add(fallback.src);
     assigned[slide.id] = fallback;
@@ -700,10 +770,15 @@ export async function gatherDeckResearch(input: DeckMediaQuery): Promise<DeckRes
   const topic = input.topic.trim();
   const discipline = input.discipline.trim();
   const slideQueries = input.slides
-    .filter((slide) => !/learning objective|take-home|selected reference|^title$/i.test(slide.title))
+    .filter(
+      (slide) => !/learning objective|take-home|selected reference|^title$/i.test(slide.title),
+    )
     .slice(0, 16)
     .map((slide) => {
-      const bare = slide.title.replace(new RegExp(topic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "").replace(/^[:\s—-]+/, "").trim();
+      const bare = slide.title
+        .replace(new RegExp(topic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "")
+        .replace(/^[:\s—-]+/, "")
+        .trim();
       const hint = /figure|morpholog|stain|visible|structure/.test(slide.title.toLowerCase())
         ? "micrograph"
         : /cycle|pathway|mechanism|envelope|genome/.test(slide.title.toLowerCase())
@@ -743,21 +818,45 @@ export async function gatherDeckResearch(input: DeckMediaQuery): Promise<DeckRes
 }
 
 export const collectDeckMedia = createServerFn({ method: "POST" })
-  .validator((input: DeckMediaQuery) => input)
+  .validator((input: unknown) =>
+    z
+      .object({
+        topic: z.string().trim().min(1).max(500),
+        discipline: z.string().max(200),
+        slides: z
+          .array(
+            z.object({
+              id: z.string().max(100),
+              title: z.string().max(1000),
+              text: z.string().max(50000),
+            }),
+          )
+          .max(400),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }) => gatherDeckResearch(data));
 
 export const searchOpenMedia = createServerFn({ method: "POST" })
-  .validator((input: { query: string }) => input)
+  .validator((input: unknown) =>
+    z.object({ query: z.string().trim().min(2).max(500) }).parse(input),
+  )
   .handler(async ({ data }) => {
     const query = data.query.trim();
     if (query.length < 2) return { ok: false as const, error: "Type a species, stain, or method." };
     const items = await searchLecture([query, `${query} microbiology micrograph`]);
-    if (!items.length) return { ok: false as const, error: "No open-licence hits. Try a species, stain, or method name." };
+    if (!items.length)
+      return {
+        ok: false as const,
+        error: "No open-licence hits. Try a species, stain, or method name.",
+      };
     return { ok: true as const, items: items.slice(0, 24) };
   });
 
 export const proxyImages = createServerFn({ method: "POST" })
-  .validator((input: { srcs: string[] }) => ({ srcs: (input.srcs ?? []).filter((src) => /^https?:/i.test(src)).slice(0, 12) }))
+  .validator((input: unknown) =>
+    z.object({ srcs: z.array(z.string().max(3000)).max(12) }).parse(input),
+  )
   .handler(async ({ data }) => {
     const map: Record<string, string> = {};
     await Promise.all(
@@ -765,16 +864,9 @@ export const proxyImages = createServerFn({ method: "POST" })
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), 7000);
         try {
-          const res = await fetch(src, {
-            signal: ctrl.signal,
-            headers: { "User-Agent": UA, Accept: "image/avif,image/webp,image/apng,image/*,*/*" },
-          });
-          if (!res.ok) return;
-          const type = (res.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
-          if (!/^image\/(png|jpe?g|gif|webp)$/i.test(type)) return;
-          const buf = Buffer.from(await res.arrayBuffer());
-          if (buf.length < 80 || buf.length > 3_500_000) return;
-          map[src] = `data:${type};base64,${buf.toString("base64")}`;
+          const image = await safeImageFetch(src, ctrl.signal);
+          if (image)
+            map[src] = `data:${image.type};base64,${Buffer.from(image.bytes).toString("base64")}`;
         } catch {
           /* leave this figure to the teaching visual */
         } finally {
@@ -784,4 +876,3 @@ export const proxyImages = createServerFn({ method: "POST" })
     );
     return { ok: true as const, map };
   });
-

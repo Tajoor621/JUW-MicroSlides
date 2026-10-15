@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { ContextHelp } from "./context-help";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useId,
+  cloneElement,
+  isValidElement,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { askCopilot, searchOpenAlex, searchPubmed } from "@/lib/ai";
 import { formatCitation } from "@/lib/citations";
@@ -54,6 +63,7 @@ export function InspectorPanel() {
       </div>
       <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-4 p-3">
+          <ContextHelp tab={tab} />
           {tab === "edit" && <EditTab />}
           {tab === "media" && <MediaTab />}
           {tab === "cite" && <CiteTab />}
@@ -77,7 +87,9 @@ function EditTab() {
 
   return (
     <>
-      <p className="text-xs text-muted">Every field is live — you can also click the slide canvas and type.</p>
+      <p className="text-xs text-muted">
+        Every field is live — you can also click the slide canvas and type.
+      </p>
       <Field label="Layout">
         <select
           value={slide.layout}
@@ -94,7 +106,9 @@ function EditTab() {
       <Field label="Theme">
         <select
           value={slide.theme ?? "classic"}
-          onChange={(e) => patchSlide(index, { theme: e.target.value as (typeof SLIDE_THEMES)[number] })}
+          onChange={(e) =>
+            patchSlide(index, { theme: e.target.value as (typeof SLIDE_THEMES)[number] })
+          }
           className="h-10 w-full rounded-sm border border-border bg-elevated px-2 text-sm"
         >
           {SLIDE_THEMES.map((t) => (
@@ -103,15 +117,24 @@ function EditTab() {
             </option>
           ))}
         </select>
-        <p className="mt-1 text-[11px] text-muted">{THEME_TOKENS[slide.theme ?? "classic"].blurb}</p>
+        <p className="mt-1 text-[11px] text-muted">
+          {THEME_TOKENS[slide.theme ?? "classic"].blurb}
+        </p>
       </Field>
       <Field label="Title">
         <Input value={slide.title} onChange={(e) => patchSlide(index, { title: e.target.value })} />
       </Field>
       <Field label="Subtitle">
-        <Input value={slide.subtitle} onChange={(e) => patchSlide(index, { subtitle: e.target.value })} />
+        <Input
+          value={slide.subtitle}
+          onChange={(e) => patchSlide(index, { subtitle: e.target.value })}
+        />
       </Field>
-      <Field label={slide.layout === "two-column" ? "Columns (use | to split)" : "Bullets (one per line)"}>
+      <Field
+        label={
+          slide.layout === "two-column" ? "Columns (use | to split)" : "Bullets (one per line)"
+        }
+      >
         <Textarea
           value={
             slide.layout === "two-column"
@@ -151,13 +174,22 @@ function EditTab() {
         <Input value={deck.course ?? ""} onChange={(e) => patchDeck({ course: e.target.value })} />
       </Field>
       <Field label="Course code">
-        <Input value={deck.courseCode ?? ""} onChange={(e) => patchDeck({ courseCode: e.target.value })} />
+        <Input
+          value={deck.courseCode ?? ""}
+          onChange={(e) => patchDeck({ courseCode: e.target.value })}
+        />
       </Field>
       <Field label="Prepared by">
-        <Input value={deck.preparedBy ?? ""} onChange={(e) => patchDeck({ preparedBy: e.target.value })} />
+        <Input
+          value={deck.preparedBy ?? ""}
+          onChange={(e) => patchDeck({ preparedBy: e.target.value })}
+        />
       </Field>
       <Field label="Department">
-        <Input value={deck.department ?? ""} onChange={(e) => patchDeck({ department: e.target.value })} />
+        <Input
+          value={deck.department ?? ""}
+          onChange={(e) => patchDeck({ department: e.target.value })}
+        />
       </Field>
     </>
   );
@@ -190,8 +222,9 @@ function MediaTab() {
     return searchMedia("", 12, used);
   }, [q, slide, used]);
 
-  async function searchLive(silent = false) {
-    const query = q.trim() || `${slide?.title ?? ""} ${deck?.topic ?? "microbiology"}`;
+  async function searchLive(silent = false, queryOverride?: string) {
+    const query =
+      queryOverride?.trim() || q.trim() || `${slide?.title ?? ""} ${deck?.topic ?? "microbiology"}`;
     setBusy(true);
     try {
       const res = await searchOpenMedia({ data: { query } });
@@ -201,7 +234,8 @@ function MediaTab() {
         return;
       }
       setLive(res.items);
-      if (!res.items.length && !silent) toast.message("No open-licence hits. Try a species, stain, or method name.");
+      if (!res.items.length && !silent)
+        toast.message("No open-licence hits. Try a species, stain, or method name.");
     } catch {
       if (!silent) toast.message("Open archives are unreachable right now.");
     } finally {
@@ -232,9 +266,9 @@ function MediaTab() {
   return (
     <>
       <p className="text-xs text-muted">
-        Each slide keeps one unique figure — no repeats in this deck. Search Wikimedia Commons, Openverse, Wellcome,
-        iNaturalist, NASA, Library of Congress, GBIF, Wikipedia, Cleveland Museum, The Met, Art Institute of Chicago,
-        and Internet Archive. Unused generate hits stay in the pool so you can swap without losing them.
+        Choose a bundled illustration or search online. The Pages site searches Wikimedia Commons;
+        server deployments may use additional providers. Verify each figure’s relevance, creator,
+        original source, and licence before teaching or sharing.
       </p>
       <Field label="Search open archives">
         <div className="flex gap-2">
@@ -259,8 +293,9 @@ function MediaTab() {
         variant="secondary"
         className="w-full"
         onClick={() => {
-          setQ(`${slide.title} ${slide.bullets[0] ?? deck.topic}`);
-          void searchLive();
+          const query = `${slide.title} ${slide.bullets[0] ?? deck.topic}`;
+          setQ(query);
+          void searchLive(false, query);
         }}
       >
         Search this slide’s topic
@@ -270,7 +305,10 @@ function MediaTab() {
         <div className="space-y-1">
           <Label>On this slide</Label>
           {slide.media.map((m) => (
-            <div key={m.id} className="flex items-center gap-2 rounded-sm border border-border bg-elevated p-2">
+            <div
+              key={m.id}
+              className="flex items-center gap-2 rounded-sm border border-border bg-elevated p-2"
+            >
               <img
                 src={mediaDisplaySrc(m.src)}
                 alt=""
@@ -286,6 +324,26 @@ function MediaTab() {
                 <span className="block text-xs text-muted">
                   {m.kind} · {m.source} · {m.license}
                 </span>
+                {/^https?:\/\//.test(m.source) && (
+                  <a
+                    href={m.source}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xs underline"
+                  >
+                    Open original source
+                  </a>
+                )}
+                {m.licenseUrl && (
+                  <a
+                    href={m.licenseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xs underline"
+                  >
+                    Read licence terms
+                  </a>
+                )}
               </span>
               <Button variant="ghost" size="sm" onClick={() => remove(m.id)}>
                 Swap
@@ -328,6 +386,12 @@ function MediaTab() {
           onClick={() => {
             if (!credit.url.trim()) {
               toast.message("Add an image URL first.");
+              return;
+            }
+            if (
+              !/^(https?:|data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,])/.test(credit.url.trim())
+            ) {
+              toast.error("Use an HTTP(S) image URL or an image data URL.");
               return;
             }
             tryAttach({
@@ -430,7 +494,9 @@ function CiteTab() {
       </Field>
       {hits && hits.ok && (
         <div className="space-y-2">
-          {hits.citations.length === 0 && <p className="text-xs text-muted">No hits. Try a species or toxin name.</p>}
+          {hits.citations.length === 0 && (
+            <p className="text-xs text-muted">No hits. Try a species or toxin name.</p>
+          )}
           {hits.citations.map((c) => (
             <button
               key={c.id}
@@ -445,7 +511,9 @@ function CiteTab() {
       )}
       <div className="space-y-2">
         <Label>Attached</Label>
-        {slide.citations.length === 0 && <p className="text-xs text-muted">None yet — audit will flag this slide.</p>}
+        {slide.citations.length === 0 && (
+          <p className="text-xs text-muted">None yet — audit will flag this slide.</p>
+        )}
         {slide.citations.map((c) => (
           <div key={c.id} className="rounded-sm border border-border p-2 text-xs">
             <p className="text-fg">{formatCitation(c, style)}</p>
@@ -488,7 +556,13 @@ function EvidenceTab() {
   }
 
   function importPaste() {
-    const parsed = parseEvidencePaste(paste);
+    let parsed: Citation[];
+    try {
+      parsed = parseEvidencePaste(paste);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Invalid reference export.");
+      return;
+    }
     if (!parsed.length) {
       toast.message("Could not parse that paste. Use Elicit CSV, JSON, or BibTeX.");
       return;
@@ -511,10 +585,16 @@ function EvidenceTab() {
   if (!slide) return <Empty>Select a slide.</Empty>;
   return (
     <>
-      <p className="text-xs text-muted">Zero-cost evidence: OpenAlex search, or import Elicit CSV / JSON / BibTeX.</p>
+      <p className="text-xs text-muted">
+        Zero-cost evidence: OpenAlex search, or import Elicit CSV / JSON / BibTeX.
+      </p>
       <Field label="OpenAlex">
         <div className="flex gap-2">
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="bacterial chromosome organisation" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="bacterial chromosome organisation"
+          />
           <Button size="sm" variant="secondary" onClick={search} disabled={busy}>
             {busy ? "…" : "Search"}
           </Button>
@@ -538,7 +618,10 @@ function EvidenceTab() {
       </div>
       <div className="space-y-2">
         {hits.map((c) => (
-          <label key={c.id} className="flex gap-2 rounded-sm border border-border bg-elevated p-2 text-xs">
+          <label
+            key={c.id}
+            className="flex gap-2 rounded-sm border border-border bg-elevated p-2 text-xs"
+          >
             <input
               type="checkbox"
               className="mt-0.5"
@@ -630,7 +713,11 @@ function CopilotTab() {
         const match = res.text.match(/\{[\s\S]*\}/);
         if (match) {
           try {
-            const json = JSON.parse(match[0]) as { title?: string; bullets?: string[]; notes?: string };
+            const json = JSON.parse(match[0]) as {
+              title?: string;
+              bullets?: string[];
+              notes?: string;
+            };
             patch(index, {
               title: json.title || slide.title,
               bullets: json.bullets || slide.bullets,
@@ -670,7 +757,10 @@ function CopilotTab() {
       </div>
       <div className="space-y-2">
         {log.map((entry, i) => (
-          <pre key={i} className="whitespace-pre-wrap rounded-sm bg-elevated p-2 font-sans text-xs text-muted">
+          <pre
+            key={i}
+            className="whitespace-pre-wrap rounded-sm bg-elevated p-2 font-sans text-xs text-muted"
+          >
             {entry}
           </pre>
         ))}
@@ -680,10 +770,11 @@ function CopilotTab() {
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
+  const id = useId();
   return (
     <div className="grid gap-1.5">
-      <Label>{label}</Label>
-      {children}
+      <Label htmlFor={id}>{label}</Label>
+      {isValidElement<{ id?: string }>(children) ? cloneElement(children, { id }) : children}
     </div>
   );
 }

@@ -199,23 +199,27 @@ async function toEmbeddable(src: string | null | undefined): Promise<string | nu
   return fetchEmbeddable(src);
 }
 
-async function asPptxImage(src: string, proxied?: string | null, fallbackTitle = "Figure"): Promise<string> {
+async function asPptxImage(
+  src: string,
+  proxied?: string | null,
+  fallbackTitle = "Figure",
+): Promise<{ data: string; substituted: boolean }> {
   const display = mediaDisplaySrc(src);
   const candidates = [proxied, display, src, src ? absoluteSrc(display) : ""].filter(
     (s, i, arr) => Boolean(s) && arr.indexOf(s) === i,
   ) as string[];
   for (const candidate of candidates) {
     const jpeg = await toEmbeddable(candidate);
-    if (jpeg && isPptxSafeRaster(jpeg)) return jpeg;
+    if (jpeg && isPptxSafeRaster(jpeg)) return { data: jpeg, substituted: false };
   }
   try {
     const vis = fallbackVisual(fallbackTitle);
     const jpeg = await toEmbeddable(vis.src);
-    if (jpeg && isPptxSafeRaster(jpeg)) return jpeg;
+    if (jpeg && isPptxSafeRaster(jpeg)) return { data: jpeg, substituted: true };
   } catch {
     /* paint a card instead */
   }
-  return paintCard(fallbackTitle);
+  return { data: paintCard(fallbackTitle), substituted: true };
 }
 
 /** pptxgenjs wants `image/jpeg;base64,...` without the `data:` prefix. */
@@ -264,30 +268,49 @@ export async function exportPptx(deck: Deck) {
   const proxyMap = await proxyAll(remote);
 
   const crest = await asPptxImage(JUW.crest, proxyMap[absoluteSrc(JUW.crest)] ?? null, "JUW crest");
-  const scope = await asPptxImage(JUW.microscope, proxyMap[absoluteSrc(JUW.microscope)] ?? null, "Department of Microbiology");
+  const scope = await asPptxImage(
+    JUW.microscope,
+    proxyMap[absoluteSrc(JUW.microscope)] ?? null,
+    "Department of Microbiology",
+  );
 
-  const figureCache = new Map<string, string>();
-  async function figureData(src: string, title: string): Promise<string> {
+  const figureCache = new Map<string, { data: string; substituted: boolean }>();
+  async function figureData(
+    src: string,
+    title: string,
+  ): Promise<{ data: string; substituted: boolean }> {
     const key = mediaDisplaySrc(src);
     const hit = figureCache.get(key);
     if (hit) return hit;
-    const data = await asPptxImage(src, proxyMap[key] ?? proxyMap[src] ?? proxyMap[absoluteSrc(key)] ?? null, title);
+    const data = await asPptxImage(
+      src,
+      proxyMap[key] ?? proxyMap[src] ?? proxyMap[absoluteSrc(key)] ?? null,
+      title,
+    );
     figureCache.set(key, data);
     return data;
   }
 
   let imgSeq = 0;
-  const addJpeg = (s: { addImage: (opts: Record<string, unknown>) => unknown }, dataUrl: string, box: Box) => {
+  const addJpeg = async (
+    s: { addImage: (opts: Record<string, unknown>) => unknown },
+    dataUrl: string,
+    box: Box,
+  ) => {
     const payload = pptxData(dataUrl);
     if (!payload) return false;
+    const image = await loadImage(dataUrl);
+    const ratio = Math.min(box.w / image.naturalWidth, box.h / image.naturalHeight);
+    const width = image.naturalWidth * ratio,
+      height = image.naturalHeight * ratio;
     imgSeq += 1;
     s.addImage({
       data: payload,
       path: `preencoded-${imgSeq}.jpeg`,
-      x: box.x,
-      y: box.y,
-      w: box.w,
-      h: box.h,
+      x: box.x + (box.w - width) / 2,
+      y: box.y + (box.h - height) / 2,
+      w: width,
+      h: height,
     });
     return true;
   };
@@ -296,6 +319,7 @@ export async function exportPptx(deck: Deck) {
     const slide = deck.slides[idx];
     const tokens = themeOf(slide.theme);
     const s = pptx.addSlide();
+    if (slide.notes) s.addNotes(slide.notes);
     s.background = { color: tokens.band.replace("#", "") };
     s.addShape(pptx.ShapeType.rect, {
       x: 0.12,
@@ -311,9 +335,9 @@ export async function exportPptx(deck: Deck) {
     const muted = tokens.muted.replace("#", "");
     const accent = tokens.accent.replace("#", "");
 
-    addJpeg(s, crest, { x: 0.28, y: 0.24, w: 1.18, h: 1.18 });
+    await addJpeg(s, crest.data, { x: 0.28, y: 0.24, w: 1.18, h: 1.18 });
     if (slide.layout === "title") {
-      addJpeg(s, scope, { x: 10.35, y: 0.18, w: 2.7, h: 1.7 });
+      await addJpeg(s, scope.data, { x: 10.35, y: 0.18, w: 2.7, h: 1.7 });
     } else {
       s.addShape(pptx.ShapeType.rect, {
         x: 0.12,
@@ -336,20 +360,26 @@ export async function exportPptx(deck: Deck) {
     }
 
     if (slide.layout !== "title") {
-      s.addText(`${String(idx + 1).padStart(2, "0")} / ${String(deck.slides.length).padStart(2, "0")}`, {
-        x: 0.35,
-        y: 7.0,
-        w: 1.6,
-        h: 0.22,
-        fontSize: 9,
-        fontFace: "Calibri",
-        color: muted,
-        margin: 0,
-      });
+      s.addText(
+        `${String(idx + 1).padStart(2, "0")} / ${String(deck.slides.length).padStart(2, "0")}`,
+        {
+          x: 0.35,
+          y: 7.0,
+          w: 1.6,
+          h: 0.22,
+          fontSize: 9,
+          fontFace: "Calibri",
+          color: muted,
+          margin: 0,
+        },
+      );
     }
 
+    const contentTop = slide.subtitle ? 2.55 : 2.15;
+    const contentHeight = 6.55 - contentTop;
     const fig = slide.layout === "title" ? undefined : slide.media[0];
-    const data = fig ? await figureData(fig.src, fig.title || slide.title) : "";
+    const imageResult = fig ? await figureData(fig.src, fig.title || slide.title) : null;
+    const data = imageResult?.data ?? "";
     const hasFig = Boolean(fig && pptxData(data));
 
     if (slide.layout === "title") {
@@ -359,12 +389,23 @@ export async function exportPptx(deck: Deck) {
         w: 11.7,
         h: 1.6,
         fontSize: 34,
+        fit: "shrink",
         fontFace: "Georgia",
         color: ink,
         bold: true,
         align: "center",
         margin: 0,
       });
+      if (slide.subtitle)
+        s.addText(slide.subtitle, {
+          x: 0.8,
+          y: 4.0,
+          w: 11.7,
+          h: 0.5,
+          fontSize: 18,
+          align: "center",
+          fit: "shrink",
+        });
       s.addShape(pptx.ShapeType.rect, {
         x: 10.55,
         y: 4.55,
@@ -373,7 +414,9 @@ export async function exportPptx(deck: Deck) {
         fill: { color: accent },
       });
       s.addText(
-        [meta.course, meta.courseCode, `PREPARED BY: ${meta.preparedBy}`, meta.department].join("\n"),
+        [meta.course, meta.courseCode, `PREPARED BY: ${meta.preparedBy}`, meta.department].join(
+          "\n",
+        ),
         {
           x: 7.4,
           y: 4.75,
@@ -394,29 +437,59 @@ export async function exportPptx(deck: Deck) {
         w: 12.3,
         h: 0.6,
         fontSize: 22,
+        fit: "shrink",
         fontFace: "Georgia",
         color: navy,
         bold: true,
         margin: 0,
       });
+      if (slide.subtitle)
+        s.addText(slide.subtitle, {
+          x: 0.5,
+          y: 2.03,
+          w: 12.3,
+          h: 0.4,
+          fontSize: 12,
+          fit: "shrink",
+          color: muted,
+        });
       if (slide.layout === "two-column") {
         s.addText(
           slide.leftBullets.map((b) => ({ text: b, options: { bullet: true, breakLine: true } })),
-          { x: 0.5, y: 2.15, w: 6, h: hasFig ? 3.05 : 4.4, fontSize: 15, fontFace: "Calibri", color: ink, valign: "top" },
+          {
+            x: 0.5,
+            y: contentTop,
+            w: 6,
+            h: hasFig ? 5.15 - contentTop : contentHeight,
+            fontSize: 15,
+            fontFace: "Calibri",
+            color: ink,
+            valign: "top",
+          },
         );
         s.addText(
           slide.rightBullets.map((b) => ({ text: b, options: { bullet: true, breakLine: true } })),
-          { x: 6.8, y: 2.15, w: 5.9, h: hasFig ? 3.05 : 4.4, fontSize: 15, fontFace: "Calibri", color: ink, valign: "top" },
+          {
+            x: 6.8,
+            y: contentTop,
+            w: 5.9,
+            h: hasFig ? 5.15 - contentTop : contentHeight,
+            fontSize: 15,
+            fontFace: "Calibri",
+            color: ink,
+            valign: "top",
+          },
         );
       } else if (slide.bullets.length) {
         s.addText(
           slide.bullets.map((b) => ({ text: b, options: { bullet: true, breakLine: true } })),
           {
             x: 0.5,
-            y: 2.15,
-            w: hasFig && slide.layout !== "full-image" ? 7.4 : 12.3,
-            h: 4.4,
+            y: contentTop,
+            w: hasFig ? (slide.layout === "full-image" ? 6.2 : 7.4) : 12.3,
+            h: contentHeight,
             fontSize: 16,
+            fit: "shrink",
             fontFace: "Calibri",
             color: ink,
             valign: "top",
@@ -447,27 +520,83 @@ export async function exportPptx(deck: Deck) {
     if (hasFig) {
       const box: Box =
         slide.layout === "full-image"
-          ? { x: 7.15, y: 2.15, w: 5.6, h: 4.35 }
+          ? { x: 7.15, y: contentTop, w: 5.6, h: contentHeight }
           : slide.layout === "two-column"
             ? { x: 0.5, y: 5.25, w: 4.4, h: 1.55 }
-            : { x: 8.15, y: 2.15, w: 4.7, h: 4.15 };
-      addJpeg(s, data, box);
-      s.addText(`${fig?.title ?? slide.title}  ·  ${fig?.credit ?? "JUW-MicroSlides"}  ·  ${fig?.license ?? "CC0"}`, {
-        x: box.x,
-        y: box.y + box.h + 0.02,
-        w: box.w,
-        h: 0.22,
-        fontSize: 8,
-        fontFace: "Calibri",
-        color: muted,
-        margin: 0,
-      });
+            : { x: 8.15, y: contentTop, w: 4.7, h: contentHeight };
+      await addJpeg(s, data, box);
+      s.addText(
+        imageResult?.substituted
+          ? "Original figure unavailable — substitute illustration by JUW-MicroSlides; verify scientific relevance."
+          : `${fig?.title ?? slide.title}  ·  ${fig?.credit ?? "Creator unknown"}  ·  ${fig?.license ?? "Licence unknown"}`,
+        {
+          x: box.x,
+          y: box.y + box.h + 0.02,
+          w: box.w,
+          h: 0.22,
+          fontSize: 8,
+          fontFace: "Calibri",
+          color: muted,
+          margin: 0,
+        },
+      );
     }
   }
 
+  for (const original of deck.slides) {
+    for (const media of original.media.slice(1)) {
+      const result = await figureData(media.src, media.title);
+      const page = pptx.addSlide();
+      page.addText(`${original.title} — additional figure`, {
+        x: 0.5,
+        y: 0.4,
+        w: 12,
+        h: 0.6,
+        fontSize: 22,
+        fit: "shrink",
+      });
+      await addJpeg(page, result.data, { x: 0.6, y: 1.2, w: 12.1, h: 5.5 });
+      page.addText(
+        result.substituted
+          ? "Original unavailable — substitute illustration; verify scientific relevance."
+          : `${media.title} · ${media.credit} · ${media.license} · ${media.source}`,
+        { x: 0.5, y: 6.9, w: 12.2, h: 0.35, fontSize: 9, fit: "shrink" },
+      );
+    }
+  }
+  const references = [
+    ...new Map(
+      deck.slides
+        .flatMap((slide) => slide.citations)
+        .map((c) => [c.doi || c.pmid || c.title.toLowerCase(), c]),
+    ).values(),
+  ];
+  for (let offset = 0; offset < references.length; offset += 6) {
+    const page = pptx.addSlide();
+    page.addText("References — verify relevance to individual claims", {
+      x: 0.5,
+      y: 0.4,
+      w: 12,
+      h: 0.6,
+      fontSize: 23,
+      bold: true,
+    });
+    page.addText(
+      references
+        .slice(offset, offset + 6)
+        .map((c, i) => `${offset + i + 1}. ${formatCitation(c, deck.citationStyle)}`)
+        .join("\n\n"),
+      { x: 0.5, y: 1.3, w: 12.2, h: 5.7, fontSize: 14, fit: "shrink", breakLine: false },
+    );
+  }
   await pptx.writeFile({ fileName: `${slug(deck.title)}.pptx` });
 }
 
 function slug(s: string) {
-  return s.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").slice(0, 60) || "juw-deck";
+  return (
+    s
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 60) || "juw-deck"
+  );
 }

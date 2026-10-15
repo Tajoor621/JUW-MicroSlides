@@ -40,7 +40,10 @@ export function SlideView({
 
   return (
     <article
-      className={cn("slide-stage relative flex h-full w-full flex-col overflow-hidden rounded-sm", className)}
+      className={cn(
+        "slide-stage relative flex h-full w-full flex-col overflow-hidden rounded-sm",
+        className,
+      )}
       data-slide-stage
       style={themeVars(isTitle ? "classic" : slide.theme)}
     >
@@ -52,9 +55,14 @@ export function SlideView({
           className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-[3px]"
           style={{ borderColor: tokens.frame, background: tokens.slide, color: tokens.ink }}
         >
-          {!isTitle ? <div className="pointer-events-none absolute inset-y-0 left-0 w-2" style={{ background: tokens.accent }} /> : null}
+          {!isTitle ? (
+            <div
+              className="pointer-events-none absolute inset-y-0 left-0 w-2"
+              style={{ background: tokens.accent }}
+            />
+          ) : null}
           {!isTitle ? <ThemeMotif theme={tokens.id} /> : null}
-          <div className="relative z-[1] flex shrink-0 items-start justify-between gap-3 px-3 pt-3 sm:px-4 sm:pt-3.5">
+          <div className="slide-brand-row relative z-[1] flex shrink-0 items-start justify-between gap-3 px-3 pt-3 sm:px-4 sm:pt-3.5">
             <img
               src={JUW.crest}
               alt="Jinnah University for Women"
@@ -77,7 +85,7 @@ export function SlideView({
           </div>
 
           {isTitle ? (
-            <div className="relative z-[1] flex min-h-0 flex-1 flex-col px-5 pb-4 sm:px-10">
+            <div className="slide-title-body relative z-[1] flex min-h-0 flex-1 flex-col px-5 pb-4 sm:px-10">
               <div className="flex flex-1 flex-col items-center justify-center">
                 <EditableText
                   value={slide.title}
@@ -85,10 +93,13 @@ export function SlideView({
                   disabled={!canEdit}
                   placeholder="Lecture title"
                   multiline
-                  className="w-full text-center font-serif text-2xl font-bold uppercase leading-tight text-ink sm:text-4xl lg:text-5xl"
+                  className={cn(
+                    "slide-title-text w-full text-center font-serif font-bold uppercase leading-tight text-ink",
+                    slide.title.length > 55 && "slide-title-long",
+                  )}
                 />
               </div>
-              <div className="ml-auto max-w-[55%] text-right">
+              <div className="slide-course-meta ml-auto max-w-[70%] text-right">
                 <div className="mb-2.5 ml-auto h-1 w-9 bg-accent" />
                 <EditableText
                   value={course}
@@ -146,7 +157,12 @@ export function SlideView({
                 />
               )}
 
-              <div className={cn("mt-3 min-h-0 flex-1", slide.layout === "two-column" && "grid gap-4 sm:grid-cols-2")}>
+              <div
+                className={cn(
+                  "mt-3 min-h-0 flex-1",
+                  slide.layout === "two-column" && "grid gap-4 sm:grid-cols-2",
+                )}
+              >
                 {slide.layout === "two-column" ? (
                   <>
                     <BulletList
@@ -202,7 +218,12 @@ export function SlideView({
                       />
                     ) : null}
                     {slide.layout === "blank" && canEdit && !slide.bullets.length ? (
-                      <BulletList items={[]} present={present} editable onChange={(bullets) => onPatch?.({ bullets })} />
+                      <BulletList
+                        items={[]}
+                        present={present}
+                        editable
+                        onChange={(bullets) => onPatch?.({ bullets })}
+                      />
                     ) : null}
                   </div>
                 )}
@@ -240,14 +261,42 @@ function ThemeMotif({ theme }: { theme: SlideTheme }) {
     >
       {theme === "gram" ? (
         <>
-          <ellipse cx="1380" cy="160" rx="78" ry="18" transform="rotate(-28 1380 160)" fill="currentColor" />
-          <ellipse cx="1488" cy="210" rx="54" ry="16" transform="rotate(18 1488 210)" fill="currentColor" />
+          <ellipse
+            cx="1380"
+            cy="160"
+            rx="78"
+            ry="18"
+            transform="rotate(-28 1380 160)"
+            fill="currentColor"
+          />
+          <ellipse
+            cx="1488"
+            cy="210"
+            rx="54"
+            ry="16"
+            transform="rotate(18 1488 210)"
+            fill="currentColor"
+          />
           <ellipse cx="1320" cy="260" rx="22" ry="22" fill="currentColor" />
           <ellipse cx="1360" cy="268" rx="22" ry="22" fill="currentColor" />
-          <ellipse cx="1500" cy="320" rx="70" ry="16" transform="rotate(-12 1500 320)" fill="currentColor" />
+          <ellipse
+            cx="1500"
+            cy="320"
+            rx="70"
+            ry="16"
+            transform="rotate(-12 1500 320)"
+            fill="currentColor"
+          />
           <ellipse cx="1410" cy="390" rx="20" ry="20" fill="currentColor" />
           <ellipse cx="1452" cy="398" rx="20" ry="20" fill="currentColor" />
-          <ellipse cx="1348" cy="470" rx="62" ry="15" transform="rotate(32 1348 470)" fill="currentColor" />
+          <ellipse
+            cx="1348"
+            cy="470"
+            rx="62"
+            ry="15"
+            transform="rotate(32 1348 470)"
+            fill="currentColor"
+          />
         </>
       ) : null}
       {theme === "culture" ? (
@@ -281,8 +330,18 @@ function ThemeMotif({ theme }: { theme: SlideTheme }) {
           <rect x="1430" y="276" width="120" height="14" fill="currentColor" />
           <rect x="1475" y="316" width="50" height="12" fill="currentColor" />
           <rect x="1420" y="356" width="140" height="14" fill="currentColor" />
-          <path d="M1320 480 c40-40 80 40 120 0 s80 40 120 0" fill="none" stroke="currentColor" strokeWidth="6" />
-          <path d="M1320 520 c40 40 80-40 120 0 s80-40 120 0" fill="none" stroke="currentColor" strokeWidth="6" />
+          <path
+            d="M1320 480 c40-40 80 40 120 0 s80 40 120 0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+          />
+          <path
+            d="M1320 520 c40 40 80-40 120 0 s80-40 120 0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+          />
         </>
       ) : null}
       {theme === "clinical" ? (
@@ -302,9 +361,24 @@ function ThemeMotif({ theme }: { theme: SlideTheme }) {
             stroke="currentColor"
             strokeWidth="8"
           />
-          <path d="M1470 220 C1410 240 1390 280 1360 330" fill="none" stroke="currentColor" strokeWidth="6" />
-          <path d="M1484 280 C1540 300 1560 340 1580 390" fill="none" stroke="currentColor" strokeWidth="6" />
-          <path d="M1476 360 C1420 390 1410 430 1380 470" fill="none" stroke="currentColor" strokeWidth="5" />
+          <path
+            d="M1470 220 C1410 240 1390 280 1360 330"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+          />
+          <path
+            d="M1484 280 C1540 300 1560 340 1580 390"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+          />
+          <path
+            d="M1476 360 C1420 390 1410 430 1380 470"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+          />
           <circle cx="1360" cy="330" r="8" fill="currentColor" />
           <circle cx="1580" cy="390" r="8" fill="currentColor" />
           <circle cx="1380" cy="470" r="7" fill="currentColor" />
@@ -330,11 +404,24 @@ function ThemeMotif({ theme }: { theme: SlideTheme }) {
       ) : null}
       {theme === "parasitology" ? (
         <>
-          <ellipse cx="1460" cy="180" rx="70" ry="28" fill="none" stroke="currentColor" strokeWidth="6" />
+          <ellipse
+            cx="1460"
+            cy="180"
+            rx="70"
+            ry="28"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+          />
           <ellipse cx="1460" cy="180" rx="22" ry="10" fill="currentColor" />
           <circle cx="1520" cy="300" r="16" fill="currentColor" />
           <circle cx="1388" cy="340" r="10" fill="currentColor" />
-          <path d="M1320 430 C1400 400 1500 460 1580 420" fill="none" stroke="currentColor" strokeWidth="5" />
+          <path
+            d="M1320 430 C1400 400 1500 460 1580 420"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+          />
         </>
       ) : null}
       {theme === "phycology" ? (
@@ -396,7 +483,11 @@ function SlideMedia({
           setSrc(fallbackVisual(media.title).src);
         }}
       />
-      {caption ? <figcaption className="truncate px-1.5 py-0.5 text-[8px] text-ink-muted sm:text-[10px]">{caption}</figcaption> : null}
+      {caption ? (
+        <figcaption className="truncate px-1.5 py-0.5 text-[8px] text-ink-muted sm:text-[10px]">
+          {caption}
+        </figcaption>
+      ) : null}
     </figure>
   );
 }
@@ -429,7 +520,7 @@ function EditableText({
     return (
       <textarea
         value={value}
-        rows={2}
+        rows={value.length > 55 ? 3 : 2}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         className={cn(shared, "resize-none text-center")}
@@ -463,12 +554,22 @@ function BulletList({
   if (!rows.length) return null;
 
   return (
-    <ul className={cn("space-y-1.5 text-ink", present ? "text-lg sm:text-xl" : "text-sm sm:text-base")}>
+    <ul
+      className={cn(
+        "space-y-1.5 text-ink",
+        present ? "text-lg sm:text-xl" : "text-sm sm:text-base",
+      )}
+    >
       {rows.map((item, i) => {
         const isAdd = editable && i === items.length;
         return (
           <li key={i} className="flex gap-2.5 leading-relaxed">
-            <span className={cn("mt-2 size-1.5 shrink-0 rounded-full", isAdd ? "bg-accent/40" : "bg-accent")} />
+            <span
+              className={cn(
+                "mt-2 size-1.5 shrink-0 rounded-full",
+                isAdd ? "bg-accent/40" : "bg-accent",
+              )}
+            />
             {editable ? (
               <input
                 value={item}
@@ -489,7 +590,9 @@ function BulletList({
                     } else {
                       next.splice(i + 1, 0, "");
                     }
-                    onChange?.(next.filter((x, idx) => x.trim().length > 0 || idx !== next.length - 1));
+                    onChange?.(
+                      next.filter((x, idx) => x.trim().length > 0 || idx !== next.length - 1),
+                    );
                   }
                   if (e.key === "Backspace" && item === "" && !isAdd) {
                     e.preventDefault();

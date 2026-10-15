@@ -1,0 +1,20 @@
+const help = {
+  edit: "Select a slide, then edit its title, bullets, notes, layout, and theme. Changes save on this browser. Use Library to download an editable backup before major edits. Undo/Redo are available there; Ctrl/Cmd+Z also works outside text fields.",
+  media:
+    "Search online or choose a bundled illustration. Check the organism, structures, labels, and actual licence before attaching. A relevant caption is not proof that an image supports a claim.",
+  cite: "Search PubMed or OpenAlex online, then attach a reference to the selected slide. Open and read the source to check that it supports the slide. A search hit is not a fact check.",
+  evidence:
+    "Paste an exported reference list. Review imported authors, year, title, and DOI before attaching. Elicit support imports exports; it does not connect to your account.",
+  audit:
+    "Use these checks to identify missing content and metadata. They do not validate scientific truth, clinical recommendations, or image licences. Resolve warnings and review sources yourself.",
+  copilot:
+    "For AI on Pages, configure your own Ollama server and installed model in Settings, then select AI mode. Cloud AI requires a server deployment. Always review generated claims. Never put private API keys into a public website.",
+};
+export function ContextHelp({ tab }: { tab: keyof typeof help }) {
+  return (
+    <details className="rounded border border-border p-2 text-xs">
+      <summary className="cursor-pointer font-medium">Help: {tab}</summary>
+      <p className="mt-2 leading-relaxed text-muted">{help[tab]}</p>
+    </details>
+  );
+}

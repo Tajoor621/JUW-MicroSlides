@@ -1,3 +1,4 @@
+import { cslCitation } from "./csl-format";
 import type { Citation, CitationStyle, Deck } from "./types";
 
 export const CANONICAL: Record<string, Citation[]> = {
@@ -67,7 +68,8 @@ export const CANONICAL: Record<string, Citation[]> = {
     {
       id: "fleming1929",
       authors: "Fleming A",
-      title: "On the antibacterial action of cultures of a penicillium, with special reference to their use in the isolation of B. influenzae",
+      title:
+        "On the antibacterial action of cultures of a penicillium, with special reference to their use in the isolation of B. influenzae",
       journal: "Br J Exp Pathol",
       year: "1929",
       volume: "10",
@@ -86,22 +88,7 @@ export const CANONICAL: Record<string, Citation[]> = {
 };
 
 export function formatCitation(c: Citation, style: CitationStyle): string {
-  const authors = c.authors;
-  const vol = c.volume ? ` ${c.volume}` : "";
-  const pages = c.pages ? `:${c.pages}` : "";
-  const doi = c.doi ? ` doi:${c.doi}` : "";
-  switch (style) {
-    case "APA":
-      return `${authors} (${c.year}). ${c.title}. ${c.journal},${vol}${pages}.${doi}`;
-    case "Harvard":
-      return `${authors} (${c.year}) '${c.title}', ${c.journal},${vol}${pages}.`;
-    case "Nature":
-      return `${authors}. ${c.title}. ${c.journal} ${c.volume ? c.volume + ", " : ""}${c.pages ?? ""} (${c.year}).`;
-    case "AMA":
-      return `${authors}. ${c.title}. ${c.journal}. ${c.year};${c.volume ?? ""}${pages}.`;
-    default:
-      return `${authors}. ${c.title}. ${c.journal}. ${c.year}${vol}${pages}.${doi}`;
-  }
+  return cslCitation(c, style);
 }
 
 export function seedCitations(discipline: string): Citation[] {
@@ -118,7 +105,11 @@ export function applyPapers(deck: Deck, papers: Citation[]): Deck {
   if (!papers.length) return deck;
   const fresh = papers.filter((p) => p.title && p.authors);
   if (!fresh.length) return deck;
-  const slides = deck.slides.map((s) => ({ ...s, citations: [...s.citations], bullets: [...s.bullets] }));
+  const slides = deck.slides.map((s) => ({
+    ...s,
+    citations: [...s.citations],
+    bullets: [...s.bullets],
+  }));
   const ref = slides.find((s) => /reference/i.test(s.title));
   if (ref) {
     const seen = new Set(ref.bullets.map((b) => b.toLowerCase()));
@@ -129,15 +120,9 @@ export function applyPapers(deck: Deck, papers: Citation[]): Deck {
       ref.bullets.push(line);
       ref.citations.push(paper);
     }
-    ref.notes = "Canonical starting points plus live PubMed hits for this topic. Check each paper before you quote a number.";
+    ref.notes =
+      "Canonical starting points plus live PubMed hits for this topic. Check each paper before you quote a number.";
   }
-  let cursor = 0;
-  for (const slide of slides) {
-    if (cursor >= fresh.length) break;
-    if (slide.layout === "title" || slide.citations.length) continue;
-    if (/reference|objective|take-home|why .* matters/i.test(slide.title)) continue;
-    slide.citations = [fresh[cursor]];
-    cursor += 1;
-  }
+  // Search results are reading suggestions, not evidence for individual slide claims.
   return { ...deck, slides };
 }

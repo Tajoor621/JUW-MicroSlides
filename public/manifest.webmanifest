@@ -1,0 +1,23 @@
+{
+  "name": "JUW-MicroSlides",
+  "short_name": "MicroSlides",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B1520",
+  "theme_color": "#0B1520",
+  "icons": [
+    {
+      "src": "juw-crest.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

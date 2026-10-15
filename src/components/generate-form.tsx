@@ -5,6 +5,7 @@ import { useDeckStore } from "@/lib/deck-store";
 import { generateLocalDeck, dedicatedLecture } from "@/lib/generate-deck";
 import { DISCIPLINES, suggestDiscipline } from "@/lib/knowledge";
 import { applyCollectedMedia } from "@/lib/media-catalog";
+import { generateAiDeck } from "@/lib/ai";
 import { collectDeckMedia } from "@/lib/media-search";
 import { inferFocus } from "@/lib/topic-engine";
 import { SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
@@ -15,8 +16,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 
-const selectClass =
-  "h-10 w-full rounded-sm border border-border bg-elevated px-2 text-sm text-fg";
+const selectClass = "h-10 w-full rounded-sm border border-border bg-elevated px-2 text-sm text-fg";
 
 const SLIDE_PRESETS = [6, 12, 18, 24, 36, 48, 72, 96, 120, 180, 240, 400];
 
@@ -90,10 +90,24 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       preparedBy: draftNow.preparedBy || landing?.preparedBy || JUW.preparedBy,
       department: landing?.department || JUW.department,
     };
-    patchDraft({ topic, discipline, count: input.count, course: input.course, courseCode: input.courseCode });
+    patchDraft({
+      topic,
+      discipline,
+      count: input.count,
+      course: input.course,
+      courseCode: input.courseCode,
+    });
     setBusy(true);
     try {
-      const local = generateLocalDeck(input);
+      let local = generateLocalDeck(input);
+      if (input.mode === "ai") {
+        const result = await withTimeout(generateAiDeck({ data: input }), 60000);
+        if (result.ok) local = result.deck;
+        else {
+          local = result.deck ?? local;
+          toast.message(result.error);
+        }
+      }
       if (local.slides[0]) {
         local.slides[0] = {
           ...local.slides[0],
@@ -107,8 +121,11 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           media: [],
         };
       }
+      local.generationSource ??= "knowledge";
       generate(input, local);
-      toast.success(`“${topic}” opens as a ${input.course} lecture. ${local.slides.length} slides, same JUW frame.`);
+      toast.success(
+        `Created ${local.slides.length} slides. Review claims, references, and figure relevance before teaching.`,
+      );
       try {
         const media = await withTimeout(
           collectDeckMedia({
@@ -125,10 +142,17 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           18000,
         );
         const current = useDeckStore.getState().deck();
-        if (!current || current.topic !== topic) return;
+        if (!current || current.id !== local.id) return;
         const upgraded = applyCollectedMedia(current, media.ok ? media : null);
         if (upgraded.slides[0]?.layout === "title") {
-          upgraded.slides[0] = { ...upgraded.slides[0], title: topic, subtitle: "", bullets: [], media: [], theme: "classic" };
+          upgraded.slides[0] = {
+            ...upgraded.slides[0],
+            title: topic,
+            subtitle: "",
+            bullets: [],
+            media: [],
+            theme: "classic",
+          };
         }
         useDeckStore.getState().replaceActive(upgraded);
       } catch {
@@ -154,8 +178,8 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         void onGenerate();
       }}
     >
-      <div className={cn("grid gap-3", compact ? "lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_minmax(10rem,1fr)_minmax(0,1fr)_auto]" : "")}>
-        <div className="grid gap-1.5">
+      <div className={cn("grid gap-3", compact ? "sm:grid-cols-2" : "")}>
+        <div className={cn("grid content-start gap-1.5", compact && "sm:col-span-2")}>
           <Label htmlFor={compact ? "gen-topic" : "topic"}>Topic</Label>
           <Input
             id={compact ? "gen-topic" : "topic"}
@@ -173,7 +197,9 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
                 disabled={busy}
                 className={cn(
                   "h-7 rounded-sm border px-2 text-[11px]",
-                  draft.topic === chip ? "border-accent bg-accent/15 text-fg" : "border-border text-muted hover:border-accent",
+                  draft.topic === chip
+                    ? "border-accent bg-accent/15 text-fg"
+                    : "border-border text-muted hover:border-accent",
                 )}
               >
                 {chip}
@@ -181,7 +207,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
             ))}
           </div>
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-disc" : "disc"}>Discipline</Label>
           <select
             id={compact ? "gen-disc" : "disc"}
@@ -199,7 +225,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
             ))}
           </select>
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-count" : "count"}>Slides (1–{MAX_SLIDES})</Label>
           <Input
             id={compact ? "gen-count" : "count"}
@@ -219,7 +245,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
             aria-label="Slide count"
           />
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-level" : "level"}>Level</Label>
           <select
             id={compact ? "gen-level" : "level"}
@@ -235,7 +261,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           </select>
         </div>
         {compact ? (
-          <div className="flex items-end">
+          <div className="flex items-end sm:col-span-2">
             <Button type="submit" disabled={busy} variant="accent" className="w-full">
               {busy ? "Writing…" : "Generate deck"}
             </Button>
@@ -250,16 +276,20 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
             onClick={() => patchDraft({ count: n })}
             className={cn(
               "h-8 rounded-sm border px-2 text-xs tabular-nums",
-              draft.count === n ? "border-accent bg-accent/15 text-fg" : "border-border text-muted hover:border-accent",
+              draft.count === n
+                ? "border-accent bg-accent/15 text-fg"
+                : "border-border text-muted hover:border-accent",
             )}
           >
             {n}
           </button>
         ))}
       </div>
-      <div className="grid gap-1.5">
+      <div className="grid content-start gap-1.5">
         <p className="text-xs text-muted">
-          Any microbiology topic. Each slide is written for that subject and is not repeated. Figures are searched on Wikimedia, Openverse, Wikipedia, Wellcome, GBIF, and iNaturalist; papers come from PubMed, Europe PMC, and OpenAlex. The introduction keeps the JUW frame, with the course line following the topic.
+          Knowledge mode uses bundled teaching material and topic templates; coverage varies. Review
+          every scientific claim. On Pages, search images in Media and references in PubMed or
+          Evidence while online. Configure your own Ollama server in Settings for local AI.
         </p>
         <div className="flex flex-wrap gap-1">
           {SLIDE_THEMES.map((id) => (
@@ -267,14 +297,17 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
               key={id}
               className="inline-flex h-6 items-center gap-1.5 rounded-sm border border-border px-1.5 text-[10px] uppercase tracking-wide text-muted"
             >
-              <i className="inline-block size-2.5 rounded-full" style={{ background: THEME_TOKENS[id].frame }} />
+              <i
+                className="inline-block size-2.5 rounded-full"
+                style={{ background: THEME_TOKENS[id].frame }}
+              />
               {THEME_TOKENS[id].label}
             </span>
           ))}
         </div>
       </div>
       <div className={cn("grid gap-3", compact ? "sm:grid-cols-3" : "gap-3")}>
-        <div className="grid gap-1.5">
+        <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-course" : "course"}>Course</Label>
           <Input
             id={compact ? "gen-course" : "course"}
@@ -286,7 +319,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
             placeholder={JUW.course}
           />
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-code" : "code"}>Course code</Label>
           <Input
             id={compact ? "gen-code" : "code"}
@@ -298,7 +331,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
             placeholder={JUW.courseCode}
           />
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-prep" : "prep"}>Prepared by</Label>
           <Input
             id={compact ? "gen-prep" : "prep"}
@@ -308,7 +341,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           />
         </div>
       </div>
-      <div className="grid gap-1.5">
+      <div className="grid content-start gap-1.5">
         <Label htmlFor={compact ? "gen-notes" : "notes"}>Optional abstract or lecture notes</Label>
         <Textarea
           id={compact ? "gen-notes" : "notes"}
@@ -321,11 +354,21 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       <fieldset className="flex flex-wrap gap-4 text-sm text-muted">
         <legend className="sr-only">Generation mode</legend>
         <label className="flex min-h-11 items-center gap-2">
-          <input type="radio" name="gen-mode" checked={draft.mode === "manual"} onChange={() => patchDraft({ mode: "manual" })} />
-          Manual — knowledge base, no key
+          <input
+            type="radio"
+            name="gen-mode"
+            checked={draft.mode === "manual"}
+            onChange={() => patchDraft({ mode: "manual" })}
+          />
+          Knowledge base — no key
         </label>
         <label className="flex min-h-11 items-center gap-2">
-          <input type="radio" name="gen-mode" checked={draft.mode === "ai"} onChange={() => patchDraft({ mode: "ai" })} />
+          <input
+            type="radio"
+            name="gen-mode"
+            checked={draft.mode === "ai"}
+            onChange={() => patchDraft({ mode: "ai" })}
+          />
           AI lecture writer
         </label>
       </fieldset>

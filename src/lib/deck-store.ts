@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { durableStorage } from "./durable-storage";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { lectureMeta } from "./brand";
 import { generateLocalDeck, sampleDeck, withOfficialIntro } from "./generate-deck";
 import { attachUniqueMedia, takeUniqueMedia } from "./media-catalog";
@@ -17,7 +18,7 @@ import type {
 } from "./types";
 import { mediaKey, uid } from "./utils";
 
-const MAX_LIBRARY = 24;
+// Decks are never silently evicted; users control deletion.
 
 type InspectorTab = "edit" | "media" | "cite" | "evidence" | "audit" | "copilot";
 
@@ -138,12 +139,18 @@ export const useDeckStore = create<DeckState>()(
         const d = get().deck();
         if (!d) return;
         const used = new Set<string>();
-        d.slides.forEach((s) => s.media.forEach((m) => {
-          used.add(m.id);
-          used.add(mediaKey(m.src));
-        }));
-        const fromPool = (d.mediaPool ?? []).find((m) => !used.has(m.id) && !used.has(mediaKey(m.src)));
-        const media = fromPool ?? takeUniqueMedia(`${d.topic} ${d.discipline} new slide ${d.slides.length + 1}`, used);
+        d.slides.forEach((s) =>
+          s.media.forEach((m) => {
+            used.add(m.id);
+            used.add(mediaKey(m.src));
+          }),
+        );
+        const fromPool = (d.mediaPool ?? []).find(
+          (m) => !used.has(m.id) && !used.has(mediaKey(m.src)),
+        );
+        const media =
+          fromPool ??
+          takeUniqueMedia(`${d.topic} ${d.discipline} new slide ${d.slides.length + 1}`, used);
         const slide: Slide = {
           id: uid("s"),
           layout: "content",
@@ -158,7 +165,9 @@ export const useDeckStore = create<DeckState>()(
           media: [media],
         };
         const slides = [...d.slides, slide];
-        const mediaPool = (d.mediaPool ?? []).filter((m) => m.id !== media.id && mediaKey(m.src) !== mediaKey(media.src));
+        const mediaPool = (d.mediaPool ?? []).filter(
+          (m) => m.id !== media.id && mediaKey(m.src) !== mediaKey(media.src),
+        );
         const next = bump({ ...d, mediaPool }, slides);
         set({
           library: get().library.map((x) => (x.id === next.id ? next : x)),
@@ -209,7 +218,9 @@ export const useDeckStore = create<DeckState>()(
           set({ generateDraft });
           return;
         }
-        const slides = d.slides.map((s, i) => (i === 0 && s.layout === "title" ? { ...s, title, theme: "classic" as const } : s));
+        const slides = d.slides.map((s, i) =>
+          i === 0 && s.layout === "title" ? { ...s, title, theme: "classic" as const } : s,
+        );
         const next = bump({ ...d, title, topic: title.trim() || d.topic }, slides);
         set({
           generateDraft,
@@ -228,11 +239,17 @@ export const useDeckStore = create<DeckState>()(
         const key = mediaKey(media.src);
         if (s.media.some((m) => m.id === media.id || mediaKey(m.src) === key)) return;
         const usedElsewhere = d.slides.some(
-          (sl, i) => i !== get().selectedIndex && sl.media.some((m) => m.id === media.id || mediaKey(m.src) === key),
+          (sl, i) =>
+            i !== get().selectedIndex &&
+            sl.media.some((m) => m.id === media.id || mediaKey(m.src) === key),
         );
         if (usedElsewhere) return;
-        const slides = d.slides.map((sl, i) => (i === get().selectedIndex ? { ...sl, media: [media] } : sl));
-        const mediaPool = (d.mediaPool ?? []).filter((m) => m.id !== media.id && mediaKey(m.src) !== key);
+        const slides = d.slides.map((sl, i) =>
+          i === get().selectedIndex ? { ...sl, media: [media] } : sl,
+        );
+        const mediaPool = (d.mediaPool ?? []).filter(
+          (m) => m.id !== media.id && mediaKey(m.src) !== key,
+        );
         const next = bump({ ...d, mediaPool }, slides);
         set({ library: get().library.map((x) => (x.id === next.id ? next : x)) });
       },
@@ -252,14 +269,19 @@ export const useDeckStore = create<DeckState>()(
         });
         let media = remaining;
         let mediaPool = [...(d.mediaPool ?? [])];
-        if (removed && !mediaPool.some((m) => m.id === removed.id || mediaKey(m.src) === mediaKey(removed.src))) {
+        if (
+          removed &&
+          !mediaPool.some((m) => m.id === removed.id || mediaKey(m.src) === mediaKey(removed.src))
+        ) {
           mediaPool = [removed, ...mediaPool];
         }
         if (media.length === 0) {
           const fallback = mediaPool.find((m) => !used.has(m.id) && !used.has(mediaKey(m.src)));
           const nextMedia = fallback ?? takeUniqueMedia(`${s.title} ${d.topic}`, used);
           media = [nextMedia];
-          mediaPool = mediaPool.filter((m) => m.id !== nextMedia.id && mediaKey(m.src) !== mediaKey(nextMedia.src));
+          mediaPool = mediaPool.filter(
+            (m) => m.id !== nextMedia.id && mediaKey(m.src) !== mediaKey(nextMedia.src),
+          );
         }
         const slides = d.slides.map((sl, i) => (i === get().selectedIndex ? { ...sl, media } : sl));
         const next = bump({ ...d, mediaPool }, slides);
@@ -281,7 +303,7 @@ export const useDeckStore = create<DeckState>()(
       replaceActive: (deck) => {
         const lib = get().library.filter((d) => d.id !== deck.id);
         set({
-          library: [deck, ...lib].slice(0, MAX_LIBRARY),
+          library: [deck, ...lib],
           activeId: deck.id,
           selectedIndex: 0,
         });
@@ -292,10 +314,10 @@ export const useDeckStore = create<DeckState>()(
         get().replaceActive(made);
         set({
           generateOpen: false,
-          generatorOpen: true,
+          generatorOpen: false,
           generationMode: input.mode,
           inspectorTab: "edit",
-          inspectorOpen: true,
+          inspectorOpen: false,
           selectedIndex: 0,
           generateDraft: {
             ...get().generateDraft,
@@ -311,7 +333,10 @@ export const useDeckStore = create<DeckState>()(
             const scroller = stage?.closest("main");
             if (!stage || !(scroller instanceof HTMLElement)) return;
             const top =
-              stage.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - 8;
+              stage.getBoundingClientRect().top -
+              scroller.getBoundingClientRect().top +
+              scroller.scrollTop -
+              8;
             scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
           });
         }
@@ -326,7 +351,7 @@ export const useDeckStore = create<DeckState>()(
           updatedAt: Date.now(),
           slides: d.slides.map((s) => ({ ...s, id: uid("s") })),
         };
-        set({ library: [copy, ...get().library].slice(0, MAX_LIBRARY), activeId: copy.id });
+        set({ library: [copy, ...get().library], activeId: copy.id });
       },
       loadDeck: (id) => {
         const found = get().library.find((d) => d.id === id);
@@ -340,7 +365,10 @@ export const useDeckStore = create<DeckState>()(
       },
     }),
     {
-      name: "juw-microslides-v661-intro-logo",
+      name: "juw-microslides-schema-1",
+      storage: createJSONStorage(() => durableStorage),
+      version: 1,
+      migrate: (state) => state as DeckState,
       partialize: (s) => ({
         library: s.library.filter((d) => d.slides.length > 0),
         activeId: s.activeId,
@@ -354,10 +382,9 @@ export const useDeckStore = create<DeckState>()(
         const p = (persisted || {}) as Partial<DeckState>;
         const pLib = (p.library ?? []).filter((d) => d.slides.length > 0);
         const cLib = current.library.filter((d) => d.slides.length > 0);
-        const newest = (lib: Deck[]) => Math.max(0, ...lib.map((d) => d.updatedAt || 0));
-        const lib = newest(cLib) > newest(pLib) && cLib.length ? cLib : pLib.length ? pLib : cLib;
+        const lib = pLib.length ? pLib : cLib;
         if (!lib.length) return current;
-        const preferredId = newest(cLib) > newest(pLib) ? current.activeId : p.activeId;
+        const preferredId = pLib.length ? p.activeId : current.activeId;
         const activeId = lib.some((d) => d.id === preferredId) ? preferredId! : lib[0].id;
         return {
           ...current,
@@ -373,6 +400,6 @@ export const useDeckStore = create<DeckState>()(
 
 if (typeof window !== "undefined") {
   const boot = () => useDeckStore.getState().hydrateSample();
-  queueMicrotask(boot);
+  // Wait for durable storage before creating a sample or editing.
   useDeckStore.persist.onFinishHydration(boot);
 }
