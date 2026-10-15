@@ -85,14 +85,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
-    "@sparticuz/chromium": "^153.0.0",
     "@types/node": "^22.16.5",
     "@types/papaparse": "^5.5.2",
     "@types/pg": "^8.11.10",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "agent-browser": "^0.39.1",
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
@@ -106,5 +104,9 @@
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.2.0"
-  }
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "npm@11.9.0"
 }
