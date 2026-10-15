@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "JUW-MicroSlides v6.2.1",
+      "hasCanvas": false,
+      "bodyTextLen": 2935,
+      "bodyTextHash": "12763d2b84e800a9021009a25d2e8f1a6ccb0e793e2d8830ea122bb08776098f",
+      "bodyTextPrefix": "JUW-MicroSlides v6.2.1 Manual mode Generate SLIDES · 12 · 4 CITE",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "JUW-MicroSlides v6.2.1",
+      "hasCanvas": false,
+      "bodyTextLen": 1855,
+      "bodyTextHash": "2ff7758344b684c3edcdd3f36ab33eb5510f1ff7352a1a025fc9d832f49f13bd",
+      "bodyTextPrefix": "JUW-MicroSlides Generate Generate a scientific deck Official JUW",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

@@ -1,0 +1,120 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-bg: #0b1520;
+  --color-surface: #121c28;
+  --color-elevated: #1a2736;
+  --color-card: #203044;
+  --color-fg: #e8edf4;
+  --color-muted: #8a9bb0;
+  --color-faint: #5c6d82;
+  --color-border: color-mix(in oklab, var(--color-fg) 12%, transparent);
+  --color-accent: #4e8ea8;
+  --color-accent-fg: #0b1520;
+  --color-paper: #f4efe4;
+  --color-ink: #1a2433;
+  --color-ink-muted: #5c6b7a;
+  --color-navy: #0b1520;
+  --color-danger: #c45c5c;
+  --color-success: #5d9a74;
+  --color-ring: #4e8ea8;
+  --color-frame: #954a33;
+  --color-frame-band: #c8dbe1;
+  --color-slide: #ffffff;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius: 0.75rem;
+
+  --shadow-panel: 0 12px 40px color-mix(in oklab, #000 40%, transparent);
+}
+
+html[data-theme="light"] {
+  --color-bg: #eef1f4;
+  --color-surface: #f7f8fa;
+  --color-elevated: #ffffff;
+  --color-card: #ffffff;
+  --color-fg: #1a2433;
+  --color-muted: #5c6d82;
+  --color-faint: #7a8b9c;
+  --color-border: color-mix(in oklab, var(--color-fg) 14%, transparent);
+  --color-accent: #2f6f86;
+  --color-accent-fg: #f7f8fa;
+  --shadow-panel: 0 10px 30px color-mix(in oklab, #1a2433 10%, transparent);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  select {
+    color: var(--color-fg);
+    background-color: var(--color-elevated);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.slide-stage {
+  aspect-ratio: 16 / 9;
+  background: var(--color-slide);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-panel);
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #print-root, #print-root * { visibility: visible; }
+  #print-root {
+    position: absolute;
+    inset: 0;
+    background: white;
+  }
+  .print-slide {
+    break-after: page;
+    width: 100%;
+    padding: 12px;
+  }
+  .print-slide .slide-stage {
+    box-shadow: none;
+    width: 100%;
+  }
+}
