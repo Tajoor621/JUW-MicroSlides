@@ -1,4 +1,6 @@
-# JUW-MicroSlides v6.3.0
+# JUW-MicroSlides V6.2.1
+
+The owner has fixed the application version at **V6.2.1**. Keep this version for all future fixes and feature updates; identify revisions by commit and date instead.
 
 A local-first microbiology lecture editor with editable slides, citations, presentation mode, PowerPoint export, and printable slides.
 

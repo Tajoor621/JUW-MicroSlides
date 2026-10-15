@@ -1,6 +1,6 @@
 export const JUW = {
   name: "JUW-MicroSlides",
-  version: "v6.3.0",
+  version: "V6.2.1",
   crest: `${import.meta.env.BASE_URL}juw-crest.png`,
   crestMark: `${import.meta.env.BASE_URL}juw-crest-256.jpg`,
   deptSeal: `${import.meta.env.BASE_URL}juw-dept-seal.svg?v=5`,

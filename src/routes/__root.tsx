@@ -1,9 +1,10 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { JUW } from "@/lib/brand";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "JUW-MicroSlides v6.3.0";
+const APP_NAME = `${JUW.name} ${JUW.version}`;
 
 export const Route = createRootRoute({
   head: () => ({
@@ -14,7 +15,7 @@ export const Route = createRootRoute({
       { name: "theme-color", content: "#0B1520" },
       {
         name: "description",
-        content: "JUW-MicroSlides v6.3.0 — evidence-based microbiology lecture deck generator.",
+        content: `${APP_NAME} — evidence-based microbiology lecture deck generator.`,
       },
     ],
     links: [

@@ -1,4 +1,4 @@
-# v6.3.0 — deployment and reliability repair
+# V6.2.1 — deployment and reliability repair
 
 - Removed stale generated Vercel build artifacts from source control; both targets rebuild from source.
 - Added an independent static Pages build, subdirectory-aware assets, install manifest, offline app-shell cache, and gated deployment workflow.
