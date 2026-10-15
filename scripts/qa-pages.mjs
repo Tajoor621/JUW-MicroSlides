@@ -232,6 +232,15 @@ try {
   await mp.screenshot({ path: join(output, "juw-mobile-generated.png") });
   results.push("Unavailable AI explicitly falls back to a labelled knowledge draft");
   results.push("Long lecture title fits in the mobile slide preview");
+  assert(
+    await mp
+      .locator(".slide-course-meta")
+      .evaluate(
+        (el) =>
+          el.getBoundingClientRect().bottom <= el.closest("article").getBoundingClientRect().bottom,
+      ),
+  );
+  results.push("Course and instructor metadata fit inside the mobile title slide");
 
   await mobile.close();
   assert.deepEqual(errors, []);

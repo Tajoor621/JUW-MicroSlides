@@ -155,6 +155,14 @@ html[data-theme="light"] {
 }
 .slide-course-meta {
   flex-shrink: 0;
+  font-size: clamp(6px, 1.5cqw, 12px);
+  line-height: 1.35;
+}
+.slide-course-meta input {
+  display: block;
+}
+.slide-course-meta > div:first-child {
+  margin-bottom: 1cqw;
 }
 .slide-course-meta input,
 .slide-course-meta p,
