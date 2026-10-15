@@ -10,3 +10,11 @@ The owner explicitly requires JUW-MicroSlides to remain **V6.2.1**, regardless o
 - Track subsequent work using commit hashes, dates, and changelog entries under V6.2.1.
 - Storage schema versions and content-derived cache hashes may change when technically necessary; they are independent of the fixed application version. Never freeze cache hashes or skip required data migrations to preserve the visible version.
 - Preserve all implemented functionality when changing version labels.
+
+## Topic content and media policy
+
+- Keep the introduction and substantive content aligned with the exact research topic. Do not pad requested counts using generic instructor prompts or unrelated material; disclose insufficient coverage.
+- Use concise concept headings. Do not append the full topic to every heading.
+- Keep discovered scientific media in a separate collection. Only explicit user selection may attach an image. Never insert a replacement figure automatically when an image is removed or fails to load.
+- Keep provenance and downloads available independently from slide attachment. Social-platform shortcuts are not authenticated integrations or exhaustive retrieval.
+- Review findings must distinguish screening heuristics, provider metadata checks and actual model-assisted image inspection. Never certify accuracy, invent verification, or silently apply unreviewed model suggestions.

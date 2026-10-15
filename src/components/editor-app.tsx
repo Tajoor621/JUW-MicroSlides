@@ -85,8 +85,6 @@ export function EditorApp() {
   const toggleRail = useDeckStore((s) => s.toggleRail);
   const toggleInspector = useDeckStore((s) => s.toggleInspector);
   const setPresenting = useDeckStore((s) => s.setPresenting);
-  const setGenerateOpen = useDeckStore((s) => s.setGenerateOpen);
-  const setGeneratorOpen = useDeckStore((s) => s.setGeneratorOpen);
   const setLibraryOpen = useDeckStore((s) => s.setLibraryOpen);
   const setSettingsOpen = useDeckStore((s) => s.setSettingsOpen);
   const setTheme = useDeckStore((s) => s.setTheme);
@@ -103,6 +101,9 @@ export function EditorApp() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+  useEffect(() => {
+    document.title = `${deck?.topic || "Research workspace"} — ${JUW.name} ${JUW.version}`;
+  }, [deck?.topic]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -384,6 +385,16 @@ export function EditorApp() {
           <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto bg-bg p-3 sm:p-5">
             <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-3">
               <GeneratePanel />
+              {deck?.contentWarnings?.length ? (
+                <div
+                  role="note"
+                  className="rounded border border-border bg-surface p-3 text-xs text-muted"
+                >
+                  {deck.contentWarnings.map((warning, i) => (
+                    <p key={i}>{warning}</p>
+                  ))}
+                </div>
+              ) : null}
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
                 <label className="flex items-center gap-2">
                   Layout

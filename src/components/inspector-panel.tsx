@@ -1,24 +1,15 @@
+import { SpecialistReview } from "./specialist-review";
+import { TopicMediaPanel } from "./topic-media-panel";
 import { ContextHelp } from "./context-help";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useId,
-  cloneElement,
-  isValidElement,
-  type ReactNode,
-} from "react";
+import { useState, useId, cloneElement, isValidElement, type ReactNode } from "react";
 import { toast } from "sonner";
 import { askCopilot, searchOpenAlex, searchPubmed } from "@/lib/ai";
 import { formatCitation } from "@/lib/citations";
 import { useDeckStore } from "@/lib/deck-store";
 import { parseEvidencePaste } from "@/lib/elicit";
-import { fallbackVisual, searchMedia, suggestMediaForText } from "@/lib/media-catalog";
-import { searchOpenMedia } from "@/lib/media-search";
-import type { Citation, Layout, MediaItem } from "@/lib/types";
+import type { Citation, Layout } from "@/lib/types";
 import { LAYOUTS } from "@/lib/types";
 import { SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
-import { mediaKey, mediaDisplaySrc, uid } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -30,7 +21,7 @@ const TABS = [
   { id: "media", label: "Media" },
   { id: "cite", label: "PubMed" },
   { id: "evidence", label: "Evidence" },
-  { id: "audit", label: "Audit" },
+  { id: "audit", label: "Review" },
   { id: "copilot", label: "Copilot" },
 ] as const;
 
@@ -45,12 +36,13 @@ export function InspectorPanel() {
       className={`flex w-[min(100%,320px)] shrink-0 flex-col border-l border-border bg-surface max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-40 max-lg:shadow-panel ${inspectorOpen ? "max-lg:flex" : "max-lg:hidden"} lg:flex`}
     >
       <div className="flex items-center justify-between border-b border-border px-2">
-        <div className="flex min-w-0 flex-1 overflow-x-auto">
+        <div className="grid min-w-0 flex-1 grid-cols-3">
           {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
+              aria-pressed={tab === t.id}
               className={`h-11 shrink-0 px-2.5 text-xs uppercase tracking-wider ${tab === t.id ? "border-b-2 border-accent text-fg" : "text-muted"}`}
             >
               {t.label}
@@ -65,10 +57,10 @@ export function InspectorPanel() {
         <div className="space-y-4 p-3">
           <ContextHelp tab={tab} />
           {tab === "edit" && <EditTab />}
-          {tab === "media" && <MediaTab />}
+          {tab === "media" && <TopicMediaPanel />}
           {tab === "cite" && <CiteTab />}
           {tab === "evidence" && <EvidenceTab />}
-          {tab === "audit" && <AuditTab />}
+          {tab === "audit" && <SpecialistReview />}
           {tab === "copilot" && <CopilotTab />}
         </div>
       </ScrollArea>
@@ -192,270 +184,6 @@ function EditTab() {
         />
       </Field>
     </>
-  );
-}
-
-function MediaTab() {
-  const deck = useDeckStore((s) => s.deck());
-  const slide = useDeckStore((s) => s.slide());
-  const attach = useDeckStore((s) => s.attachMedia);
-  const remove = useDeckStore((s) => s.removeMedia);
-  const [q, setQ] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [live, setLive] = useState<MediaItem[]>([]);
-  const [credit, setCredit] = useState({ url: "", creator: "", source: "", license: "CC BY 4.0" });
-
-  const used = useMemo(() => {
-    const keys = new Set<string>();
-    for (const s of deck?.slides ?? []) {
-      for (const m of s.media) {
-        keys.add(m.id);
-        keys.add(mediaKey(m.src));
-      }
-    }
-    return keys;
-  }, [deck]);
-
-  const catalog = useMemo(() => {
-    if (q.trim()) return searchMedia(q, 16, used);
-    if (slide) return suggestMediaForText(`${slide.title} ${slide.bullets.join(" ")}`, 12, used);
-    return searchMedia("", 12, used);
-  }, [q, slide, used]);
-
-  async function searchLive(silent = false, queryOverride?: string) {
-    const query =
-      queryOverride?.trim() || q.trim() || `${slide?.title ?? ""} ${deck?.topic ?? "microbiology"}`;
-    setBusy(true);
-    try {
-      const res = await searchOpenMedia({ data: { query } });
-      if (!res.ok) {
-        if (!silent) toast.message(res.error);
-        setLive([]);
-        return;
-      }
-      setLive(res.items);
-      if (!res.items.length && !silent)
-        toast.message("No open-licence hits. Try a species, stain, or method name.");
-    } catch {
-      if (!silent) toast.message("Open archives are unreachable right now.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  useEffect(() => {
-    void searchLive(true);
-    // Search once when the Media tab opens on a slide so unused archive hits appear immediately.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slide?.id]);
-
-  function tryAttach(item: MediaItem) {
-    const key = mediaKey(item.src);
-    if (used.has(item.id) || used.has(key)) {
-      toast.message("That file is already on another slide in this deck.");
-      return;
-    }
-    attach(item);
-  }
-
-  if (!slide || !deck) return <Empty>Select a slide.</Empty>;
-
-  const pool = (deck.mediaPool ?? []).filter((m) => !used.has(m.id) && !used.has(mediaKey(m.src)));
-  const liveUnused = live.filter((m) => !used.has(m.id) && !used.has(mediaKey(m.src)));
-
-  return (
-    <>
-      <p className="text-xs text-muted">
-        Choose a bundled illustration or search online. The Pages site searches Wikimedia Commons;
-        server deployments may use additional providers. Verify each figure’s relevance, creator,
-        original source, and licence before teaching or sharing.
-      </p>
-      <Field label="Search open archives">
-        <div className="flex gap-2">
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                void searchLive();
-              }
-            }}
-            placeholder="Gram stain, enzyme, phage diagram…"
-          />
-          <Button size="sm" variant="accent" onClick={() => void searchLive()} disabled={busy}>
-            {busy ? "…" : "Go"}
-          </Button>
-        </div>
-      </Field>
-      <Button
-        size="sm"
-        variant="secondary"
-        className="w-full"
-        onClick={() => {
-          const query = `${slide.title} ${slide.bullets[0] ?? deck.topic}`;
-          setQ(query);
-          void searchLive(false, query);
-        }}
-      >
-        Search this slide’s topic
-      </Button>
-
-      {slide.media.length > 0 && (
-        <div className="space-y-1">
-          <Label>On this slide</Label>
-          {slide.media.map((m) => (
-            <div
-              key={m.id}
-              className="flex items-center gap-2 rounded-sm border border-border bg-elevated p-2"
-            >
-              <img
-                src={mediaDisplaySrc(m.src)}
-                alt=""
-                className="size-12 rounded-xs object-cover"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = fallbackVisual(m.title).src;
-                }}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm text-fg">{m.title}</span>
-                <span className="block text-xs text-muted">
-                  {m.kind} · {m.source} · {m.license}
-                </span>
-                {/^https?:\/\//.test(m.source) && (
-                  <a
-                    href={m.source}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-xs underline"
-                  >
-                    Open original source
-                  </a>
-                )}
-                {m.licenseUrl && (
-                  <a
-                    href={m.licenseUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-xs underline"
-                  >
-                    Read licence terms
-                  </a>
-                )}
-              </span>
-              <Button variant="ghost" size="sm" onClick={() => remove(m.id)}>
-                Swap
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <MediaGrid title="Collected for this deck" items={pool} onPick={tryAttach} />
-      <MediaGrid title="Live open sources" items={liveUnused} onPick={tryAttach} />
-      <MediaGrid title="Studio catalog" items={catalog} onPick={tryAttach} />
-
-      <div className="space-y-2 rounded-sm border border-border p-3">
-        <Label>Your own media</Label>
-        <Input
-          value={credit.url}
-          onChange={(e) => setCredit({ ...credit, url: e.target.value })}
-          placeholder="Image URL"
-        />
-        <Input
-          value={credit.creator}
-          onChange={(e) => setCredit({ ...credit, creator: e.target.value })}
-          placeholder="Creator / organisation"
-        />
-        <Input
-          value={credit.source}
-          onChange={(e) => setCredit({ ...credit, source: e.target.value })}
-          placeholder="Source (Wikimedia, lab, paper…)"
-        />
-        <Input
-          value={credit.license}
-          onChange={(e) => setCredit({ ...credit, license: e.target.value })}
-          placeholder="License"
-        />
-        <Button
-          size="sm"
-          variant="secondary"
-          className="w-full"
-          onClick={() => {
-            if (!credit.url.trim()) {
-              toast.message("Add an image URL first.");
-              return;
-            }
-            if (
-              !/^(https?:|data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,])/.test(credit.url.trim())
-            ) {
-              toast.error("Use an HTTP(S) image URL or an image data URL.");
-              return;
-            }
-            tryAttach({
-              id: uid("media"),
-              kind: "photo",
-              title: credit.creator || "Instructor media",
-              src: credit.url.trim(),
-              credit: credit.creator || "Instructor",
-              source: credit.source || "Own media",
-              license: credit.license || "All rights reserved",
-              keywords: [],
-            });
-            setCredit({ url: "", creator: "", source: "", license: "CC BY 4.0" });
-            toast.success("Media attached with credit.");
-          }}
-        >
-          Save credit and attach
-        </Button>
-      </div>
-    </>
-  );
-}
-
-function MediaGrid({
-  title,
-  items,
-  onPick,
-}: {
-  title: string;
-  items: MediaItem[];
-  onPick: (item: MediaItem) => void;
-}) {
-  if (!items.length) return null;
-  return (
-    <div className="space-y-2">
-      <Label>{title}</Label>
-      <div className="grid gap-2">
-        {items.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => onPick(m)}
-            className="flex gap-2 rounded-sm border border-border bg-elevated p-2 text-left hover:border-accent"
-          >
-            <img
-              src={mediaDisplaySrc(m.src)}
-              alt=""
-              className="size-14 rounded-xs object-cover"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = fallbackVisual(m.title).src;
-              }}
-            />
-            <span className="min-w-0">
-              <span className="block truncate text-sm text-fg">{m.title}</span>
-              <span className="block text-xs text-muted">
-                {m.kind} · {m.source} · {m.license}
-              </span>
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -642,43 +370,6 @@ function EvidenceTab() {
           ))}
         </div>
       )}
-    </>
-  );
-}
-
-function AuditTab() {
-  const deck = useDeckStore((s) => s.deck());
-  const select = useDeckStore((s) => s.select);
-  if (!deck) return <Empty>No deck.</Empty>;
-  const cited = deck.slides.filter((s) => s.citations.length > 0).length;
-  const score = Math.round((cited / Math.max(1, deck.slides.length)) * 100);
-  return (
-    <>
-      <div className="rounded-md border border-border bg-elevated p-4">
-        <p className="text-xs uppercase tracking-wider text-muted">Citation coverage</p>
-        <p className="mt-1 font-serif text-4xl tabular-nums text-fg">{score}%</p>
-        <p className="text-xs text-muted">
-          {cited}/{deck.slides.length} slides carry evidence
-        </p>
-      </div>
-      <ul className="space-y-1">
-        {deck.slides.map((s, i) => (
-          <li key={s.id}>
-            <button
-              type="button"
-              onClick={() => select(i)}
-              className="flex min-h-11 w-full items-center justify-between rounded-xs px-1 py-2 text-left text-xs hover:bg-elevated"
-            >
-              <span className="truncate text-fg">
-                {i + 1}. {s.title}
-              </span>
-              <span className={s.citations.length ? "text-success" : "text-danger"}>
-                {s.citations.length ? `${s.citations.length} cited` : "missing"}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
     </>
   );
 }

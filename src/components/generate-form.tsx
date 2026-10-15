@@ -1,12 +1,13 @@
+import { enrichTopicEvidence } from "@/lib/topic-evidence";
 import { useState } from "react";
 import { toast } from "sonner";
 import { JUW } from "@/lib/brand";
 import { useDeckStore } from "@/lib/deck-store";
 import { generateLocalDeck, dedicatedLecture } from "@/lib/generate-deck";
 import { DISCIPLINES, suggestDiscipline } from "@/lib/knowledge";
-import { applyCollectedMedia } from "@/lib/media-catalog";
+
 import { generateAiDeck } from "@/lib/ai";
-import { collectDeckMedia } from "@/lib/media-search";
+
 import { inferFocus } from "@/lib/topic-engine";
 import { SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
 import { LEVELS, MAX_SLIDES, type GenerateInput, type Level } from "@/lib/types";
@@ -64,7 +65,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
     if (!lockDiscipline && topic.trim().length > 2) {
       patchDraft({ discipline: disciplineFor(topic, false, draft.discipline) });
     }
-    useDeckStore.getState().renameTopic(topic);
+    patchDraft({ topic });
   }
 
   async function onGenerate(topicOverride?: string) {
@@ -100,6 +101,15 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
     setBusy(true);
     try {
       let local = generateLocalDeck(input);
+      if (input.mode === "manual" && local.slides.length < input.count && navigator.onLine) {
+        try {
+          local = await enrichTopicEvidence(local, input);
+        } catch {
+          toast.message(
+            "Live research sources were unavailable. The deck uses only the available topic-specific content.",
+          );
+        }
+      }
       if (input.mode === "ai") {
         const result = await withTimeout(generateAiDeck({ data: input }), 60000);
         if (result.ok) local = result.deck;
@@ -114,7 +124,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           layout: "title",
           theme: "classic",
           title: topic,
-          subtitle: "",
+          subtitle: local.slides[0].subtitle,
           bullets: [],
           leftBullets: [],
           rightBullets: [],
@@ -126,42 +136,12 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       toast.success(
         `Created ${local.slides.length} slides. Review claims, references, and figure relevance before teaching.`,
       );
-      try {
-        const media = await withTimeout(
-          collectDeckMedia({
-            data: {
-              topic: input.topic,
-              discipline: input.discipline,
-              slides: local.slides.map((s) => ({
-                id: s.id,
-                title: s.title,
-                text: [...s.bullets, ...s.leftBullets, ...s.rightBullets, s.notes].join(" "),
-              })),
-            },
-          }),
-          18000,
-        );
-        const current = useDeckStore.getState().deck();
-        if (!current || current.id !== local.id) return;
-        const upgraded = applyCollectedMedia(current, media.ok ? media : null);
-        if (upgraded.slides[0]?.layout === "title") {
-          upgraded.slides[0] = {
-            ...upgraded.slides[0],
-            title: topic,
-            subtitle: "",
-            bullets: [],
-            media: [],
-            theme: "classic",
-          };
-        }
-        useDeckStore.getState().replaceActive(upgraded);
-      } catch {
-        /* catalog figures already on the deck */
-      }
+      if (local.contentWarnings?.length)
+        toast.message(local.contentWarnings[0], { duration: 12000 });
     } catch {
       try {
         generate(input, generateLocalDeck(input));
-        toast.message("Built a catalog-illustrated deck for this topic.");
+        toast.message("Built a topic-specific draft. No images were inserted automatically.");
       } catch {
         toast.message("Could not build that deck. Try a shorter topic.");
       }
@@ -289,7 +269,8 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         <p className="text-xs text-muted">
           Knowledge mode uses bundled teaching material and topic templates; coverage varies. Review
           every scientific claim. On Pages, search images in Media and references in PubMed or
-          Evidence while online. Configure your own Ollama server in Settings for local AI.
+          Evidence while online. Media stays in the Media collection until you attach it. Configure
+          Ollama in Settings for local AI.
         </p>
         <div className="flex flex-wrap gap-1">
           {SLIDE_THEMES.map((id) => (

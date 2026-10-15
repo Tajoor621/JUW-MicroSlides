@@ -18,7 +18,7 @@ export type CitationStyle = (typeof CITATION_STYLES)[number];
 
 export const MAX_SLIDES = 400;
 
-export type MediaKind = "micrograph" | "diagram" | "icon" | "photo" | "gif" | "chart";
+export type MediaKind = "micrograph" | "diagram" | "icon" | "photo" | "gif" | "chart" | "video";
 
 export interface MediaItem {
   id: string;
@@ -29,6 +29,8 @@ export interface MediaItem {
   source: string;
   license: string;
   licenseUrl?: string;
+  originalSrc?: string;
+  provider?: string;
   keywords: string[];
 }
 
@@ -72,6 +74,9 @@ export interface Deck {
   department: string;
   slides: Slide[];
   mediaPool: MediaItem[];
+  requestedCount?: number;
+  contentWarnings?: string[];
+  researchLinks?: { id: string; title: string; url: string }[];
   generationSource?: "knowledge" | "cloud-ai" | "local-ai";
   updatedAt: number;
 }

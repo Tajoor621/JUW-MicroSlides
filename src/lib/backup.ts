@@ -6,12 +6,15 @@ const safeSrc = z
   .string()
   .max(5000000)
   .refine(
-    (s) => /^(https?:|data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]|\/(?!\/))/.test(s),
+    (s) =>
+      /^(https?:|data:(?:image\/(png|jpeg|jpg|gif|webp|svg\+xml)|video\/(mp4|webm|ogg))[;,]|\/(?!\/))/.test(
+        s,
+      ),
     "Unsupported image URL",
   );
 const media = z.object({
   id: text,
-  kind: z.enum(["micrograph", "diagram", "icon", "photo", "gif", "chart"]),
+  kind: z.enum(["micrograph", "diagram", "icon", "photo", "gif", "chart", "video"]),
   title: text,
   src: safeSrc,
   credit: text,
@@ -22,6 +25,8 @@ const media = z.object({
     .url()
     .refine((s) => s.startsWith("https://") || s.startsWith("http://"))
     .optional(),
+  originalSrc: safeSrc.optional(),
+  provider: text.optional(),
   keywords: z.array(text).max(100),
 });
 const citation = z.object({
@@ -65,6 +70,21 @@ export const deckSchema = z.object({
   department: text,
   slides: z.array(slide).min(1).max(400),
   mediaPool: z.array(media).max(1000),
+  requestedCount: z.number().int().min(1).max(400).optional(),
+  contentWarnings: z.array(text).max(100).optional(),
+  researchLinks: z
+    .array(
+      z.object({
+        id: text,
+        title: text,
+        url: z
+          .string()
+          .url()
+          .refine((s) => /^https?:\/\//.test(s)),
+      }),
+    )
+    .max(500)
+    .optional(),
   generationSource: z.enum(["knowledge", "cloud-ai", "local-ai"]).optional(),
   updatedAt: z.number().finite(),
 });

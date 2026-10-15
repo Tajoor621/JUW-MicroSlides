@@ -50,7 +50,7 @@ Only a user-triggered AI generation or Copilot request sends content to that con
 ## Known limits and remaining work
 
 - Scientific correctness, up-to-date clinical recommendations, and claim-to-source support require human review. Metadata lookup is not evidence verification.
-- Some topics receive template prompts rather than a complete specialist lecture. Requested counts up to 400 are an upper limit, not a guarantee of 400 distinct evidence-supported slides or figures.
+- Unsupported topics receive an explicit coverage notice. The generator no longer pads decks with teaching instructions or unrelated material. Requested counts up to 400 are an upper limit, not a guarantee of 400 distinct evidence-supported slides.
 - Elicit support imports exports; it is not an Elicit account connection. Ambiguous legacy author strings cannot be reconstructed reliably; structured BibTeX author data is retained.
 - External searches depend on upstream availability, CORS, and provider quotas. This release does not certify their current availability in every region.
 - PowerPoint exports all images, but additional images use extra figure slides rather than an exact multi-image copy of the editor. Browser fonts and PowerPoint fonts can differ. The reference appendix can add slides beyond the requested lecture count.
@@ -60,3 +60,17 @@ Only a user-triggered AI generation or Copilot request sends content to that con
 ## Third-party content and licences
 
 Bundled CSL styles retain their licence declarations; see `src/lib/csl/README.md`. Reference parsing/formatting uses Citation.js, CSL/citeproc, and Papa Parse. External images retain provider metadata and must be checked individually. No new blanket licence is granted for university marks, third-party scientific images, or the existing repository. Grok platform branding/preview integration remains preserved.
+
+## Topic-focused generation, separate media, and specialist review
+
+The introduction uses the exact research topic and its scope. Concept headings are concise rather than repeatedly appending the topic. Generic filler, guessed universal course codes, and automatic scientific-image placement have been removed. Substantive instructor notes are labelled as user-provided evidence. Incomplete coverage is disclosed instead of inventing enough slides to reach a requested count. Untouched shipped samples are refreshed; edited saved decks remain preserved. Generate a new deck to use the new content builder.
+
+**Media** searches public Wikimedia Commons images/videos and Openverse images, with visible provider results/errors, pagination, a persistent per-deck collection, and separate downloads. No search result is inserted into a slide automatically. Select an image and choose Attach to selected slide. Removing a figure leaves the slide without a replacement. Up to four manually selected images may be attached; choose the primary preview explicitly. Video files are downloadable but are not embedded in slides or PowerPoint. Direct in-app downloads are limited to 25 MB and require host/CORS permission; otherwise use Original source. Bundled illustrations are optional schematic aids and are not experimental images.
+
+Public-search shortcuts cover X/Twitter, Facebook, Instagram, Pinterest, CDC PHIL, Europe PMC and general web images. They open search/source pages; the app does not scrape gated posts, bypass sign-in, or claim exhaustive access to social media. Save source links for later; direct image/video URLs with recognized extensions are saved to the collection only. Provider thumbnails, original URLs, creator and licence metadata are retained in editable backups.
+
+**Review** replaces the old citation-percentage-only Audit tab. Built-in checks identify exact passages and suggest corrections for repeated headings, duplicate bodies, generator prompts, selected microbiology misconceptions, topic drift and attached-figure metadata issues. DOI/PMID checking uses Crossref/Europe PMC to compare bibliographic metadata for up to 30 records. A matching identifier is not proof of claim support, study quality or retraction status. Rules are screening checks, not comprehensive scientific verification.
+
+Optional local AI specialist review uses the configured Ollama model for the selected slide. Text-only mode receives slide text and media metadata. The explicit image-inspection option requires a vision-capable model and readable PNG/JPEG/WebP files (four images / 8 MB total). Browser CORS and model capability can limit inspection. Suggestions are labelled unverified and are never applied automatically; stale reviews are identified after edits. Download the review report as JSON for manual correction and source checking. The app never invents a successful AI report when no model is configured.
+
+Run `npm run test:topics` for the topic/media/reviewer regression suite. `qa:pages` also checks that collecting/downloading media does not attach it, manually attached mismatched media is flagged, correction reports download, and removing a figure does not add a fallback.

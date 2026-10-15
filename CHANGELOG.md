@@ -10,3 +10,11 @@
 - Added data/security checks and production desktop/mobile/offline browser checks; isolated platform test fixtures from real app branding.
 
 See README for remaining limits, deployment setup, and validation commands.
+
+## Topic quality and specialist review update — V6.2.1
+
+- Replaced generic slide padding with topic-specific content, scope-aware introductions, concise headings, explicit coverage notices and optional abstract-derived evidence.
+- Removed automatic scientific-image insertion on generation, new-slide creation and removal; preserved edited saved decks.
+- Added a separate image/video collection, original/source/licence links, individual file downloads, pagination and public social-platform/portal search shortcuts.
+- Added a specialist Review panel with exact-passage findings, correction suggestions, reference metadata checks, optional local AI and vision-model inspection, and downloadable reports.
+- Kept the owner-mandated application version V6.2.1. Schema additions are backward-compatible.

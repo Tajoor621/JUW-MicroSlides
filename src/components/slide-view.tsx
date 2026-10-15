@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
-import { fallbackVisual } from "@/lib/media-catalog";
 import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
 import { cn, mediaDisplaySrc } from "@/lib/utils";
@@ -31,10 +30,10 @@ export function SlideView({
 }) {
   const media = slide.layout === "title" ? undefined : slide.media[0];
   const canEdit = editable && !present;
-  const course = deck?.course || JUW.course;
-  const courseCode = deck?.courseCode || JUW.courseCode;
-  const preparedBy = deck?.preparedBy || JUW.preparedBy;
-  const department = deck?.department || JUW.department;
+  const course = deck?.course ?? JUW.course;
+  const courseCode = deck?.courseCode ?? JUW.courseCode;
+  const preparedBy = deck?.preparedBy ?? JUW.preparedBy;
+  const department = deck?.department ?? JUW.department;
   const isTitle = slide.layout === "title";
   const tokens = themeOf(isTitle ? "classic" : slide.theme);
 
@@ -98,6 +97,9 @@ export function SlideView({
                     slide.title.length > 55 && "slide-title-long",
                   )}
                 />
+                {slide.subtitle && (
+                  <p className="slide-scope text-center text-ink-muted">{slide.subtitle}</p>
+                )}
               </div>
               <div className="slide-course-meta ml-auto max-w-[70%] text-right">
                 <div className="mb-2.5 ml-auto h-1 w-9 bg-accent" />
@@ -108,13 +110,15 @@ export function SlideView({
                   placeholder="Course name"
                   className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs"
                 />
-                <EditableText
-                  value={courseCode}
-                  onChange={(value) => onPatchDeck?.({ courseCode: value })}
-                  disabled={!canEdit}
-                  placeholder="Course code"
-                  className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs"
-                />
+                {courseCode ? (
+                  <EditableText
+                    value={courseCode}
+                    onChange={(value) => onPatchDeck?.({ courseCode: value })}
+                    disabled={!canEdit}
+                    placeholder="Course code"
+                    className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs"
+                  />
+                ) : null}
                 <div className="mt-1.5 text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs">
                   {canEdit ? (
                     <label className="block">
@@ -451,43 +455,28 @@ function SlideMedia({
   imgClass?: string;
   caption?: string;
 }) {
-  const remote = mediaDisplaySrc(media.src);
-  const local = remote.startsWith("data:") || remote.startsWith("/") || remote.startsWith("blob:");
-  const [src, setSrc] = useState(() => (local ? remote : fallbackVisual(media.title).src));
-  useEffect(() => {
-    const display = mediaDisplaySrc(media.src);
-    if (display.startsWith("data:") || display.startsWith("/") || display.startsWith("blob:")) {
-      setSrc(display);
-      return;
-    }
-    const placeholder = fallbackVisual(media.title).src;
-    setSrc(placeholder);
-    const probe = new Image();
-    probe.referrerPolicy = "no-referrer";
-    probe.onload = () => setSrc(display);
-    probe.src = display;
-    return () => {
-      probe.onload = null;
-      probe.onerror = null;
-    };
-  }, [media.id, media.src, media.title]);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [media.src]);
   return (
     <figure className={className}>
-      <img
-        src={src}
-        alt={media.title}
-        className={imgClass}
-        referrerPolicy="no-referrer"
-        onError={() => {
-          if (src.startsWith("data:")) return;
-          setSrc(fallbackVisual(media.title).src);
-        }}
-      />
-      {caption ? (
-        <figcaption className="truncate px-1.5 py-0.5 text-[8px] text-ink-muted sm:text-[10px]">
+      {failed ? (
+        <p className="p-3 text-xs text-ink-muted">
+          Original image unavailable. It has not been replaced by a different figure.
+        </p>
+      ) : (
+        <img
+          src={mediaDisplaySrc(media.src)}
+          alt={media.title}
+          className={imgClass}
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+        />
+      )}
+      {caption && (
+        <figcaption className="px-1.5 py-0.5 text-[8px] text-ink-muted sm:text-[10px]">
           {caption}
         </figcaption>
-      ) : null}
+      )}
     </figure>
   );
 }

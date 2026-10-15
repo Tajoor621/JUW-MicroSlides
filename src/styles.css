@@ -154,6 +154,7 @@ html[data-theme="light"] {
   font-size: clamp(10px, 3.2cqw, 34px);
 }
 .slide-course-meta {
+  width: 70%;
   flex-shrink: 0;
   font-size: clamp(6px, 1.5cqw, 12px);
   line-height: 1.35;
@@ -170,4 +171,10 @@ html[data-theme="light"] {
 .slide-course-meta div {
   font-size: clamp(6px, 1.5cqw, 12px);
   line-height: 1.35;
+}
+
+.slide-scope {
+  font-size: clamp(7px, 1.65cqw, 14px);
+  line-height: 1.25;
+  margin-bottom: 1cqw;
 }

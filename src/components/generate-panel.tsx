@@ -18,10 +18,15 @@ export function GeneratePanel() {
         <span>
           <span className="block font-serif text-base text-fg">Generate a scientific deck</span>
           <span className="block text-xs text-muted">
-            Official JUW title slide — only the topic name changes. Ten microbiology themes. Microscope on the introduction only.
+            Research-specific title, scope and evidence. Concise concept headings; media is
+            collected separately.
           </span>
         </span>
-        {open ? <ChevronUp className="size-4 text-muted" /> : <ChevronDown className="size-4 text-muted" />}
+        {open ? (
+          <ChevronUp className="size-4 text-muted" />
+        ) : (
+          <ChevronDown className="size-4 text-muted" />
+        )}
       </button>
       {open ? (
         <div className="border-t border-border px-3 pb-3 pt-3">

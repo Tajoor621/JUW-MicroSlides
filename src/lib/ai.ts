@@ -4,7 +4,7 @@ import { LEVELS } from "./types";
 import { createServerFn } from "@tanstack/react-start";
 import { lectureMeta } from "./brand";
 import { generateLocalDeck } from "./generate-deck";
-import { attachUniqueMedia } from "./media-catalog";
+
 import { cycleTheme } from "./slide-themes";
 import { MAX_SLIDES, type Citation, type Deck, type GenerateInput, type Slide } from "./types";
 import { uid } from "./utils";
@@ -92,7 +92,7 @@ Discipline: ${data.discipline}
 Level: ${data.level}
 Instructor notes: ${data.notes || "none"}
 JSON schema: ${SLIDE_SCHEMA}
-First slide MUST be layout=title (official JUW intro: university crest, department seal, centred title). Include learning objectives, core content, a clinical or applied slide, take-homes, and a references slide with real classic papers (author, year, journal in bullets). Each content slide: 3–5 dense bullets.`,
+First slide MUST be layout=title (official JUW intro: university crest, department seal, centred title). Include learning objectives, core content, a clinical or applied slide, take-homes, and a references slide with real classic papers (author, year, journal in bullets). Each content slide: 3–5 specific factual bullets. Use concise concept headings, without repeating the full topic name. Do not substitute generic teaching prompts or unrelated examples. Never invent references or sources. No media is attached automatically.`,
           },
         ],
       }),
@@ -107,7 +107,7 @@ First slide MUST be layout=title (official JUW intro: university crest, departme
     if (!parsed)
       return { ok: false, error: "The model returned an unreadable deck.", deck: fallback };
     const padded = padWithLocal(parsed, fallback, count);
-    return { ok: true, deck: { ...attachUniqueMedia(padded), generationSource: "cloud-ai" } };
+    return { ok: true, deck: { ...padded, generationSource: "cloud-ai" } };
   });
 
 export const askCopilot = createServerFn({ method: "POST" })

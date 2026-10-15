@@ -243,6 +243,136 @@ try {
   results.push("Course and instructor metadata fit inside the mobile title slide");
 
   await mobile.close();
+
+  const research = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+    acceptDownloads: true,
+  });
+  const rp = await research.newPage();
+  rp.on("pageerror", (e) => errors.push(e.message));
+  const fixtureSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="white"/><ellipse cx="300" cy="150" rx="180" ry="85" fill="none" stroke="navy" stroke-width="6"/><text x="110" y="160" font-size="22">QA schematic fixture</text></svg>';
+  await research.route("https://commons.wikimedia.org/w/api.php**", (route) => {
+    const video = new URL(route.request().url()).searchParams
+      .get("gsrsearch")
+      ?.includes("filetype:video");
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        query: {
+          pages: video
+            ? {}
+            : {
+                1: {
+                  pageid: 1,
+                  title: "File:QA fixture bacterial chromosome.svg",
+                  imageinfo: [
+                    {
+                      url: "https://upload.wikimedia.org/qa/chromosome.svg",
+                      mime: "image/svg+xml",
+                      descriptionurl: "https://commons.wikimedia.org/wiki/File:QA_fixture",
+                      extmetadata: {
+                        Artist: { value: "QA fixture author" },
+                        LicenseShortName: { value: "CC0" },
+                      },
+                    },
+                  ],
+                },
+                2: {
+                  pageid: 2,
+                  title: "File:QA fixture Plasmodium sporozoite.svg",
+                  imageinfo: [
+                    {
+                      url: "https://upload.wikimedia.org/qa/sporozoite.svg",
+                      mime: "image/svg+xml",
+                      descriptionurl: "https://commons.wikimedia.org/wiki/File:QA_fixture_2",
+                      extmetadata: {
+                        Artist: { value: "QA fixture author" },
+                        LicenseShortName: { value: "CC0" },
+                      },
+                    },
+                  ],
+                },
+              },
+        },
+      }),
+    });
+  });
+  await research.route("https://api.openverse.org/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ results: [] }),
+    }),
+  );
+  await research.route("https://upload.wikimedia.org/qa/**", (route) =>
+    route.fulfill({ status: 200, contentType: "image/svg+xml", body: fixtureSvg }),
+  );
+  await rp.goto(url);
+  await saved(rp);
+  await rp.locator("#gen-topic").fill("Bacterial genome architecture");
+  await rp.locator("#gen-count").fill("12");
+  await rp.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await saved(rp);
+  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  await rp.getByRole("button", { name: "Media", exact: true }).click();
+  const correct = rp.locator("article").filter({
+    has: rp.getByRole("heading", { name: "QA fixture bacterial chromosome.svg", exact: true }),
+  });
+  await correct
+    .getByRole("button", { name: "Download file", exact: true })
+    .waitFor({ state: "visible" });
+  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  results.push("Media lookup collects files without attaching them");
+  await rp.getByRole("button", { name: /Chromosomes and accessory replicons/ }).click();
+  const fileEvent = rp.waitForEvent("download");
+  await correct.getByRole("button", { name: "Download file", exact: true }).click();
+  const file = await fileEvent;
+  assert.match(await readFile(await file.path(), "utf8"), /QA schematic fixture/);
+  results.push("Collected media downloads as a separate file");
+  await correct.getByRole("button", { name: "Attach to selected slide", exact: true }).click();
+  const wrong = rp.locator("article").filter({
+    has: rp.getByRole("heading", { name: "QA fixture Plasmodium sporozoite.svg", exact: true }),
+  });
+  await wrong.getByRole("button", { name: "Attach to selected slide", exact: true }).click();
+  await saved(rp);
+  await rp.getByRole("button", { name: "Review", exact: true }).click();
+  await rp.getByText(/The figure metadata suggests malaria parasite/).waitFor({ state: "visible" });
+  results.push("Specialist reviewer flags an intentionally mismatched attached image");
+  await rp.getByRole("button", { name: "Edit", exact: true }).click();
+  await rp
+    .getByLabel("Bullets (one per line)", { exact: true })
+    .fill("Viruses have their own ribosomes.\nAll bacteria have a single circular chromosome.");
+  await saved(rp);
+  await rp.getByRole("button", { name: "Review", exact: true }).click();
+  await rp
+    .getByText("Viruses do not possess their own ribosomes.", { exact: false })
+    .waitFor({ state: "visible" });
+  const reportEvent = rp.waitForEvent("download");
+  await rp.getByRole("button", { name: "Download review report", exact: true }).click();
+  const reportFile = await reportEvent;
+  const report = JSON.parse(await readFile(await reportFile.path(), "utf8"));
+  assert(report.issues.some((i) => i.category === "Potential factual error"));
+  assert(report.issues.some((i) => i.category === "Media mismatch"));
+  results.push("Review report downloads exact passages and correction suggestions");
+  await rp.getByRole("button", { name: "Check references online", exact: true }).click();
+  await rp.getByText(/No attached bibliographic records/).waitFor({ state: "visible" });
+  results.push("Reference checking distinguishes absent sources from verified records");
+  await rp.getByRole("button", { name: "AI review selected slide", exact: true }).click();
+  await rp.getByText(/Local AI is not configured/).waitFor({ state: "visible" });
+  results.push("Specialist AI does not fabricate a report when no local model is configured");
+  await rp.getByRole("button", { name: "Media", exact: true }).click();
+  while (await rp.getByRole("button", { name: "Remove image", exact: true }).count())
+    await rp.getByRole("button", { name: "Remove image", exact: true }).first().click();
+  await saved(rp);
+  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  results.push("Removing a figure does not insert a replacement");
+  await rp.getByRole("button", { name: "Add", exact: true }).click();
+  await saved(rp);
+  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  results.push("New blank slides contain no automatically selected figures");
+  await research.close();
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ ok: true, checks: results, uncaughtErrors: errors }, null, 2));
   await writeFile(

@@ -1,12 +1,12 @@
 const help = {
   edit: "Select a slide, then edit its title, bullets, notes, layout, and theme. Changes save on this browser. Use Library to download an editable backup before major edits. Undo/Redo are available there; Ctrl/Cmd+Z also works outside text fields.",
   media:
-    "Search online or choose a bundled illustration. Check the organism, structures, labels, and actual licence before attaching. A relevant caption is not proof that an image supports a claim.",
+    "Find media collects public image and video candidates from Commons and Openverse. Download files separately, inspect source/licence links, then attach chosen images manually. Social-platform shortcuts open public search pages; they do not bypass sign-in or import every post. Video files can be downloaded, but slide embedding supports images.",
   cite: "Search PubMed or OpenAlex online, then attach a reference to the selected slide. Open and read the source to check that it supports the slide. A search hit is not a fact check.",
   evidence:
     "Paste an exported reference list. Review imported authors, year, title, and DOI before attaching. Elicit support imports exports; it does not connect to your account.",
   audit:
-    "Use these checks to identify missing content and metadata. They do not validate scientific truth, clinical recommendations, or image licences. Resolve warnings and review sources yourself.",
+    "Review screens the entire deck or selected slide for topic drift, repeated wording, common contradictions and media metadata concerns. Each flag includes its quoted passage and a suggested correction. Check references online to compare DOI/PMID metadata. Optional Ollama review can inspect image pixels only with a configured vision model. These checks are not scientific certification.",
   copilot:
     "For AI on Pages, configure your own Ollama server and installed model in Settings, then select AI mode. Cloud AI requires a server deployment. Always review generated claims. Never put private API keys into a public website.",
 };

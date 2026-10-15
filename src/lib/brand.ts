@@ -18,9 +18,9 @@ export function lectureMeta(partial?: {
   department?: string;
 }) {
   return {
-    course: partial?.course?.trim() || JUW.course,
-    courseCode: partial?.courseCode?.trim() || JUW.courseCode,
-    preparedBy: partial?.preparedBy?.trim() || JUW.preparedBy,
-    department: partial?.department?.trim() || JUW.department,
+    course: partial?.course?.trim() ?? JUW.course,
+    courseCode: partial?.courseCode?.trim() ?? JUW.courseCode,
+    preparedBy: partial?.preparedBy?.trim() ?? JUW.preparedBy,
+    department: partial?.department?.trim() ?? JUW.department,
   };
 }
