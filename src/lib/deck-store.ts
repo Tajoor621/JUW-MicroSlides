@@ -5,7 +5,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { lectureMeta } from "./brand";
 import { generateLocalDeck, sampleDeck, withOfficialIntro } from "./generate-deck";
 
-import { cycleTheme } from "./slide-themes";
+import { researchTheme } from "./slide-themes";
 import type {
   Citation,
   CitationStyle,
@@ -142,7 +142,9 @@ export const useDeckStore = create<DeckState>()(
         const slide: Slide = {
           id: uid("s"),
           layout: "content",
-          theme: cycleTheme(d.slides.length, "content"),
+          theme:
+            d.slides.find((s) => s.layout !== "title")?.theme ??
+            researchTheme(d.topic, d.discipline, "content"),
           title: "New slide",
           subtitle: "",
           bullets: ["Add a teaching point."],

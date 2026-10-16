@@ -43,3 +43,12 @@ See README for remaining limits, deployment setup, and validation commands.
 - Added visible commit build IDs and an update control that waits for queued deck saves before reloading.
 - Labelled saved decks whose current count is lower than their original request.
 - Added browser regressions for replacing a deliberately stale worker/cache, matching update metadata, and reopening the upgraded app offline.
+
+## V6.2.1 — preview and PowerPoint layout parity
+
+- Replaced the independent PowerPoint template with capture of the same fixed 1280×720 slide composition used by editor, presenter and print views. Mobile scales the complete composition rather than reflowing slide content.
+- Matched heading/body fonts, measured text line positions, colours, frame geometry, logos, topic artwork, theme motifs, image crops and captions. Exported text remains native editable text, with explicit browser line breaks. Artwork alone is rasterised with transparency at 2× resolution.
+- Preserved exact slide count and source/media notes. Failed figures remain explicitly unavailable instead of being replaced with unrelated art. PNG and frame alpha are retained; files use ZIP compression.
+- New decks choose a consistent palette from the topic/discipline instead of cycling unrelated subject themes. Subject labels identify the deck discipline, while manually selected palettes in existing decks are preserved.
+- Added production-browser export comparisons covering all 10 palettes × 5 layouts at desktop and phone widths, including native text coordinates/sizes/colours and logo/attached-image bounds. Existing offline/storage/generation/media checks remain passing.
+- The visible application version remains V6.2.1. Re-export older decks to regenerate their PowerPoint files. PowerPoint/other viewers may substitute fonts absent on the viewing device.

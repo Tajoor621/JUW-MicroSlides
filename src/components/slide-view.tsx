@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
 import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
@@ -29,6 +29,14 @@ export function SlideView({
   onPatch?: (patch: Partial<Slide>) => void;
   onPatchDeck?: (patch: DeckMetaPatch) => void;
 }) {
+  const host = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    if (!host.current) return;
+    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / 1280));
+    observer.observe(host.current);
+    return () => observer.disconnect();
+  }, []);
   const media = slide.layout === "title" ? undefined : slide.media[0];
   const canEdit = editable && !present;
   const course = deck?.course ?? JUW.course;
@@ -40,230 +48,244 @@ export function SlideView({
   const tokens = themeOf(isTitle ? "classic" : slide.theme);
 
   return (
-    <article
-      className={cn(
-        "slide-stage relative flex h-full w-full flex-col overflow-hidden rounded-sm",
-        className,
-      )}
-      data-slide-stage
-      style={themeVars(isTitle ? "classic" : slide.theme)}
+    <div
+      ref={host}
+      className={cn("slide-viewport relative w-full overflow-hidden", className)}
+      style={{ aspectRatio: "16 / 9" }}
     >
-      <div
-        className="flex h-full min-h-0 flex-col border-[3px] p-1.5 sm:p-2"
-        style={{ borderColor: tokens.frame, background: tokens.band }}
+      <article
+        className={cn(
+          "slide-stage relative flex h-full w-full flex-col overflow-hidden rounded-sm",
+        )}
+        data-slide-stage
+        style={{
+          ...themeVars(isTitle ? "classic" : slide.theme),
+          width: 1280,
+          height: 720,
+          position: "absolute",
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+        }}
       >
         <div
-          className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-[3px]"
-          style={{ borderColor: tokens.frame, background: tokens.slide, color: tokens.ink }}
+          className="flex h-full min-h-0 flex-col border-[3px] p-1.5 @min-[640px]:p-2"
+          style={{ borderColor: tokens.frame, background: tokens.band }}
         >
           <div
-            aria-hidden="true"
-            className={cn(
-              "topic-artwork pointer-events-none absolute z-0 text-accent",
-              isTitle
-                ? "right-[3%] top-[23%] w-[19%] opacity-[0.14]"
-                : "right-[3%] top-[28%] w-[12%] opacity-[0.09]",
-            )}
-            dangerouslySetInnerHTML={{ __html: artwork }}
-          />
-          {!isTitle ? (
+            className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-[3px]"
+            style={{ borderColor: tokens.frame, background: tokens.slide, color: tokens.ink }}
+          >
             <div
-              className="pointer-events-none absolute inset-y-0 left-0 w-2"
-              style={{ background: tokens.accent }}
+              aria-hidden="true"
+              className={cn(
+                "topic-artwork pointer-events-none absolute z-0 text-accent",
+                isTitle
+                  ? "right-[3%] top-[23%] w-[19%] opacity-[0.14]"
+                  : "right-[3%] top-[28%] w-[12%] opacity-[0.09]",
+              )}
+              dangerouslySetInnerHTML={{ __html: artwork }}
             />
-          ) : null}
-          {!isTitle ? <ThemeMotif theme={tokens.id} /> : null}
-          <div className="slide-brand-row relative z-[1] flex shrink-0 items-start justify-between gap-3 px-3 pt-3 sm:px-4 sm:pt-3.5">
-            <img
-              src={JUW.crest}
-              alt="Jinnah University for Women"
-              className="h-16 w-16 object-contain sm:h-20 sm:w-20"
-            />
-            {isTitle ? (
-              <img
-                src={JUW.microscope}
-                alt="Department of Microbiology, JUW"
-                className="h-[6.25rem] w-auto max-w-[12.5rem] bg-transparent object-contain sm:h-[7.25rem]"
+            {!isTitle ? (
+              <div
+                className="pointer-events-none absolute inset-y-0 left-0 w-2"
+                style={{ background: tokens.accent }}
               />
-            ) : (
-              <span
-                className="max-w-[9rem] rounded-sm border px-2 py-1 text-right text-[10px] font-semibold uppercase leading-tight tracking-[0.14em] sm:max-w-none sm:text-[11px]"
-                style={{ borderColor: tokens.accent, background: tokens.band, color: tokens.navy }}
-              >
-                {tokens.label}
-              </span>
-            )}
-          </div>
+            ) : null}
+            {!isTitle ? <ThemeMotif theme={tokens.id} /> : null}
+            <div className="slide-brand-row relative z-[1] flex shrink-0 items-start justify-between gap-3 px-3 pt-3 @min-[640px]:px-4 @min-[640px]:pt-3.5">
+              <img
+                src={JUW.crest}
+                alt="Jinnah University for Women"
+                className="h-16 w-16 object-contain @min-[640px]:h-20 @min-[640px]:w-20"
+              />
+              {isTitle ? (
+                <img
+                  src={JUW.microscope}
+                  alt="Department of Microbiology, JUW"
+                  className="h-[6.25rem] w-auto max-w-[12.5rem] bg-transparent object-contain @min-[640px]:h-[7.25rem]"
+                />
+              ) : (
+                <span
+                  className="max-w-[9rem] rounded-sm border px-2 py-1 text-right text-[10px] font-semibold uppercase leading-tight tracking-[0.14em] @min-[640px]:max-w-none @min-[640px]:text-[11px]"
+                  style={{
+                    borderColor: tokens.accent,
+                    background: tokens.band,
+                    color: tokens.navy,
+                  }}
+                >
+                  {deck?.discipline || "Microbiology"}
+                </span>
+              )}
+            </div>
 
-          {isTitle ? (
-            <div className="slide-title-body relative z-[1] flex min-h-0 flex-1 flex-col px-5 pb-4 sm:px-10">
-              <div className="flex flex-1 flex-col items-center justify-center">
+            {isTitle ? (
+              <div className="slide-title-body relative z-[1] flex min-h-0 flex-1 flex-col px-5 pb-4 @min-[640px]:px-10">
+                <div className="flex flex-1 flex-col items-center justify-center">
+                  <EditableText
+                    value={slide.title}
+                    onChange={(title) => onPatch?.({ title })}
+                    disabled={!canEdit}
+                    placeholder="Lecture title"
+                    multiline
+                    className={cn(
+                      "slide-title-text w-full text-center font-serif font-bold uppercase leading-tight text-ink",
+                      slide.title.length > 55 && "slide-title-long",
+                    )}
+                  />
+                  {slide.subtitle && (
+                    <p className="slide-scope text-center text-ink-muted">{slide.subtitle}</p>
+                  )}
+                </div>
+                <div className="slide-course-meta ml-auto max-w-[70%] text-right">
+                  <div className="mb-2.5 ml-auto h-1 w-9 bg-accent" />
+                  <EditableText
+                    value={course}
+                    onChange={(value) => onPatchDeck?.({ course: value })}
+                    disabled={!canEdit}
+                    placeholder="Course name"
+                    className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink @min-[640px]:text-xs"
+                  />
+                  {courseCode ? (
+                    <EditableText
+                      value={courseCode}
+                      onChange={(value) => onPatchDeck?.({ courseCode: value })}
+                      disabled={!canEdit}
+                      placeholder="Course code"
+                      className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink @min-[640px]:text-xs"
+                    />
+                  ) : null}
+                  <div className="mt-1.5 text-[10px] font-medium uppercase leading-snug tracking-wide text-ink @min-[640px]:text-xs">
+                    <EditableText
+                      value={`Prepared by: ${preparedBy}`}
+                      onChange={(value) =>
+                        onPatchDeck?.({ preparedBy: value.replace(/^Prepared by:\s*/i, "") })
+                      }
+                      disabled={!canEdit}
+                      placeholder="Prepared by"
+                    />
+                  </div>
+                  <EditableText
+                    value={department}
+                    onChange={(value) => onPatchDeck?.({ department: value })}
+                    disabled={!canEdit}
+                    placeholder="Department"
+                    className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink @min-[640px]:text-xs"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="relative z-[1] flex min-h-0 flex-1 flex-col px-5 pb-3 @min-[640px]:px-8 @min-[640px]:pb-4">
                 <EditableText
                   value={slide.title}
                   onChange={(title) => onPatch?.({ title })}
                   disabled={!canEdit}
-                  placeholder="Lecture title"
-                  multiline
-                  className={cn(
-                    "slide-title-text w-full text-center font-serif font-bold uppercase leading-tight text-ink",
-                    slide.title.length > 55 && "slide-title-long",
-                  )}
+                  placeholder="Slide title"
+                  className="slide-content-heading font-serif font-semibold leading-snug text-navy"
                 />
                 {slide.subtitle && (
-                  <p className="slide-scope text-center text-ink-muted">{slide.subtitle}</p>
-                )}
-              </div>
-              <div className="slide-course-meta ml-auto max-w-[70%] text-right">
-                <div className="mb-2.5 ml-auto h-1 w-9 bg-accent" />
-                <EditableText
-                  value={course}
-                  onChange={(value) => onPatchDeck?.({ course: value })}
-                  disabled={!canEdit}
-                  placeholder="Course name"
-                  className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs"
-                />
-                {courseCode ? (
                   <EditableText
-                    value={courseCode}
-                    onChange={(value) => onPatchDeck?.({ courseCode: value })}
+                    value={slide.subtitle}
+                    onChange={(subtitle) => onPatch?.({ subtitle })}
                     disabled={!canEdit}
-                    placeholder="Course code"
-                    className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs"
+                    placeholder={canEdit ? "Optional subtitle" : ""}
+                    className="mt-0.5 text-sm text-ink-muted"
                   />
-                ) : null}
-                <div className="mt-1.5 text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs">
-                  {canEdit ? (
-                    <label className="block">
-                      <span className="text-ink-muted">Prepared by: </span>
-                      <input
-                        value={preparedBy}
-                        onChange={(e) => onPatchDeck?.({ preparedBy: e.target.value })}
-                        className="w-[min(100%,12rem)] bg-transparent text-right uppercase outline-none hover:bg-navy/5 focus:bg-navy/5 focus:ring-2 focus:ring-accent/30"
-                      />
-                    </label>
-                  ) : (
-                    <p>Prepared by: {preparedBy}</p>
-                  )}
-                </div>
-                <EditableText
-                  value={department}
-                  onChange={(value) => onPatchDeck?.({ department: value })}
-                  disabled={!canEdit}
-                  placeholder="Department"
-                  className="text-[10px] font-medium uppercase leading-snug tracking-wide text-ink sm:text-xs"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="relative z-[1] flex min-h-0 flex-1 flex-col px-5 pb-3 sm:px-8 sm:pb-4">
-              <EditableText
-                value={slide.title}
-                onChange={(title) => onPatch?.({ title })}
-                disabled={!canEdit}
-                placeholder="Slide title"
-                className="slide-content-heading font-serif font-semibold leading-snug text-navy"
-              />
-              {(canEdit || slide.subtitle) && (
-                <EditableText
-                  value={slide.subtitle}
-                  onChange={(subtitle) => onPatch?.({ subtitle })}
-                  disabled={!canEdit}
-                  placeholder={canEdit ? "Optional subtitle" : ""}
-                  className="mt-0.5 text-sm text-ink-muted"
-                />
-              )}
-
-              <div
-                className={cn(
-                  "mt-3 min-h-0 flex-1",
-                  slide.layout === "two-column" && "grid gap-4 sm:grid-cols-2",
                 )}
-              >
-                {slide.layout === "two-column" ? (
-                  <>
-                    <BulletList
-                      items={slide.leftBullets}
-                      present={present}
-                      editable={canEdit}
-                      onChange={(leftBullets) => onPatch?.({ leftBullets })}
-                    />
-                    <BulletList
-                      items={slide.rightBullets}
-                      present={present}
-                      editable={canEdit}
-                      onChange={(rightBullets) => onPatch?.({ rightBullets })}
-                    />
-                    {media ? (
-                      <SlideMedia
-                        media={media}
-                        className="overflow-hidden rounded-sm border border-navy/10 bg-navy/5 sm:col-span-2"
-                        imgClass="max-h-32 w-full object-cover"
-                        caption={`${media.title} · ${media.credit} · ${media.license}`}
+
+                <div
+                  className={cn(
+                    "mt-3 min-h-0 flex-1",
+                    slide.layout === "two-column" && "grid gap-4 @min-[640px]:grid-cols-2",
+                  )}
+                >
+                  {slide.layout === "two-column" ? (
+                    <>
+                      <BulletList
+                        items={slide.leftBullets}
+                        present={present}
+                        editable={canEdit}
+                        onChange={(leftBullets) => onPatch?.({ leftBullets })}
                       />
-                    ) : null}
-                  </>
-                ) : (
-                  <div className={cn("flex h-full gap-5", media && "flex-col sm:flex-row")}>
-                    {slide.layout !== "full-image" && (
-                      <div className="min-w-0 flex-1">
+                      <BulletList
+                        items={slide.rightBullets}
+                        present={present}
+                        editable={canEdit}
+                        onChange={(rightBullets) => onPatch?.({ rightBullets })}
+                      />
+                      {media ? (
+                        <SlideMedia
+                          media={media}
+                          className="overflow-hidden rounded-sm border border-navy/10 bg-navy/5 @min-[640px]:col-span-2"
+                          imgClass="max-h-32 w-full object-cover"
+                          caption={`${media.title} · ${media.credit} · ${media.license}`}
+                        />
+                      ) : null}
+                    </>
+                  ) : (
+                    <div
+                      className={cn("flex h-full gap-5", media && "flex-col @min-[640px]:flex-row")}
+                    >
+                      {slide.layout !== "full-image" && (
+                        <div className="min-w-0 flex-1">
+                          <BulletList
+                            items={slide.bullets}
+                            present={present}
+                            editable={canEdit}
+                            onChange={(bullets) => onPatch?.({ bullets })}
+                          />
+                        </div>
+                      )}
+                      {media ? (
+                        <SlideMedia
+                          media={media}
+                          className={cn(
+                            "overflow-hidden rounded-sm border border-navy/10 bg-navy/5",
+                            slide.layout === "full-image" ? "flex-1" : "@min-[640px]:w-[42%]",
+                          )}
+                          imgClass="h-full max-h-52 w-full object-cover @min-[640px]:max-h-full"
+                          caption={`${media.title} · ${media.credit} · ${media.license}`}
+                        />
+                      ) : null}
+                      {slide.layout === "full-image" && (slide.bullets.length > 0 || canEdit) ? (
                         <BulletList
                           items={slide.bullets}
                           present={present}
                           editable={canEdit}
                           onChange={(bullets) => onPatch?.({ bullets })}
                         />
-                      </div>
-                    )}
-                    {media ? (
-                      <SlideMedia
-                        media={media}
-                        className={cn(
-                          "overflow-hidden rounded-sm border border-navy/10 bg-navy/5",
-                          slide.layout === "full-image" ? "flex-1" : "sm:w-[42%]",
-                        )}
-                        imgClass="h-full max-h-52 w-full object-cover sm:max-h-full"
-                        caption={`${media.title} · ${media.credit} · ${media.license}`}
-                      />
-                    ) : null}
-                    {slide.layout === "full-image" && (slide.bullets.length > 0 || canEdit) ? (
-                      <BulletList
-                        items={slide.bullets}
-                        present={present}
-                        editable={canEdit}
-                        onChange={(bullets) => onPatch?.({ bullets })}
-                      />
-                    ) : null}
-                    {slide.layout === "blank" && canEdit && !slide.bullets.length ? (
-                      <BulletList
-                        items={[]}
-                        present={present}
-                        editable
-                        onChange={(bullets) => onPatch?.({ bullets })}
-                      />
-                    ) : null}
-                  </div>
-                )}
+                      ) : null}
+                      {slide.layout === "blank" && canEdit && !slide.bullets.length ? (
+                        <BulletList
+                          items={[]}
+                          present={present}
+                          editable
+                          onChange={(bullets) => onPatch?.({ bullets })}
+                        />
+                      ) : null}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {slide.citations.length > 0 && slide.layout !== "title" && (
-            <footer className="relative z-[1] border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted sm:px-8">
-              {slide.citations
-                .slice(0, 2)
-                .map((c) => formatCitation(c, citationStyle))
-                .join("  ·  ")}
-            </footer>
-          )}
+            {slide.citations.length > 0 && slide.layout !== "title" && (
+              <footer className="relative z-[1] border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted @min-[640px]:px-8">
+                {slide.citations
+                  .slice(0, 2)
+                  .map((c) => formatCitation(c, citationStyle))
+                  .join("  ·  ")}
+              </footer>
+            )}
 
-          {slide.layout !== "title" && (
-            <span className="pointer-events-none absolute bottom-1.5 left-3 z-[1] font-mono text-[9px] tabular-nums text-ink-muted">
-              {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-            </span>
-          )}
+            {slide.layout !== "title" && (
+              <span className="pointer-events-none absolute bottom-1.5 left-3 z-[1] font-mono text-[9px] tabular-nums text-ink-muted">
+                {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
   );
 }
 
@@ -485,7 +507,7 @@ function SlideMedia({
         />
       )}
       {caption && (
-        <figcaption className="px-1.5 py-0.5 text-[8px] text-ink-muted sm:text-[10px]">
+        <figcaption className="px-1.5 py-0.5 text-[8px] text-ink-muted @min-[640px]:text-[10px]">
           {caption}
         </figcaption>
       )}
@@ -512,37 +534,26 @@ function EditableText({
     if (!value && !placeholder) return null;
     return <p className={className}>{value}</p>;
   }
-  const shared = cn(
-    "w-full bg-transparent outline-none placeholder:text-ink-muted/45",
-    "rounded-xs transition hover:bg-navy/5 focus:bg-navy/5 focus:ring-2 focus:ring-accent/30",
-    className,
-  );
-  if (multiline) {
-    return (
-      <textarea
-        value={value}
-        rows={value.length > 55 ? 3 : 2}
-        onChange={(e) => onChange?.(e.target.value)}
-        placeholder={placeholder}
-        className={cn(shared, "resize-none text-center")}
-        aria-label={placeholder || "Edit text"}
-      />
-    );
-  }
   return (
-    <input
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
-      placeholder={placeholder}
-      className={shared}
+    <p
+      contentEditable
+      suppressContentEditableWarning
+      role="textbox"
       aria-label={placeholder || "Edit text"}
-    />
+      aria-multiline={multiline}
+      onBlur={(e) => onChange?.(e.currentTarget.innerText)}
+      className={cn(
+        "w-full bg-transparent outline-none rounded-xs hover:bg-navy/5 focus:ring-2 focus:ring-accent/30",
+        className,
+      )}
+    >
+      {value}
+    </p>
   );
 }
 
 function BulletList({
   items,
-  present,
   editable,
   onChange,
 }: {
@@ -551,16 +562,11 @@ function BulletList({
   editable?: boolean;
   onChange?: (items: string[]) => void;
 }) {
-  const rows = editable ? [...items, ""] : items;
+  const rows = items;
   if (!rows.length) return null;
 
   return (
-    <ul
-      className={cn(
-        "slide-bullets space-y-1.5 text-ink",
-        present ? "text-lg sm:text-xl" : "text-sm sm:text-base",
-      )}
-    >
+    <ul className={cn("slide-bullets space-y-1.5 text-ink", "text-base")}>
       {rows.map((item, i) => {
         const isAdd = editable && i === items.length;
         return (
@@ -572,39 +578,20 @@ function BulletList({
               )}
             />
             {editable ? (
-              <input
-                value={item}
-                placeholder={isAdd ? "Add a teaching point…" : ""}
-                onChange={(e) => {
+              <span
+                contentEditable
+                suppressContentEditableWarning
+                role="textbox"
+                aria-label={`Teaching point ${i + 1}`}
+                onBlur={(e) => {
                   const next = items.slice();
-                  if (isAdd) next.push(e.target.value);
-                  else next[i] = e.target.value;
+                  next[i] = e.currentTarget.innerText;
                   onChange?.(next);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    const next = items.slice();
-                    if (isAdd) {
-                      if (item.trim()) next.push(item);
-                      next.push("");
-                    } else {
-                      next.splice(i + 1, 0, "");
-                    }
-                    onChange?.(
-                      next.filter((x, idx) => x.trim().length > 0 || idx !== next.length - 1),
-                    );
-                  }
-                  if (e.key === "Backspace" && item === "" && !isAdd) {
-                    e.preventDefault();
-                    onChange?.(items.filter((_, idx) => idx !== i));
-                  }
-                }}
-                onBlur={() => {
-                  if (!isAdd) onChange?.(items.map((x) => x.trim()).filter(Boolean));
-                }}
-                className="min-h-8 w-full bg-transparent outline-none placeholder:text-ink-muted/40 hover:bg-navy/5 focus:bg-navy/5 focus:ring-2 focus:ring-accent/30"
-              />
+                className="w-full bg-transparent outline-none hover:bg-navy/5 focus:ring-2 focus:ring-accent/30"
+              >
+                {item}
+              </span>
             ) : (
               <span>{item}</span>
             )}

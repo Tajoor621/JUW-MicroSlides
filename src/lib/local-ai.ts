@@ -3,7 +3,7 @@ import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
 import { assertCompleteDeck, requestedCount } from "./deck-completion";
 import { generateLocalDeck } from "./generate-deck";
 import { uid } from "./utils";
-import { cycleTheme } from "./slide-themes";
+import { researchTheme } from "./slide-themes";
 export function localAiConfig() {
   try {
     return JSON.parse(localStorage.getItem("juw-local-ai") || "null") as {
@@ -124,7 +124,7 @@ export async function generateLocalAiDeck(input: GenerateInput) {
         layout,
         title: batch[i],
         id: uid("s"),
-        theme: cycleTheme(slides.length, layout),
+        theme: researchTheme(input.topic, input.discipline, layout),
         media: [],
         citations: [],
       });

@@ -2,7 +2,7 @@ import { JUW, lectureMeta } from "./brand";
 import { DISCIPLINES } from "./knowledge";
 import { inferFocus } from "./topic-engine";
 import { profileFor, topicOverlap, type TopicSection } from "./topic-content";
-import { cycleTheme } from "./slide-themes";
+import { researchTheme } from "./slide-themes";
 import { MAX_SLIDES, type Deck, type GenerateInput, type Slide } from "./types";
 import { uid } from "./utils";
 function makeSlide(
@@ -184,7 +184,9 @@ export function generateLocalDeck(input: GenerateInput): Deck {
     ...meta,
     course,
     courseCode: input.courseCode?.trim() || "",
-    slides: slides.slice(0, wanted).map((s, i) => ({ ...s, theme: cycleTheme(i, s.layout) })),
+    slides: slides
+      .slice(0, wanted)
+      .map((s) => ({ ...s, theme: researchTheme(input.topic, input.discipline, s.layout) })),
     mediaPool: [],
     generationSource: "knowledge",
     requestedCount: wanted,

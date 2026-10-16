@@ -212,3 +212,24 @@ html[data-theme="light"] {
 [data-slide-stage] .slide-bullets li {
   line-height: 1.4;
 }
+
+/* A single 1280 × 720 composition is scaled as a whole in every view and export. */
+[data-slide-stage] {
+  font-family: Arial, sans-serif;
+}
+[data-slide-stage] .font-serif {
+  font-family: Georgia, serif;
+}
+[data-slide-stage] input,
+[data-slide-stage] textarea {
+  font-family: inherit;
+}
+[data-slide-stage] p {
+  text-wrap: wrap;
+}
+[data-slide-stage] .slide-bullets {
+  font-size: 24px;
+}
+[data-slide-stage] .slide-bullets input {
+  white-space: normal;
+}

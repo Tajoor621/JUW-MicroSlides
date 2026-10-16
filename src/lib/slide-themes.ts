@@ -165,12 +165,6 @@ export function themeOf(id?: string | null): ThemeTokens {
   return THEME_TOKENS.classic;
 }
 
-export function cycleTheme(index: number, layout: string): SlideTheme {
-  if (layout === "title") return "classic";
-  const pool = SLIDE_THEMES.filter((t) => t !== "classic");
-  return pool[(Math.max(0, index) + pool.length - 1) % pool.length];
-}
-
 export function themeVars(id?: string | null): Record<string, string> {
   const t = themeOf(id);
   return {
@@ -182,4 +176,16 @@ export function themeVars(id?: string | null): Record<string, string> {
     "--color-accent": t.accent,
     "--color-ink-muted": t.muted,
   };
+}
+export function researchTheme(topic: string, discipline: string, layout: string): SlideTheme {
+  if (layout === "title") return "classic";
+  const subject = `${topic} ${discipline}`.toLowerCase();
+  if (/enzyme|biotech|industrial|food|dairy|ferment/.test(subject)) return "culture";
+  if (/genom|genetic|dna|rna|pcr|molecular/.test(subject)) return "molecular";
+  if (/fung|myco|candida|yeast/.test(subject)) return "mycology";
+  if (/parasit|malaria|plasmod/.test(subject)) return "parasitology";
+  if (/alga|phycolog/.test(subject)) return "phycology";
+  if (/clinical|medical|immun|antimicrobial/.test(subject)) return "clinical";
+  if (/environment|soil|outbreak|epidem/.test(subject)) return "outbreak";
+  return "classic";
 }

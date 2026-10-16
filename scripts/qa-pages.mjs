@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { inflateRawSync } from "node:zlib";
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
@@ -83,6 +84,29 @@ async function saved(page) {
   await page.waitForFunction(() => document.body.textContent.includes("Saved on this device"));
   await page.waitForTimeout(150);
 }
+function pptxXmlFiles(buffer) {
+  const files = {};
+  let end = buffer.length - 22;
+  while (end >= 0 && buffer.readUInt32LE(end) !== 0x06054b50) end--;
+  let offset = buffer.readUInt32LE(end + 16);
+  for (let i = 0; i < buffer.readUInt16LE(end + 10); i++) {
+    const method = buffer.readUInt16LE(offset + 10),
+      size = buffer.readUInt32LE(offset + 20);
+    const n = buffer.readUInt16LE(offset + 28),
+      extra = buffer.readUInt16LE(offset + 30),
+      comment = buffer.readUInt16LE(offset + 32);
+    const name = buffer.subarray(offset + 46, offset + 46 + n).toString();
+    const local = buffer.readUInt32LE(offset + 42);
+    const start = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28);
+    if (name.endsWith(".xml")) {
+      const data = buffer.subarray(start, start + size);
+      files[name] = (method === 8 ? inflateRawSync(data) : data).toString();
+    }
+    offset += 46 + n + extra + comment;
+  }
+  return files;
+}
+
 try {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
@@ -110,6 +134,222 @@ try {
   assert.equal(backup.schemaVersion, 1);
   assert.equal(backup.decks[0].slides.length, 12);
   results.push("Editable backup includes slides and references");
+  // Exercise each palette and layout on both viewports, then compare actual
+  // exported native text coordinates to the scaled editor, not a second template.
+  const parityThemes = [
+    "classic",
+    "gram",
+    "culture",
+    "fluorescence",
+    "molecular",
+    "clinical",
+    "mycology",
+    "outbreak",
+    "parasitology",
+    "phycology",
+  ];
+  const parityLayouts = ["title", "content", "two-column", "full-image", "blank"];
+  const parityDeck = {
+    ...backup.decks[0],
+    id: "qa-parity",
+    title: "Export parity",
+    discipline: "Industrial & Biotechnology Microbiology",
+    topic: "Enzyme immobilization",
+    requestedCount: 50,
+    slides: parityThemes.flatMap((theme, t) =>
+      parityLayouts.map((layout, l) => ({
+        ...backup.decks[0].slides[1],
+        id: `parity-${t}-${l}`,
+        title: `Parity${t * 5 + l} subject title`,
+        theme,
+        layout,
+        subtitle: "Matching preview and PowerPoint",
+        bullets: [
+          "A teaching point that remains native editable text.",
+          "A second scientific explanation to check spacing and colour.",
+        ],
+        leftBullets: ["Left column teaching point"],
+        rightBullets: ["Right column teaching point"],
+        media:
+          layout === "title"
+            ? []
+            : [
+                {
+                  id: "qa-figure",
+                  kind: "diagram",
+                  title: "QA attachment",
+                  src:
+                    "data:image/svg+xml;charset=utf-8," +
+                    encodeURIComponent(
+                      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#88aabb"/><circle cx="200" cy="100" r="60" fill="#335577"/></svg>',
+                    ),
+                  credit: "QA",
+                  source: "fixture",
+                  license: "CC0",
+                  keywords: [],
+                },
+              ],
+        citations: [],
+      })),
+    ),
+  };
+  const parityByViewport = [];
+  for (const width of [1280, 390]) {
+    const pc = await browser.newContext({
+      viewport: { width, height: 844 },
+      acceptDownloads: true,
+    });
+    await pc.addInitScript(
+      ({ deck }) =>
+        localStorage.setItem(
+          "juw-microslides-v661-intro-logo",
+          JSON.stringify({
+            state: { library: [deck], activeId: deck.id, selectedIndex: 0 },
+            version: 0,
+          }),
+        ),
+      { deck: parityDeck },
+    );
+    const pp = await pc.newPage();
+    pp.on("pageerror", (e) => errors.push(e.message));
+    await pp.goto(url);
+    await saved(pp);
+    const metrics = [];
+    for (let i = 0; i < 50; i++) {
+      const heading = pp.locator(
+        "[data-slide-stage] .slide-title-text, [data-slide-stage] .slide-content-heading",
+      );
+      await heading.waitFor();
+      assert.match(await heading.innerText(), new RegExp(`Parity${i} subject title`, "i"));
+      metrics.push(
+        await heading.evaluate((el) => {
+          const stage = el.closest("[data-slide-stage]"),
+            origin = stage.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const rect = range.getClientRects()[0],
+            css = getComputedStyle(el),
+            scale = origin.width / 1280;
+          return {
+            x: (rect.left - origin.left) / scale,
+            y: (rect.top - origin.top) / scale,
+            size: parseFloat(css.fontSize) * 0.75,
+            color: css.color,
+            body: (() => {
+              const bullet = stage.querySelector(".slide-bullets [role=textbox]");
+              if (!bullet) return null;
+              const r = document.createRange();
+              r.selectNodeContents(bullet);
+              const b = r.getClientRects()[0];
+              return {
+                x: (b.left - origin.left) / scale,
+                y: (b.top - origin.top) / scale,
+                size: parseFloat(getComputedStyle(bullet).fontSize) * 0.75,
+              };
+            })(),
+            images: [...stage.querySelectorAll("img")].map((img) => {
+              const r = img.getBoundingClientRect();
+              return {
+                x: (r.left - origin.left) / scale,
+                y: (r.top - origin.top) / scale,
+                w: r.width / scale,
+                h: r.height / scale,
+              };
+            }),
+          };
+        }),
+      );
+      if (i < 49) await pp.keyboard.press("ArrowRight");
+    }
+    const download = pp.waitForEvent("download");
+    await pp.getByRole("button", { name: "Export PPTX", exact: true }).click();
+    const file = await download;
+    const bytes = await readFile(await file.path());
+    assert.equal(slideCountInPptx(bytes), 50);
+    const xml = pptxXmlFiles(bytes);
+    for (let i = 0; i < 50; i++) {
+      const slideXml = xml[`ppt/slides/slide${i + 1}.xml`];
+      const shape = [...slideXml.matchAll(/<p:sp>.*?<\/p:sp>/gs)]
+        .map((m) => m[0])
+        .find((sp) => new RegExp(`Parity${i} subject title`, "i").test(sp));
+      assert(shape, `Slide ${i + 1} title must remain editable text`);
+      const off = shape.match(/<a:off x="(\d+)" y="(\d+)"/);
+      assert(off, "Native title must have coordinates");
+      assert(
+        Math.abs(Number(off[1]) / 9525 - metrics[i].x) < 1,
+        `Slide ${i + 1} horizontal placement`,
+      );
+      assert(
+        Math.abs(Number(off[2]) / 9525 - metrics[i].y) < 1,
+        `Slide ${i + 1} vertical placement`,
+      );
+      assert(
+        shape.includes(`sz="${Math.round(metrics[i].size * 100)}"`),
+        `Slide ${i + 1} font size`,
+      );
+      assert(shape.includes('typeface="Georgia"'), "Shared heading font");
+      const hex = metrics[i].color
+        .match(/\d+/g)
+        .slice(0, 3)
+        .map((n) => Number(n).toString(16).padStart(2, "0"))
+        .join("")
+        .toUpperCase();
+      assert(shape.toUpperCase().includes(hex), "Export must preserve theme text colour");
+      if (metrics[i].body) {
+        const body = [...slideXml.matchAll(/<p:sp>.*?<\/p:sp>/gs)]
+          .map((m) => m[0])
+          .find((sp) => /Left column teaching point|A teaching point/.test(sp));
+        assert(body, "Body must stay native editable text");
+        const off = body.match(/<a:off x="(\d+)" y="(\d+)"/);
+        assert(Math.abs(Number(off[1]) / 9525 - metrics[i].body.x) < 1, "Body horizontal position");
+        assert(Math.abs(Number(off[2]) / 9525 - metrics[i].body.y) < 1, "Body vertical position");
+        assert(body.includes(`sz="${Math.round(metrics[i].body.size * 100)}"`), "Body font size");
+      }
+      const pictures = [...slideXml.matchAll(/<p:pic>.*?<\/p:pic>/gs)].map((m) => m[0]);
+      for (const img of metrics[i].images)
+        assert(
+          pictures.some((pic) => {
+            const off = pic.match(/<a:off x="(\d+)" y="(\d+)"/),
+              size = pic.match(/<a:ext cx="(\d+)" cy="(\d+)"/);
+            return (
+              off &&
+              size &&
+              Math.abs(Number(off[1]) / 9525 - img.x) < 1 &&
+              Math.abs(Number(off[2]) / 9525 - img.y) < 1 &&
+              Math.abs(Number(size[1]) / 9525 - img.w) < 1 &&
+              Math.abs(Number(size[2]) / 9525 - img.h) < 1
+            );
+          }),
+          "Logo and attached image placement must match the preview",
+        );
+
+      assert(
+        !/OUTBREAK \/ ONE HEALTH|>PARASITOLOGY<|>PHYCOLOGY</.test(slideXml),
+        "Theme labels must not mislabel the research subject",
+      );
+    }
+    await file.saveAs(join(output, `juw-parity-${width}.pptx`));
+    await pp.screenshot({ path: join(output, `juw-parity-${width}.png`) });
+    parityByViewport.push(metrics);
+    await pc.close();
+  }
+  for (let i = 0; i < 50; i++) {
+    const a = parityByViewport[0][i],
+      b = parityByViewport[1][i];
+    assert.equal(a.size, b.size);
+    assert.equal(a.color, b.color);
+    assert(
+      Math.abs(a.x - b.x) < 0.01 && Math.abs(a.y - b.y) < 0.01,
+      "Mobile and desktop share the same composition",
+    );
+    assert.equal(a.body?.size, b.body?.size);
+    if (a.body)
+      assert(Math.abs(a.body.x - b.body.x) < 0.01 && Math.abs(a.body.y - b.body.y) < 0.01);
+  }
+  results.push(
+    "All 10 themes and 5 layouts preserve title/body positions, font sizes, colours, logos and attached images in desktop and mobile exports",
+  );
+
   const legacyContext = await browser.newContext();
   const legacyState = {
     state: {

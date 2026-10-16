@@ -1,6 +1,6 @@
 import type { Deck, GenerateInput, Slide, Citation } from "./types";
 import { topicTerms, profileFor } from "./topic-content";
-import { cycleTheme } from "./slide-themes";
+import { researchTheme } from "./slide-themes";
 import { uid } from "./utils";
 import { DeckCompletionError, requestedCount } from "./deck-completion";
 
@@ -281,9 +281,9 @@ export async function enrichTopicEvidence(
         `The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
       );
     const added = evidence.slice(0, needed);
-    const slides = [...core, ...added, ...closing].map((s, i) => ({
+    const slides = [...core, ...added, ...closing].map((s) => ({
       ...s,
-      theme: cycleTheme(i, s.layout),
+      theme: researchTheme(input.topic, input.discipline, s.layout),
     }));
     onProgress?.(`Completed ${slides.length} of ${target} slides`);
     return {

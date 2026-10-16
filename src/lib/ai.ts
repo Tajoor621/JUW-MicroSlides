@@ -5,7 +5,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { lectureMeta } from "./brand";
 import { generateLocalDeck } from "./generate-deck";
 
-import { cycleTheme } from "./slide-themes";
+import { researchTheme } from "./slide-themes";
 import { MAX_SLIDES, type Citation, type Deck, type GenerateInput, type Slide } from "./types";
 import { uid } from "./utils";
 
@@ -51,7 +51,8 @@ export const generateAiDeck = createServerFn({ method: "POST" })
     if (!apiKey) {
       return {
         ok: false,
-        error: "AI is not available in this environment. Continuing with research generation for the requested slide count.",
+        error:
+          "AI is not available in this environment. Continuing with research generation for the requested slide count.",
         deck: fallback,
       };
     }
@@ -331,7 +332,7 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
       slides.push({
         id: uid("s"),
         layout: s.layout ?? "content",
-        theme: cycleTheme(slides.length, s.layout ?? "content"),
+        theme: researchTheme(input.topic, input.discipline, s.layout ?? "content"),
         title,
         subtitle: s.subtitle || "",
         bullets: s.bullets ?? [],
