@@ -5,7 +5,7 @@ import { fallbackVisual } from "./media-catalog";
 import { proxyImages } from "./media-search";
 import { themeOf } from "./slide-themes";
 import { mediaDisplaySrc } from "./utils";
-import { topicArtworkSvg } from "./topic-artwork";
+import { topicArtKind } from "./topic-artwork";
 
 type Box = { x: number; y: number; w: number; h: number };
 
@@ -336,8 +336,90 @@ export async function exportPptx(deck: Deck) {
     const muted = tokens.muted.replace("#", "");
     const accent = tokens.accent.replace("#", "");
 
-    const artworkSvg = topicArtworkSvg(deck.topic).replaceAll("currentColor", `#${accent}`);
-    const artworkData = `image/svg+xml;base64,${btoa(artworkSvg)}`;
+    const artBox =
+      slide.layout === "title"
+        ? { x: 9.9, y: 2.25, w: 2.25, h: 2.25 }
+        : { x: 11.55, y: 3.45, w: 1.05, h: 1.05 };
+    const artKind = topicArtKind(deck.topic);
+    const decorLine = (x1: number, y1: number, x2: number, y2: number) =>
+      s.addShape(pptx.ShapeType.line, {
+        x: artBox.x + Math.min(x1, x2) * artBox.w,
+        y: artBox.y + Math.min(y1, y2) * artBox.h,
+        w: Math.max(0.01, Math.abs(x2 - x1) * artBox.w),
+        h: Math.max(0.01, Math.abs(y2 - y1) * artBox.h),
+        flipV: (x2 - x1) * (y2 - y1) < 0,
+        line: { color: accent, transparency: 68, width: 1.4 },
+      });
+    const decorEllipse = (x: number, y: number, w: number, h: number, fill = false) =>
+      s.addShape(pptx.ShapeType.ellipse, {
+        x: artBox.x + x * artBox.w,
+        y: artBox.y + y * artBox.h,
+        w: w * artBox.w,
+        h: h * artBox.h,
+        line: { color: accent, transparency: 65, width: 1.3 },
+        fill: fill ? { color: accent, transparency: 84 } : { color: accent, transparency: 100 },
+      });
+    const decorate = () => {
+      if (artKind === "genome") {
+        for (let i = 0; i < 6; i++) {
+          const y = 0.08 + i * 0.16;
+          decorLine(0.35 + (i % 2) * 0.2, y, 0.65 - (i % 2) * 0.2, y + 0.16);
+          decorLine(0.65 - (i % 2) * 0.2, y, 0.35 + (i % 2) * 0.2, y + 0.16);
+          decorLine(0.4, y + 0.08, 0.6, y + 0.08);
+        }
+      } else if (artKind === "enzyme") {
+        s.addShape(pptx.ShapeType.hexagon, {
+          x: artBox.x + artBox.w * 0.16,
+          y: artBox.y + artBox.h * 0.16,
+          w: artBox.w * 0.68,
+          h: artBox.h * 0.68,
+          line: { color: accent, transparency: 55, width: 2 },
+          fill: { color: accent, transparency: 100 },
+        });
+        decorEllipse(0.43, 0.43, 0.14, 0.14, true);
+        decorEllipse(0.72, 0.27, 0.08, 0.08, true);
+        decorEllipse(0.19, 0.69, 0.07, 0.07, true);
+      } else if (artKind === "fungal") {
+        decorLine(0.5, 0.9, 0.5, 0.12);
+        decorLine(0.5, 0.56, 0.22, 0.27);
+        decorLine(0.5, 0.43, 0.78, 0.18);
+        decorLine(0.5, 0.72, 0.79, 0.87);
+        decorEllipse(0.16, 0.22, 0.1, 0.1, true);
+        decorEllipse(0.74, 0.12, 0.1, 0.1, true);
+      } else if (artKind === "parasite") {
+        decorEllipse(0.22, 0.07, 0.56, 0.86);
+        decorEllipse(0.34, 0.25, 0.32, 0.5);
+        decorEllipse(0.45, 0.43, 0.1, 0.1, true);
+      } else if (artKind === "virus") {
+        decorEllipse(0.26, 0.26, 0.48, 0.48);
+        decorEllipse(0.38, 0.38, 0.24, 0.24);
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 * i) / 8;
+          const cx = 0.5 + Math.cos(a) * 0.25;
+          const cy = 0.5 + Math.sin(a) * 0.25;
+          decorLine(0.5 + Math.cos(a) * 0.36, 0.5 + Math.sin(a) * 0.36, cx, cy);
+          decorEllipse(cx - 0.025, cy - 0.025, 0.05, 0.05, true);
+        }
+      } else {
+        s.addShape(pptx.ShapeType.roundRect, {
+          x: artBox.x + artBox.w * 0.2,
+          y: artBox.y + artBox.h * 0.37,
+          w: artBox.w * 0.6,
+          h: artBox.h * 0.28,
+          rectRadius: 0.12,
+          line: { color: accent, transparency: 55, width: 1.8 },
+          fill: { color: accent, transparency: 100 },
+        });
+        for (let i = 0; i < 5; i++) {
+          const x = 0.27 + i * 0.115;
+          decorLine(x, 0.36, x - 0.04, 0.2 + (i % 2) * 0.06);
+          decorLine(x, 0.66, x + 0.04, 0.82 - (i % 2) * 0.06);
+        }
+        decorEllipse(0.38, 0.46, 0.06, 0.06, true);
+        decorEllipse(0.56, 0.51, 0.06, 0.06, true);
+      }
+    };
+    decorate();
 
     await addJpeg(s, crest.data, { x: 0.28, y: 0.24, w: 1.18, h: 1.18 });
     if (slide.layout === "title") {
@@ -387,7 +469,6 @@ export async function exportPptx(deck: Deck) {
     const hasFig = Boolean(fig && pptxData(data));
 
     if (slide.layout === "title") {
-      s.addImage({ data: artworkData, x: 9.9, y: 2.25, w: 2.25, h: 2.25 });
       s.addText(slide.title, {
         x: 0.8,
         y: 2.35,
@@ -436,7 +517,6 @@ export async function exportPptx(deck: Deck) {
         },
       );
     } else {
-      s.addImage({ data: artworkData, x: 11.55, y: 3.45, w: 1.05, h: 1.05 });
       s.addText(slide.title, {
         x: 0.5,
         y: 1.4,
