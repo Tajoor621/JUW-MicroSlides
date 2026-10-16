@@ -35,3 +35,11 @@ See README for remaining limits, deployment setup, and validation commands.
 - Replaced the local AI 36-slide ceiling with outline planning and validated eight-slide batches (up to 400 requested slides).
 - Preserved editor counts in PowerPoint by retaining full references/additional media links in notes, with no silently appended pages.
 - Added cross-discipline 2/25/50-slide, pagination, model-batching and browser export-count regressions.
+
+## Cached-build update delivery — V6.2.1 (2026-10-16)
+
+- Fixed cache-first navigation and waiting-worker activation that could leave installed clients on an earlier generator build.
+- Added network-first app navigation with offline fallback, automatic worker activation, uncached build metadata, and retention of one previous asset cache for open tabs.
+- Added visible commit build IDs and an update control that waits for queued deck saves before reloading.
+- Labelled saved decks whose current count is lower than their original request.
+- Added browser regressions for replacing a deliberately stale worker/cache, matching update metadata, and reopening the upgraded app offline.

@@ -52,6 +52,11 @@ async function write(key: string, value: string | null) {
   });
 }
 let queue = Promise.resolve();
+export async function flushSavedDecks() {
+  await queue;
+  if (storageHealth.warning.startsWith("Could not save changes"))
+    throw new Error("Changes could not be saved. Download an editable backup before reloading.");
+}
 export const durableStorage: StateStorage = {
   async getItem(key) {
     try {

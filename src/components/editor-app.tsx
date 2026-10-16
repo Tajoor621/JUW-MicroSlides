@@ -1,3 +1,4 @@
+import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
 import { useEffect, useState } from "react";
 import {
@@ -181,6 +182,16 @@ export function EditorApp() {
               : "Knowledge draft"}{" "}
           · Verify scientific claims · Library → backup · Ctrl/Cmd+Z to undo
         </div>
+        <AppUpdates />
+        {deck?.requestedCount && deck.slides.length < deck.requestedCount ? (
+          <p
+            role="status"
+            className="shrink-0 border-b border-border bg-surface px-3 py-2 text-xs text-fg"
+          >
+            Saved deck: {deck.slides.length} of {deck.requestedCount} originally requested slides.
+            Open Generate and choose Generate deck to build a new complete deck.
+          </p>
+        ) : null}
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-2 sm:px-3">
           <Button
             variant="ghost"

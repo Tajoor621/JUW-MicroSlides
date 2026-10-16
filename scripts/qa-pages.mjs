@@ -6,7 +6,9 @@ import { chromium } from "playwright";
 const root = process.cwd();
 const output = process.env.JUW_QA_OUTPUT || "/workspace/screenshots";
 await mkdir(output, { recursive: true });
+let legacyWorkerFixture = false;
 const types = {
+  ".json": "application/json",
   ".html": "text/html",
   ".js": "text/javascript",
   ".css": "text/css",
@@ -22,6 +24,15 @@ const server = createServer(async (req, res) => {
         /^\/JUW-MicroSlides\//,
         "",
       ) || "index.html";
+    if (p === "sw.js" && legacyWorkerFixture) {
+      const source = `const BASE=new URL("./",self.location.href).href;const CACHE="juw-pages-qa-legacy";
+self.addEventListener("install",e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);const r=await fetch(new URL("index.html",BASE));const html=(await r.text()).replace('id="root"','id="root" data-legacy-shell="true"');await c.put(new URL("index.html",BASE),new Response(html,{headers:{"content-type":"text/html"}}));await self.skipWaiting();})()));
+self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
+self.addEventListener("fetch",e=>{if(e.request.mode==="navigate"&&e.request.url.startsWith(BASE))e.respondWith(caches.open(CACHE).then(c=>c.match(new URL("index.html",BASE))));});`;
+      res.setHeader("Content-Type", "text/javascript");
+      res.end(source);
+      return;
+    }
     const path = resolve(root, "dist-pages", p);
     if (!path.startsWith(resolve(root, "dist-pages") + "/")) throw Error();
     const data = await readFile(path);
@@ -455,6 +466,55 @@ try {
     "Incomplete research does not replace the active deck or report a short deck as success",
   );
   await coverage.close();
+  legacyWorkerFixture = true;
+  const upgrade = await browser.newContext();
+  const up = await upgrade.newPage();
+  up.on("pageerror", (e) => errors.push(e.message));
+  await up.goto(url);
+  await saved(up);
+  await up.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await up.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await up.reload();
+  await saved(up);
+  assert.equal(await up.locator("#root").getAttribute("data-legacy-shell"), "true");
+  legacyWorkerFixture = false;
+  await up.evaluate(async () => {
+    const previous = navigator.serviceWorker.controller;
+    const changed = new Promise((resolve) =>
+      navigator.serviceWorker.addEventListener("controllerchange", resolve, { once: true }),
+    );
+    const r = await navigator.serviceWorker.getRegistration();
+    await r.update();
+    if (navigator.serviceWorker.controller === previous) await changed;
+  });
+  await up.waitForFunction(async () => {
+    const r = await navigator.serviceWorker.getRegistration();
+    const keys = await caches.keys();
+    return (
+      keys.some((k) => k.startsWith("juw-pages-") && k !== "juw-pages-qa-legacy") &&
+      !r.installing &&
+      !r.waiting &&
+      r.active === navigator.serviceWorker.controller
+    );
+  });
+  await up.reload();
+  await saved(up);
+  assert.equal(await up.locator("#root").getAttribute("data-legacy-shell"), null);
+  assert(await up.locator("[data-app-build]").isVisible());
+  results.push(
+    "An open app activates its newer service worker and stops serving the legacy cached shell",
+  );
+  await up.getByRole("button", { name: "Check for updates", exact: true }).click();
+  await up.getByText("Up to date", { exact: true }).waitFor();
+  results.push("Visible build ID and update checking agree with fresh build metadata");
+  await upgrade.setOffline(true);
+  await up.reload();
+  await saved(up);
+  assert.equal(await up.locator("#root").getAttribute("data-legacy-shell"), null);
+  results.push("The upgraded app reopens its current shell and saved decks offline");
+  await upgrade.close();
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ ok: true, checks: results, uncaughtErrors: errors }, null, 2));
   await writeFile(

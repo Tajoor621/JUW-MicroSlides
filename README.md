@@ -27,7 +27,7 @@ Decks are stored in IndexedDB on this browser/origin. Existing data under `juw-m
 
 Offline launch becomes available after the service worker finishes its first successful online install. Bundled app assets and illustrations are precached. Literature/image searches require a connection. External images need successful embedding to be available offline. Browser storage can still be cleared or evicted: keep exported backups outside the browser. JSON backup schema version is 1; imports are validated before adding copies, with a 100 MB / 500-deck import ceiling.
 
-Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y outside text fields. Native undo remains available while editing text. History resets on reload. New service workers wait for older app tabs to close before activation; close/reopen all app tabs after saving to receive an update.
+Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y outside text fields. Native undo remains available while editing text. History resets on reload. New service workers activate without waiting for old tabs to close. Online navigation checks the network before using the saved shell; offline navigation retains the cached app. The Pages app displays a commit-based build ID and a Check for updates / Load latest build control. Reloading through that control waits for queued deck saves. Updates change the build ID and cache hash while the application version remains V6.2.1.
 
 ## Optional local AI with Ollama
 
