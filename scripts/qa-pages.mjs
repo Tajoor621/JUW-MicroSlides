@@ -69,6 +69,8 @@ try {
   await saved(page);
   await page.waitForFunction(() => !document.querySelector("#gen-topic"));
   assert.match(await page.locator("body").innerText(), /Bacterial genome architecture/);
+  assert((await page.locator(".topic-artwork svg").count()) >= 1);
+  results.push("Intro and research slides render topic-specific vector artwork");
   results.push("Generate a 12-slide knowledge deck");
   await page.screenshot({ path: join(output, "juw-desktop.png") });
   await page.getByRole("button", { name: "Library", exact: true }).click();
@@ -206,11 +208,13 @@ try {
   await mp.goto(url);
   await saved(mp);
   assert(await mp.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  assert((await mp.locator(".topic-artwork svg").count()) >= 1);
   await mp.screenshot({ path: join(output, "juw-mobile.png") });
   await mp.getByRole("button", { name: "Inspector", exact: true }).click();
   await mp.getByText("Help: edit", { exact: true }).click();
   assert(await mp.getByText(/Select a slide, then edit/).isVisible());
   results.push("Mobile layout fits and contextual Help opens");
+  results.push("Mobile slide artwork and scalable typography render without image rasterization");
   await mp.getByRole("button", { name: "Close", exact: true }).click();
   await mp.getByRole("button", { name: "Library", exact: true }).click();
   assert(await mp.getByRole("button", { name: "Download editable backup" }).isVisible());

@@ -132,6 +132,12 @@ html[data-theme="light"] {
 .slide-stage {
   container-type: inline-size;
 }
+
+.topic-artwork svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 .slide-brand-row {
   padding: 1.5cqw 2cqw 0;
 }
@@ -177,4 +183,32 @@ html[data-theme="light"] {
   font-size: clamp(7px, 1.65cqw, 14px);
   line-height: 1.25;
   margin-bottom: 1cqw;
+}
+
+/* Slide typography remains vector text and scales with the slide canvas. */
+[data-slide-stage] .slide-title-text {
+  font-size: clamp(13px, 4.6cqw, 50px);
+}
+[data-slide-stage] .slide-title-long {
+  font-size: clamp(11px, 3.4cqw, 38px);
+}
+[data-slide-stage] .slide-scope {
+  font-size: clamp(8px, 1.8cqw, 18px);
+}
+[data-slide-stage] .slide-brand-row > img:first-child {
+  width: clamp(24px, 9cqw, 112px);
+  height: clamp(24px, 9cqw, 112px);
+}
+[data-slide-stage] .slide-brand-row > img:nth-child(2) {
+  height: clamp(31px, 13cqw, 144px);
+}
+[data-slide-stage] .slide-content-heading {
+  font-size: clamp(11px, 2.6cqw, 28px);
+}
+[data-slide-stage] .slide-bullets {
+  font-size: clamp(8px, 1.75cqw, 19px);
+  line-height: 1.4;
+}
+[data-slide-stage] .slide-bullets li {
+  line-height: 1.4;
 }

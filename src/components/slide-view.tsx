@@ -4,6 +4,7 @@ import { formatCitation } from "@/lib/citations";
 import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
 import { cn, mediaDisplaySrc } from "@/lib/utils";
+import { topicArtworkSvg } from "@/lib/topic-artwork";
 
 export function SlideView({
   slide,
@@ -35,6 +36,7 @@ export function SlideView({
   const preparedBy = deck?.preparedBy ?? JUW.preparedBy;
   const department = deck?.department ?? JUW.department;
   const isTitle = slide.layout === "title";
+  const artwork = topicArtworkSvg(deck?.topic ?? slide.title);
   const tokens = themeOf(isTitle ? "classic" : slide.theme);
 
   return (
@@ -54,6 +56,16 @@ export function SlideView({
           className="relative flex min-h-0 flex-1 flex-col overflow-hidden border-[3px]"
           style={{ borderColor: tokens.frame, background: tokens.slide, color: tokens.ink }}
         >
+          <div
+            aria-hidden="true"
+            className={cn(
+              "topic-artwork pointer-events-none absolute z-0 text-accent",
+              isTitle
+                ? "right-[3%] top-[23%] w-[19%] opacity-[0.14]"
+                : "right-[3%] top-[28%] w-[12%] opacity-[0.09]",
+            )}
+            dangerouslySetInnerHTML={{ __html: artwork }}
+          />
           {!isTitle ? (
             <div
               className="pointer-events-none absolute inset-y-0 left-0 w-2"
@@ -149,7 +161,7 @@ export function SlideView({
                 onChange={(title) => onPatch?.({ title })}
                 disabled={!canEdit}
                 placeholder="Slide title"
-                className="font-serif text-lg font-semibold leading-snug text-navy sm:text-2xl"
+                className="slide-content-heading font-serif font-semibold leading-snug text-navy"
               />
               {(canEdit || slide.subtitle) && (
                 <EditableText
@@ -545,7 +557,7 @@ function BulletList({
   return (
     <ul
       className={cn(
-        "space-y-1.5 text-ink",
+        "slide-bullets space-y-1.5 text-ink",
         present ? "text-lg sm:text-xl" : "text-sm sm:text-base",
       )}
     >

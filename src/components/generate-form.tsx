@@ -53,6 +53,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
   const draft = useDeckStore((s) => s.generateDraft);
   const patchDraft = useDeckStore((s) => s.patchGenerateDraft);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState("");
   const [lockDiscipline, setLockDiscipline] = useState(false);
   const [lockCourse, setLockCourse] = useState(false);
 
@@ -99,24 +100,33 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       courseCode: input.courseCode,
     });
     setBusy(true);
+    setProgress("Building the topic outline…");
     try {
       let local = generateLocalDeck(input);
-      if (input.mode === "manual" && local.slides.length < input.count && navigator.onLine) {
-        try {
-          local = await enrichTopicEvidence(local, input);
-        } catch {
-          toast.message(
-            "Live research sources were unavailable. The deck uses only the available topic-specific content.",
-          );
-        }
-      }
       if (input.mode === "ai") {
+        setProgress("Drafting and checking the research deck…");
         const result = await withTimeout(generateAiDeck({ data: input }), 60000);
         if (result.ok) local = result.deck;
         else {
           local = result.deck ?? local;
           toast.message(result.error);
         }
+      }
+      if (local.slides.length < input.count && navigator.onLine) {
+        setProgress(
+          `Searching research to extend this ${local.slides.length}-slide draft toward ${input.count}…`,
+        );
+        try {
+          local = await enrichTopicEvidence(local, input);
+        } catch {
+          toast.message(
+            "Live research sources were unavailable. The deck keeps the supported topic-specific slide count.",
+          );
+        }
+      }
+      if (local.slides.length < input.count) {
+        const coverage = `Generated ${local.slides.length} of ${input.count} requested slides. More topic-specific evidence is needed to complete this deck without unrelated filler.`;
+        local.contentWarnings = [...(local.contentWarnings ?? []), coverage];
       }
       if (local.slides[0]) {
         local.slides[0] = {
@@ -147,6 +157,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       }
     } finally {
       setBusy(false);
+      setProgress("");
     }
   }
 
@@ -243,7 +254,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         {compact ? (
           <div className="flex items-end sm:col-span-2">
             <Button type="submit" disabled={busy} variant="accent" className="w-full">
-              {busy ? "Writing…" : "Generate deck"}
+              {busy ? "Searching & writing…" : "Generate deck"}
             </Button>
           </div>
         ) : null}
@@ -266,11 +277,16 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         ))}
       </div>
       <div className="grid content-start gap-1.5">
+        {busy && (
+          <p role="status" aria-live="polite" className="text-xs text-accent">
+            {progress}
+          </p>
+        )}
         <p className="text-xs text-muted">
-          Knowledge mode uses bundled teaching material and topic templates; coverage varies. Review
-          every scientific claim. On Pages, search images in Media and references in PubMed or
-          Evidence while online. Media stays in the Media collection until you attach it. Configure
-          Ollama in Settings for local AI.
+          Knowledge mode combines bundled topic material with multi-query literature search when
+          more slides are requested. Coverage varies; review every scientific claim. On Pages,
+          search images in Media and references in PubMed or Evidence while online. Media stays in
+          the Media collection until you attach it. Configure Ollama in Settings for local AI.
         </p>
         <div className="flex flex-wrap gap-1">
           {SLIDE_THEMES.map((id) => (

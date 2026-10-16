@@ -18,3 +18,10 @@ See README for remaining limits, deployment setup, and validation commands.
 - Added a separate image/video collection, original/source/licence links, individual file downloads, pagination and public social-platform/portal search shortcuts.
 - Added a specialist Review panel with exact-passage findings, correction suggestions, reference metadata checks, optional local AI and vision-model inspection, and downloadable reports.
 - Kept the owner-mandated application version V6.2.1. Schema additions are backward-compatible.
+
+## Research coverage and slide clarity update — V6.2.1 (2026-10-16)
+
+- Expanded literature enrichment to up to three parallel Europe PMC queries, 100 records per query, DOI/PMID deduplication, relevance ranking, and explicit successful-query/coverage reporting.
+- Applied source enrichment to short AI-created drafts as well as local knowledge drafts, so a model returning fewer slides still gets the requested research search.
+- Made slide typography scale with its canvas while retaining editable text in the PowerPoint export, and added topic-matched vector ornaments to opening and research slides.
+- Added a regression check where multiple searches retrieve enough cited abstracts to complete a supported 25-slide deck.

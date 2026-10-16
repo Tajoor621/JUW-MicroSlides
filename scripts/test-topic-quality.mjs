@@ -24,6 +24,7 @@ try {
   const { searchMediaLibrary, publicMediaSearchLinks, downloadMediaFile } =
     await server.ssrLoadModule("/src/lib/media-library.ts");
   const { enrichTopicEvidence } = await server.ssrLoadModule("/src/lib/topic-evidence.ts");
+  const { researchQueries } = await server.ssrLoadModule("/src/lib/topic-evidence.ts");
   const { parseBackup } = await server.ssrLoadModule("/src/lib/backup.ts");
   const input = {
     topic: "Bacterial genome architecture",
@@ -256,6 +257,38 @@ try {
   assert(enriched.slides.every((s) => s.media.length === 0));
   checks++;
   console.log("PASS retrieved abstracts add topic-specific cited evidence without adding media");
+  let queryCalls = 0;
+  globalThis.fetch = async () => {
+    queryCalls++;
+    const results = Array.from({ length: 14 }, (_, i) => ({
+      id: `study-${i}`,
+      source: "MED",
+      pmid: `900${i}`,
+      title: `Bacterial genome architecture study ${i}`,
+      abstractText:
+        "Bacterial genome organization was examined using chromosome imaging and sequencing. Bacterial chromosome architecture was compared across experimental growth conditions. The reported results describe the tested strain and do not establish a universal pattern.",
+      authorString: "Example Author",
+      pubYear: "2025",
+      journalInfo: { journal: { title: "Example Journal" } },
+    }));
+    return new Response(JSON.stringify({ resultList: { result: results } }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  const broadInput = { ...input, topic: "Bacterial genome architecture", count: 25 };
+  const broadBase = generateLocalDeck(broadInput);
+  const queries = researchQueries(broadInput.topic);
+  assert(queries.length >= 2);
+  assert(queries.some((q) => /chromosomes and accessory replicons/i.test(q)));
+  const broad = await enrichTopicEvidence(broadBase, broadInput);
+  assert(queryCalls >= 2, `expected complementary searches; got ${queryCalls}`);
+  assert.equal(broad.slides.length, 25);
+  assert(broad.slides.slice(1).every((s) => s.media.length === 0));
+  assert(broad.slides.some((s) => s.citations.length));
+  checks++;
+  console.log(
+    "PASS multi-query literature search fills supported 25-slide requests with citations",
+  );
   console.log(`${checks} topic, media and specialist review checks passed.`);
 } finally {
   globalThis.fetch = originalFetch;

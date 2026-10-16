@@ -5,6 +5,7 @@ import { fallbackVisual } from "./media-catalog";
 import { proxyImages } from "./media-search";
 import { themeOf } from "./slide-themes";
 import { mediaDisplaySrc } from "./utils";
+import { topicArtworkSvg } from "./topic-artwork";
 
 type Box = { x: number; y: number; w: number; h: number };
 
@@ -335,6 +336,9 @@ export async function exportPptx(deck: Deck) {
     const muted = tokens.muted.replace("#", "");
     const accent = tokens.accent.replace("#", "");
 
+    const artworkSvg = topicArtworkSvg(deck.topic).replaceAll("currentColor", `#${accent}`);
+    const artworkData = `image/svg+xml;base64,${btoa(artworkSvg)}`;
+
     await addJpeg(s, crest.data, { x: 0.28, y: 0.24, w: 1.18, h: 1.18 });
     if (slide.layout === "title") {
       await addJpeg(s, scope.data, { x: 10.35, y: 0.18, w: 2.7, h: 1.7 });
@@ -383,10 +387,11 @@ export async function exportPptx(deck: Deck) {
     const hasFig = Boolean(fig && pptxData(data));
 
     if (slide.layout === "title") {
+      s.addImage({ data: artworkData, x: 9.9, y: 2.25, w: 2.25, h: 2.25 });
       s.addText(slide.title, {
         x: 0.8,
         y: 2.35,
-        w: 11.7,
+        w: 8.8,
         h: 1.6,
         fontSize: 34,
         fit: "shrink",
@@ -400,7 +405,7 @@ export async function exportPptx(deck: Deck) {
         s.addText(slide.subtitle, {
           x: 0.8,
           y: 4.0,
-          w: 11.7,
+          w: 8.8,
           h: 0.5,
           fontSize: 18,
           align: "center",
@@ -431,6 +436,7 @@ export async function exportPptx(deck: Deck) {
         },
       );
     } else {
+      s.addImage({ data: artworkData, x: 11.55, y: 3.45, w: 1.05, h: 1.05 });
       s.addText(slide.title, {
         x: 0.5,
         y: 1.4,
