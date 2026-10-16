@@ -1,8 +1,8 @@
 export const JUW = {
   name: "JUW-MicroSlides",
   version: "V6.2.1",
-  crest: `${import.meta.env.BASE_URL}juw-crest.png`,
-  crestMark: `${import.meta.env.BASE_URL}juw-crest-256.jpg`,
+  crest: `${import.meta.env.BASE_URL}juw-crest-transparent.svg`,
+  crestMark: `${import.meta.env.BASE_URL}juw-crest-transparent.svg`,
   deptSeal: `${import.meta.env.BASE_URL}juw-dept-seal.svg?v=5`,
   microscope: `${import.meta.env.BASE_URL}juw-microscope.png?v=crystal`,
   course: "Microbial Enzyme Technology",

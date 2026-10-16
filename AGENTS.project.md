@@ -25,3 +25,8 @@ The owner explicitly requires JUW-MicroSlides to remain **V6.2.1**, regardless o
 - The toolbar must open the shared generator, never directly save a short local template.
 - Validate the final slide count before writing state. Do not save partial fallbacks as successful decks.
 - Preserve the exact editor slide count in PowerPoint; retain full references and extra-media provenance in notes instead of appending pages.
+
+## University branding
+
+- Use the shared transparent university crest in every slide layout, presenter, print and PowerPoint, and avoid white/square logo backplates in the header.
+- Preserve the university's original lettering, colours and enclosed light areas. Only the exterior background should be transparent; keep the unmodified source artwork available.

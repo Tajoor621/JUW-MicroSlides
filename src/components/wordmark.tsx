@@ -6,7 +6,7 @@ export function Wordmark({ compact = false }: { compact?: boolean }) {
       <img
         src={JUW.crestMark}
         alt="Jinnah University for Women"
-        className="size-9 shrink-0 bg-white object-contain"
+        className="size-9 shrink-0 object-contain"
       />
       <div className="min-w-0 leading-tight">
         <div className="truncate font-serif text-[15px] tracking-tight text-fg">{JUW.name}</div>

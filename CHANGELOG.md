@@ -52,3 +52,9 @@ See README for remaining limits, deployment setup, and validation commands.
 - New decks choose a consistent palette from the topic/discipline instead of cycling unrelated subject themes. Subject labels identify the deck discipline, while manually selected palettes in existing decks are preserved.
 - Added production-browser export comparisons covering all 10 palettes × 5 layouts at desktop and phone widths, including native text coordinates/sizes/colours and logo/attached-image bounds. Existing offline/storage/generation/media checks remain passing.
 - The visible application version remains V6.2.1. Re-export older decks to regenerate their PowerPoint files. PowerPoint/other viewers may substitute fonts absent on the viewing device.
+
+## V6.2.1 — transparent university crest
+
+- Removed the rectangular exterior from the university crest while retaining the original crest artwork, lettering and enclosed grey/white areas. All slide layouts, header branding, presenter/print and PowerPoint use the same transparent asset.
+- Removed the header logo's white background. Existing decks receive this branding correction without changing their contents or themes; previously downloaded PowerPoint files must be exported again.
+- Kept V6.2.1 unchanged and verified exterior alpha in browser and PowerPoint assets.

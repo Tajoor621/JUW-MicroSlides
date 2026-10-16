@@ -98,9 +98,10 @@ function pptxXmlFiles(buffer) {
     const name = buffer.subarray(offset + 46, offset + 46 + n).toString();
     const local = buffer.readUInt32LE(offset + 42);
     const start = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28);
-    if (name.endsWith(".xml")) {
+    if (name.endsWith(".xml") || name.endsWith(".rels") || name.endsWith(".png")) {
       const data = buffer.subarray(start, start + size);
-      files[name] = (method === 8 ? inflateRawSync(data) : data).toString();
+      const uncompressed = method === 8 ? inflateRawSync(data) : data;
+      files[name] = uncompressed.toString(name.endsWith(".png") ? "base64" : "utf8");
     }
     offset += 46 + n + extra + comment;
   }
@@ -267,6 +268,47 @@ try {
     const bytes = await readFile(await file.path());
     assert.equal(slideCountInPptx(bytes), 50);
     const xml = pptxXmlFiles(bytes);
+    const firstSlide = xml["ppt/slides/slide1.xml"];
+    const logoBox = metrics[0].images[0];
+    const logoPic = [...firstSlide.matchAll(/<p:pic>.*?<\/p:pic>/gs)]
+      .map((m) => m[0])
+      .find((pic) => {
+        const off = pic.match(/<a:off x="(\d+)" y="(\d+)"/);
+        return (
+          off &&
+          Math.abs(Number(off[1]) / 9525 - logoBox.x) < 1 &&
+          Math.abs(Number(off[2]) / 9525 - logoBox.y) < 1
+        );
+      });
+    const logoId = logoPic.match(/r:embed="([^"]+)"/)[1];
+    const rel = [...xml["ppt/slides/_rels/slide1.xml.rels"].matchAll(/<Relationship\s[^>]+\/>/g)]
+      .map((m) => m[0])
+      .find((r) => r.includes(`Id="${logoId}"`));
+    const target = rel.match(/Target="([^"]+)"/)[1].replace(/^\.\.\//, "ppt/");
+    assert(xml[target], "Export must embed the university crest");
+    const alpha = await pp.evaluate(async (src) => {
+      const img = new Image();
+      img.src = src;
+      await img.decode();
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      return [
+        [0, 0],
+        [c.width - 1, 0],
+        [0, c.height - 1],
+        [c.width - 1, c.height - 1],
+        [Math.floor(c.width / 2), Math.floor(c.height / 2)],
+      ].map(([x, y]) => ctx.getImageData(x, y, 1, 1).data[3]);
+    }, `data:image/png;base64,${xml[target]}`);
+    assert.deepEqual(
+      alpha,
+      [0, 0, 0, 0, 255],
+      "University crest must have transparent exterior and an intact opaque centre in PowerPoint",
+    );
+
     for (let i = 0; i < 50; i++) {
       const slideXml = xml[`ppt/slides/slide${i + 1}.xml`];
       const shape = [...slideXml.matchAll(/<p:sp>.*?<\/p:sp>/gs)]
@@ -346,6 +388,9 @@ try {
     if (a.body)
       assert(Math.abs(a.body.x - b.body.x) < 0.01 && Math.abs(a.body.y - b.body.y) < 0.01);
   }
+  results.push(
+    "University crest retains transparent corners and an opaque original centre in desktop and mobile PowerPoint exports",
+  );
   results.push(
     "All 10 themes and 5 layouts preserve title/body positions, font sizes, colours, logos and attached images in desktop and mobile exports",
   );
