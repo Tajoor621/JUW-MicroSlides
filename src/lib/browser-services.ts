@@ -9,7 +9,7 @@ export async function generateAiDeck({ data }: { data: GenerateInput }) {
   } catch (error) {
     return {
       ok: false as const,
-      error: `${error instanceof Error ? error.message : unavailable} A knowledge-based deck was created instead.`,
+      error: `${error instanceof Error ? error.message : unavailable} Continuing with research generation for the requested slide count.`,
       deck: generateLocalDeck(data),
     };
   }

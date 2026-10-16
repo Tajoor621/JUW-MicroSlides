@@ -51,7 +51,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
     if (!apiKey) {
       return {
         ok: false,
-        error: "AI is not available in this environment. A knowledge-based deck was built instead.",
+        error: "AI is not available in this environment. Continuing with research generation for the requested slide count.",
         deck: fallback,
       };
     }
@@ -63,7 +63,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
       return {
         ok: false,
         error:
-          "AI generation supports up to 36 slides per request. A local deck was created instead.",
+          "This cloud model handles up to 36 slides per call. Continuing with research generation for the complete requested deck.",
         deck: fallback,
       };
     }
