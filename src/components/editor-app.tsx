@@ -218,30 +218,9 @@ export function EditorApp() {
                 size="sm"
                 onClick={() => {
                   const state = useDeckStore.getState();
-                  const draft = state.generateDraft;
-                  const topic = draft.topic.trim();
                   state.setGeneratorOpen(true);
-                  if (!topic) {
-                    if (window.innerWidth < 1024) state.setGenerateOpen(true);
-                    document.getElementById("gen-topic")?.focus();
-                    toast.message(
-                      "Type a lecture topic. The title slide updates as you type, then press Generate.",
-                    );
-                    return;
-                  }
-                  state.generate({
-                    topic,
-                    discipline: draft.discipline,
-                    count: draft.count,
-                    level: draft.level,
-                    notes: draft.notes,
-                    mode: draft.mode,
-                    course: draft.course,
-                    courseCode: draft.courseCode,
-                    preparedBy: draft.preparedBy,
-                    department: JUW.department,
-                  });
-                  toast.success(`“${topic}” — title slide shows only that name.`);
+                  if (window.innerWidth < 1024) state.setGenerateOpen(true);
+                  else requestAnimationFrame(() => document.getElementById("gen-topic")?.focus());
                 }}
               >
                 <Microscope className="size-3.5" />

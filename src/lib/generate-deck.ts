@@ -74,10 +74,20 @@ export function generateLocalDeck(input: GenerateInput): Deck {
   const topic = input.topic.trim() || "Microbiology";
   const profile = profileFor(topic);
   const wanted = Math.min(MAX_SLIDES, Math.max(1, Math.round(input.count) || 12));
+  const overview = /^(general\s+)?microbiology$/i.test(topic);
+  const disciplineOverview = DISCIPLINES.find((d) => d.name.toLowerCase() === topic.toLowerCase());
   const sections: TopicSection[] = profile
     ? [...profile.sections]
-    : DISCIPLINES.flatMap((d) => d.modules)
-        .filter((m) => topicOverlap(topic, `${m.title} ${m.keywords.join(" ")}`) >= 0.75)
+    : (overview
+        ? DISCIPLINES.flatMap((d) => d.modules)
+        : (disciplineOverview?.modules ?? DISCIPLINES.flatMap((d) => d.modules))
+      )
+        .filter(
+          (m) =>
+            overview ||
+            Boolean(disciplineOverview) ||
+            topicOverlap(topic, `${m.title} ${m.keywords.join(" ")}`) >= 0.75,
+        )
         .filter(eligible)
         .map((m) => ({ title: m.title, bullets: m.bullets }));
   // User-supplied substantive notes are labelled as user material, never silently verified.
@@ -118,7 +128,7 @@ export function generateLocalDeck(input: GenerateInput): Deck {
       ),
     );
   }
-  const reserved = wanted >= 5 && unique.length >= 2 ? 2 : 0;
+  const reserved = wanted >= 5 && unique.length >= 2 ? (reading ? 2 : 1) : 0;
   const contentLimit = Math.max(0, wanted - slides.length - reserved);
   for (const s of unique.slice(0, contentLimit))
     slides.push(

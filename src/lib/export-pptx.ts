@@ -320,7 +320,26 @@ export async function exportPptx(deck: Deck) {
     const slide = deck.slides[idx];
     const tokens = themeOf(slide.theme);
     const s = pptx.addSlide();
-    if (slide.notes) s.addNotes(slide.notes);
+    const sourceNotes = slide.citations
+      .map(
+        (c) =>
+          `${formatCitation(c, deck.citationStyle)}${c.doi ? ` https://doi.org/${c.doi}` : c.pmid ? ` https://pubmed.ncbi.nlm.nih.gov/${c.pmid}/` : ""}`,
+      )
+      .join("\n");
+    const mediaNotes = slide.media
+      .slice(1)
+      .map(
+        (m) => `${m.title} · ${m.credit} · ${m.license} · ${m.source} · ${m.originalSrc || m.src}`,
+      )
+      .join("\n");
+    const notes = [
+      slide.notes,
+      sourceNotes && `Full slide references:\n${sourceNotes}`,
+      mediaNotes && `Additional attached media (available separately):\n${mediaNotes}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    if (notes) s.addNotes(notes);
     s.background = { color: tokens.band.replace("#", "") };
     s.addShape(pptx.ShapeType.rect, {
       x: 0.12,
@@ -629,52 +648,8 @@ export async function exportPptx(deck: Deck) {
     }
   }
 
-  for (const original of deck.slides) {
-    for (const media of original.media.slice(1)) {
-      const result = await figureData(media.src, media.title);
-      const page = pptx.addSlide();
-      page.addText(`${original.title} — additional figure`, {
-        x: 0.5,
-        y: 0.4,
-        w: 12,
-        h: 0.6,
-        fontSize: 22,
-        fit: "shrink",
-      });
-      await addJpeg(page, result.data, { x: 0.6, y: 1.2, w: 12.1, h: 5.5 });
-      page.addText(
-        result.substituted
-          ? "Original unavailable — substitute illustration; verify scientific relevance."
-          : `${media.title} · ${media.credit} · ${media.license} · ${media.source}`,
-        { x: 0.5, y: 6.9, w: 12.2, h: 0.35, fontSize: 9, fit: "shrink" },
-      );
-    }
-  }
-  const references = [
-    ...new Map(
-      deck.slides
-        .flatMap((slide) => slide.citations)
-        .map((c) => [c.doi || c.pmid || c.title.toLowerCase(), c]),
-    ).values(),
-  ];
-  for (let offset = 0; offset < references.length; offset += 6) {
-    const page = pptx.addSlide();
-    page.addText("References — verify relevance to individual claims", {
-      x: 0.5,
-      y: 0.4,
-      w: 12,
-      h: 0.6,
-      fontSize: 23,
-      bold: true,
-    });
-    page.addText(
-      references
-        .slice(offset, offset + 6)
-        .map((c, i) => `${offset + i + 1}. ${formatCitation(c, deck.citationStyle)}`)
-        .join("\n\n"),
-      { x: 0.5, y: 1.3, w: 12.2, h: 5.7, fontSize: 14, fit: "shrink", breakLine: false },
-    );
-  }
+  // The exported deck preserves the user's exact slide count. Full references and
+  // additional-media provenance live in notes instead of silently appended pages.
   await pptx.writeFile({ fileName: `${slug(deck.title)}.pptx` });
 }
 

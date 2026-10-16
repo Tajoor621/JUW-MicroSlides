@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { GenerateInput, Slide } from "./types";
+import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
+import { assertCompleteDeck, requestedCount } from "./deck-completion";
 import { generateLocalDeck } from "./generate-deck";
 import { uid } from "./utils";
 import { cycleTheme } from "./slide-themes";
@@ -74,30 +75,72 @@ const generatedSlide = z.object({
   notes: z.string().max(10000).default(""),
 });
 export async function generateLocalAiDeck(input: GenerateInput) {
-  if (input.count > 36)
-    throw new Error(
-      "Local AI supports at most 36 slides per request. Choose 36 or fewer, or use Knowledge mode.",
-    );
-  const raw = await chat(
-    `Create exactly ${input.count} microbiology lecture slides about ${input.topic}. Level: ${input.level}. Instructor guidance: ${input.notes}. Return JSON {title:string,slides:[{layout:"title"|"content"|"two-column",title:string,subtitle:string,bullets:string[],leftBullets:string[],rightBullets:string[],notes:string}]}. First slide is title. Include objectives and a summary. Keep every slide specific to the exact research question. Use short concept headings without repeatedly appending the topic. Write substantive explanations, not prompts such as "name the method" or "write one sentence". No unrelated filler. Do not invent citations, DOIs, experimental data, or claim that sources were verified. Flag uncertainties in notes.`,
-    true,
+  const count = requestedCount(input.count);
+  const deck = generateLocalDeck({ ...input, count });
+  const slides: Slide[] = [deck.slides[0]];
+  if (count === 1) return { ...deck, slides, requestedCount: count };
+  const planned = JSON.parse(
+    await chat(
+      `Plan exactly ${count - 1} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. The topic introduction is already present and is not part of this outline. Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
+      true,
+    ),
   );
-  const json = z
-    .object({ title: z.string().max(1000), slides: z.array(generatedSlide).min(1).max(36) })
-    .parse(JSON.parse(raw));
-  if (json.slides.length !== input.count)
+  const { headings } = z
+    .object({ headings: z.array(z.string().min(1).max(200)).min(1).max(MAX_SLIDES) })
+    .parse(planned);
+  if (
+    headings.length !== count - 1 ||
+    new Set(headings.map((h) => h.toLowerCase())).size !== headings.length
+  )
     throw new Error(
-      `Local AI returned ${json.slides.length} slides instead of ${input.count}; retry or use Knowledge mode.`,
+      "The model did not return the complete, distinct topic outline. Retry or use research generation.",
     );
-  const deck = generateLocalDeck(input);
-  const slides: Slide[] = json.slides.map((s, i) => ({
-    ...s,
-    id: uid("s"),
-    theme: cycleTheme(i, s.layout),
-    media: [],
-    citations: [],
-  }));
-  return { ...deck, title: json.title, slides, generationSource: "local-ai" as const };
+  const bodies = new Set<string>();
+  for (let offset = 0; offset < headings.length; offset += 8) {
+    const batch = headings.slice(offset, offset + 8);
+    const response = await chat(
+      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\nThese are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists. Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes}]}.`,
+      true,
+    );
+    const parsed = z
+      .object({ slides: z.array(generatedSlide).min(1).max(8) })
+      .parse(JSON.parse(response));
+    if (parsed.slides.length !== batch.length)
+      throw new Error(
+        `AI batch returned ${parsed.slides.length} instead of ${batch.length} slides. Retry to complete the requested deck.`,
+      );
+    for (let i = 0; i < parsed.slides.length; i++) {
+      const row = parsed.slides[i];
+      const body = [...row.bullets, ...row.leftBullets, ...row.rightBullets]
+        .join(" ")
+        .trim()
+        .toLowerCase();
+      if (!body || bodies.has(body))
+        throw new Error("The model returned empty or repeated content. Retry with source notes.");
+      bodies.add(body);
+      const layout = row.layout === "two-column" ? "two-column" : "content";
+      slides.push({
+        ...row,
+        layout,
+        title: batch[i],
+        id: uid("s"),
+        theme: cycleTheme(slides.length, layout),
+        media: [],
+        citations: [],
+      });
+    }
+  }
+  const made = {
+    ...deck,
+    slides,
+    title: input.topic,
+    requestedCount: count,
+    contentWarnings: [
+      "AI-authored teaching draft. Review scientific claims and add supporting references.",
+    ],
+    generationSource: "local-ai" as const,
+  };
+  return assertCompleteDeck(made, count);
 }
 export async function localCopilot(data: {
   question: string;

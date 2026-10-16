@@ -1,3 +1,4 @@
+import { assertCompleteDeck } from "./deck-completion";
 import { create } from "zustand";
 import { durableStorage } from "./durable-storage";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -278,6 +279,7 @@ export const useDeckStore = create<DeckState>()(
       },
       generate: (input, deck) => {
         const made = withOfficialIntro(deck ?? generateLocalDeck(input), input);
+        assertCompleteDeck(made, input.count);
         made.citationStyle = get().citationStyle;
         get().replaceActive(made);
         set({

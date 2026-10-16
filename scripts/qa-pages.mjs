@@ -50,6 +50,24 @@ const browser = await chromium.launch({
 });
 const errors = [],
   results = [];
+function slideCountInPptx(buffer) {
+  let end = buffer.length - 22;
+  while (end >= 0 && buffer.readUInt32LE(end) !== 0x06054b50) end--;
+  assert(end >= 0, "PowerPoint must be a valid ZIP package");
+  let offset = buffer.readUInt32LE(end + 16),
+    count = 0;
+  const entries = buffer.readUInt16LE(end + 10);
+  for (let i = 0; i < entries; i++) {
+    assert.equal(buffer.readUInt32LE(offset), 0x02014b50);
+    const nameLength = buffer.readUInt16LE(offset + 28),
+      extra = buffer.readUInt16LE(offset + 30),
+      comment = buffer.readUInt16LE(offset + 32);
+    const name = buffer.subarray(offset + 46, offset + 46 + nameLength).toString();
+    if (/^ppt\/slides\/slide\d+\.xml$/.test(name)) count++;
+    offset += 46 + nameLength + extra + comment;
+  }
+  return count;
+}
 async function saved(page) {
   await page.waitForFunction(() => document.body.textContent.includes("Saved on this device"));
   await page.waitForTimeout(150);
@@ -182,7 +200,8 @@ try {
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
   const pptx = await downloadEvent;
   await pptx.saveAs(join(output, "juw-qa.pptx"));
-  results.push("PowerPoint downloads successfully");
+  assert.equal(slideCountInPptx(await readFile(await pptx.path())), 12);
+  results.push("PowerPoint downloads successfully with exactly the deck slide count");
   await page.waitForFunction(async () => {
     const r = await navigator.serviceWorker.ready;
     return Boolean(r.active);
@@ -377,6 +396,65 @@ try {
   assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
   results.push("New blank slides contain no automatically selected figures");
   await research.close();
+  const coverage = await browser.newContext({ acceptDownloads: true });
+  const cp = await coverage.newPage();
+  cp.on("pageerror", (e) => errors.push(e.message));
+  await coverage.route("https://www.ebi.ac.uk/europepmc/**", (route) => {
+    const papers = Array.from({ length: 20 }, (_, i) => ({
+      id: `fixture-${i}`,
+      pmid: `90000${i}`,
+      source: "MED",
+      title: `Microbial fuel cells: QA source ${i}`,
+      abstractText: `Microbial fuel cells in dataset ${i} were studied with defined electrode comparisons and a microbial community. The investigators in dataset ${i} measured electrical output under controlled experimental conditions. The microbial fuel cells in dataset ${i} showed a condition-dependent response in the reported measurements. The authors in dataset ${i} restricted their conclusions to the tested system and reported further validation needs.`,
+      authorString: "QA Fixture Author",
+      pubYear: "2025",
+      journalInfo: { journal: { title: "QA fixture" } },
+    }));
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ resultList: { result: papers } }),
+    });
+  });
+  await cp.goto(url);
+  await saved(cp);
+  await cp.locator("#gen-topic").fill("Microbial fuel cells");
+  await cp.locator("#gen-count").fill("25");
+  await cp.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await cp.waitForFunction(() => !document.querySelector("#gen-topic"));
+  await saved(cp);
+  assert.match(await cp.locator("body").innerText(), /Slide 1 of 25/);
+  results.push(
+    "An uncatalogued microbiology topic generates exactly 25 slides from distinct source sections",
+  );
+  const exactExport = cp.waitForEvent("download", { timeout: 90000 });
+  await cp.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  const exactPptx = await exactExport;
+  assert.equal(slideCountInPptx(await readFile(await exactPptx.path())), 25);
+  results.push(
+    "Cited 25-slide research deck exports exactly 25 PowerPoint slides without appended pages",
+  );
+  await coverage.unroute("https://www.ebi.ac.uk/europepmc/**");
+  await coverage.route("https://www.ebi.ac.uk/europepmc/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ resultList: { result: [] } }),
+    }),
+  );
+  await cp.getByRole("button", { name: "Generate", exact: true }).click();
+  await cp.locator("#gen-topic").fill("Uncatalogued isolate ZXQ-517 secretion system");
+  await cp.locator("#gen-count").fill("25");
+  await cp.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await cp
+    .getByRole("alert")
+    .filter({ hasText: /not complete yet/ })
+    .waitFor();
+  assert.match(await cp.locator("body").innerText(), /Microbial fuel cells/);
+  results.push(
+    "Incomplete research does not replace the active deck or report a short deck as success",
+  );
+  await coverage.close();
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ ok: true, checks: results, uncaughtErrors: errors }, null, 2));
   await writeFile(

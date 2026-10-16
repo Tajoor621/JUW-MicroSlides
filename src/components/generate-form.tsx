@@ -1,3 +1,4 @@
+import { assertCompleteDeck } from "@/lib/deck-completion";
 import { enrichTopicEvidence } from "@/lib/topic-evidence";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -32,28 +33,13 @@ const TOPIC_CHIPS = [
   "Enzyme Immobilization",
 ];
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("timeout")), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (err) => {
-        clearTimeout(timer);
-        reject(err);
-      },
-    );
-  });
-}
-
 export function GenerateForm({ compact = false }: { compact?: boolean }) {
   const generate = useDeckStore((s) => s.generate);
   const draft = useDeckStore((s) => s.generateDraft);
   const patchDraft = useDeckStore((s) => s.patchGenerateDraft);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
+  const [generationError, setGenerationError] = useState("");
   const [lockDiscipline, setLockDiscipline] = useState(false);
   const [lockCourse, setLockCourse] = useState(false);
 
@@ -100,33 +86,28 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       courseCode: input.courseCode,
     });
     setBusy(true);
+    setGenerationError("");
     setProgress("Building the topic outline…");
     try {
       let local = generateLocalDeck(input);
       if (input.mode === "ai") {
         setProgress("Drafting and checking the research deck…");
-        const result = await withTimeout(generateAiDeck({ data: input }), 60000);
+        const result = await generateAiDeck({ data: input });
         if (result.ok) local = result.deck;
         else {
           local = result.deck ?? local;
           toast.message(result.error);
         }
       }
-      if (local.slides.length < input.count && navigator.onLine) {
+      if (
+        (local.slides.length < input.count ||
+          local.slides.some((s) => s.title === "Evidence required")) &&
+        navigator.onLine
+      ) {
         setProgress(
           `Searching research to extend this ${local.slides.length}-slide draft toward ${input.count}…`,
         );
-        try {
-          local = await enrichTopicEvidence(local, input);
-        } catch {
-          toast.message(
-            "Live research sources were unavailable. The deck keeps the supported topic-specific slide count.",
-          );
-        }
-      }
-      if (local.slides.length < input.count) {
-        const coverage = `Generated ${local.slides.length} of ${input.count} requested slides. More topic-specific evidence is needed to complete this deck without unrelated filler.`;
-        local.contentWarnings = [...(local.contentWarnings ?? []), coverage];
+        local = await enrichTopicEvidence(local, input, undefined, setProgress);
       }
       if (local.slides[0]) {
         local.slides[0] = {
@@ -142,19 +123,20 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         };
       }
       local.generationSource ??= "knowledge";
+      assertCompleteDeck(local, input.count);
       generate(input, local);
       toast.success(
         `Created ${local.slides.length} slides. Review claims, references, and figure relevance before teaching.`,
       );
       if (local.contentWarnings?.length)
         toast.message(local.contentWarnings[0], { duration: 12000 });
-    } catch {
-      try {
-        generate(input, generateLocalDeck(input));
-        toast.message("Built a topic-specific draft. No images were inserted automatically.");
-      } catch {
-        toast.message("Could not build that deck. Try a shorter topic.");
-      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The requested deck could not be completed. Add source material and retry.";
+      setGenerationError(message);
+      toast.error(message, { duration: 12000 });
     } finally {
       setBusy(false);
       setProgress("");
@@ -169,6 +151,11 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         void onGenerate();
       }}
     >
+      {generationError && (
+        <p role="alert" className="rounded-sm border border-accent p-3 text-sm text-fg">
+          {generationError}
+        </p>
+      )}
       <div className={cn("grid gap-3", compact ? "sm:grid-cols-2" : "")}>
         <div className={cn("grid content-start gap-1.5", compact && "sm:col-span-2")}>
           <Label htmlFor={compact ? "gen-topic" : "topic"}>Topic</Label>
@@ -218,6 +205,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
         </div>
         <div className="grid content-start gap-1.5">
           <Label htmlFor={compact ? "gen-count" : "count"}>Slides (1–{MAX_SLIDES})</Label>
+          <p className="text-[11px] text-muted">Total slides, including the opening slide.</p>
           <Input
             id={compact ? "gen-count" : "count"}
             type="number"
@@ -283,10 +271,11 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           </p>
         )}
         <p className="text-xs text-muted">
-          Knowledge mode combines bundled topic material with multi-query literature search when
-          more slides are requested. Coverage varies; review every scientific claim. On Pages,
-          search images in Media and references in PubMed or Evidence while online. Media stays in
-          the Media collection until you attach it. Configure Ollama in Settings for local AI.
+          Enter any microbiology topic and the exact number of slides. The generator builds the
+          complete deck using topic material and paginated research passages; AI mode can use a
+          configured local model. Review every scientific claim. On Pages, search images in Media
+          and references in PubMed or Evidence while online. Media stays in the Media collection
+          until you attach it. Configure Ollama in Settings for local AI.
         </p>
         <div className="flex flex-wrap gap-1">
           {SLIDE_THEMES.map((id) => (

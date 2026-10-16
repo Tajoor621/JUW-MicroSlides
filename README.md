@@ -14,12 +14,12 @@ The workflow `.github/workflows/pages.yml` checks types, lint, platform tests, r
 
 ## Everyday use
 
-1. Enter a topic, choose a count/level, and generate in Knowledge mode. This uses bundled material and topic templates; it is not a scientific fact-checking system.
+1. Enter a topic, choose a count/level, and generate in Knowledge mode. This combines bundled topic material with topic-independent research retrieval; it is not a scientific fact-checking system.
 2. Edit slides and speaker notes. Open Help in each inspector tab for task instructions and limitations.
 3. Search Commons images and PubMed/OpenAlex references while online. Review source relevance and each asset's reuse licence.
 4. Open Library to download an editable JSON backup. Restore adds copies, preserving existing decks. Use Current deck backup to split a large library.
 5. Save external images offline while connected, then export a new backup. Failed CORS/unsupported/oversized images remain external links and are reported. A download does not imply all remote images are embedded.
-6. PowerPoint exports notes, a references appendix, and extra images as additional figure slides. Verify layout and attribution before distribution. Print/PDF uses the browser print dialog.
+6. PowerPoint preserves the editor’s exact slide count. Full references and additional-image provenance are retained in speaker notes; extra pages are not appended. Verify layout and attribution before distribution. Print/PDF uses the browser print dialog.
 
 ## Storage, offline operation and recovery
 
@@ -33,7 +33,7 @@ Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctr
 
 Settings accepts an explicitly configured local computer/private LAN server address and installed model name. Start and configure Ollama yourself, install the chosen model, and permit the exact website origin in its CORS settings if required. Network/browser security rules may prevent HTTPS-to-local HTTP connections. On a phone, localhost refers to the phone, not your computer; use the computer's LAN address. The app does not run or install a model on a phone.
 
-Only a user-triggered AI generation or Copilot request sends content to that configured local server. Generation accepts at most 36 AI slides per request and validates returned JSON/count. If unavailable or invalid, the UI discloses the reason and creates a labelled Knowledge draft. No paid cloud API key is requested by the static site.
+Only a user-triggered AI generation or Copilot request sends content to that configured local server. Local AI plans the requested deck and writes batches of up to eight content slides, validating every batch and the final count (1–400). If unavailable or invalid, research generation attempts to complete the full deck. A short result is not saved as a successful deck. No paid cloud API key is requested by the static site.
 
 ## Validation
 
@@ -50,10 +50,10 @@ Only a user-triggered AI generation or Copilot request sends content to that con
 ## Known limits and remaining work
 
 - Scientific correctness, up-to-date clinical recommendations, and claim-to-source support require human review. Metadata lookup is not evidence verification.
-- Unsupported topics receive an explicit coverage notice. The generator no longer pads decks with teaching instructions or unrelated material. Requested counts up to 400 are an upper limit, not a guarantee of 400 distinct evidence-supported slides.
+- Topics are not restricted to bundled profiles. The generator accepts any microbiology topic, searches related source material, and builds distinct passages toward the requested 1–400 slides. Success requires the exact count. Offline generation has finite bundled coverage; when sources/model access cannot support the request, the app reports an actionable error and preserves the active deck instead of saving fewer slides or inventing content.
 - Elicit support imports exports; it is not an Elicit account connection. Ambiguous legacy author strings cannot be reconstructed reliably; structured BibTeX author data is retained.
 - External searches depend on upstream availability, CORS, and provider quotas. This release does not certify their current availability in every region.
-- PowerPoint exports all images, but additional images use extra figure slides rather than an exact multi-image copy of the editor. Browser fonts and PowerPoint fonts can differ. The reference appendix can add slides beyond the requested lecture count.
+- PowerPoint exports the primary figure on each slide; additional manually attached media links and full citations remain in notes and the editable backup. No figure/reference pages are added beyond the editor’s slide count. Browser and PowerPoint fonts can differ.
 - Cross-device sync, multi-user collaboration, Android-native backup interchange, and an independently tested APK are not included. Use the browser backup format for browser-to-browser transfer.
 - A physical Samsung-device test and a real Ollama connection remain required before claiming those environments are certified. Browser emulation is not a physical-device test.
 
@@ -63,7 +63,7 @@ Bundled CSL styles retain their licence declarations; see `src/lib/csl/README.md
 
 ## Topic-focused generation, separate media, and specialist review
 
-The introduction uses the exact research topic and its scope. Concept headings are concise rather than repeatedly appending the topic. Generic filler, guessed universal course codes, and automatic scientific-image placement have been removed. Substantive instructor notes are labelled as user-provided evidence. When the bundled topic outline is shorter than the requested deck, the app searches Europe PMC using up to three complementary queries, deduplicates and ranks results, then adds cited abstract summaries. If the sources still cannot support the requested count, the app reports the supported count instead of padding. Abstract summaries require review in the original paper. Slide text remains editable vector text in PowerPoint; preview typography scales with the slide canvas, and topic-specific schematic vector ornaments decorate the opening and content slides. Untouched shipped samples are refreshed; edited saved decks remain preserved. Generate a new deck to use the new content builder.
+The introduction uses the exact research topic and its scope. Concept headings are concise rather than repeatedly appending the topic. Generic filler, guessed universal course codes, and automatic scientific-image placement have been removed. Substantive instructor notes are labelled as user-provided evidence. When the bundled topic outline is shorter than the requested deck, the app searches Europe PMC using complementary topic/synonym queries and up to three cursor pages per query, deduplicates and ranks results, then builds distinct cited passages from longer abstracts. If the sources cannot complete the requested count, generation reports an error and preserves the existing deck. The toolbar and form use the same validated generation flow. Abstract summaries require review in the original paper. Slide text remains editable vector text in PowerPoint; preview typography scales with the slide canvas, and topic-specific schematic vector ornaments decorate the opening and content slides. Untouched shipped samples are refreshed; edited saved decks remain preserved. Generate a new deck to use the new content builder.
 
 **Media** searches public Wikimedia Commons images/videos and Openverse images, with visible provider results/errors, pagination, a persistent per-deck collection, and separate downloads. No search result is inserted into a slide automatically. Select an image and choose Attach to selected slide. Removing a figure leaves the slide without a replacement. Up to four manually selected images may be attached; choose the primary preview explicitly. Video files are downloadable but are not embedded in slides or PowerPoint. Direct in-app downloads are limited to 25 MB and require host/CORS permission; otherwise use Original source. Bundled illustrations are optional schematic aids and are not experimental images.
 

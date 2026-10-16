@@ -23,7 +23,8 @@
     "preview:pages": "vite preview --config vite.pages.config.ts --host 0.0.0.0 --port 8081",
     "test:research": "node scripts/test-research.mjs",
     "qa:pages": "node scripts/qa-pages.mjs",
-    "test:topics": "node scripts/test-topic-quality.mjs"
+    "test:topics": "node scripts/test-topic-quality.mjs",
+    "test:generation": "node scripts/test-generation-count.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",

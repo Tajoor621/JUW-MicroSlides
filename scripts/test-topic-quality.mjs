@@ -252,7 +252,7 @@ try {
     ...input,
     topic: "Uncatalogued isolate ZXQ-517 secretion system",
   });
-  const enriched = await enrichTopicEvidence(unknown, { ...input, topic: unknown.topic });
+  const enriched = await enrichTopicEvidence(unknown, { ...input, topic: unknown.topic, count: 2 });
   assert(enriched.slides.some((s) => s.citations.some((c) => c.pmid === "123")));
   assert(enriched.slides.every((s) => s.media.length === 0));
   checks++;
@@ -265,8 +265,7 @@ try {
       source: "MED",
       pmid: `900${i}`,
       title: `Bacterial genome architecture study ${i}`,
-      abstractText:
-        "Bacterial genome organization was examined using chromosome imaging and sequencing. Bacterial chromosome architecture was compared across experimental growth conditions. The reported results describe the tested strain and do not establish a universal pattern.",
+      abstractText: `Bacterial genome organization in study ${i} was examined using chromosome imaging and sequencing. Bacterial chromosome architecture in study ${i} was compared across experimental growth conditions. The reported results describe the tested strain and do not establish a universal pattern.`,
       authorString: "Example Author",
       pubYear: "2025",
       journalInfo: { journal: { title: "Example Journal" } },

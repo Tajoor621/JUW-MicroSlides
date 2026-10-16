@@ -25,3 +25,13 @@ See README for remaining limits, deployment setup, and validation commands.
 - Applied source enrichment to short AI-created drafts as well as local knowledge drafts, so a model returning fewer slides still gets the requested research search.
 - Made slide typography scale with its canvas while retaining editable text in the PowerPoint export, and added topic-matched vector ornaments to opening and research slides.
 - Added a regression check where multiple searches retrieve enough cited abstracts to complete a supported 25-slide deck.
+
+## Subject-wide requested-count generation — V6.2.1 (2026-10-16)
+
+- Routed the toolbar Generate button through the shared generator instead of directly saving local templates.
+- Added arbitrary-topic/synonym searches, cursor pagination and distinct, attributed passages from longer source abstracts.
+- Added exact-count validation before saving; insufficient source/model responses preserve the active deck and display an error.
+- Fixed the missing-reading-slide off-by-one case in broad subject overviews.
+- Replaced the local AI 36-slide ceiling with outline planning and validated eight-slide batches (up to 400 requested slides).
+- Preserved editor counts in PowerPoint by retaining full references/additional media links in notes, with no silently appended pages.
+- Added cross-discipline 2/25/50-slide, pagination, model-batching and browser export-count regressions.

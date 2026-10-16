@@ -1,7 +1,8 @@
 import type { Deck, GenerateInput, Slide, Citation } from "./types";
-import { topicOverlap, profileFor } from "./topic-content";
+import { topicTerms, profileFor } from "./topic-content";
 import { cycleTheme } from "./slide-themes";
 import { uid } from "./utils";
+import { DeckCompletionError, requestedCount } from "./deck-completion";
 
 const text = (raw: string) =>
   raw
@@ -11,7 +12,6 @@ const text = (raw: string) =>
     .replace(/&gt;/g, ">")
     .replace(/\s+/g, " ")
     .trim();
-
 type Paper = {
   id?: string;
   source?: string;
@@ -23,126 +23,278 @@ type Paper = {
   doi?: string;
   pmid?: string;
 };
-
-/** Broaden one vague exact-phrase search into a bounded set of complementary topic queries. */
+const aliases = [
+  ["bacteria", "bacterial", "bacterium", "bacteriology"],
+  ["fungi", "fungal", "fungus", "mycology"],
+  ["virus", "viral", "viruses", "virology"],
+  ["archaea", "archaeal", "archaeon"],
+  ["parasitology", "parasite", "parasites", "parasitic"],
+  ["immunology", "immunity", "immune"],
+  ["phycology", "algae", "algal"],
+  ["malaria", "malarial", "plasmodium"],
+  ["immobilization", "immobilisation", "immobilized", "immobilised"],
+  ["genome", "genomic", "genomes"],
+  ["antimicrobial", "antibiotic", "antibacterial"],
+  ["microbiology", "microbial", "microorganism", "microorganisms"],
+  ["qpcr", "quantitative pcr", "real-time pcr"],
+  ["biofilm", "biofilms"],
+  ["nitrogen fixation", "diazotroph", "diazotrophy"],
+];
+const generic = new Set([
+  "mechanism",
+  "mechanisms",
+  "role",
+  "effect",
+  "effects",
+  "types",
+  "importance",
+  "introduction",
+  "overview",
+  "about",
+  "slides",
+  "slide",
+  "presentation",
+  "lecture",
+  "create",
+  "generate",
+  "make",
+  "explain",
+  "dedicated",
+  "subject",
+  "topic",
+  "research",
+  "study",
+  "microbiology",
+  "microbial",
+]);
+function termsFor(topic: string) {
+  const terms = topicTerms(topic).filter((t) => !generic.has(t));
+  return terms.length ? terms : ["microbiology"];
+}
+function variants(term: string) {
+  return aliases.find((group) => group.includes(term)) ?? [term];
+}
+function relevance(topic: string, body: string) {
+  const terms = termsFor(topic),
+    lower = body.toLowerCase();
+  if (
+    /microb/i.test(topic) &&
+    !/microb|bacter|archae|fung|viru|viral|alga|protozo|yeast|pathogen/i.test(body)
+  )
+    return 0;
+  const taxa = [
+    /bacter/i,
+    /viru|viral|virolog/i,
+    /fung|mycolog/i,
+    /archae/i,
+    /parasit|malari|plasmod/i,
+  ];
+  const required = taxa.filter((taxon) => taxon.test(topic));
+  if (required.length === 1 && !required[0].test(body)) return 0;
+  return (
+    terms.filter((term) => variants(term).some((v) => lower.includes(v.replace(/s$/, "")))).length /
+    terms.length
+  );
+}
 export function researchQueries(topic: string) {
-  const clean = topic.replace(/["\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, 220);
+  const clean = topic
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 240);
+  const terms = termsFor(clean).slice(0, 12);
+  const expanded = terms
+    .map(
+      (term) =>
+        `(${variants(term)
+          .map((t) => `"${t}"`)
+          .join(" OR ")})`,
+    )
+    .join(" AND ");
   const concepts =
     profileFor(topic)
-      ?.sections.slice(0, 8)
+      ?.sections.slice(0, 6)
       .map((s) => `"${s.title}"`) ?? [];
   return [
-    ...new Set(
-      [`"${clean}"`, clean, concepts.length ? `(${concepts.join(" OR ")})` : ""].filter(Boolean),
-    ),
-  ].slice(0, 3);
+    ...new Set([
+      `"${clean}"`,
+      expanded,
+      concepts.length ? `(${concepts.join(" OR ")})` : terms.join(" "),
+    ]),
+  ].filter(Boolean);
 }
-
+function chunks(sentences: string[]): string[][] {
+  const result: string[][] = [];
+  for (let i = 0; i < sentences.length; i += 2) result.push(sentences.slice(i, i + 2));
+  if (result.length > 1 && result.at(-1)!.length === 1)
+    result[result.length - 2].push(...result.pop()!);
+  return result.filter((c) => c.length >= 2);
+}
+function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): Slide[] {
+  const ranked = papers
+    .flatMap((p) => {
+      if (!p.title || !p.abstractText) return [];
+      const score = relevance(topic, `${p.title} ${text(p.abstractText)}`);
+      if (score < 0.6) return [];
+      const sentences = text(p.abstractText)
+        .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
+        .filter(
+          (s) =>
+            s.length > 40 &&
+            s.length < 800 &&
+            !/copyright|all rights reserved|trial registration|competing interest|author contribution|funding:/i.test(
+              s,
+            ),
+        );
+      if (sentences.length < 2) return [];
+      return [{ p, score, parts: chunks(sentences.slice(0, 24)) }];
+    })
+    .sort((a, b) => b.score - a.score);
+  const groups: Slide[][] = [],
+    headings = new Set<string>();
+  // Every passage is used at most once. Longer abstracts contribute several coherent sections.
+  for (const { p, parts } of ranked) {
+    const slides: Slide[] = [];
+    const sourceTitle = text(p.title!);
+    const citation: Citation = {
+      id: `epmc-${p.source || "MED"}-${p.id || p.doi || p.pmid}`,
+      title: sourceTitle,
+      authors: p.authorString || "Authors not supplied",
+      journal: p.journalInfo?.journal?.title || "Journal not supplied",
+      year: p.pubYear || "n.d.",
+      doi: p.doi,
+      pmid: p.pmid,
+    };
+    const source = p.pmid
+      ? `https://pubmed.ncbi.nlm.nih.gov/${p.pmid}/`
+      : p.doi
+        ? `https://doi.org/${p.doi}`
+        : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`;
+    for (let part = 0; part < parts.length; part++) {
+      const bullets = parts[part];
+      const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");
+      if (usedBodies.has(key)) continue;
+      usedBodies.add(key);
+      let title = bullets[0]
+        .replace(/^(background|objective|methods?|results?|conclusions?)\s*:?\s*/i, "")
+        .split(/[;:,]/)[0]
+        .split(/\s+/)
+        .slice(0, 9)
+        .join(" ")
+        .replace(/[.!?]$/, "");
+      if (title.length < 10) title = sourceTitle.slice(0, 85);
+      const root = title;
+      let n = 2;
+      while (headings.has(title.toLowerCase())) title = `${root} (${n++})`;
+      headings.add(title.toLowerCase());
+      slides.push({
+        id: uid("research"),
+        layout: "content",
+        theme: "molecular",
+        title,
+        subtitle: "Research evidence · source excerpt",
+        bullets,
+        leftBullets: [],
+        rightBullets: [],
+        notes: `Source: ${sourceTitle}\n${source}\nPassage ${part + 1} of ${parts.length} from the publication abstract. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.`,
+        citations: [citation],
+        media: [],
+      });
+    }
+    const strength = (slide: Slide) =>
+      relevance(topic, slide.bullets.join(" ")) +
+      (/result|showed|found|demonstrat|observed|measured/i.test(slide.bullets.join(" ")) ? 0.3 : 0);
+    groups.push(slides.sort((a, b) => strength(b) - strength(a)));
+  }
+  // Take one section per study before deeper sections, so one long paper cannot dominate the deck.
+  return Array.from({ length: Math.max(0, ...groups.map((g) => g.length)) }, (_, part) =>
+    groups.flatMap((g) => (g[part] ? [g[part]] : [])),
+  ).flat();
+}
 export async function enrichTopicEvidence(
   deck: Deck,
   input: GenerateInput,
   signal?: AbortSignal,
+  onProgress?: (message: string) => void,
 ): Promise<Deck> {
-  if (deck.slides.length >= input.count) return deck;
+  const target = requestedCount(input.count);
+  const original = deck.slides.filter((s) => s.title !== "Evidence required");
+  if (original.length >= target)
+    return { ...deck, slides: original.slice(0, target), requestedCount: target };
+  const closing = original.filter((s) => /^(Key conclusions|Suggested reading)$/.test(s.title));
+  const core = original.filter((s) => !closing.includes(s));
+  const needed = target - core.length - closing.length;
   const queries = researchQueries(input.topic);
   const controller = new AbortController();
   const abort = () => controller.abort(signal?.reason);
+  if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
-  const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 25000);
+  const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 75000);
+  const papers = new Map<string, Paper>();
+  let successful = 0;
+  const bodyKeys = new Set(core.map((s) => s.bullets.join(" ").toLowerCase().replace(/\W/g, "")));
+  let evidence: Slide[] = [];
+  let work = queries.map((query) => ({ query, cursor: "*" }));
   try {
-    // Independent searches run concurrently and are deduplicated before relevance ranking.
-    const responses = await Promise.allSettled(
-      queries.map(async (query) => {
-        const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&pageSize=100&query=${encodeURIComponent(query)}`;
-        const response = await fetch(url, { credentials: "omit", signal: controller.signal });
-        if (!response.ok) throw new Error(`Europe PMC returned ${response.status}`);
-        const data = await response.json();
-        return (data.resultList?.result ?? []) as Paper[];
-      }),
-    );
-    if (signal?.aborted) throw signal.reason;
-    const uniquePapers = new Map<string, Paper>();
-    for (const result of responses)
-      if (result.status === "fulfilled") {
-        for (const p of result.value) {
-          const id = (
-            p.doi ||
-            p.pmid ||
-            `${p.source || ""}:${p.id || p.title || ""}`
-          ).toLowerCase();
-          if (id && !uniquePapers.has(id)) uniquePapers.set(id, p);
-        }
-      }
-    if (!uniquePapers.size) throw new Error("No public research results were returned.");
-
-    const existing = new Set(deck.slides.map((s) => s.title.toLowerCase()));
-    const candidates = [...uniquePapers.values()]
-      .flatMap((p) => {
-        if (!p.title || !p.abstractText || existing.has(text(p.title).toLowerCase())) return [];
-        const abstract = text(p.abstractText);
-        const relevance = topicOverlap(input.topic, `${p.title} ${abstract}`);
-        if (relevance < 0.42) return [];
-        const sentences = abstract
-          .split(/(?<=[.!?])\s+(?=[A-Z])/)
-          .filter((s) => s.length > 45 && s.length < 700);
-        if (sentences.length < 2) return [];
-        return [{ p, abstract, sentences, relevance }];
-      })
-      .sort((a, b) => b.relevance - a.relevance);
-
-    const evidence: Slide[] = [];
-    for (const { p, sentences } of candidates) {
-      const title = text(p.title || "Research abstract");
-      if (existing.has(title.toLowerCase())) continue;
-      const url = p.pmid
-        ? `https://pubmed.ncbi.nlm.nih.gov/${p.pmid}/`
-        : p.doi
-          ? `https://doi.org/${p.doi}`
-          : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`;
-      const citation: Citation = {
-        id: `europepmc-${p.source || "MED"}-${p.id}`,
-        title,
-        authors: p.authorString || "Authors not supplied",
-        journal: p.journalInfo?.journal?.title || "Publication metadata requires verification",
-        year: p.pubYear || "n.d.",
-        doi: p.doi,
-        pmid: p.pmid,
-      };
-      evidence.push({
-        id: uid("evidence"),
-        title,
-        subtitle: "Published abstract — review in the original study",
-        layout: "content",
-        theme: "molecular",
-        bullets: sentences.slice(0, 3),
-        leftBullets: [],
-        rightBullets: [],
-        notes: `Abstract-derived source material, not an independent validation or systematic review. Check the complete study, limitations, figures and current publication status. Original source: ${url}`,
-        citations: [citation],
-        media: [],
-      });
-      existing.add(title.toLowerCase());
-    }
-    const original = deck.slides.filter((s) => s.title !== "Evidence required");
-    const closing = original.filter((s) => /^(Key conclusions|Suggested reading)$/.test(s.title));
-    const core = original.filter((s) => !closing.includes(s));
-    const needed = Math.max(0, input.count - core.length - closing.length);
-    const added = evidence.slice(0, needed);
-    const slides = [...core, ...added, ...closing]
-      .slice(0, input.count)
-      .map((s, i) => ({ ...s, theme: cycleTheme(i, s.layout) }));
-    const successful = responses.filter((r) => r.status === "fulfilled").length;
-    const warnings =
-      slides.length < input.count
-        ? [
-            `Requested ${input.count} slides; ${slides.length} topic-specific slides were found. ${added.length} research abstracts were included from ${successful} successful searches. Add more source material to reach the requested count without padding.`,
-          ]
-        : [];
-    if (added.length)
-      warnings.push(
-        `${added.length} slides summarize retrieved publication abstracts from ${successful} successful searches. Review the full papers; this is not a systematic review or accuracy certification.`,
+    for (let round = 0; round < 3 && work.length && evidence.length < needed; round++) {
+      onProgress?.(
+        `Research search ${round + 1}/3 · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
       );
-    return { ...deck, slides, contentWarnings: warnings, updatedAt: Date.now() };
+      const responses = await Promise.allSettled(
+        work.map(async ({ query, cursor }) => {
+          const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&pageSize=100&cursorMark=${encodeURIComponent(cursor)}&query=${encodeURIComponent(`(${query}) AND HAS_ABSTRACT:y`)}`;
+          const response = await fetch(url, {
+            credentials: "omit",
+            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(18000)]),
+          });
+          if (!response.ok) throw new Error(`Research service returned ${response.status}`);
+          const data = await response.json();
+          return {
+            papers: (data.resultList?.result ?? []) as Paper[],
+            query,
+            cursor: data.nextCursorMark as string | undefined,
+          };
+        }),
+      );
+      work = [];
+      for (const result of responses)
+        if (result.status === "fulfilled") {
+          successful++;
+          for (const p of result.value.papers) {
+            const key = (
+              p.doi ||
+              p.pmid ||
+              `${p.source || ""}:${p.id || p.title || ""}`
+            ).toLowerCase();
+            if (key && !papers.has(key)) papers.set(key, p);
+          }
+          if (result.value.cursor && result.value.papers.length)
+            work.push({ query: result.value.query, cursor: result.value.cursor });
+        }
+      evidence = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys));
+      if (signal?.aborted) throw signal.reason;
+    }
+    if (evidence.length < needed)
+      throw new DeckCompletionError(
+        target,
+        original.length + evidence.length,
+        `The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
+      );
+    const added = evidence.slice(0, needed);
+    const slides = [...core, ...added, ...closing].map((s, i) => ({
+      ...s,
+      theme: cycleTheme(i, s.layout),
+    }));
+    onProgress?.(`Completed ${slides.length} of ${target} slides`);
+    return {
+      ...deck,
+      slides,
+      requestedCount: target,
+      contentWarnings: [
+        `${added.length} slides contain attributed source excerpts retrieved through ${successful} research searches. Review the full studies; source retrieval is not scientific certification.`,
+      ],
+      updatedAt: Date.now(),
+    };
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener("abort", abort);
