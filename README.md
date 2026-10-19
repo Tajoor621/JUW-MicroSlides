@@ -75,7 +75,6 @@ Optional local AI specialist review uses the configured Ollama model for the sel
 
 Run `npm run test:topics` for the topic/media/reviewer regression suite. `qa:pages` also checks that collecting/downloading media does not attach it, manually attached mismatched media is flagged, correction reports download, and removing a figure does not add a fallback.
 
-
 ## Windows professional workspace (V6.2.1)
 
 Use the Lecture workspace bar for whole-deck audit, reviewed export, portable projects, recovery revisions, storage information, slide locks and inspected replacements. Evidence → Claim evidence records passage-level support and explicit lecturer review. Changing statements invalidates prior review. Ordinary Export PPTX remains available as a clearly marked draft when evidence is unresolved.
@@ -85,3 +84,5 @@ New decks are limited to exactly 1–50 slides, with no automatic agenda/conclus
 For Windows, `npm run desktop:build` builds the Tauri installer; GitHub Actions also builds and smoke-tests the native app. The installer includes WebView2's offline installer. Inference models are separately configured in Settings. Installers are unsigned test builds, not a signed production release.
 
 See [Windows implementation and qualification](docs/WINDOWS-QUALIFICATION.md) for implemented functionality, exact validation scope and remaining scientific, export, hardware and release gates. A successful CI run is not a 10/10 scientific-quality certification.
+
+The [professional release backlog and acceptance metrics](docs/PROFESSIONAL-ROADMAP.md) define the remaining P0/P1/P2 work and the three lecturer workflows. CSL-JSON reference import/export preserves structured source metadata. Identical local-model requests can resume saved completed batches.

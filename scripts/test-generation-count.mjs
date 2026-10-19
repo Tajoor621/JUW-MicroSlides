@@ -8,7 +8,8 @@ const server = await createServer({
   logLevel: "error",
 });
 const originalFetch = globalThis.fetch,
-  originalStorage = globalThis.localStorage;
+  originalStorage = globalThis.localStorage,
+  originalWindow = globalThis.window;
 let checks = 0;
 try {
   const { generateLocalDeck } = await server.ssrLoadModule("/src/lib/generate-deck.ts");
@@ -48,7 +49,9 @@ try {
     "Rhizobium symbiosis",
   ];
   for (const topic of topics) {
-    for (const count of [2, 25, 50]) {
+    for (const count of topic === "Bacteriology"
+      ? Array.from({ length: 50 }, (_, i) => i + 1)
+      : [2, 25, 50]) {
       let calls = 0;
       globalThis.fetch = async (url) => {
         calls++;
@@ -91,7 +94,7 @@ try {
     }
   }
   console.log(
-    "PASS 16 microbiology fields generate exactly 2, 25 and 50 slides using topic-specific source sections",
+    "PASS every count 1–50 plus 16 microbiology fields at representative counts using source fixtures",
   );
   for (const count of [0, 51, 100, 400, 1.5])
     assert.throws(() => generateLocalDeck({ ...input, count }), /integer slide count/);
@@ -143,10 +146,48 @@ try {
   assertCompleteDeck(ai, 41);
   checks++;
   console.log("PASS batched local AI completes 41 slides beyond the old 36-slide ceiling");
+  const records = new Map();
+  globalThis.window = {
+    __TAURI_INTERNALS__: {
+      invoke: async (cmd, args) => {
+        if (cmd === "state_get") return records.get(args.key) || null;
+        if (cmd === "state_put") {
+          if (args.value === null) records.delete(args.key);
+          else records.set(args.key, args.value);
+          return;
+        }
+        throw new Error("Unexpected test command");
+      },
+    },
+  };
+  const completeFetch = globalThis.fetch;
+  let resumedCalls = 0;
+  globalThis.fetch = async (...args) => {
+    resumedCalls++;
+    if (resumedCalls === 4) throw new Error("Injected local-model interruption");
+    return completeFetch(...args);
+  };
+  await assert.rejects(() => generateLocalAiDeck({ ...input, count: 41 }), /Injected/);
+  assert.equal(JSON.parse(records.get("local-ai-checkpoint")).rows.length, 16);
+  const callsBeforeResume = resumedCalls;
+  const resumed = await generateLocalAiDeck({ ...input, count: 41 });
+  assertCompleteDeck(resumed, 41);
+  assert.equal(
+    resumedCalls - callsBeforeResume,
+    3,
+    "Resume must reuse the outline and first two completed batches",
+  );
+  assert.equal(JSON.parse(records.get("local-ai-checkpoint")).rows.length, 40);
+  checks++;
+  console.log(
+    "PASS interrupted local-model generation resumes completed batches without regenerating them",
+  );
   console.log(`${checks} requested-count and cross-discipline generation checks passed.`);
 } finally {
   globalThis.fetch = originalFetch;
   if (originalStorage === undefined) delete globalThis.localStorage;
   else globalThis.localStorage = originalStorage;
+  if (originalWindow === undefined) delete globalThis.window;
+  else globalThis.window = originalWindow;
   await server.close();
 }

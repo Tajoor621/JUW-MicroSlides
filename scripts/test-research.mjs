@@ -38,6 +38,23 @@ try {
     assert.match(result[0].title, /DNA/);
     assert.equal(result[0].cslAuthors[0].family, "Smith");
   });
+  check("CSL-JSON books retain structured names, dates and complete source metadata", () => {
+    const source = {
+      id: "book1",
+      type: "book",
+      title: "Microbiology reference",
+      author: [{ family: "Smith", given: "Jane" }],
+      issued: { "date-parts": [[2024]] },
+      publisher: "Open university press",
+      ISBN: "1234567890",
+      URL: "https://example.org/book",
+    };
+    const ref = parseEvidencePaste(JSON.stringify(source))[0];
+    assert.equal(ref.year, "2024");
+    assert.equal(ref.cslAuthors[0].family, "Smith");
+    assert.equal(JSON.parse(ref.cslJson).ISBN, source.ISBN);
+    assert.match(formatCitation(ref, "APA"), /2024/);
+  });
   check("malformed CSV is reported", () =>
     assert.throws(() => parseEvidencePaste('Title,Year\n"unclosed,2020')),
   );

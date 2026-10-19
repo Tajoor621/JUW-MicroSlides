@@ -9,6 +9,7 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,10 +18,13 @@ jobs:
           cache: npm
       - run: npm ci
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
       - run: npm run typecheck
       - run: npm run test:professional
       - run: npm run desktop:build
-      - run: cargo test --manifest-path src-tauri/Cargo.toml
+      - run: cargo test --release --manifest-path src-tauri/Cargo.toml
       - run: node scripts/qa-desktop.mjs
       - uses: actions/upload-artifact@v4
         if: always()

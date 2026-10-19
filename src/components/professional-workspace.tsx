@@ -1,3 +1,4 @@
+import { citationCslData } from "@/lib/csl-format";
 import { proposeReplacement } from "@/lib/local-ai";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -97,6 +98,28 @@ export function ProfessionalWorkspace() {
           >
             Save portable project
           </Button>
+          <Button
+            size="sm"
+            disabled={busy}
+            onClick={() =>
+              void perform(async () => {
+                const refs = new Map(
+                  deck.slides
+                    .flatMap((s) => s.citations)
+                    .map((c) => [(c.doi || c.pmid || c.id).toLowerCase(), c]),
+                );
+                await saveFile(
+                  "lecture-references.json",
+                  new TextEncoder().encode(
+                    JSON.stringify([...refs.values()].map(citationCslData), null, 2),
+                  ),
+                  "json",
+                );
+              })
+            }
+          >
+            Export CSL-JSON references
+          </Button>
           <label className="cursor-pointer rounded border border-border p-2 text-xs">
             Open .juwslides
             <input
@@ -172,7 +195,7 @@ export function ProfessionalWorkspace() {
                 useDeckStore.getState().patchGenerateDraft(job.input);
                 useDeckStore.getState().setGeneratorOpen(true);
                 toast.message(
-                  "Request restored. Generate again to continue using cached research; your previous deck remains safe.",
+                  "Request restored. Generate again to resume saved local-model batches or reuse cached research; your previous deck remains safe.",
                 );
               })
             }
@@ -203,9 +226,11 @@ export function ProfessionalWorkspace() {
           </Button>
         </div>
         <p className="text-xs text-muted">
-          Regeneration: select a slide, use the replacement editor below, inspect the complete
-          proposal, then apply. Evidence review becomes stale for changed claims. Ctrl+N: new
-          lecture · Ctrl+S: project · Ctrl+O: project library · F5: present · Escape: exit.
+          The evidence gate covers bullet statements; review scientific headings, captions and
+          speaker notes separately. Regeneration: select a slide, use the replacement editor below,
+          inspect the complete proposal, then apply. Evidence review becomes stale for changed
+          claims. Ctrl+N: new lecture · Ctrl+S: project · Ctrl+O: project library · F5: present ·
+          Escape: exit.
         </p>
         {slide && !legacy && <ReplacementEditor key={slide.id} />}
         {usage && <p className="text-xs">{usage}</p>}

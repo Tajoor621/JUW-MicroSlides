@@ -320,7 +320,7 @@ function EvidenceTab() {
   return (
     <>
       <p className="text-xs text-muted">
-        Zero-cost evidence: OpenAlex search, or import Elicit CSV / JSON / BibTeX.
+        OpenAlex search, or import Elicit CSV, Zotero CSL-JSON, and BibTeX.
       </p>
       <Field label="OpenAlex">
         <div className="flex gap-2">
@@ -338,7 +338,7 @@ function EvidenceTab() {
         <Textarea
           value={paste}
           onChange={(e) => setPaste(e.target.value)}
-          placeholder="Paste Elicit CSV, JSON or BibTeX here."
+          placeholder="Paste Elicit CSV, CSL-JSON or BibTeX here."
           className="min-h-24"
         />
       </Field>

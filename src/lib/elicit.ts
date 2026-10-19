@@ -9,8 +9,19 @@ function asAuthors(value: unknown): string {
     return value
       .map((item) => {
         if (typeof item === "string") return item;
-        if (item && typeof item === "object" && "name" in item)
-          return String((item as { name: unknown }).name);
+        if (item && typeof item === "object") {
+          const person = item as {
+            name?: string;
+            literal?: string;
+            family?: string;
+            given?: string;
+          };
+          return (
+            person.name ||
+            person.literal ||
+            [person.family, person.given].filter(Boolean).join(", ")
+          );
+        }
         return "";
       })
       .filter(Boolean)
@@ -24,9 +35,23 @@ function asAuthors(value: unknown): string {
 function fromRecord(raw: Record<string, unknown>): Citation | null {
   const title = String(raw.title ?? raw.Title ?? raw.display_name ?? raw.name ?? "").trim();
   if (!title) return null;
-  const year = String(raw.year ?? raw.Year ?? raw.publication_year ?? raw.date ?? "").slice(0, 4);
+  const issued = raw.issued as { "date-parts"?: number[][] } | undefined;
+  const year = String(
+    raw.year ??
+      raw.Year ??
+      raw.publication_year ??
+      issued?.["date-parts"]?.[0]?.[0] ??
+      raw.date ??
+      "",
+  ).slice(0, 4);
   const journal = String(
-    raw.journal ?? raw.Journal ?? raw.venue ?? raw.source ?? raw.publication ?? "",
+    raw["container-title"] ??
+      raw.journal ??
+      raw.Journal ??
+      raw.venue ??
+      raw.source ??
+      raw.publication ??
+      "",
   ).trim();
   const doiRaw = String(raw.doi ?? raw.DOI ?? "").replace(/^https?:\/\/doi.org\//i, "");
   const authors = asAuthors(raw.authors ?? raw.Authors ?? raw.author ?? raw.Author);
@@ -38,6 +63,18 @@ function fromRecord(raw: Record<string, unknown>): Citation | null {
     year: /\d{4}/.test(year) ? year : "n.d.",
     doi: doiRaw || undefined,
     pmid: raw.pmid ? String(raw.pmid) : undefined,
+    volume: raw.volume ? String(raw.volume) : undefined,
+    pages: raw.page || raw.pages ? String(raw.page || raw.pages) : undefined,
+    ...(typeof raw.type === "string"
+      ? {
+          cslJson: JSON.stringify(raw),
+          cslAuthors: Array.isArray(raw.author)
+            ? (raw.author as Citation["cslAuthors"])
+            : undefined,
+          url: typeof raw.URL === "string" ? raw.URL : undefined,
+          publisher: typeof raw.publisher === "string" ? raw.publisher : undefined,
+        }
+      : {}),
   };
 }
 
@@ -46,12 +83,14 @@ function parseJson(raw: string): Citation[] {
   const list: unknown[] = Array.isArray(json)
     ? json
     : json && typeof json === "object"
-      ? (((json as { papers?: unknown; results?: unknown; items?: unknown; data?: unknown })
-          .papers ??
-          (json as { results?: unknown }).results ??
-          (json as { items?: unknown }).items ??
-          (json as { data?: unknown }).data ??
-          []) as unknown[])
+      ? "title" in json
+        ? [json]
+        : (((json as { papers?: unknown; results?: unknown; items?: unknown; data?: unknown })
+            .papers ??
+            (json as { results?: unknown }).results ??
+            (json as { items?: unknown }).items ??
+            (json as { data?: unknown }).data ??
+            []) as unknown[])
       : [];
   if (!Array.isArray(list)) return [];
   return list
@@ -84,7 +123,7 @@ function parseBibtex(raw: string): Citation[] {
         journal: record["container-title"],
         doi: record.DOI,
       });
-      return made ? { ...made, cslAuthors: names } : null;
+      return made ? { ...made, cslAuthors: names, cslJson: JSON.stringify(record) } : null;
     })
     .filter((c): c is NonNullable<typeof c> => Boolean(c));
 }

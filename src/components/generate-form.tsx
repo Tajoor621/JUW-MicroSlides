@@ -150,6 +150,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       assertCompleteDeck(local, input.count);
       generate(input, local);
       await writeLocalRecord("generation-job", null);
+      await writeLocalRecord("local-ai-checkpoint", null);
       toast.success(
         `Created ${local.slides.length} slides. Review claims, references, and figure relevance before teaching.`,
       );

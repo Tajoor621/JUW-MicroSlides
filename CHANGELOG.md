@@ -66,3 +66,9 @@ See README for remaining limits, deployment setup, and validation commands.
 - Added atomic version snapshots, restore-as-copy recovery, checksummed portable projects, slide locks, local-model replacement proposals and persistent interrupted-request/research caching.
 - Added Tauri Windows packaging, native file dialogs and project/PPTX saves, SQLite durability, a separate monitor-selectable audience window and a private presenter console. Added native CI build, transaction tests and real-WebView smoke tests.
 - Kept the visible version V6.2.1. Documented the remaining scientific, source-ingestion, semantic, signing, PowerPoint and real-device qualification gates without claiming universal completion or a verified 10/10 score.
+
+## V6.2.1 — reference interchange and batch recovery
+
+- Preserved complete CSL-JSON/BibTeX source metadata, including structured book/report references, and added deck bibliography export as CSL-JSON.
+- Persisted local-model outlines and completed batches; retries of an identical request/model resume completed work. Added an injected-interruption test and coverage for every accepted slide count.
+- Added an explicit professional release backlog, lecturer journeys and measurable qualification criteria.

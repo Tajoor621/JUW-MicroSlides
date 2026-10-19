@@ -30,6 +30,22 @@ export function cslCitation(c: Citation, style: CitationStyle) {
   const key = JSON.stringify([c, style]);
   const hit = cache.get(key);
   if (hit) return hit;
+  const item = citationCslData(c);
+  const text = String(
+    new Cite([item]).format("bibliography", {
+      format: "text",
+      template: templates[style],
+      lang: "en-US",
+    }),
+  )
+    .trim()
+    .replace(/^\d+\.\s+/, "");
+  if (cache.size > 2000) cache.clear();
+  cache.set(key, text);
+  return text;
+}
+
+export function citationCslData(c: Citation) {
   const year = Number.parseInt(c.year, 10);
   let raw: Record<string, unknown> = {};
   try {
@@ -39,7 +55,7 @@ export function cslCitation(c: Citation, style: CitationStyle) {
   } catch {
     /* Invalid optional metadata must not break citation export. */
   }
-  const item = {
+  return {
     ...raw,
     id: c.id,
     type: c.type || (raw.type as string) || "article-journal",
@@ -56,16 +72,4 @@ export function cslCitation(c: Citation, style: CitationStyle) {
       : {}),
     ...(Number.isFinite(year) ? { issued: { "date-parts": [[year]] as [[number]] } } : {}),
   };
-  const text = String(
-    new Cite([item]).format("bibliography", {
-      format: "text",
-      template: templates[style],
-      lang: "en-US",
-    }),
-  )
-    .trim()
-    .replace(/^\d+\.\s+/, "");
-  if (cache.size > 2000) cache.clear();
-  cache.set(key, text);
-  return text;
 }

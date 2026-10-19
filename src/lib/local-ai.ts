@@ -1,3 +1,4 @@
+import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { z } from "zod";
 import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
 import { assertCompleteDeck, requestedCount } from "./deck-completion";
@@ -79,12 +80,35 @@ export async function generateLocalAiDeck(input: GenerateInput) {
   const deck = generateLocalDeck({ ...input, count });
   const slides: Slide[] = count === 1 ? [] : [deck.slides[0]];
   const contentCount = count === 1 ? 1 : count - 1;
-  const planned = JSON.parse(
-    await chat(
-      `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
-      true,
-    ),
-  );
+  const fingerprint = JSON.stringify({ input, config: localAiConfig() });
+  const checkpointSchema = z.object({
+    fingerprint: z.string(),
+    headings: z.array(z.string().min(1).max(200)).max(MAX_SLIDES),
+    rows: z.array(generatedSlide).max(MAX_SLIDES),
+  });
+  let cached: z.infer<typeof checkpointSchema> | undefined;
+  try {
+    const parsed = checkpointSchema.parse(
+      JSON.parse((await readLocalRecord("local-ai-checkpoint")) || "null"),
+    );
+    if (
+      parsed.fingerprint === fingerprint &&
+      parsed.headings.length === contentCount &&
+      parsed.rows.length <= contentCount &&
+      (parsed.rows.length === contentCount || parsed.rows.length % 8 === 0)
+    )
+      cached = parsed;
+  } catch {
+    /* A missing or incompatible checkpoint starts a fresh request. */
+  }
+  const planned =
+    cached ||
+    JSON.parse(
+      await chat(
+        `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
+        true,
+      ),
+    );
   const { headings } = z
     .object({ headings: z.array(z.string().min(1).max(200)).min(1).max(MAX_SLIDES) })
     .parse(planned);
@@ -95,11 +119,44 @@ export async function generateLocalAiDeck(input: GenerateInput) {
     throw new Error(
       "The model did not return the complete, distinct topic outline. Retry or use research generation.",
     );
+  const rows = cached?.rows || [];
+  let resumable = true;
+  async function checkpoint() {
+    try {
+      await writeLocalRecord(
+        "local-ai-checkpoint",
+        JSON.stringify({ fingerprint, headings, rows }),
+      );
+    } catch {
+      resumable = false;
+    }
+  }
+  await checkpoint();
   const bodies = new Set<string>();
-  for (let offset = 0; offset < headings.length; offset += 8) {
+  function appendRow(row: z.infer<typeof generatedSlide>, heading: string) {
+    const body = [...row.bullets, ...row.leftBullets, ...row.rightBullets]
+      .join(" ")
+      .trim()
+      .toLowerCase();
+    if (!body || bodies.has(body))
+      throw new Error("The model returned empty or repeated content. Retry with source notes.");
+    bodies.add(body);
+    const layout = row.layout === "two-column" ? "two-column" : "content";
+    slides.push({
+      ...row,
+      layout,
+      title: count === 1 ? input.topic : heading,
+      id: uid("s"),
+      theme: researchTheme(input.topic, input.discipline, layout),
+      media: [],
+      citations: [],
+    });
+  }
+  rows.forEach((row, i) => appendRow(row, headings[i]));
+  for (let offset = rows.length; offset < headings.length; offset += 8) {
     const batch = headings.slice(offset, offset + 8);
     const response = await chat(
-      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\nThese are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists. Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes}]}.`,
+      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes}]}.`,
       true,
     );
     const parsed = z
@@ -109,26 +166,11 @@ export async function generateLocalAiDeck(input: GenerateInput) {
       throw new Error(
         `AI batch returned ${parsed.slides.length} instead of ${batch.length} slides. Retry to complete the requested deck.`,
       );
-    for (let i = 0; i < parsed.slides.length; i++) {
-      const row = parsed.slides[i];
-      const body = [...row.bullets, ...row.leftBullets, ...row.rightBullets]
-        .join(" ")
-        .trim()
-        .toLowerCase();
-      if (!body || bodies.has(body))
-        throw new Error("The model returned empty or repeated content. Retry with source notes.");
-      bodies.add(body);
-      const layout = row.layout === "two-column" ? "two-column" : "content";
-      slides.push({
-        ...row,
-        layout,
-        title: count === 1 ? input.topic : batch[i],
-        id: uid("s"),
-        theme: researchTheme(input.topic, input.discipline, layout),
-        media: [],
-        citations: [],
-      });
-    }
+    for (let i = 0; i < parsed.slides.length; i++) appendRow(parsed.slides[i], batch[i]);
+    // A failed duplicate check never checkpoints an invalid batch.
+    assertCompleteDeck({ ...deck, slides }, slides.length);
+    rows.push(...parsed.slides);
+    await checkpoint();
   }
   const made = {
     ...deck,
@@ -137,6 +179,9 @@ export async function generateLocalAiDeck(input: GenerateInput) {
     requestedCount: count,
     contentWarnings: [
       "AI-authored teaching draft. Review scientific claims and add supporting references.",
+      ...(!resumable
+        ? ["Batch checkpoints could not be saved; export a backup before closing."]
+        : []),
     ],
     generationSource: "local-ai" as const,
   };
