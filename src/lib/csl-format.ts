@@ -31,15 +31,29 @@ export function cslCitation(c: Citation, style: CitationStyle) {
   const hit = cache.get(key);
   if (hit) return hit;
   const year = Number.parseInt(c.year, 10);
+  let raw: Record<string, unknown> = {};
+  try {
+    const parsed: unknown = JSON.parse(c.cslJson || "{}");
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed))
+      raw = parsed as Record<string, unknown>;
+  } catch {
+    /* Invalid optional metadata must not break citation export. */
+  }
   const item = {
+    ...raw,
     id: c.id,
-    type: "article-journal" as const,
+    type: c.type || (raw.type as string) || "article-journal",
     title: c.title,
     author: names(c),
     "container-title": c.journal,
     volume: c.volume,
     page: c.pages,
     DOI: c.doi,
+    URL: c.url,
+    publisher: c.publisher || raw.publisher,
+    ...(c.accessed && /^\d{4}-\d{2}-\d{2}$/.test(c.accessed)
+      ? { accessed: { "date-parts": [c.accessed.split("-").map(Number)] } }
+      : {}),
     ...(Number.isFinite(year) ? { issued: { "date-parts": [[year]] as [[number]] } } : {}),
   };
   const text = String(

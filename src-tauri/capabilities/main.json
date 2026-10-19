@@ -1,0 +1,20 @@
+{
+  "identifier": "main",
+  "description": "Local authoring window. Files are limited to dialog-granted paths.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:webview:allow-create-webview-window",
+    "core:window:allow-set-position",
+    "core:window:allow-set-size",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-available-monitors",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "core:window:allow-close"
+  ]
+}

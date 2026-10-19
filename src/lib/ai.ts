@@ -107,7 +107,7 @@ First slide MUST be layout=title (official JUW intro: university crest, departme
     const parsed = parseDeckJson(text, data);
     if (!parsed)
       return { ok: false, error: "The model returned an unreadable deck.", deck: fallback };
-    const padded = padWithLocal(parsed, fallback, count);
+    const padded = parsed;
     return { ok: true, deck: { ...padded, generationSource: "cloud-ai" } };
   });
 
@@ -271,20 +271,6 @@ export const searchOpenAlex = createServerFn({ method: "POST" })
       return { ok: false, error: "Could not reach OpenAlex. Try PubMed in the Cite tab." };
     }
   });
-
-function padWithLocal(deck: Deck, local: Deck, count: number): Deck {
-  if (deck.slides.length >= count) return { ...deck, slides: deck.slides.slice(0, count) };
-  const titles = new Set(deck.slides.map((s) => s.title.trim().toLowerCase()));
-  const extra: Slide[] = [...deck.slides];
-  for (const s of local.slides) {
-    if (extra.length >= count) break;
-    const key = s.title.trim().toLowerCase();
-    if (titles.has(key)) continue;
-    titles.add(key);
-    extra.push({ ...s, id: uid("s"), media: [] });
-  }
-  return { ...deck, slides: extra };
-}
 
 function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
   const match = raw.match(/\{[\s\S]*\}/);

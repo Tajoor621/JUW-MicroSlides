@@ -16,7 +16,7 @@ export type Level = (typeof LEVELS)[number];
 export const CITATION_STYLES = ["Vancouver", "APA", "Harvard", "Nature", "AMA"] as const;
 export type CitationStyle = (typeof CITATION_STYLES)[number];
 
-export const MAX_SLIDES = 400;
+export const MAX_SLIDES = 50;
 
 export type MediaKind = "micrograph" | "diagram" | "icon" | "photo" | "gif" | "chart" | "video";
 
@@ -36,6 +36,11 @@ export interface MediaItem {
 
 export interface Citation {
   id: string;
+  type?: "article-journal" | "book" | "chapter" | "report" | "webpage";
+  url?: string;
+  publisher?: string;
+  accessed?: string;
+  cslJson?: string;
   cslAuthors?: { family?: string; given?: string; literal?: string }[];
   pmid?: string;
   authors: string;
@@ -47,9 +52,29 @@ export interface Citation {
   doi?: string;
 }
 
+export interface Claim {
+  id: string;
+  text: string;
+  teachingPurpose: string;
+  classification: "unclassified" | "foundational" | "study-result" | "guideline";
+  status: "unreviewed" | "supported-excerpt" | "lecturer-reviewed" | "stale";
+  evidence: {
+    citationId?: string;
+    sourceUrl: string;
+    locator: string;
+    quote: string;
+    access: "abstract" | "full-text" | "textbook" | "guideline" | "instructor";
+    checkedAt: number;
+  }[];
+  reviewedAt?: number;
+}
+
 export interface Slide {
   id: string;
   layout: Layout;
+  claims?: Claim[];
+  locked?: boolean;
+  teachingPurpose?: string;
   theme: SlideTheme;
   title: string;
   subtitle: string;
@@ -78,6 +103,7 @@ export interface Deck {
   contentWarnings?: string[];
   researchLinks?: { id: string; title: string; url: string }[];
   generationSource?: "knowledge" | "cloud-ai" | "local-ai";
+  revisionId?: string;
   updatedAt: number;
 }
 

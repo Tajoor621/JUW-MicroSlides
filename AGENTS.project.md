@@ -30,3 +30,10 @@ The owner explicitly requires JUW-MicroSlides to remain **V6.2.1**, regardless o
 
 - Use the shared transparent university crest in every slide layout, presenter, print and PowerPoint, and avoid white/square logo backplates in the header.
 - Preserve the university's original lettering, colours and enclosed light areas. Only the exterior background should be transparent; keep the unmodified source artwork available.
+
+## Windows professional contract
+
+- Generation and editable/exported decks are limited to 1–50 slides. Never silently clamp, pad, repeat, or truncate to satisfy the count.
+- Preserve older 51–400-slide archives intact; changing the application cap is not permission to delete saved content.
+- Evidence statements require exact claim-to-passage relationships. Model screening, metadata matches and lecturer review are separate statuses. Editing a claim invalidates its previous review.
+- Desktop data uses transactional SQLite; portable projects preserve evidence and media with integrity checks. Visible version remains V6.2.1.

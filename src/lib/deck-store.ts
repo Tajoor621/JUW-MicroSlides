@@ -1,3 +1,5 @@
+import { reconcileDeck, reconcileClaims } from "./deck-integrity";
+import { MAX_SLIDES } from "./types";
 import { assertCompleteDeck } from "./deck-completion";
 import { create } from "zustand";
 import { durableStorage } from "./durable-storage";
@@ -73,7 +75,12 @@ interface DeckState {
 }
 
 function bump(deck: Deck, slides?: Slide[]): Deck {
-  return { ...deck, slides: slides ?? deck.slides, updatedAt: Date.now() };
+  return reconcileDeck({
+    ...deck,
+    slides: slides ?? deck.slides,
+    revisionId: uid("revision"),
+    updatedAt: Date.now(),
+  });
 }
 
 const STARTER = sampleDeck();
@@ -138,7 +145,7 @@ export const useDeckStore = create<DeckState>()(
       },
       addSlide: () => {
         const d = get().deck();
-        if (!d) return;
+        if (!d || d.slides.length >= MAX_SLIDES) return;
         const slide: Slide = {
           id: uid("s"),
           layout: "content",
@@ -163,7 +170,8 @@ export const useDeckStore = create<DeckState>()(
       },
       removeSlide: (index) => {
         const d = get().deck();
-        if (!d || d.slides.length <= 1) return;
+        if (!d || d.slides.length <= 1 || d.slides.length > MAX_SLIDES || d.slides[index]?.locked)
+          return;
         const slides = d.slides.filter((_, i) => i !== index);
         const next = bump(d, slides);
         set({
@@ -173,7 +181,7 @@ export const useDeckStore = create<DeckState>()(
       },
       moveSlide: (index, dir) => {
         const d = get().deck();
-        if (!d) return;
+        if (!d || d.slides.length > MAX_SLIDES) return;
         const j = index + dir;
         if (j < 0 || j >= d.slides.length) return;
         const slides = d.slides.slice();
@@ -188,18 +196,23 @@ export const useDeckStore = create<DeckState>()(
       patchSlide: (index, patch) => {
         const d = get().deck();
         if (!d) return;
-        const slides = d.slides.map((s, i) => (i === index ? { ...s, ...patch } : s));
+        if (d.slides.length > MAX_SLIDES || (d.slides[index]?.locked && patch.locked !== false))
+          return;
+        const slides = d.slides.map((s, i) =>
+          i === index ? reconcileClaims({ ...s, ...patch }) : s,
+        );
         const next = bump(d, slides);
         set({ library: get().library.map((x) => (x.id === next.id ? next : x)) });
       },
       patchDeck: (patch) => {
         const d = get().deck();
-        if (!d) return;
+        if (!d || d.slides.length > MAX_SLIDES) return;
         const next = bump({ ...d, ...patch });
         set({ library: get().library.map((x) => (x.id === next.id ? next : x)) });
       },
       renameTopic: (title) => {
         const d = get().deck();
+        if (d && (d.slides.length > MAX_SLIDES || d.slides[0]?.locked)) return;
         const generateDraft = { ...get().generateDraft, topic: title };
         if (!d) {
           set({ generateDraft });
@@ -222,7 +235,7 @@ export const useDeckStore = create<DeckState>()(
       attachMedia: (media) => {
         const d = get().deck();
         const s = get().slide();
-        if (!d || !s) return;
+        if (!d || !s || s.locked || d.slides.length > MAX_SLIDES) return;
         const key = mediaKey(media.src);
         if (s.media.some((m) => m.id === media.id || mediaKey(m.src) === key)) return;
         const slides = d.slides.map((sl, i) =>
@@ -235,7 +248,7 @@ export const useDeckStore = create<DeckState>()(
       removeMedia: (mediaId) => {
         const d = get().deck();
         const s = get().slide();
-        if (!d || !s) return;
+        if (!d || !s || s.locked || d.slides.length > MAX_SLIDES) return;
         const removed = s.media.find((m) => m.id === mediaId);
         const remaining = s.media.filter((m) => m.id !== mediaId);
         const used = new Set<string>();
@@ -280,7 +293,7 @@ export const useDeckStore = create<DeckState>()(
         });
       },
       generate: (input, deck) => {
-        const made = withOfficialIntro(deck ?? generateLocalDeck(input), input);
+        const made = reconcileDeck(withOfficialIntro(deck ?? generateLocalDeck(input), input));
         assertCompleteDeck(made, input.count);
         made.citationStyle = get().citationStyle;
         get().replaceActive(made);

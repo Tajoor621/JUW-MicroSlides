@@ -1,3 +1,4 @@
+import { isDesktop } from "@/lib/desktop";
 import { useEffect, useState } from "react";
 import { APP_BUILD, checkAppBuild } from "@/lib/app-updates";
 import { flushSavedDecks } from "@/lib/durable-storage";
@@ -19,6 +20,7 @@ export function AppUpdates() {
     }
   }
   useEffect(() => {
+    if (isDesktop()) return;
     if (!APP_BUILD) return;
     let lastCheck = 0;
     const refresh = () => {
@@ -35,6 +37,12 @@ export function AppUpdates() {
       document.removeEventListener("visibilitychange", refresh);
     };
   }, []);
+  if (isDesktop())
+    return (
+      <div className="border-b border-border px-3 py-1 text-xs text-muted">
+        Windows desktop · V6.2.1 · Build {APP_BUILD} · Local SQLite recovery
+      </div>
+    );
   if (!APP_BUILD) return null;
   const ready = latest && latest !== APP_BUILD;
   async function reload() {

@@ -11,6 +11,9 @@ export default tseslint.config(
     ignores: [
       "dist/**",
       "dist-pages/**",
+      "dist-desktop/**",
+      "src-tauri/target/**",
+      "src-tauri/gen/**",
       ".output/**",
       ".vercel/**",
       ".nitro/**",

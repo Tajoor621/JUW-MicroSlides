@@ -1,3 +1,4 @@
+import { ClaimEvidenceEditor } from "./claim-evidence-editor";
 import { SpecialistReview } from "./specialist-review";
 import { TopicMediaPanel } from "./topic-media-panel";
 import { ContextHelp } from "./context-help";
@@ -59,7 +60,12 @@ export function InspectorPanel() {
           {tab === "edit" && <EditTab />}
           {tab === "media" && <TopicMediaPanel />}
           {tab === "cite" && <CiteTab />}
-          {tab === "evidence" && <EvidenceTab />}
+          {tab === "evidence" && (
+            <>
+              <ClaimEvidenceEditor />
+              <EvidenceTab />
+            </>
+          )}
           {tab === "audit" && <SpecialistReview />}
           {tab === "copilot" && <CopilotTab />}
         </div>

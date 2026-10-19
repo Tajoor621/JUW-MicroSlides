@@ -1,3 +1,5 @@
+import { isDesktop } from "./lib/desktop";
+import { AudienceView } from "./components/desktop-presenter";
 import { createRoot } from "react-dom/client";
 import { EditorApp } from "./components/editor-app";
 import { PreviewHostBridge } from "./components/preview-host-bridge";
@@ -5,10 +7,10 @@ import "./styles.css";
 createRoot(document.getElementById("root")!).render(
   <>
     <PreviewHostBridge />
-    <EditorApp />
+    {new URLSearchParams(location.search).has("audience") ? <AudienceView /> : <EditorApp />}
   </>,
 );
-if ("serviceWorker" in navigator) {
+if (!isDesktop() && "serviceWorker" in navigator) {
   const register = () => {
     navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`, {

@@ -1,6 +1,9 @@
+import { MAX_SLIDES } from "./types";
+import { classroomReady, integrityAudit } from "./deck-integrity";
+import { isDesktop, saveFile } from "./desktop";
 import { formatCitation } from "./citations";
 import type { Deck } from "./types";
-import { slideExportScene } from "./slide-export-scene";
+import { slideExportScene, sceneOverflow } from "./slide-export-scene";
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -19,7 +22,14 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function exportPptx(deck: Deck) {
+export async function exportPptx(deck: Deck, options: { classroom?: boolean } = {}) {
+  if (deck.slides.length < 1 || deck.slides.length > MAX_SLIDES)
+    throw new Error(
+      "PPTX requires 1–50 slides. Your legacy project is preserved; export a reduced copy.",
+    );
+  const ready = classroomReady(deck);
+  if (options.classroom && !ready)
+    throw new Error("Resolve critical evidence and repetition findings before reviewed export.");
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: "JUW_PREVIEW", width: 1280 / 96, height: 720 / 96 });
@@ -62,6 +72,15 @@ export async function exportPptx(deck: Deck) {
     const source = deck.slides[i];
     const slide = pptx.addSlide();
     const scene = await slideExportScene(deck, i);
+    const overflow = sceneOverflow(scene);
+    if (options.classroom && overflow.length)
+      throw new Error(
+        `Slide ${i + 1} contains overflowing text. Rephrase it before reviewed export.`,
+      );
+    if (overflow.length)
+      slide.addNotes(
+        `Layout warning: ${overflow.length} text lines extend outside the slide. This draft requires layout correction.`,
+      );
     for (const item of scene) {
       const box = { x: item.x / 96, y: item.y / 96, w: item.w / 96, h: item.h / 96 };
       const transparency = Math.round((1 - item.opacity) * 100);
@@ -113,8 +132,20 @@ export async function exportPptx(deck: Deck) {
         slide.addImage({ data, ...box, transparency });
       }
     }
+    if (!ready)
+      slide.addText("DRAFT — evidence review required", {
+        x: 2,
+        y: 0.18,
+        w: 7,
+        h: 0.2,
+        fontFace: "Arial",
+        fontSize: 9,
+        color: "8A6A1A",
+        margin: 0,
+      });
     slide.addNotes(
       [
+        `Integrity status: ${ready ? "Lecturer evidence gate clear; not independent certification" : "DRAFT"}. ${integrityAudit(deck).length} screening findings.`,
         source.notes,
         source.citations.length
           ? "Full slide references:\n" +
@@ -136,7 +167,14 @@ export async function exportPptx(deck: Deck) {
         .join("\n\n"),
     );
   }
-  await pptx.writeFile({ compression: true, fileName: `${slug(deck.title)}.pptx` });
+  const name = `${ready ? "" : "draft-"}${slug(deck.title)}.pptx`;
+  if (isDesktop()) {
+    const data = (await pptx.write({
+      outputType: "arraybuffer",
+      compression: true,
+    })) as ArrayBuffer;
+    await saveFile(name, new Uint8Array(data), "pptx");
+  } else await pptx.writeFile({ compression: true, fileName: name });
 }
 
 function slug(s: string) {

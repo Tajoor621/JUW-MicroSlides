@@ -1,9 +1,11 @@
+import { requestedCount } from "./deck-completion";
+import { reconcileDeck } from "./deck-integrity";
 import { JUW, lectureMeta } from "./brand";
 import { DISCIPLINES } from "./knowledge";
 import { inferFocus } from "./topic-engine";
 import { profileFor, topicOverlap, type TopicSection } from "./topic-content";
 import { researchTheme } from "./slide-themes";
-import { MAX_SLIDES, type Deck, type GenerateInput, type Slide } from "./types";
+import { type Deck, type GenerateInput, type Slide } from "./types";
 import { uid } from "./utils";
 function makeSlide(
   title: string,
@@ -49,6 +51,13 @@ export function introSlide(topic: string, notes?: string, discipline?: string): 
 }
 export function withOfficialIntro(deck: Deck, input: GenerateInput): Deck {
   const topic = input.topic.trim() || deck.topic;
+  if (input.count === 1)
+    return {
+      ...deck,
+      topic,
+      title: topic,
+      slides: deck.slides.map((s) => ({ ...s, title: topic })),
+    };
   const intro = introSlide(topic, input.notes, input.discipline);
   const existing = deck.slides[0]?.layout === "title";
   const slides = existing
@@ -73,7 +82,7 @@ function eligible(section: TopicSection) {
 export function generateLocalDeck(input: GenerateInput): Deck {
   const topic = input.topic.trim() || "Microbiology";
   const profile = profileFor(topic);
-  const wanted = Math.min(MAX_SLIDES, Math.max(1, Math.round(input.count) || 12));
+  const wanted = requestedCount(input.count);
   const overview = /^(general\s+)?microbiology$/i.test(topic);
   const disciplineOverview = DISCIPLINES.find((d) => d.name.toLowerCase() === topic.toLowerCase());
   const sections: TopicSection[] = profile
@@ -108,28 +117,9 @@ export function generateLocalDeck(input: GenerateInput): Deck {
     ...new Map(sections.filter(eligible).map((s) => [s.title.toLowerCase(), s])).values(),
   ];
   const sources = profile?.sources ?? [];
-  const reading = sources.length
-    ? makeSlide(
-        "Suggested reading",
-        sources,
-        "Starting sources for verification; source availability and support for each claim must still be checked.",
-      )
-    : null;
   const intro = introSlide(topic, undefined, input.discipline);
-  const slides = [intro];
-  if (wanted > 2 && unique.length) {
-    slides.push(
-      makeSlide(
-        "Learning objectives",
-        profile?.objectives ||
-          unique
-            .slice(0, 3)
-            .map((s) => `Explain ${s.title.charAt(0).toLowerCase() + s.title.slice(1)}.`),
-      ),
-    );
-  }
-  const reserved = wanted >= 5 && unique.length >= 2 ? (reading ? 2 : 1) : 0;
-  const contentLimit = Math.max(0, wanted - slides.length - reserved);
+  const slides = wanted === 1 ? [] : [intro];
+  const contentLimit = Math.max(0, wanted - slides.length);
   for (const s of unique.slice(0, contentLimit))
     slides.push(
       makeSlide(
@@ -140,20 +130,6 @@ export function generateLocalDeck(input: GenerateInput): Deck {
           : `Teaching draft for ${topic}. Source reading to verify: ${sources.join(" ") || "Attach original references; these claims require verification."}`,
       ),
     );
-  if (reserved) {
-    slides.push(
-      makeSlide(
-        "Key conclusions",
-        slides
-          .filter((s) => s.layout !== "title" && !/objectives/i.test(s.title))
-          .slice(-3)
-          .map((s) => s.bullets[0])
-          .filter(Boolean),
-        "Summary of claims already introduced in this deck.",
-      ),
-    );
-    if (reading) slides.push(reading);
-  }
   if (!unique.length && wanted > 1) {
     slides.push(
       makeSlide(
@@ -174,7 +150,9 @@ export function generateLocalDeck(input: GenerateInput): Deck {
     warnings.push(
       `Requested ${wanted} slides; ${slides.length} supported draft slides were available. Add source material or use AI for more coverage.`,
     );
-  return {
+  if (wanted === 1 && slides[0])
+    slides[0] = { ...slides[0], title: topic, subtitle: profile?.scope || topic };
+  return reconcileDeck({
     id: uid("deck"),
     title: topic,
     topic,
@@ -192,7 +170,7 @@ export function generateLocalDeck(input: GenerateInput): Deck {
     requestedCount: wanted,
     contentWarnings: warnings,
     updatedAt: Date.now(),
-  };
+  });
 }
 export function sampleDeck(): Deck {
   const deck = generateLocalDeck({

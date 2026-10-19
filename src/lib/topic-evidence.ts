@@ -1,3 +1,5 @@
+import { readLocalRecord, writeLocalRecord } from "./durable-storage";
+import { duplicateStatements, reconcileClaims } from "./deck-integrity";
 import type { Deck, GenerateInput, Slide, Citation } from "./types";
 import { topicTerms, profileFor } from "./topic-content";
 import { researchTheme } from "./slide-themes";
@@ -187,7 +189,7 @@ function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): 
       let n = 2;
       while (headings.has(title.toLowerCase())) title = `${root} (${n++})`;
       headings.add(title.toLowerCase());
-      slides.push({
+      const draft: Slide = {
         id: uid("research"),
         layout: "content",
         theme: "molecular",
@@ -199,7 +201,24 @@ function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): 
         notes: `Source: ${sourceTitle}\n${source}\nPassage ${part + 1} of ${parts.length} from the publication abstract. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.`,
         citations: [citation],
         media: [],
-      });
+      };
+      const traced = reconcileClaims(draft);
+      traced.claims = traced.claims?.map((c) => ({
+        ...c,
+        classification: "study-result",
+        status: "supported-excerpt",
+        evidence: [
+          {
+            citationId: citation.id,
+            sourceUrl: source,
+            locator: `Abstract, passage ${part + 1}`,
+            quote: c.text,
+            access: "abstract",
+            checkedAt: Date.now(),
+          },
+        ],
+      }));
+      if (!duplicateStatements([...groups.flat(), ...slides, traced]).length) slides.push(traced);
     }
     const strength = (slide: Slide) =>
       relevance(topic, slide.bullets.join(" ")) +
@@ -230,10 +249,19 @@ export async function enrichTopicEvidence(
   if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 75000);
+  const cacheKey = `research:${input.topic.toLowerCase().trim().slice(0, 240)}`;
   const papers = new Map<string, Paper>();
+  try {
+    const cached = JSON.parse((await readLocalRecord(cacheKey)) || "null");
+    if (cached?.papers)
+      for (const p of cached.papers as Paper[])
+        papers.set(p.doi || p.pmid || p.id || p.title || "", p);
+  } catch {
+    /* Unavailable cache must not invent evidence. */
+  }
   let successful = 0;
   const bodyKeys = new Set(core.map((s) => s.bullets.join(" ").toLowerCase().replace(/\W/g, "")));
-  let evidence: Slide[] = [];
+  let evidence: Slide[] = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys));
   let work = queries.map((query) => ({ query, cursor: "*" }));
   try {
     for (let round = 0; round < 3 && work.length && evidence.length < needed; round++) {
@@ -271,6 +299,14 @@ export async function enrichTopicEvidence(
           if (result.value.cursor && result.value.papers.length)
             work.push({ query: result.value.query, cursor: result.value.cursor });
         }
+      try {
+        await writeLocalRecord(
+          cacheKey,
+          JSON.stringify({ retrievedAt: Date.now(), papers: [...papers.values()] }),
+        );
+      } catch {
+        /* Online generation can continue with an explicit uncached source. */
+      }
       evidence = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys));
       if (signal?.aborted) throw signal.reason;
     }
@@ -281,6 +317,7 @@ export async function enrichTopicEvidence(
         `The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
       );
     const added = evidence.slice(0, needed);
+    if (target === 1 && added[0]) added[0] = { ...added[0], title: input.topic };
     const slides = [...core, ...added, ...closing].map((s) => ({
       ...s,
       theme: researchTheme(input.topic, input.discipline, s.layout),

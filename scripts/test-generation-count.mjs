@@ -93,38 +93,9 @@ try {
   console.log(
     "PASS 16 microbiology fields generate exactly 2, 25 and 50 slides using topic-specific source sections",
   );
-  for (const count of [100, 400]) {
-    const topic = "Microbial fuel cells";
-    globalThis.fetch = async (url) => {
-      const cursor = new URL(url).searchParams.get("cursorMark");
-      const start = cursor === "more" ? 100 : 0;
-      const result = Array.from({ length: 100 }, (_, n) => {
-        const i = n + start;
-        return {
-          id: `large-${i}`,
-          pmid: `8000${i}`,
-          title: `${topic}: experiment ${i}`,
-          source: "MED",
-          abstractText: `${topic} experiment ${i} evaluated microbial electrodes under defined conditions. The investigators in experiment ${i} measured output with matched electrical controls. The electrode comparison in experiment ${i} identified a response under the reported conditions. The microbial community comparison in experiment ${i} remained conditional on sampling and measurement. The authors in experiment ${i} described a limited experimental interpretation of the observed response. The research report in experiment ${i} identified the need for additional independent measurements.`,
-        };
-      });
-      return new Response(
-        JSON.stringify({
-          resultList: { result },
-          nextCursorMark: start === 0 ? "more" : undefined,
-        }),
-        { headers: { "content-type": "application/json" } },
-      );
-    };
-    const request = { ...input, topic, count };
-    const result = await enrichTopicEvidence(generateLocalDeck(request), request);
-    assert.equal(result.slides.length, count);
-    assertCompleteDeck(result, count);
-    checks++;
-  }
-  console.log(
-    "PASS paginated research completes supported 100- and 400-slide requests without count truncation",
-  );
+  for (const count of [0, 51, 100, 400, 1.5])
+    assert.throws(() => generateLocalDeck({ ...input, count }), /integer slide count/);
+  console.log("PASS invalid and oversized generation requests are rejected without truncation");
   globalThis.fetch = async () =>
     new Response(JSON.stringify({ resultList: { result: [] } }), {
       headers: { "content-type": "application/json" },

@@ -1,3 +1,6 @@
+import { ProfessionalWorkspace } from "./professional-workspace";
+import { packProject } from "@/lib/project-format";
+import { saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
 import { useEffect, useState } from "react";
@@ -116,6 +119,22 @@ export function EditorApp() {
         (e.target as HTMLElement)?.isContentEditable
       )
         return;
+      if ((e.ctrlKey || e.metaKey) && ["n", "s", "o"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        const store = useDeckStore.getState();
+        if (e.key.toLowerCase() === "n") store.setGeneratorOpen(true);
+        if (e.key.toLowerCase() === "o") store.setLibraryOpen(true);
+        if (e.key.toLowerCase() === "s" && store.deck())
+          void packProject(store.deck()!)
+            .then((data) => saveFile("lecture.juwslides", data, "juwslides"))
+            .catch((error) => toast.error(error.message));
+        return;
+      }
+      if (e.key === "F5") {
+        e.preventDefault();
+        useDeckStore.getState().setPresenting(true);
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) redo();
@@ -183,6 +202,7 @@ export function EditorApp() {
           · Verify scientific claims · Library → backup · Ctrl/Cmd+Z to undo
         </div>
         <AppUpdates />
+        <ProfessionalWorkspace />
         {deck?.requestedCount && deck.slides.length < deck.requestedCount ? (
           <p
             role="status"

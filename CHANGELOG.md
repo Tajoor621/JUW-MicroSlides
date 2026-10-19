@@ -58,3 +58,11 @@ See README for remaining limits, deployment setup, and validation commands.
 - Removed the rectangular exterior from the university crest while retaining the original crest artwork, lettering and enclosed grey/white areas. All slide layouts, header branding, presenter/print and PowerPoint use the same transparent asset.
 - Removed the header logo's white background. Existing decks receive this branding correction without changing their contents or themes; previously downloaded PowerPoint files must be exported again.
 - Kept V6.2.1 unchanged and verified exterior alpha in browser and PowerPoint assets.
+
+## V6.2.1 — Windows professional authoring foundation
+
+- Enforced strict 1–50 generation/edit/export limits and preserved oversized archives; removed automatic objectives, repeated conclusions and reading padding; made one-slide lectures substantive.
+- Added claim-level source passages/locators, review invalidation, duplicate screening, whole-deck integrity audit, explicit draft/reviewed export and overflow gates.
+- Added atomic version snapshots, restore-as-copy recovery, checksummed portable projects, slide locks, local-model replacement proposals and persistent interrupted-request/research caching.
+- Added Tauri Windows packaging, native file dialogs and project/PPTX saves, SQLite durability, a separate monitor-selectable audience window and a private presenter console. Added native CI build, transaction tests and real-WebView smoke tests.
+- Kept the visible version V6.2.1. Documented the remaining scientific, source-ingestion, semantic, signing, PowerPoint and real-device qualification gates without claiming universal completion or a verified 10/10 score.

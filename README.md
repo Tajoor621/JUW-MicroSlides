@@ -33,7 +33,7 @@ Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctr
 
 Settings accepts an explicitly configured local computer/private LAN server address and installed model name. Start and configure Ollama yourself, install the chosen model, and permit the exact website origin in its CORS settings if required. Network/browser security rules may prevent HTTPS-to-local HTTP connections. On a phone, localhost refers to the phone, not your computer; use the computer's LAN address. The app does not run or install a model on a phone.
 
-Only a user-triggered AI generation or Copilot request sends content to that configured local server. Local AI plans the requested deck and writes batches of up to eight content slides, validating every batch and the final count (1–400). If unavailable or invalid, research generation attempts to complete the full deck. A short result is not saved as a successful deck. No paid cloud API key is requested by the static site.
+Only a user-triggered AI generation or Copilot request sends content to that configured local server. Local AI plans the requested deck and writes batches of up to eight content slides, validating every batch and the final count (1–50). If unavailable or invalid, research generation attempts to complete the full deck. A short result is not saved as a successful deck. No paid cloud API key is requested by the static site.
 
 ## Validation
 
@@ -50,7 +50,7 @@ Only a user-triggered AI generation or Copilot request sends content to that con
 ## Known limits and remaining work
 
 - Scientific correctness, up-to-date clinical recommendations, and claim-to-source support require human review. Metadata lookup is not evidence verification.
-- Topics are not restricted to bundled profiles. The generator accepts any microbiology topic, searches related source material, and builds distinct passages toward the requested 1–400 slides. Success requires the exact count. Offline generation has finite bundled coverage; when sources/model access cannot support the request, the app reports an actionable error and preserves the active deck instead of saving fewer slides or inventing content.
+- Topics are not restricted to bundled profiles. The generator accepts any microbiology topic, searches related source material, and builds distinct passages toward the requested 1–50 slides. Success requires the exact count. Offline generation has finite bundled coverage; when sources/model access cannot support the request, the app reports an actionable error and preserves the active deck instead of saving fewer slides or inventing content.
 - Elicit support imports exports; it is not an Elicit account connection. Ambiguous legacy author strings cannot be reconstructed reliably; structured BibTeX author data is retained.
 - External searches depend on upstream availability, CORS, and provider quotas. This release does not certify their current availability in every region.
 - PowerPoint exports the primary figure on each slide; additional manually attached media links and full citations remain in notes and the editable backup. No figure/reference pages are added beyond the editor’s slide count. Preview, presenter, print and PowerPoint use one fixed 1280×720 composition. Export measures the rendered text lines and image boxes instead of using a separate template. Text remains editable (Georgia headings, Arial body); artwork alone is embedded as transparent PNG. Fonts may still be substituted by a viewer if unavailable on the device. Re-export previously downloaded decks to apply export fixes.
@@ -74,3 +74,14 @@ Public-search shortcuts cover X/Twitter, Facebook, Instagram, Pinterest, CDC PHI
 Optional local AI specialist review uses the configured Ollama model for the selected slide. Text-only mode receives slide text and media metadata. The explicit image-inspection option requires a vision-capable model and readable PNG/JPEG/WebP files (four images / 8 MB total). Browser CORS and model capability can limit inspection. Suggestions are labelled unverified and are never applied automatically; stale reviews are identified after edits. Download the review report as JSON for manual correction and source checking. The app never invents a successful AI report when no model is configured.
 
 Run `npm run test:topics` for the topic/media/reviewer regression suite. `qa:pages` also checks that collecting/downloading media does not attach it, manually attached mismatched media is flagged, correction reports download, and removing a figure does not add a fallback.
+
+
+## Windows professional workspace (V6.2.1)
+
+Use the Lecture workspace bar for whole-deck audit, reviewed export, portable projects, recovery revisions, storage information, slide locks and inspected replacements. Evidence → Claim evidence records passage-level support and explicit lecturer review. Changing statements invalidates prior review. Ordinary Export PPTX remains available as a clearly marked draft when evidence is unresolved.
+
+New decks are limited to exactly 1–50 slides, with no automatic agenda/conclusion/reading padding. Legacy oversized backups are preserved for recovery. Offline reuse requires available topic material or downloaded research; the app does not claim to know every topic offline.
+
+For Windows, `npm run desktop:build` builds the Tauri installer; GitHub Actions also builds and smoke-tests the native app. The installer includes WebView2's offline installer. Inference models are separately configured in Settings. Installers are unsigned test builds, not a signed production release.
+
+See [Windows implementation and qualification](docs/WINDOWS-QUALIFICATION.md) for implemented functionality, exact validation scope and remaining scientific, export, hardware and release gates. A successful CI run is not a 10/10 scientific-quality certification.

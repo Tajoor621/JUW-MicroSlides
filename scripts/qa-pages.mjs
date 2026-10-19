@@ -751,6 +751,45 @@ try {
     "Incomplete research does not replace the active deck or report a short deck as success",
   );
   await coverage.close();
+  const professional = await browser.newContext({ acceptDownloads: true });
+  const pro = await professional.newPage();
+  pro.on("pageerror", (e) => errors.push(e.message));
+  await pro.goto(url);
+  await saved(pro);
+  await pro.locator("#gen-topic").fill("Enzyme immobilization");
+  await pro.locator("#gen-count").fill("1");
+  await pro.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await pro.waitForFunction(() => !document.querySelector("#gen-topic"));
+  await saved(pro);
+  assert.match(await pro.locator("body").innerText(), /Slide 1 of 1/);
+  assert((await pro.locator("[data-slide-stage]").innerText()).includes("Enzyme immobilization"));
+  await pro.getByText(/Lecture workspace · Web companion/).click();
+  await pro.getByRole("button", { name: "Audit entire deck", exact: true }).click();
+  assert.match(await pro.getByLabel("Integrity audit results").innerText(), /critical findings/);
+  assert(await pro.getByRole("button", { name: "Export reviewed PPTX", exact: true }).isDisabled());
+  const portableEvent = pro.waitForEvent("download");
+  await pro.getByRole("button", { name: "Save portable project", exact: true }).click();
+  const portable = await portableEvent;
+  assert(portable.suggestedFilename().endsWith(".juwslides"));
+  await pro.getByLabel("Open portable project").setInputFiles(await portable.path());
+  await saved(pro);
+  await pro.getByRole("button", { name: "Lock selected slide", exact: true }).click();
+  assert(await pro.getByRole("button", { name: "Unlock selected slide", exact: true }).isVisible());
+  await pro.getByRole("button", { name: "Revisions & storage", exact: true }).click();
+  await pro.getByText(/recovery snapshots.*retained/).waitFor();
+  await pro.getByRole("button", { name: "Unlock selected slide", exact: true }).click();
+  await pro.getByRole("button", { name: "Revisions & storage", exact: true }).click();
+  await pro.getByRole("button", { name: "Restore as copy", exact: true }).first().waitFor();
+  await pro.getByRole("button", { name: "Restore as copy", exact: true }).first().click();
+  await saved(pro);
+  assert.match(
+    await pro.getByRole("textbox", { name: "Lecture topic", exact: true }).inputValue(),
+    /recovered/,
+  );
+  results.push(
+    "Substantive single-slide generation, blocked unreviewed export, portable project UI roundtrip, slide locking and version recovery work together",
+  );
+  await professional.close();
   legacyWorkerFixture = true;
   const upgrade = await browser.newContext();
   const up = await upgrade.newPage();

@@ -30,6 +30,11 @@ const media = z.object({
   keywords: z.array(text).max(100),
 });
 const citation = z.object({
+  cslJson: z.string().max(100_000).optional(),
+  type: z.enum(["article-journal", "book", "chapter", "report", "webpage"]).optional(),
+  url: z.string().url().optional(),
+  publisher: text.optional(),
+  accessed: text.optional(),
   id: text,
   authors: text,
   title: text,
@@ -44,7 +49,33 @@ const citation = z.object({
   volume: text.optional(),
   pages: text.optional(),
 });
+const claim = z.object({
+  id: text,
+  text,
+  teachingPurpose: text,
+  classification: z.enum(["unclassified", "foundational", "study-result", "guideline"]),
+  status: z.enum(["unreviewed", "supported-excerpt", "lecturer-reviewed", "stale"]),
+  reviewedAt: z.number().optional(),
+  evidence: z
+    .array(
+      z.object({
+        citationId: text.optional(),
+        sourceUrl: z
+          .string()
+          .url()
+          .refine((s) => /^https?:/.test(s)),
+        locator: text,
+        quote: text,
+        access: z.enum(["abstract", "full-text", "textbook", "guideline", "instructor"]),
+        checkedAt: z.number(),
+      }),
+    )
+    .max(100),
+});
 const slide = z.object({
+  claims: z.array(claim).max(500).optional(),
+  locked: z.boolean().optional(),
+  teachingPurpose: text.optional(),
   id: text,
   layout: z.enum(LAYOUTS),
   theme: z.enum(SLIDE_THEMES),
@@ -86,6 +117,7 @@ export const deckSchema = z.object({
     .max(500)
     .optional(),
   generationSource: z.enum(["knowledge", "cloud-ai", "local-ai"]).optional(),
+  revisionId: text.optional(),
   updatedAt: z.number().finite(),
 });
 export const backupSchema = z.object({

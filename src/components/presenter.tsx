@@ -1,3 +1,5 @@
+import { DesktopPresenter } from "./desktop-presenter";
+import { isDesktop } from "@/lib/desktop";
 import { useEffect } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useDeckStore } from "@/lib/deck-store";
@@ -32,18 +34,34 @@ export function Presenter() {
 
   if (!presenting || !deck || !slide) return null;
 
+  if (isDesktop()) return <DesktopPresenter />;
   return (
     <div className="fixed inset-0 z-[80] flex flex-col bg-navy p-3 sm:p-6">
       <div className="mb-3 flex items-center justify-between text-fg">
         <p className="truncate font-serif text-sm">{deck.title}</p>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon-sm" onClick={() => select(index - 1)} aria-label="Previous">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => select(index - 1)}
+            aria-label="Previous"
+          >
             <ChevronLeft />
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => select(index + 1)} aria-label="Next">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => select(index + 1)}
+            aria-label="Next"
+          >
             <ChevronRight />
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => setPresenting(false)} aria-label="Exit">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setPresenting(false)}
+            aria-label="Exit"
+          >
             <X />
           </Button>
         </div>

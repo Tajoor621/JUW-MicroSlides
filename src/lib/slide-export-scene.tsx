@@ -192,3 +192,9 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
     host.remove();
   }
 }
+
+export function sceneOverflow(scene: SceneItem[]) {
+  return scene.filter(
+    (i) => i.kind === "text" && (i.x < 0 || i.y < 0 || i.x + i.w > 1281 || i.y + i.h > 721),
+  );
+}

@@ -1,3 +1,4 @@
+import { integrityAudit } from "@/lib/deck-integrity";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
@@ -22,7 +23,27 @@ export function SpecialistReview() {
     issues: { severity: string; quote: string; problem: string; suggestion: string }[];
     limitations: string;
   } | null>(null);
-  const all = useMemo(() => (deck ? reviewDeck(deck) : []), [deck]);
+  const all = useMemo(
+    () =>
+      deck
+        ? [
+            ...reviewDeck(deck),
+            ...integrityAudit(deck).map((i, n) => ({
+              id: `integrity-${n}`,
+              source: undefined,
+              slideId: i.slideId,
+              index: i.index,
+              severity: i.severity === "critical" ? ("high" as const) : ("medium" as const),
+              category: i.category,
+              quote: i.quote,
+              problem: i.message,
+              suggestion:
+                "Inspect the supporting source in Claim evidence, then record an explicit lecturer review or replace the statement.",
+            })),
+          ]
+        : [],
+    [deck],
+  );
   const issues = scope === "slide" ? all.filter((i) => i.index === selected) : all;
   const signature = JSON.stringify([deck?.topic, slide]);
   if (!deck || !slide) return <p>Select a deck to review.</p>;
