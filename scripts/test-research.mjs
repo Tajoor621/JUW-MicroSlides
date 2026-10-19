@@ -15,6 +15,7 @@ const check = (name, fn) => {
 };
 try {
   const { parseEvidencePaste } = await server.ssrLoadModule("/src/lib/elicit.ts");
+  const { citationCslData } = await server.ssrLoadModule("/src/lib/csl-format.ts");
   const { formatCitation } = await server.ssrLoadModule("/src/lib/citations.ts");
   const { generateLocalDeck } = await server.ssrLoadModule("/src/lib/generate-deck.ts");
   const { parseBackup } = await server.ssrLoadModule("/src/lib/backup.ts");
@@ -43,8 +44,8 @@ try {
       id: "book1",
       type: "book",
       title: "Microbiology reference",
-      author: [{ family: "Smith", given: "Jane" }],
-      issued: { "date-parts": [[2024]] },
+      author: [{ family: "Smith", given: "Jane", "non-dropping-particle": "von" }],
+      issued: { "date-parts": [[2024, 5, 2]] },
       publisher: "Open university press",
       ISBN: "1234567890",
       URL: "https://example.org/book",
@@ -54,6 +55,8 @@ try {
     assert.equal(ref.cslAuthors[0].family, "Smith");
     assert.equal(JSON.parse(ref.cslJson).ISBN, source.ISBN);
     assert.match(formatCitation(ref, "APA"), /2024/);
+    assert.deepEqual(citationCslData(ref).issued, source.issued);
+    assert.deepEqual(citationCslData(ref).author, source.author);
   });
   check("oversized or malformed CSL metadata cannot poison durable saves", () => {
     assert.throws(() =>

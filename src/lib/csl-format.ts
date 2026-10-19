@@ -55,12 +55,22 @@ export function citationCslData(c: Citation) {
   } catch {
     /* Invalid optional metadata must not break citation export. */
   }
+  const normalizedNames = names(c);
+  const originalNames = Array.isArray(raw.author) ? raw.author : [];
+  const comparableNames = originalNames.map((person: Record<string, unknown>) => ({
+    ...(person.family ? { family: person.family } : {}),
+    ...(person.given ? { given: person.given } : {}),
+    ...(person.literal ? { literal: person.literal } : {}),
+  }));
+  const sameNames = JSON.stringify(normalizedNames) === JSON.stringify(comparableNames);
+  const originalIssued = raw.issued as { "date-parts"?: number[][] } | undefined;
+  const sameYear = originalIssued?.["date-parts"]?.[0]?.[0] === year;
   return {
     ...raw,
     id: c.id,
     type: c.type || (raw.type as string) || "article-journal",
     title: c.title,
-    author: names(c),
+    author: sameNames ? originalNames : normalizedNames,
     "container-title": c.journal,
     volume: c.volume,
     page: c.pages,
@@ -70,6 +80,8 @@ export function citationCslData(c: Citation) {
     ...(c.accessed && /^\d{4}-\d{2}-\d{2}$/.test(c.accessed)
       ? { accessed: { "date-parts": [c.accessed.split("-").map(Number)] } }
       : {}),
-    ...(Number.isFinite(year) ? { issued: { "date-parts": [[year]] as [[number]] } } : {}),
+    ...(Number.isFinite(year)
+      ? { issued: sameYear ? originalIssued : { "date-parts": [[year]] as [[number]] } }
+      : {}),
   };
 }
