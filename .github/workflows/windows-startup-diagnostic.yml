@@ -26,6 +26,8 @@ jobs:
       - shell: pwsh
         run: |
           $installer = Get-ChildItem startup-installer -Filter *.exe -Recurse | Select-Object -First 1
+          $installed = Start-Process -FilePath $installer.FullName -ArgumentList '/S' -Wait -PassThru
+          if ($installed.ExitCode -ne 0) { throw "Installer failed: $($installed.ExitCode)" }
           & 7z x $installer.FullName -ostartup-extracted -y | Out-Null
           Get-ChildItem startup-extracted -Recurse | Select-Object FullName, Length
           $appExe = Get-ChildItem startup-extracted -Filter *.exe -Recurse | Where-Object { $_.Name -match 'microslides' } | Select-Object -First 1
