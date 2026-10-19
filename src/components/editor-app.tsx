@@ -111,16 +111,11 @@ export function EditorApp() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        tag === "SELECT" ||
-        (e.target as HTMLElement)?.isContentEditable
-      )
-        return;
+      const target = e.target as HTMLElement;
+      const tag = target?.tagName;
       if ((e.ctrlKey || e.metaKey) && ["n", "s", "o"].includes(e.key.toLowerCase())) {
         e.preventDefault();
+        target?.blur(); // Commit any inline content edit before saving or switching views.
         const store = useDeckStore.getState();
         if (e.key.toLowerCase() === "n") store.setGeneratorOpen(true);
         if (e.key.toLowerCase() === "o") store.setLibraryOpen(true);
@@ -132,9 +127,12 @@ export function EditorApp() {
       }
       if (e.key === "F5") {
         e.preventDefault();
+        target?.blur();
         useDeckStore.getState().setPresenting(true);
         return;
       }
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable)
+        return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) redo();

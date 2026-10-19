@@ -129,7 +129,7 @@ try {
     await page.getByRole("textbox", { name: "Lecture topic", exact: true }).inputValue(),
     "Windows persistence fixture",
   );
-  await page.getByRole("button", { name: "Present", exact: true }).click();
+  await page.getByRole("textbox", { name: "Lecture topic", exact: true }).press("F5");
   await page.getByRole("button", { name: "Open audience display", exact: true }).click();
   const deadline = Date.now() + 15000;
   let audience;
@@ -166,6 +166,7 @@ try {
           "Exact six-slide generation",
           "Second launch preserves a single workspace writer",
           "SQLite persistence survives forced termination",
+          "F5 presents while an editor field has focus",
           "Separate audience window renders",
           "Audience storage access denied",
         ],
