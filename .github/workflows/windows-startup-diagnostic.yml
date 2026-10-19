@@ -1,0 +1,40 @@
+name: Windows startup diagnostic
+on:
+  workflow_dispatch:
+  push:
+    paths: [.github/workflows/windows-startup-diagnostic.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnose:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: 12207268788
+          run-id: 39295378306
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: startup-installer
+      - shell: pwsh
+        run: |
+          $installer = Get-ChildItem startup-installer -Filter *.exe -Recurse | Select-Object -First 1
+          & 7z x $installer.FullName -ostartup-extracted -y | Out-Null
+          Get-ChildItem startup-extracted -Recurse | Select-Object FullName, Length
+          $appExe = Get-ChildItem startup-extracted -Filter *.exe -Recurse | Where-Object { $_.Name -match 'microslides' } | Select-Object -First 1
+          if (-not $appExe) { throw 'Application binary missing from extracted installer' }
+          New-Item -ItemType Directory src-tauri/target/release -Force | Out-Null
+          Copy-Item $appExe.FullName src-tauri/target/release/juw-microslides.exe
+      - run: node scripts/qa-desktop.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Windows-startup-diagnostics
+          path: desktop-qa/

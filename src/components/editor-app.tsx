@@ -42,7 +42,7 @@ import { Label } from "./ui/label";
 import { Tooltip, TooltipProvider } from "./ui/tooltip";
 
 export function EditorApp() {
-  const [hydrated, setHydrated] = useState(useDeckStore.persist.hasHydrated());
+  const [hydrated, setHydrated] = useState(false);
   const [online, setOnline] = useState(typeof navigator === "undefined" || navigator.onLine);
   useEffect(() => {
     const refresh = () => setOnline(navigator.onLine);

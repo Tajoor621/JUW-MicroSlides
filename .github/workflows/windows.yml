@@ -21,6 +21,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
+          cache-on-failure: true
       - run: npm run typecheck
       - run: npm run test:professional
       - run: npm run desktop:build

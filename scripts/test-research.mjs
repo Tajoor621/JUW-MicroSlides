@@ -55,6 +55,18 @@ try {
     assert.equal(JSON.parse(ref.cslJson).ISBN, source.ISBN);
     assert.match(formatCitation(ref, "APA"), /2024/);
   });
+  check("oversized or malformed CSL metadata cannot poison durable saves", () => {
+    assert.throws(() =>
+      parseEvidencePaste(
+        JSON.stringify([{ type: "book", title: "Invalid", author: [{ family: 123 }] }]),
+      ),
+    );
+    assert.throws(() =>
+      parseEvidencePaste(
+        JSON.stringify([{ type: "book", title: "Large", note: "x".repeat(100001) }]),
+      ),
+    );
+  });
   check("malformed CSV is reported", () =>
     assert.throws(() => parseEvidencePaste('Title,Year\n"unclosed,2020')),
   );

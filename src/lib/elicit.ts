@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import { citationSchema } from "./backup";
 import { Cite } from "@citation-js/core";
 import "@citation-js/plugin-bibtex";
 import type { Citation } from "./types";
@@ -55,7 +56,7 @@ function fromRecord(raw: Record<string, unknown>): Citation | null {
   ).trim();
   const doiRaw = String(raw.doi ?? raw.DOI ?? "").replace(/^https?:\/\/doi.org\//i, "");
   const authors = asAuthors(raw.authors ?? raw.Authors ?? raw.author ?? raw.Author);
-  return {
+  return citationSchema.parse({
     id: uid("ev"),
     authors: authors || "Unknown",
     title: title.replace(/\.$/, ""),
@@ -75,7 +76,7 @@ function fromRecord(raw: Record<string, unknown>): Citation | null {
           publisher: typeof raw.publisher === "string" ? raw.publisher : undefined,
         }
       : {}),
-  };
+  });
 }
 
 function parseJson(raw: string): Citation[] {
@@ -123,7 +124,9 @@ function parseBibtex(raw: string): Citation[] {
         journal: record["container-title"],
         doi: record.DOI,
       });
-      return made ? { ...made, cslAuthors: names, cslJson: JSON.stringify(record) } : null;
+      return made
+        ? citationSchema.parse({ ...made, cslAuthors: names, cslJson: JSON.stringify(record) })
+        : null;
     })
     .filter((c): c is NonNullable<typeof c> => Boolean(c));
 }
@@ -134,12 +137,9 @@ export function parseEvidencePaste(raw: string): Citation[] {
   const text = raw.trim();
   if (!text) return [];
   if (text.startsWith("{") || text.startsWith("[")) {
-    try {
-      const jsonHits = parseJson(text);
-      if (jsonHits.length) return jsonHits;
-    } catch {
-      /* fall through */
-    }
+    const jsonHits = parseJson(text);
+    if (!jsonHits.length) throw new Error("No titled reference records found in JSON.");
+    return jsonHits;
   }
   if (/@\w+\s*\{/.test(text)) {
     const bib = parseBibtex(text);

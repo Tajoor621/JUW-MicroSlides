@@ -7,28 +7,60 @@ const output = process.env.JUW_QA_OUTPUT || "desktop-qa";
 await mkdir(output, { recursive: true });
 const exe = resolve("src-tauri/target/release/juw-microslides.exe");
 let processHandle, browser;
+const startupLog = [];
+const startupErrors = [];
 async function start() {
   processHandle = spawn(exe, [], {
     env: { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: "--remote-debugging-port=9222" },
-    stdio: "ignore",
+    stdio: ["ignore", "pipe", "pipe"],
   });
+  processHandle.stdout.on("data", (chunk) => startupLog.push(String(chunk)));
+  processHandle.stderr.on("data", (chunk) => startupLog.push(String(chunk)));
+  processHandle.on("error", (error) => startupErrors.push(String(error)));
+  let lastPage;
+  let lastError = "";
   const deadline = Date.now() + 60000;
   while (Date.now() < deadline) {
     if (processHandle.exitCode !== null) throw Error(`Desktop exited ${processHandle.exitCode}`);
     try {
       browser = await chromium.connectOverCDP("http://127.0.0.1:9222", { timeout: 1000 });
       const pages = browser.contexts().flatMap((c) => c.pages());
-      const page = pages.find((p) => !p.url().includes("audience"));
+      startupLog.push(`CDP pages: ${pages.map((p) => p.url()).join(", ")}`);
+      const page =
+        pages.find((p) => !p.url().includes("audience") && p.url().includes("tauri.localhost")) ||
+        pages.find((p) => !p.url().includes("audience"));
       if (page) {
+        lastPage = page;
+        page.on("pageerror", (error) => startupErrors.push(error.message));
+        page.on("console", (message) => {
+          if (message.type() === "error") startupErrors.push(message.text());
+        });
         await page.getByText(/Windows desktop · V6.2.1/).waitFor({ timeout: 15000 });
         return page;
       }
-    } catch {
-      /* WebView2 is still starting. */
+    } catch (error) {
+      lastError = String(error);
     }
     await new Promise((r) => setTimeout(r, 500));
   }
-  throw Error("Desktop UI did not become ready");
+  if (lastPage) {
+    await lastPage.screenshot({ path: join(output, "startup-failure.png") }).catch(() => {});
+    startupLog.push(
+      await lastPage
+        .locator("body")
+        .innerText()
+        .catch(() => "Body unavailable"),
+    );
+  }
+  await writeFile(
+    join(output, "startup-diagnostics.json"),
+    JSON.stringify(
+      { lastError, startupLog, startupErrors, exitCode: processHandle.exitCode },
+      null,
+      2,
+    ),
+  );
+  throw Error(`Desktop UI did not become ready: ${lastError}; ${startupErrors.join("; ")}`);
 }
 function stop() {
   if (processHandle?.pid) {

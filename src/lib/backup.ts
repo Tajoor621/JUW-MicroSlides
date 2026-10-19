@@ -29,10 +29,14 @@ const media = z.object({
   provider: text.optional(),
   keywords: z.array(text).max(100),
 });
-const citation = z.object({
+export const citationSchema = z.object({
   cslJson: z.string().max(100_000).optional(),
   type: z.enum(["article-journal", "book", "chapter", "report", "webpage"]).optional(),
-  url: z.string().url().optional(),
+  url: z
+    .string()
+    .url()
+    .refine((s) => /^https?:/.test(s), "Use an HTTP(S) reference URL")
+    .optional(),
   publisher: text.optional(),
   accessed: text.optional(),
   id: text,
@@ -85,7 +89,7 @@ const slide = z.object({
   leftBullets: z.array(text).max(500),
   rightBullets: z.array(text).max(500),
   notes: text,
-  citations: z.array(citation).max(1000),
+  citations: z.array(citationSchema).max(1000),
   media: z.array(media).max(100),
 });
 export const deckSchema = z.object({

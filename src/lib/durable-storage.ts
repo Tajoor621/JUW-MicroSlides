@@ -62,6 +62,7 @@ export async function flushSavedDecks() {
 }
 export const durableStorage: StateStorage = {
   async getItem(key) {
+    if (typeof window === "undefined") return null;
     try {
       const saved = await readLocalRecord(key);
       if (saved && valid(saved)) return saved;
