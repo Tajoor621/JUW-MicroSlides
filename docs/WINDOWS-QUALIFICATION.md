@@ -10,7 +10,7 @@
 - Persistent version snapshots in the same transaction as working-state changes. Latest 100 snapshots, bounded to 20 MB; portable projects are independent. Recovery restores copies. Browser IndexedDB and desktop SQLite use the same authoring model.
 - Checksummed, size-limited .juwslides ZIP projects with embedded primary/collected images and claim passages. Export fails explicitly on unavailable/unembedded media rather than claiming offline portability. JSON backups remain supported for external links/video collections.
 - Slide locks, local-model replacement proposals with an explicit apply step, speaker-note expansion without count changes, keyboard shortcuts and saved interrupted-request inputs and local-model outline/completed-batch checkpoints. Retrieved abstract records are cached for offline reuse; unavailable evidence still causes an explicit incomplete result.
-- Tauri 2 Windows NSIS target, offline WebView2 installer dependency, original transparent university branding, native dialogs, native project/PPTX save, HTTP(S)-scoped external source links, .juwslides association, SQLite WAL/FULL durability, audience-window storage denial, separate audience/presenter views and monitor selection.
+- Tauri 2 Windows NSIS target, offline WebView2 installer dependency, original transparent university branding, native dialogs, native project/PPTX save, HTTP(S)-scoped external source links, .juwslides association, SQLite WAL/FULL durability, single-instance authoring to avoid concurrent workspace writers, audience-window storage denial, separate audience/presenter views and monitor selection.
 - Desktop builds contain bundled application code rather than the web-host bridge scripts and use a restricted CSP. No remote executable scripts or paid inference endpoints are needed by the desktop target. Ollama/models are separately configured and not bundled.
 
 ## Validation and distribution
@@ -33,6 +33,8 @@ This change is not a substantiated 10/10 rating. The following remain explicit r
 6. Real-device projector hotplug/mixed-DPI/sleep/resume, low-disk and accessibility qualification; broader crash fault-injection. Native CI smoke does not replace a physical classroom test.
 7. A published >=200-topic benchmark, all accepted integer counts, P95 under five minutes on declared hardware, independent microbiology review and a lecturer usability study. These are targets, not results.
 8. Signed installers, secure same-visible-version update delivery, configurable user backup directories/retention, mature cache controls, normalized relational evidence tables and broader project round-trip coverage.
+
+When the app is already running, a second launch focuses it and asks the lecturer to use the system Open dialog for another project. Startup file associations load the selected project; forwarding a second shell-open project automatically remains a UX qualification item.
 
 ## Compatibility
 

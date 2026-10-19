@@ -89,6 +89,26 @@ try {
     .getByRole("status")
     .filter({ hasText: /Saved on this device/ })
     .waitFor();
+  const duplicate = spawn(exe, [], { stdio: "ignore" });
+  const duplicateExit = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      duplicate.kill();
+      reject(Error("A second authoring instance stayed open"));
+    }, 10000);
+    duplicate.once("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    duplicate.once("exit", (code) => {
+      clearTimeout(timer);
+      resolve(code);
+    });
+  });
+  assert.equal(duplicateExit, 0, "Second launch should hand focus to the existing workspace");
+  assert.equal(
+    await page.getByRole("textbox", { name: "Lecture topic", exact: true }).inputValue(),
+    "Windows persistence fixture",
+  );
   const fileOpenerDenied = await page.evaluate(async () => {
     try {
       await window.__TAURI_INTERNALS__.invoke("plugin:opener|open_url", {
@@ -144,6 +164,7 @@ try {
         checks: [
           "Native WebView UI renders",
           "Exact six-slide generation",
+          "Second launch preserves a single workspace writer",
           "SQLite persistence survives forced termination",
           "Separate audience window renders",
           "Audience storage access denied",

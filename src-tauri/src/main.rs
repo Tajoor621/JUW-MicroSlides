@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use rusqlite::{Connection, OptionalExtension, params};
 use std::sync::Mutex;
-use tauri::{Manager, State, WebviewWindow};
+use tauri::{Manager, State, WebviewWindow, Emitter};
 struct Database(Mutex<Connection>);
 fn authorized(window: &WebviewWindow) -> Result<(), String> {
     if window.label() == "main" { Ok(()) } else { Err("Audience window cannot access project storage".into()) }
@@ -57,6 +57,12 @@ fn launch_project(window:WebviewWindow)->Result<Option<Vec<u8>>,String>{
 
 fn main() {
     tauri::Builder::default()
+      .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+          if let Some(window)=app.get_webview_window("main") {
+              let _=window.unminimize(); let _=window.set_focus();
+              let _=window.emit("workspace-already-open", ());
+          }
+      }))
       .plugin(tauri_plugin_dialog::init())
       .plugin(tauri_plugin_fs::init())
       .plugin(tauri_plugin_opener::init())

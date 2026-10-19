@@ -35,6 +35,24 @@ export function ProfessionalWorkspace() {
       })
       .catch((e) => toast.error(String(e)));
   }, []);
+  useEffect(() => {
+    if (!isDesktop()) return;
+    let dispose: (() => void) | undefined;
+    let cancelled = false;
+    void import("@tauri-apps/api/event").then(async ({ listen }) => {
+      const stop = await listen("workspace-already-open", () =>
+        toast.message(
+          "Your workspace is already open. Use Open project with system dialog to import another lecture without replacing your work.",
+        ),
+      );
+      if (cancelled) stop();
+      else dispose = stop;
+    });
+    return () => {
+      cancelled = true;
+      dispose?.();
+    };
+  }, []);
   if (!deck) return null;
   const legacy = deck.slides.length > 50;
   async function perform(fn: () => Promise<unknown>) {
