@@ -28,7 +28,7 @@ export function assertCompleteDeck(deck: Deck, count: number) {
     throw new Error("The deck must start with its topic introduction.");
   if (
     usable
-      .filter((s) => s.layout !== "title" || target === 1)
+      .filter((_, index) => index > 0 || target === 1)
       .some(
         (s) =>
           !s.title.trim() ||
@@ -36,6 +36,10 @@ export function assertCompleteDeck(deck: Deck, count: number) {
       )
   )
     throw new Error("A generated content slide is empty. Add source material and retry.");
+  if (usable.some((s, index) => (index > 0 || target === 1) && s.layout === "title"))
+    throw new Error(
+      "Only a multi-slide deck's opening may use the title layout; teaching slides need substantive visible content.",
+    );
   const duplicates = duplicateStatements(usable);
   if (duplicates.length)
     throw new Error(

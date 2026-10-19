@@ -99,6 +99,19 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
       message: `Overlaps slide ${d.first + 1}. Similarity screening requires lecturer review; replace redundant teaching content.`,
     });
   deck.slides.forEach((s, index) => {
+    if (
+      (index > 0 || deck.slides.length === 1) &&
+      (s.layout === "title" || (!slideStatements(s).length && !s.media.length))
+    )
+      findings.push({
+        slideId: s.id,
+        index,
+        quote: s.title,
+        severity: "critical",
+        category: "Empty teaching slide",
+        message:
+          "Replace this placeholder or title-only page with substantive visible teaching content before reviewed export.",
+      });
     for (const c of reconcileClaims(s).claims || []) {
       const linked = c.evidence.filter(
         (e) =>

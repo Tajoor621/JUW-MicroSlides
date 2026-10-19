@@ -37,6 +37,20 @@ try {
       /^(Learning objectives|Key conclusions|Suggested reading)$/.test(s.title),
     ),
   );
+  const placeholders = structuredClone(d);
+  placeholders.slides[2] = {
+    ...placeholders.slides[2],
+    layout: "title",
+    bullets: [],
+    leftBullets: [],
+    rightBullets: [],
+  };
+  assert.throws(() => assertCompleteDeck(placeholders, 12), /empty|title layout/);
+  assert(
+    integrityAudit(placeholders).some(
+      (f) => f.category === "Empty teaching slide" && f.severity === "critical",
+    ),
+  );
   const copy = structuredClone(d);
   copy.slides[2].bullets = [copy.slides[1].bullets[0]];
   assert(duplicateStatements(copy.slides).length);
