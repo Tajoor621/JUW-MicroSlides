@@ -59,6 +59,7 @@ fn main() {
     tauri::Builder::default()
       .plugin(tauri_plugin_dialog::init())
       .plugin(tauri_plugin_fs::init())
+      .plugin(tauri_plugin_opener::init())
       .setup(|app| {
           let dir=app.path().app_data_dir()?; std::fs::create_dir_all(&dir)?;
           let conn=Connection::open(dir.join("workspace.sqlite"))?;

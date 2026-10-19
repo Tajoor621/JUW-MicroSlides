@@ -89,6 +89,17 @@ try {
     .getByRole("status")
     .filter({ hasText: /Saved on this device/ })
     .waitFor();
+  const fileOpenerDenied = await page.evaluate(async () => {
+    try {
+      await window.__TAURI_INTERNALS__.invoke("plugin:opener|open_url", {
+        url: "file:///C:/Windows/System32/cmd.exe",
+      });
+      return false;
+    } catch {
+      return true;
+    }
+  });
+  assert(fileOpenerDenied, "Source links must not open local executable paths");
   await page.screenshot({ path: join(output, "windows-editor.png") });
   stop();
   await new Promise((r) => setTimeout(r, 1500));

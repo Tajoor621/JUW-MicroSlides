@@ -1,9 +1,7 @@
 {
   "identifier": "main",
   "description": "Local authoring window. Files are limited to dialog-granted paths.",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:default",
     "core:webview:allow-create-webview-window",
@@ -15,6 +13,17 @@
     "dialog:allow-save",
     "fs:allow-read-file",
     "fs:allow-write-file",
-    "core:window:allow-close"
+    "core:window:allow-close",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://*"
+        },
+        {
+          "url": "http://*"
+        }
+      ]
+    }
   ]
 }
