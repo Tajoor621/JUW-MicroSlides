@@ -310,13 +310,20 @@ function ReplacementEditor() {
   const [proposal, setProposal] = useState("");
   const [drafting, setDrafting] = useState(false);
   if (!slide || !deck) return null;
+  if (slide.layout === "title")
+    return (
+      <p className="text-xs text-muted">
+        Edit the opening topic, scope and university metadata directly on the canvas. Select a
+        teaching slide to propose replacement content.
+      </p>
+    );
+  const candidate = proposal ? JSON.parse(proposal) : {};
   return (
     <details>
       <summary className="cursor-pointer text-xs">Review / apply a replacement slide</summary>
       <p className="text-xs">
-        Paste a proposed slide JSON from your local model or your own revision. Required: title and
-        bullets. Current work is kept until Apply; sources never transfer to changed claims
-        automatically.
+        Draft a replacement or write your own title and teaching points. Inspect each point before
+        Apply. Current work is kept until Apply; changed content requires fresh evidence review.
       </p>
       <Button
         size="sm"
@@ -334,13 +341,40 @@ function ReplacementEditor() {
       >
         {drafting ? "Drafting replacement…" : "Draft replacement with local model"}
       </Button>
-      <textarea
-        aria-label="Replacement slide proposal"
-        className="mt-1 w-full rounded border bg-elevated p-2 text-xs"
-        rows={4}
-        value={proposal}
-        onChange={(e) => setProposal(e.target.value)}
-      />
+      <label className="mt-2 block text-xs">
+        Replacement title
+        <input
+          aria-label="Replacement title"
+          className="mt-1 w-full rounded border bg-elevated p-2"
+          value={candidate.title || ""}
+          disabled={slide.locked}
+          onChange={(e) => setProposal(JSON.stringify({ ...candidate, title: e.target.value }))}
+        />
+      </label>
+      <label className="mt-2 block text-xs">
+        Teaching points — one per line
+        <textarea
+          aria-label="Replacement teaching points"
+          className="mt-1 w-full rounded border bg-elevated p-2"
+          rows={5}
+          value={candidate.bullets?.join("\n") || ""}
+          disabled={slide.locked}
+          onChange={(e) =>
+            setProposal(JSON.stringify({ ...candidate, bullets: e.target.value.split("\n") }))
+          }
+        />
+      </label>
+      <label className="mt-2 block text-xs">
+        Proposed speaker notes
+        <textarea
+          aria-label="Replacement speaker notes"
+          className="mt-1 w-full rounded border bg-elevated p-2"
+          rows={3}
+          value={candidate.notes || ""}
+          disabled={slide.locked}
+          onChange={(e) => setProposal(JSON.stringify({ ...candidate, notes: e.target.value }))}
+        />
+      </label>
       <Button
         size="sm"
         disabled={slide.locked}
@@ -357,12 +391,13 @@ function ReplacementEditor() {
             const replacement = {
               ...slide,
               title: p.title,
+              subtitle: "",
               bullets: p.bullets,
               leftBullets: [],
               rightBullets: [],
               claims: [],
               citations: [],
-              notes: typeof p.notes === "string" ? p.notes : slide.notes,
+              notes: typeof p.notes === "string" ? p.notes : "",
             };
             const all = deck.slides.map((s, i) => (i === index ? replacement : s));
             if (duplicateStatements(all).some((d) => d.first === index || d.second === index))
