@@ -34,7 +34,17 @@ jobs:
           if (-not $appExe) { throw 'Application binary missing from extracted installer' }
           New-Item -ItemType Directory src-tauri/target/release -Force | Out-Null
           Copy-Item $appExe.FullName src-tauri/target/release/juw-microslides.exe
-      - run: node scripts/qa-desktop.mjs
+      # WebView2 150+ ignores CDP env settings on elevated hosts (wry#1782).
+      # Exercise the unchanged release binary with an ordinary lecturer's token.
+      - name: Native UI test as a standard user
+        shell: pwsh
+        run: |
+          winget install gerardog.gsudo --accept-source-agreements --accept-package-agreements --disable-interactivity
+          $env:PATH = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
+          New-Item -ItemType Directory desktop-qa -Force | Out-Null
+          icacls desktop-qa /grant "$($env:USERNAME):(OI)(CI)F"
+          gsudo --integrity Medium node scripts/qa-desktop.mjs
+          exit $LASTEXITCODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
