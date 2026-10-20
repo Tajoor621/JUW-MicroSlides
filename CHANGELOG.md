@@ -1,3 +1,11 @@
+## Guided review and safe editing — V6.2.1 (2026-10-20)
+
+- Added a searchable lecture evidence overview with missing-passage, lecturer-review, abstract-only and critical-finding filters, a reference-to-slide map, direct evidence navigation and JSON export. Counts describe recorded evidence, not scientific accuracy.
+- Added an offline scientific reviewer workspace: open an original review pack, enter item-by-item decisions, rationale, checked sources and redundancy findings, then validate and export a compatible reviewer form. Reviewer identity and independence remain self-attested; completion does not certify the lecture or unlock reviewed export.
+- Added private local reviewer draft recovery with three checkpoints, explicit restore/delete controls, portable draft files and keyboard navigation. Original pack and item hashes are checked before review or draft resumption.
+- Made inspected slide replacement transactional: stale or locked proposals and duplicate content are rejected; new claims require evidence review. Figures return to Media unless explicitly retained, and replacement preserves the exact slide count.
+- Added lecturer-workflow contracts to both deployment pipelines and expanded production desktop/mobile/offline browser coverage. The application version remains V6.2.1.
+
 # V6.2.1 — deployment and reliability repair
 
 - Removed stale generated Vercel build artifacts from source control; both targets rebuild from source.

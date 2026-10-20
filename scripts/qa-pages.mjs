@@ -248,14 +248,166 @@ try {
   results.push(
     "Offline independent review ZIP preserves content hashes and separate blank reviewer forms without certifying science",
   );
-  await sourcePage.getByText("Assess returned reviewer forms", { exact: true }).click();
+  await sourcePage.getByRole("button", { name: "Open evidence overview", exact: true }).click();
+  const overview = sourcePage.getByRole("dialog", { name: "Lecture evidence overview" });
+  await overview.getByLabel("Evidence filter", { exact: true }).selectOption("missing");
+  assert((await overview.getByLabel("Slide evidence coverage").getByRole("button").count()) > 0);
+  const overviewFileEvent = sourcePage.waitForEvent("download");
+  await overview.getByRole("button", { name: "Download evidence overview", exact: true }).click();
+  const overviewReport = JSON.parse(await readFile(await (await overviewFileEvent).path(), "utf8"));
+  assert.equal(overviewReport.totals.slides, sourceProject.slides.length);
+  assert(overviewReport.totals.withoutPassages > 0);
+  assert.equal(overviewReport.totals.lecturerReviewed, 0);
+  await overview.screenshot({ path: join(output, "juw-evidence-overview.png") });
+  await overview.getByLabel("Slide evidence coverage").getByRole("button").first().click();
+  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
+  results.push(
+    "Live evidence overview filters missing passages, exports honest coverage and opens the corresponding slide evidence",
+  );
   await sourcePage
-    .getByLabel("Original review pack", { exact: true })
+    .getByRole("button", { name: "Complete an external review", exact: true })
+    .click();
+  let reviewer = sourcePage.getByRole("dialog", { name: "Scientific reviewer workspace" });
+  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
+    name: "pack.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(reviewPack)),
+  });
+  await reviewer.getByLabel("Review item", { exact: true }).waitFor();
+  await sourcePage.keyboard.press("Alt+ArrowRight");
+  assert.equal(
+    await reviewer.getByLabel("Review item", { exact: true }).inputValue(),
+    reviewPack.items[1].id,
+  );
+  await sourcePage.keyboard.press("Alt+ArrowLeft");
+  await reviewer
+    .getByLabel("Scientific rationale", { exact: true })
+    .fill("Private draft rationale retained through offline restart. Software fixture only.");
+  const reviewerDraftEvent = sourcePage.waitForEvent("download");
+  await sourcePage.keyboard.press("Control+s");
+  const reviewerDraftDownload = await reviewerDraftEvent;
+  assert.equal(reviewerDraftDownload.suggestedFilename(), "reviewer-draft.json");
+  const reviewerDraft = JSON.parse(await readFile(await reviewerDraftDownload.path(), "utf8"));
+  assert.equal(reviewerDraft.packHash, reviewPack.packHash);
+  assert.match(reviewerDraft.decisions[0].rationale, /retained through offline/);
+  await reviewer
+    .getByRole("button", { name: "Export completed reviewer form", exact: true })
+    .click();
+  await reviewer.getByText(/Complete every decision, rationale, source link/).waitFor();
+  await reviewer.getByText(/Review draft saved on this device/).waitFor();
+  await sourcePage.reload();
+  await saved(sourcePage);
+  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
+  await sourcePage
+    .getByRole("button", { name: "Complete an external review", exact: true })
+    .click();
+  reviewer = sourcePage.getByRole("dialog", { name: "Scientific reviewer workspace" });
+  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
+    name: "pack.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(reviewPack)),
+  });
+  await reviewer.getByText("Restore my saved review draft", { exact: true }).click();
+  assert.equal(await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(), "");
+  await reviewer
+    .getByRole("button", { name: /^Restore / })
+    .first()
+    .click();
+  assert.match(
+    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
+    /retained through offline/,
+  );
+  await reviewer
+    .getByLabel("Resume my review file", { exact: true })
+    .setInputFiles(await reviewerDraftDownload.path());
+  assert.match(
+    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
+    /retained through offline/,
+  );
+  await reviewer.evaluate((el) => {
+    el.scrollTop = 0;
+  });
+  await sourcePage.screenshot({ path: join(output, "juw-reviewer-workspace.png") });
+  await sourcePage.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await reviewer.evaluate((el) => el.scrollWidth > el.clientWidth + 2), false);
+  await sourcePage.screenshot({ path: join(output, "juw-reviewer-mobile.png") });
+  await sourcePage.setViewportSize({ width: 1280, height: 800 });
+  const completedFixture = structuredClone(externalForms[0]);
+  completedFixture.reviewer = {
+    id: "Guided fixture reviewer",
+    credentials: "Software fixture, not human qualification",
+    independent: true,
+    conflictDeclaration: "Synthetic test",
+  };
+  completedFixture.decisions.forEach((d) => {
+    d.verdict = "supported";
+    d.rationale = "Synthetic software fixture, not scientific review";
+    d.sourceUrls = ["https://example.org/fixture"];
+  });
+  await reviewer.getByLabel("Resume my review file", { exact: true }).setInputFiles({
+    name: "completed-fixture.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(completedFixture)),
+  });
+  await reviewer.getByRole("button", { name: "Check review completion", exact: true }).click();
+  await reviewer.getByText(/All decisions and declarations are complete/).waitFor();
+  const completedReviewEvent = sourcePage.waitForEvent("download");
+  await reviewer
+    .getByRole("button", { name: "Export completed reviewer form", exact: true })
+    .click();
+  const completedReview = JSON.parse(
+    await readFile(await (await completedReviewEvent).path(), "utf8"),
+  );
+  assert.equal(completedReview.decisions.length, reviewPack.items.length);
+  assert(Number.isFinite(Date.parse(completedReview.completedAt)));
+  assert.equal(completedReview.packHash, reviewPack.packHash);
+  await reviewer.getByRole("button", { name: "Remove saved draft copies", exact: true }).click();
+  await reviewer.getByText(/Saved draft copies removed for this pack/).waitFor();
+  assert.match(
+    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
+    /Synthetic software fixture/,
+  );
+  const tampered = structuredClone(reviewPack);
+  tampered.items[0].text += " changed";
+  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
+    name: "tampered.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(tampered)),
+  });
+  await reviewer.getByText(/Review pack hash mismatch/).waitFor();
+  await reviewer
+    .getByLabel("Open scientific review pack", { exact: true })
     .setInputFiles({
       name: "pack.json",
       mimeType: "application/json",
       buffer: Buffer.from(JSON.stringify(reviewPack)),
     });
+  await reviewer.getByLabel("Review item", { exact: true }).waitFor();
+  assert.equal(
+    await reviewer.getByText("Restore my saved review draft", { exact: true }).count(),
+    0,
+  );
+  await sourcePage.keyboard.press("F5");
+  assert(await reviewer.isVisible());
+  await reviewer.getByRole("button", { name: "Close", exact: true }).click();
+  await sourcePage.getByText(/Lecture workspace · Web companion/).click();
+  const unchangedEvent = sourcePage.waitForEvent("download");
+  await sourcePage.getByRole("button", { name: "Save portable project", exact: true }).click();
+  const unchangedZip = await SourceZip.loadAsync(
+    await readFile(await (await unchangedEvent).path()),
+  );
+  const unchangedDeck = JSON.parse(await unchangedZip.file("deck.json").async("string"));
+  assert.deepEqual(unchangedDeck.slides, sourceProject.slides);
+  assert.deepEqual(unchangedDeck.sourceDocuments, sourceProject.sourceDocuments);
+  results.push(
+    "Guided external review works offline, restores saved drafts, exports compatible forms, rejects tampering and never changes the lecturer deck",
+  );
+  await sourcePage.getByText("Assess returned reviewer forms", { exact: true }).click();
+  await sourcePage.getByLabel("Original review pack", { exact: true }).setInputFiles({
+    name: "pack.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(reviewPack)),
+  });
   for (const [index, label] of ["Reviewer A form", "Reviewer B form"].entries()) {
     const form = externalForms[index];
     form.reviewer.credentials = "Software test fixture, not a human qualification";
@@ -267,13 +419,11 @@ try {
       d.rationale = "Software fixture, not a scientific assessment";
       d.sourceUrls = ["https://example.org/fixture"];
     });
-    await sourcePage
-      .getByLabel(label, { exact: true })
-      .setInputFiles({
-        name: `reviewer-${index}.json`,
-        mimeType: "application/json",
-        buffer: Buffer.from(JSON.stringify(form)),
-      });
+    await sourcePage.getByLabel(label, { exact: true }).setInputFiles({
+      name: `reviewer-${index}.json`,
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(form)),
+    });
   }
   await sourcePage.getByRole("button", { name: "Assess returned forms", exact: true }).click();
   await sourcePage
@@ -295,6 +445,55 @@ try {
     "Offline returned-form assessment checks content hashes and preserves the scientific-review gate even with complete self-attestations",
   );
   await sourcePage.screenshot({ path: join(output, "juw-source-review-offline.png") });
+  await sourcePage.getByRole("button", { name: /^02/ }).click();
+  await sourcePage.getByText("Review / apply a replacement slide", { exact: true }).click();
+  await sourcePage
+    .getByLabel("Replacement title", { exact: true })
+    .fill("Inspected replacement fixture");
+  await sourcePage
+    .getByLabel("Replacement teaching points", { exact: true })
+    .fill("A unique synthetic fixture statement used to test inspected replacement safety.");
+  await sourcePage.getByRole("button", { name: "Edit", exact: true }).click();
+  await sourcePage
+    .getByLabel("Speaker notes", { exact: true })
+    .fill("A newer manual edit must invalidate a pending replacement proposal.");
+  assert(
+    await sourcePage
+      .getByRole("button", { name: "Apply inspected replacement", exact: true })
+      .isDisabled(),
+  );
+  await sourcePage
+    .getByText(/The slide or research context changed. Discard this proposal/)
+    .waitFor();
+  await sourcePage
+    .getByRole("button", { name: "Discard replacement proposal", exact: true })
+    .click();
+  await sourcePage
+    .getByLabel("Replacement title", { exact: true })
+    .fill("Inspected replacement fixture");
+  await sourcePage
+    .getByLabel("Replacement teaching points", { exact: true })
+    .fill("A unique synthetic fixture statement used to test inspected replacement safety.");
+  await sourcePage
+    .getByRole("button", { name: "Apply inspected replacement", exact: true })
+    .click();
+  await saved(sourcePage);
+  assert.equal(
+    await sourcePage.getByRole("textbox", { name: "Title", exact: true }).inputValue(),
+    "Inspected replacement fixture",
+  );
+  const replacedEvent = sourcePage.waitForEvent("download");
+  await sourcePage.getByRole("button", { name: "Save portable project", exact: true }).click();
+  const replacedZip = await SourceZip.loadAsync(await readFile(await (await replacedEvent).path()));
+  const replaced = JSON.parse(await replacedZip.file("deck.json").async("string"));
+  assert.equal(replaced.slides.length, sourceProject.slides.length);
+  assert.equal(replaced.slides[1].title, "Inspected replacement fixture");
+  assert(
+    replaced.slides[1].claims.every((c) => c.status === "unreviewed" && c.evidence.length === 0),
+  );
+  results.push(
+    "Replacement editor blocks stale proposals and preserves exact count while resetting new claims for review",
+  );
   await sourceContext.close();
   results.push(
     "Publisher HTML is inert, attributed source text survives offline reopening and portable export, and missing embeddings cannot produce a semantic pass",
@@ -1052,6 +1251,23 @@ try {
     JSON.stringify({ ok: true, checks: results, uncaughtErrors: errors }, null, 2),
   );
 } catch (e) {
+  const failedPage = browser.contexts().at(-1)?.pages().at(-1);
+  if (failedPage) {
+    await failedPage.screenshot({ path: join(output, "juw-qa-failure.png") }).catch(() => {});
+    console.error(
+      JSON.stringify({
+        dialogs: (await failedPage.getByRole("dialog").allTextContents()).map((t) =>
+          t.slice(0, 1600),
+        ),
+        selects: await failedPage.locator("select").evaluateAll((els) =>
+          els.map((e) => ({
+            aria: e.getAttribute("aria-label"),
+            labels: [...e.labels].map((l) => l.textContent?.slice(0, 180)),
+          })),
+        ),
+      }),
+    );
+  }
   console.error(e);
   console.error(JSON.stringify({ checks: results, errors }));
   process.exitCode = 1;

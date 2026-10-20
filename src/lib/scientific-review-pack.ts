@@ -62,7 +62,7 @@ export async function makeScientificReviewPack(deck: Deck, raw = JSON.stringify(
   return { ...content, packHash: await sha256(content) };
 }
 export function scientificReviewerForm(
-  pack: Awaited<ReturnType<typeof makeScientificReviewPack>>,
+  pack: { packHash: string; items: { id: string; contentHash: string }[] },
   id: string,
 ) {
   return {
@@ -72,7 +72,7 @@ export function scientificReviewerForm(
     decisions: pack.items.map((i) => ({
       id: i.id,
       contentHash: i.contentHash,
-      verdict: "pending",
+      verdict: "pending" as const,
       rationale: "",
       sourceUrls: [],
       redundantWith: [],
@@ -91,7 +91,7 @@ export async function downloadScientificReviewPack(deck: Deck) {
     zip.file(`${id}.json`, JSON.stringify(scientificReviewerForm(pack, id), null, 2));
   zip.file(
     "REVIEW-INSTRUCTIONS.txt",
-    "This is an unreviewed scientific review handoff, not certification.\nThe pack contains private notes, quotations and media links. Share deliberately.\nGive separate forms to two qualified external reviewers; keep their decisions separate until both return.\nReview every title, note, claim, figure, study limitation and redundant concept. Check current original sources, corrections and guidance.\nFor each item choose supported/revise/remove/not-factual; add rationale and sourceUrls. Supported factual claims need HTTPS sources. Identify redundancy with other item IDs in redundantWith.\nFill credentials, independence/conflict declarations and completedAt (ISO date/time). Reviewer identity and qualifications require independent coordinator verification.\nAny change to content requires a new pack and review. Do not edit pack.json.\nA coordinator can validate returned forms with the repository review:scientific assess command. No automatic scientific pass or reviewer authentication is provided.\n",
+    "This is an unreviewed scientific review handoff, not certification.\nThe pack contains private notes, quotations and media links. Share deliberately.\nGive separate forms to two qualified external reviewers; keep their decisions separate until both return.\nReview every title, note, claim, figure, study limitation and redundant concept. Check current original sources, corrections and guidance.\nFor each item choose supported/revise/remove/not-factual; add rationale and sourceUrls. Supported factual claims need HTTPS sources. Identify redundancy with other item IDs in redundantWith.\nFill credentials, independence/conflict declarations and completedAt (ISO date/time). Reviewer identity and qualifications require independent coordinator verification.\nAny change to content requires a new pack and review. Do not edit pack.json.\nReviewers can open this pack in the app Review panel → Complete an external review, fill decisions and export their form. The coordinator loads the original pack and both returned forms in Assess returned reviewer forms. No automatic scientific pass or reviewer authentication is provided.\n",
   );
   return saveFile(
     "microbiology-independent-review.zip",

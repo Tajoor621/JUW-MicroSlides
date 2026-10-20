@@ -21,6 +21,16 @@ The workflow `.github/workflows/pages.yml` checks types, lint, platform tests, r
 5. Save external images offline while connected, then export a new backup. Failed CORS/unsupported/oversized images remain external links and are reported. A download does not imply all remote images are embedded.
 6. PowerPoint preserves the editor’s exact slide count. Full references and additional-image provenance are retained in speaker notes; extra pages are not appended. Verify layout and attribution before distribution. Print/PDF uses the browser print dialog.
 
+## Evidence navigation and external scientific review
+
+In **Review → Open evidence overview**, filter statements without recorded passages, unreviewed statements, abstract-only evidence, figures or critical findings. Select a slide to open its evidence inspector; export the overview for a revision-specific record. Shared references retain adverse or unknown publication checks from every occurrence. These are coverage and metadata counts, not an accuracy score.
+
+To conduct an external review, download the scientific review pack and give its original `pack.json` to a qualified reviewer. In **Review → Complete an external review**, the reviewer opens that pack and records decisions, scientific rationale, checked HTTPS source links and redundant item IDs. Expand the reviewer declaration, then use **Check review completion** and **Export completed reviewer form**. A coordinator assesses two returned forms with the original pack using **Assess returned forms**. The workspace does not modify the lecturer's deck, authenticate a reviewer, certify scientific accuracy or change classroom-readiness gates.
+
+Review drafts save locally with three checkpoints. Reopen the matching pack and explicitly choose **Restore my saved review draft**, or resume an exported draft file. **Remove saved draft copies** deletes local recovery copies for that pack; later edits start saving again. Use separate devices/profiles for independent reviewers. Original packs and draft files are limited to 8 MB. Embedded raster previews can work offline; source links require available connectivity unless separately saved. `Alt+Left/Right` moves between review items and `Ctrl/Cmd+S` downloads the reviewer draft while its dialog is open.
+
+When replacing an individual teaching slide, inspect the proposal before applying it. Changes to the original slide invalidate an older proposal. Existing figures return to Media by default; explicitly confirm their suitability to retain them. Old claim/reference attachments are cleared and new claims require evidence review. The operation preserves the deck's slide count and other slides.
+
 ## Storage, offline operation and recovery
 
 Decks are stored in IndexedDB on this browser/origin. Existing data under `juw-microslides-v661-intro-logo` is copied during migration and the old copy is retained. Fresh samples no longer override older saved libraries. Invalid saved data is archived intact; Library → Download previous raw save retrieves it for repair instead of silently discarding it. There is no silent 24-deck eviction.

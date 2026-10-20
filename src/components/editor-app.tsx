@@ -113,6 +113,14 @@ export function EditorApp() {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       const tag = target?.tagName;
+      if (target?.closest?.('[role="dialog"], [role="alertdialog"]')) {
+        if (
+          e.key === "F5" ||
+          ((e.ctrlKey || e.metaKey) && ["n", "s", "o"].includes(e.key.toLowerCase()))
+        )
+          e.preventDefault();
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && ["n", "s", "o"].includes(e.key.toLowerCase())) {
         e.preventDefault();
         target?.blur(); // Commit any inline content edit before saving or switching views.

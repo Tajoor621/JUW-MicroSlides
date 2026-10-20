@@ -1,4 +1,5 @@
 import { reconcileDeck, reconcileClaims } from "./deck-integrity";
+import { inspectedReplacement } from "./slide-replacement";
 import { MAX_SLIDES } from "./types";
 import { assertCompleteDeck } from "./deck-completion";
 import { create } from "zustand";
@@ -60,6 +61,12 @@ interface DeckState {
   removeSlide: (index: number) => void;
   moveSlide: (index: number, dir: -1 | 1) => void;
   patchSlide: (index: number, patch: Partial<Slide>) => void;
+  applyInspectedReplacement: (
+    slideId: string,
+    proposal: unknown,
+    snapshot: string,
+    keepFigures: boolean,
+  ) => void;
   patchDeck: (patch: DeckMetaPatch) => void;
   renameTopic: (title: string) => void;
   setLayout: (layout: Layout) => void;
@@ -203,6 +210,13 @@ export const useDeckStore = create<DeckState>()(
         );
         const next = bump(d, slides);
         set({ library: get().library.map((x) => (x.id === next.id ? next : x)) });
+      },
+      applyInspectedReplacement: (slideId, proposal, snapshot, keepFigures) => {
+        const deck = get().deck();
+        if (!deck) throw Error("No active lecture.");
+        const patch = inspectedReplacement(deck, slideId, proposal, snapshot, keepFigures);
+        const next = bump({ ...deck, mediaPool: patch.mediaPool }, patch.slides);
+        set({ library: get().library.map((d) => (d.id === next.id ? next : d)) });
       },
       patchDeck: (patch) => {
         const d = get().deck();

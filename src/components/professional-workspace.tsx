@@ -1,9 +1,10 @@
 import { citationCslData } from "@/lib/csl-format";
 import { proposeReplacement } from "@/lib/local-ai";
-import { useState, useEffect } from "react";
+import { replacementSnapshot } from "@/lib/slide-replacement";
+import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
-import { classroomReady, integrityAudit, duplicateStatements } from "@/lib/deck-integrity";
+import { classroomReady, integrityAudit } from "@/lib/deck-integrity";
 import {
   flushSavedDecks,
   listDeckRevisions,
@@ -305,10 +306,18 @@ export function ProfessionalWorkspace() {
 }
 function ReplacementEditor() {
   const slide = useDeckStore((s) => s.slide()),
-    deck = useDeckStore((s) => s.deck()),
-    index = useDeckStore((s) => s.selectedIndex);
+    deck = useDeckStore((s) => s.deck());
   const [proposal, setProposal] = useState("");
   const [drafting, setDrafting] = useState(false);
+  const [baseline, setBaseline] = useState("");
+  const [keepFigures, setKeepFigures] = useState(false);
+  const draftVersion = useRef(0);
+  useEffect(
+    () => () => {
+      draftVersion.current++;
+    },
+    [],
+  );
   if (!slide || !deck) return null;
   if (slide.layout === "title")
     return (
@@ -318,6 +327,12 @@ function ReplacementEditor() {
       </p>
     );
   const candidate = proposal ? JSON.parse(proposal) : {};
+  const stale = Boolean(proposal && baseline !== replacementSnapshot(deck, slide));
+  function editProposal(next: unknown) {
+    draftVersion.current++;
+    if (!proposal) setBaseline(replacementSnapshot(deck!, slide!));
+    setProposal(JSON.stringify(next));
+  }
   return (
     <details>
       <summary className="cursor-pointer text-xs">Review / apply a replacement slide</summary>
@@ -330,8 +345,23 @@ function ReplacementEditor() {
         disabled={drafting || slide.locked}
         onClick={async () => {
           setDrafting(true);
+          const version = ++draftVersion.current;
+          const before = replacementSnapshot(deck, slide);
           try {
-            setProposal(JSON.stringify(await proposeReplacement(deck, slide), null, 2));
+            const generated = await proposeReplacement(deck, slide);
+            const current = useDeckStore.getState().deck();
+            const activeSlide = useDeckStore.getState().slide();
+            if (
+              version !== draftVersion.current ||
+              !current ||
+              !activeSlide ||
+              replacementSnapshot(current, activeSlide) !== before
+            )
+              throw Error(
+                "The slide or proposal changed while the model was drafting. Your newer work was kept.",
+              );
+            setBaseline(before);
+            setProposal(JSON.stringify(generated, null, 2));
           } catch (e) {
             toast.error(e instanceof Error ? e.message : "Local model unavailable");
           } finally {
@@ -348,7 +378,7 @@ function ReplacementEditor() {
           className="mt-1 w-full rounded border bg-elevated p-2"
           value={candidate.title || ""}
           disabled={slide.locked}
-          onChange={(e) => setProposal(JSON.stringify({ ...candidate, title: e.target.value }))}
+          onChange={(e) => editProposal({ ...candidate, title: e.target.value })}
         />
       </label>
       <label className="mt-2 block text-xs">
@@ -359,9 +389,7 @@ function ReplacementEditor() {
           rows={5}
           value={candidate.bullets?.join("\n") || ""}
           disabled={slide.locked}
-          onChange={(e) =>
-            setProposal(JSON.stringify({ ...candidate, bullets: e.target.value.split("\n") }))
-          }
+          onChange={(e) => editProposal({ ...candidate, bullets: e.target.value.split("\n") })}
         />
       </label>
       <label className="mt-2 block text-xs">
@@ -372,38 +400,61 @@ function ReplacementEditor() {
           rows={3}
           value={candidate.notes || ""}
           disabled={slide.locked}
-          onChange={(e) => setProposal(JSON.stringify({ ...candidate, notes: e.target.value }))}
+          onChange={(e) => editProposal({ ...candidate, notes: e.target.value })}
         />
       </label>
+      {proposal && (
+        <section className="my-3 space-y-2 rounded border border-border p-3 text-xs">
+          <p>
+            Before: {slide.title} ·{" "}
+            {[...slide.bullets, ...slide.leftBullets, ...slide.rightBullets].length} teaching points
+            · {slide.citations.length} references · {slide.media.length} figures
+          </p>
+          <p>
+            Proposed: {candidate.title || "Title required"} ·{" "}
+            {candidate.bullets?.filter((b: string) => b.trim()).length || 0} teaching points. New
+            claims start unreviewed; old reference attachments are cleared.
+          </p>
+          {slide.media.length > 0 && (
+            <label className="flex gap-2">
+              <input
+                type="checkbox"
+                checked={keepFigures}
+                onChange={(e) => setKeepFigures(e.target.checked)}
+              />
+              I inspected the existing figures and want to retain them on this replacement.
+              Otherwise they return to the Media collection.
+            </label>
+          )}
+          {stale && (
+            <p role="alert" className="text-danger">
+              The slide or research context changed. Discard this proposal and start again.
+            </p>
+          )}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              draftVersion.current++;
+              setProposal("");
+              setBaseline("");
+              setKeepFigures(false);
+            }}
+          >
+            Discard replacement proposal
+          </Button>
+        </section>
+      )}
       <Button
         size="sm"
-        disabled={slide.locked}
+        disabled={slide.locked || stale || !proposal || drafting}
         onClick={() => {
           try {
-            const p = JSON.parse(proposal);
-            if (
-              typeof p.title !== "string" ||
-              !Array.isArray(p.bullets) ||
-              !p.bullets.length ||
-              p.bullets.some((b: unknown) => typeof b !== "string" || !b.trim())
-            )
-              throw Error("Provide a title and substantive bullets.");
-            const replacement = {
-              ...slide,
-              title: p.title,
-              subtitle: "",
-              bullets: p.bullets,
-              leftBullets: [],
-              rightBullets: [],
-              claims: [],
-              citations: [],
-              notes: typeof p.notes === "string" ? p.notes : "",
-            };
-            const all = deck.slides.map((s, i) => (i === index ? replacement : s));
-            if (duplicateStatements(all).some((d) => d.first === index || d.second === index))
-              throw Error("Replacement overlaps another teaching statement.");
-            useDeckStore.getState().patchSlide(index, replacement);
+            useDeckStore
+              .getState()
+              .applyInspectedReplacement(slide.id, JSON.parse(proposal), baseline, keepFigures);
             setProposal("");
+            setKeepFigures(false);
             toast.success(
               "Replacement applied; previous version retained and new claims need review.",
             );

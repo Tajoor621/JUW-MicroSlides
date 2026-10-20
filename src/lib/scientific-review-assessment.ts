@@ -6,7 +6,7 @@ type AssessmentPack = {
   createdAt: string;
   items: { id: string; contentHash: string }[];
 };
-const reviewerSchema = z.object({
+export const reviewerSchema = z.object({
   packHash: z.string().max(100),
   reviewer: z.object({
     id: z.string().min(1).max(200),
@@ -84,6 +84,18 @@ export function assessScientificReviews(
         d.redundantWith.some((id) => id === item.id || !pack.items.some((i) => i.id === id))
       )
         errors.push(`Invalid redundancy decisions ${item.id}`);
+      const links = d.sourceUrls.filter((u) => u.trim());
+      if (
+        links.some((url) => {
+          try {
+            const u = new URL(url);
+            return u.protocol !== "https:" || Boolean(u.username || u.password);
+          } catch {
+            return true;
+          }
+        })
+      )
+        errors.push(`Invalid scientific source link ${item.id}`);
       if (
         d.verdict === "supported" &&
         !d.sourceUrls.some((url) => {

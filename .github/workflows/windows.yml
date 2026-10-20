@@ -25,6 +25,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:scientific
       - run: npm run test:professional
+      - run: npm run test:lecturer
       - run: npm run desktop:build
       - name: Install the NSIS package and its WebView2 dependency
         shell: pwsh

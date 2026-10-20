@@ -1,3 +1,5 @@
+import { EvidenceOverview } from "./evidence-overview";
+import { ScientificReviewWorkbench } from "./scientific-review-workbench";
 import { ScientificReviewReturns } from "./scientific-review-returns";
 import { downloadScientificReviewPack } from "@/lib/scientific-review-pack";
 import { SourceLibrary } from "./source-library";
@@ -160,6 +162,7 @@ export function SpecialistReview() {
           <span>{all.length} total review items</span>
         </div>
       </section>
+      <EvidenceOverview deck={deck} />
       <section className="space-y-2 rounded border border-border p-3">
         <h4 className="text-sm font-medium">Independent scientific review</h4>
         <p className="text-xs text-muted">
@@ -186,6 +189,7 @@ export function SpecialistReview() {
           {busy === "review-pack" ? "Preparing review pack…" : "Download independent review pack"}
         </Button>
       </section>
+      <ScientificReviewWorkbench />
       <ScientificReviewReturns deck={deck} />
       <SourceLibrary />
       <section className="space-y-2 rounded border border-border p-3">
