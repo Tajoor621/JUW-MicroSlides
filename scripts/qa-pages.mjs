@@ -658,9 +658,9 @@ try {
     assert.equal(slideCountInPptx(bytes), 50);
     const xml = pptxXmlFiles(bytes);
     const embeddedVectors = Object.entries(xml).filter(([name, data]) =>
-      name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\\s>]/i.test(data)
+      name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\s>]/i.test(data)
     );
-    assert(embeddedVectors.length > 0, `PPTX must retain genuine SVG vector artwork; media entries: ${Object.keys(xml).filter(name => name.startsWith("ppt/media/") && name.endsWith(".svg")).slice(0,2).map(name => name + ":" + xml[name].slice(0,220)).join(", ")}`);
+    assert(embeddedVectors.length > 0, "PPTX must retain genuine SVG vector artwork");
     const firstSlide = xml["ppt/slides/slide1.xml"];
     const logoBox = metrics[0].images[0];
     const logoPic = [...firstSlide.matchAll(/<p:pic>.*?<\/p:pic>/gs)]
