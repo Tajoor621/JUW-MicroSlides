@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import assert from "node:assert/strict";
 import { cpus, totalmem, release } from "node:os";
 import { execFileSync as runGit } from "node:child_process";
+import { isNativeTransportUrl } from "./native-network-policy.mjs";
 import { makeScientificReviewPack } from "../src/lib/scientific-review-pack.ts";
 const output = process.env.JUW_QA_OUTPUT || "desktop-qa";
 await mkdir(output, { recursive: true });
@@ -182,8 +183,7 @@ try {
   async function openReview(target) {
     await target.route(/^https?:\/\//, async (route) => {
       const url = new URL(route.request().url());
-      if (url.hostname === "tauri.localhost" || url.hostname === "localhost")
-        return route.continue();
+      if (isNativeTransportUrl(url.href)) return route.continue();
       remoteReviewRequests.push(url.origin + url.pathname);
       return route.abort("internetdisconnected");
     });

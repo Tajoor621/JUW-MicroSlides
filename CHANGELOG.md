@@ -1,3 +1,7 @@
+## Native transport qualification correction — V6.2.1 (2026-10-20)
+
+- Corrected the offline review test to recognize Tauri's local IPC bridge as native transport, with explicit tests rejecting remote hostname lookalikes. Remote requests remain blocked during review.
+
 ## Saved sample identity repair — V6.2.1 (2026-10-20)
 
 - Native reviewer crash testing exposed sample regeneration during workspace hydration. Removed automatic replacement of persisted sample decks, preserving saved content, claim IDs and review-pack identity across restart.
