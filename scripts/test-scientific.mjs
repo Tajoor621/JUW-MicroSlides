@@ -314,19 +314,73 @@ try {
   } finally {
     globalThis.fetch = realFetch;
   }
-  await check("Research retries transient failures and excludes preprints without padding", async () => {
-    const {enrichTopicEvidence,researchQueries}=await server.ssrLoadModule("/src/lib/topic-evidence.ts");
-    const input={topic:"Bacterial endospores",discipline:"Bacteriology",count:1,level:"Undergraduate",mode:"manual",notes:""};
-    const seed=generateLocalDeck(input);seed.slides=[];
-    const paper={source:"MED",id:"123",title:input.topic,abstractText:"Bacterial endospores in this software fixture illustrate one distinct source statement with adequate length. Bacterial endospores in this software fixture illustrate a separate source passage for the contract test."};
-    const original=globalThis.fetch;let calls=0;const firstBatch=researchQueries(input.topic).length;
-    try {
-      globalThis.fetch=async()=>{if(++calls<=firstBatch)throw Error("Transient fixture outage");return new Response(JSON.stringify({resultList:{result:[paper]}}));};
-      const completed=await enrichTopicEvidence(seed,input);assert.equal(completed.slides.length,1);assert(calls>firstBatch);
-      globalThis.fetch=async()=>new Response(JSON.stringify({resultList:{result:[{...paper,source:"PPR",pubTypeList:{pubType:["Preprint"]}}]}}));
-      await assert.rejects(()=>enrichTopicEvidence(seed,input),/not complete/);assert.equal(seed.slides.length,0);
-    }finally{globalThis.fetch=original;}
-  });
+  await check(
+    "Research retries transient failures and excludes preprints without padding",
+    async () => {
+      const { enrichTopicEvidence, researchQueries } = await server.ssrLoadModule(
+        "/src/lib/topic-evidence.ts",
+      );
+      const input = {
+        topic: "Bacterial endospores",
+        discipline: "Bacteriology",
+        count: 1,
+        level: "Undergraduate",
+        mode: "manual",
+        notes: "",
+      };
+      const seed = generateLocalDeck(input);
+      seed.slides = [];
+      const paper = {
+        source: "MED",
+        id: "123",
+        title: input.topic,
+        abstractText:
+          "Bacterial endospores in this software fixture illustrate one distinct source statement with adequate length. Bacterial endospores in this software fixture illustrate a separate source passage for the contract test.",
+      };
+      const original = globalThis.fetch;
+      let calls = 0;
+      const firstBatch = researchQueries(input.topic).length;
+      try {
+        globalThis.fetch = async () => {
+          if (++calls <= firstBatch) throw Error("Transient fixture outage");
+          return new Response(JSON.stringify({ resultList: { result: [paper] } }));
+        };
+        const completed = await enrichTopicEvidence(seed, input);
+        assert.equal(completed.slides.length, 1);
+        assert(calls > firstBatch);
+        globalThis.fetch = async () =>
+          new Response(
+            JSON.stringify({
+              resultList: {
+                result: [{ ...paper, source: "PPR", pubTypeList: { pubType: ["Preprint"] } }],
+              },
+            }),
+          );
+        await assert.rejects(() => enrichTopicEvidence(seed, input), /not complete/);
+        assert.equal(seed.slides.length, 0);
+        const exactBody =
+          "Bacterial endospores in this fixture show values p &lt; 0.05 and concentrations &gt; 2 &#x3bc;g under defined conditions. Bacterial endospores in this second fixture sentence retain a separate qualified numerical observation.";
+        globalThis.fetch = async (url) =>
+          String(url).includes("fullTextXML")
+            ? new Response(`<article><body><p>${exactBody}</p></body></article>`)
+            : new Response(
+                JSON.stringify({
+                  resultList: { result: [{ ...paper, pmcid: "PMC123", isOpenAccess: "Y" }] },
+                }),
+              );
+        const fullText = await enrichTopicEvidence(seed, input);
+        assert.match(fullText.slides[0].bullets[0], /p < 0.05/);
+        assert.match(fullText.slides[0].bullets[0], /> 2 μg/);
+        assert(
+          fullText.sourceDocuments[0].text
+            .replace(/\s+/g, " ")
+            .includes(fullText.slides[0].claims[0].evidence[0].quote),
+        );
+      } finally {
+        globalThis.fetch = original;
+      }
+    },
+  );
   const corpus = JSON.parse(await readFile("benchmarks/microbiology-topics.json", "utf8"));
   await check(
     "Broad benchmark manifest covers 200 unique topics with explicit unqualified science status",

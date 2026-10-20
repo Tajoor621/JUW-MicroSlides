@@ -82,3 +82,4 @@ See README for remaining limits, deployment setup, and validation commands.
 - Replace repeated whole-candidate duplicate scans with bounded incremental evidence screening. Keep exact count and final repetition gates. Application version remains V6.2.1.
 
 - Retry transient literature requests within a bounded budget; surface service failures separately from insufficient evidence. Add regression coverage for preprint exclusion and retry completion.
+- Preserve literal scientific comparison signs and decoded Unicode symbols in full-text claim passages; verify quotation containment against archived source text.

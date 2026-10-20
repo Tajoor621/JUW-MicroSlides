@@ -59,7 +59,8 @@ export function parseJats(xml: string) {
   if (XMLValidator.validate(xml) !== true) throw Error("Malformed scientific XML.");
   const parser = new XMLParser({
     ignoreAttributes: false,
-    processEntities: false,
+    processEntities: true,
+    htmlEntities: true,
     preserveOrder: true,
     trimValues: false,
   });
@@ -89,14 +90,7 @@ export function parseJats(xml: string) {
       for (const [k, v] of Object.entries(n)) {
         if (["ref-list", "fig", "table-wrap", "supplementary-material"].includes(k)) continue;
         if ((k === "p" || k === "title") && Array.isArray(v))
-          paragraphs.push(
-            flatten(v)
-              .replace(/&amp;/g, "&")
-              .replace(/&lt;/g, "<")
-              .replace(/&gt;/g, ">")
-              .replace(/\s+/g, " ")
-              .trim(),
-          );
+          paragraphs.push(flatten(v).replace(/\s+/g, " ").trim());
         else if (Array.isArray(v)) collect(v);
       }
   };

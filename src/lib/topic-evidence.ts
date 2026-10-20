@@ -162,9 +162,10 @@ function sourceSlides(
         return [];
       const passage = p.fullBody || p.abstractText;
       if (!p.title || !passage) return [];
-      const score = relevance(topic, `${p.title} ${text(passage)}`);
+      const plainPassage = p.fullBody ? passage.replace(/\s+/g, " ").trim() : text(passage);
+      const score = relevance(topic, `${p.title} ${plainPassage}`);
       if (score < 0.6) return [];
-      const sentences = text(passage)
+      const sentences = plainPassage
         .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
         .filter(
           (s) =>
