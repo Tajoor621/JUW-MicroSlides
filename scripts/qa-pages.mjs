@@ -660,7 +660,7 @@ try {
     const embeddedVectors = Object.entries(xml).filter(([name, data]) =>
       name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\\s>]/i.test(data)
     );
-    assert(embeddedVectors.length > 0, "PPTX must retain at least one genuine SVG vector asset for sharp zooming");
+    assert(embeddedVectors.length > 0, `PPTX must retain genuine SVG vector artwork; media entries: ${Object.keys(xml).filter(name => name.startsWith("ppt/media/")).join(", ")}`);
     const firstSlide = xml["ppt/slides/slide1.xml"];
     const logoBox = metrics[0].images[0];
     const logoPic = [...firstSlide.matchAll(/<p:pic>.*?<\/p:pic>/gs)]
