@@ -125,7 +125,7 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
         });
       // Bullet dots use a background with no text, handled as small native shapes.
       if (el instanceof HTMLImageElement) {
-        if (el.naturalWidth)
+        if (el.currentSrc || el.src)
           items.push({
             ...box,
             kind: "image",

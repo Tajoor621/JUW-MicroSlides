@@ -41,7 +41,18 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
   const images = new Map<string, string | null>();
   async function imageData(src: string, width: number, height: number, cover: boolean) {
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
-    if (/^data:image\/svg\+xml[;,]/i.test(src)) return src;
+    if (/^data:image\/svg\+xml[;,]/i.test(src)) {
+      // PptxGenJS expects a base64-encoded SVG payload; percent-encoded data
+      // URIs may be silently omitted from the generated slide XML.
+      if (/^data:image\/svg\+xml;base64,/i.test(src)) return src;
+      const comma = src.indexOf(",");
+      const svg = decodeURIComponent(src.slice(comma + 1));
+      const bytes = new TextEncoder().encode(svg);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 8192)
+        binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+      return `data:image/svg+xml;base64,${btoa(binary)}`;
+    }
     const key = `${src}:${width}:${height}:${cover}`;
     if (!images.has(key)) {
       let data: string | null = null;

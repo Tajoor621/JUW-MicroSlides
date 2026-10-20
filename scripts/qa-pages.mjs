@@ -751,7 +751,7 @@ try {
               Math.abs(Number(size[2]) / 9525 - img.h) < 1
             );
           }),
-          `Slide ${i + 1}: image placement mismatch: expected ${JSON.stringify(img)}; first picture XML ${pictures[0]?.slice(0,1500)}; actual PPTX picture boxes ${JSON.stringify(pictures.map(pic => { const off = pic.match(/<a:off x="(\\d+)" y="(\\d+)"/); const size = pic.match(/<a:ext cx="(\\d+)" cy="(\\d+)"/); return {x: off ? Number(off[1])/9525 : null,y:off ? Number(off[2])/9525:null,w:size ? Number(size[1])/9525:null,h:size ? Number(size[2])/9525:null}; }))}`,
+          `Slide ${i + 1}: image placement must match the preview: ${JSON.stringify(img)}`,
         );
 
       assert(
