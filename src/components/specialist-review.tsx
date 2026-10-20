@@ -1,3 +1,4 @@
+import { ScientificReviewReturns } from "./scientific-review-returns";
 import { downloadScientificReviewPack } from "@/lib/scientific-review-pack";
 import { SourceLibrary } from "./source-library";
 import { semanticReview } from "@/lib/semantic-review";
@@ -185,6 +186,7 @@ export function SpecialistReview() {
           {busy === "review-pack" ? "Preparing review pack…" : "Download independent review pack"}
         </Button>
       </section>
+      <ScientificReviewReturns deck={deck} />
       <SourceLibrary />
       <section className="space-y-2 rounded border border-border p-3">
         <h4 className="text-sm font-medium">Semantic overlap screening</h4>

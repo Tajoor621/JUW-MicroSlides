@@ -13,14 +13,7 @@ import { europeNotices, noticeStatus } from "./publication-status";
 import { uid } from "./utils";
 import { DeckCompletionError, requestedCount } from "./deck-completion";
 
-const text = (raw: string) =>
-  raw
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
-    .trim();
+import { scientificPlainText as text, coherentSourcePassages } from "./source-passages";
 type Paper = {
   id?: string;
   source?: string;
@@ -140,18 +133,12 @@ export function researchQueries(topic: string) {
     ]),
   ].filter(Boolean);
 }
-function chunks(sentences: string[]): string[][] {
-  const result: string[][] = [];
-  for (let i = 0; i < sentences.length; i += 2) result.push(sentences.slice(i, i + 2));
-  if (result.length > 1 && result.at(-1)!.length === 1)
-    result[result.length - 2].push(...result.pop()!);
-  return result.filter((c) => c.length >= 2);
-}
 function sourceSlides(
   papers: Paper[],
   topic: string,
   usedBodies: Set<string>,
   limit = 50,
+  preferOverview = false,
 ): Slide[] {
   const ranked = papers
     .flatMap((p) => {
@@ -165,18 +152,12 @@ function sourceSlides(
       const plainPassage = p.fullBody ? passage.replace(/\s+/g, " ").trim() : text(passage);
       const score = relevance(topic, `${p.title} ${plainPassage}`);
       if (score < 0.6) return [];
-      const sentences = plainPassage
-        .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
-        .filter(
-          (s) =>
-            (!p.fullBody || relevance(topic, s) >= 0.6) &&
-            s.length > 40 &&
-            s.length < 800 &&
-            !/copyright|all rights reserved|trial registration|competing interest|author contribution|funding:/i.test(
-              s,
-            ),
-        );
-      if (sentences.length < 2) return [];
+      const parts = coherentSourcePassages(
+        passage,
+        Boolean(p.fullBody),
+        (body) => !p.fullBody || relevance(topic, body) >= 0.6,
+      );
+      if (!parts.length) return [];
       return [
         {
           p,
@@ -186,11 +167,19 @@ function sourceSlides(
               ? 0.4
               : 0) +
             (p.fullBody ? 0.2 : 0),
-          parts: chunks(sentences.slice(0, 24)),
+          parts,
         },
       ];
     })
     .sort((a, b) => b.score - a.score);
+  const overviewScore = (slide: Slide) => {
+    const body = slide.bullets.join(" ");
+    return (
+      (slide.citations.some((c) => c.type === "book") ? 1 : 0) +
+      (/\b(is|are|refers? to|defined as)\b/i.test(body) ? 0.3 : 0) -
+      (/\b(we|our|found|observed|measured|investigated)\b/i.test(body) ? 0.8 : 0)
+    );
+  };
   const groups: Slide[][] = [],
     headings = new Set<string>();
   // Every passage is used at most once. Longer abstracts contribute several coherent sections.
@@ -221,7 +210,7 @@ function sourceSlides(
           ? `https://doi.org/${p.doi}`
           : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`);
     for (let part = 0; part < parts.length; part++) {
-      const bullets = parts[part];
+      const bullets = parts[part].sentences;
       const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");
       if (usedBodies.has(key)) continue;
       usedBodies.add(key);
@@ -242,11 +231,11 @@ function sourceSlides(
         layout: "content",
         theme: "molecular",
         title,
-        subtitle: `${p.sourceDocument?.access || (p.fullBody ? "Full-text" : "Abstract")} · source excerpt`,
+        subtitle: `${p.sourceDocument?.access || (p.fullBody ? "Full-text" : "Abstract")} · ${p.pubYear || "date unrecorded"} · source excerpt`,
         bullets,
         leftBullets: [],
         rightBullets: [],
-        notes: `Source: ${sourceTitle}\n${source}\nPassage ${part + 1} of ${parts.length} from the ${p.fullBody ? "article body" : "publication abstract"}. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.`,
+        notes: `Source: ${sourceTitle}\n${source}\nParagraph ${parts[part].paragraph}; excerpt group ${part + 1} of ${parts.length} from the ${p.fullBody ? "article body" : "publication abstract"}. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.\n\nSource paragraph context (verbatim):\n${parts[part].context}`,
         citations: [citation],
         media: [],
       };
@@ -264,7 +253,7 @@ function sourceSlides(
           {
             citationId: citation.id,
             sourceUrl: source,
-            locator: `${p.sourceDocument?.locator || (p.fullBody ? "Article body" : "Abstract")}, excerpt group ${part + 1}; locate exact quoted text`,
+            locator: `${p.sourceDocument?.locator || (p.fullBody ? "Article body" : "Abstract")}, paragraph ${parts[part].paragraph}, excerpt group ${part + 1}; locate exact quoted text`,
             quote: c.text,
             access: p.sourceDocument?.access || (p.fullBody ? "full-text" : "abstract"),
             checkedAt: Date.now(),
@@ -274,10 +263,13 @@ function sourceSlides(
       slides.push(traced);
     }
     const strength = (slide: Slide) =>
+      (preferOverview ? overviewScore(slide) : 0) +
       relevance(topic, slide.bullets.join(" ")) +
       (/result|showed|found|demonstrat|observed|measured/i.test(slide.bullets.join(" ")) ? 0.3 : 0);
     groups.push(slides.sort((a, b) => strength(b) - strength(a)));
   }
+  if (preferOverview)
+    groups.sort((a, b) => (b[0] ? overviewScore(b[0]) : -10) - (a[0] ? overviewScore(a[0]) : -10));
   // Round-robin across studies; compare each new statement once against accepted content.
   // Rechecking every historical pair for each candidate was cubic and blocked cancellation timers.
   const accepted: Slide[] = [],
@@ -341,7 +333,7 @@ export async function enrichTopicEvidence(
   if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 75000);
-  const cacheKey = `research-body-v2:${input.topic.toLowerCase().trim().slice(0, 240)}`;
+  const cacheKey = `research-passages-v3:${input.topic.toLowerCase().trim().slice(0, 240)}`;
   const papers = new Map<string, Paper>();
   try {
     const cached = JSON.parse((await readLocalRecord(cacheKey)) || "null");
@@ -411,6 +403,7 @@ export async function enrichTopicEvidence(
     input.topic,
     new Set(bodyKeys),
     needed,
+    target === 1,
   );
   let work = queries.map((query) => ({ query, cursor: "*" }));
   try {
@@ -470,7 +463,13 @@ export async function enrichTopicEvidence(
       } catch {
         /* Online generation can continue with an explicit uncached source. */
       }
-      evidence = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys), needed);
+      evidence = sourceSlides(
+        [...papers.values()],
+        input.topic,
+        new Set(bodyKeys),
+        needed,
+        target === 1,
+      );
       if (signal?.aborted) throw signal.reason;
     }
     if (evidence.length < needed)

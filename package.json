@@ -34,7 +34,8 @@
     "test:scientific": "node scripts/test-scientific.mjs",
     "benchmark:live": "node scripts/benchmark-live.mjs",
     "benchmark:semantic": "node scripts/benchmark-semantic.mjs",
-    "review:scientific": "node scripts/scientific-review.mjs"
+    "review:scientific": "node scripts/scientific-review.mjs",
+    "benchmark:semantic:local": "node scripts/benchmark-semantic-local.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",

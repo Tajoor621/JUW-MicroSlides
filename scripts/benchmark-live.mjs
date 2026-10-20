@@ -116,7 +116,7 @@ try {
         referenceCount: refs.length,
         publicationChecks: refs.map((r) => ({ id: r.id, ...r.publicationCheck })),
         criticalFindings: integrityAudit(deck).filter((f) => f.severity === "critical").length,
-        semanticVerdict: "not-run-no-installed-model",
+        semanticVerdict: "not-run-in-this-benchmark",
         scientificVerdict: "needs-independent-review",
         classroomReady: false,
       };

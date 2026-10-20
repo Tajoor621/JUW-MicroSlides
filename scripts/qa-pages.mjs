@@ -248,6 +248,52 @@ try {
   results.push(
     "Offline independent review ZIP preserves content hashes and separate blank reviewer forms without certifying science",
   );
+  await sourcePage.getByText("Assess returned reviewer forms", { exact: true }).click();
+  await sourcePage
+    .getByLabel("Original review pack", { exact: true })
+    .setInputFiles({
+      name: "pack.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(reviewPack)),
+    });
+  for (const [index, label] of ["Reviewer A form", "Reviewer B form"].entries()) {
+    const form = externalForms[index];
+    form.reviewer.credentials = "Software test fixture, not a human qualification";
+    form.reviewer.independent = true;
+    form.reviewer.conflictDeclaration = "Synthetic software fixture";
+    form.completedAt = new Date().toISOString();
+    form.decisions.forEach((d) => {
+      d.verdict = "supported";
+      d.rationale = "Software fixture, not a scientific assessment";
+      d.sourceUrls = ["https://example.org/fixture"];
+    });
+    await sourcePage
+      .getByLabel(label, { exact: true })
+      .setInputFiles({
+        name: `reviewer-${index}.json`,
+        mimeType: "application/json",
+        buffer: Buffer.from(JSON.stringify(form)),
+      });
+  }
+  await sourcePage.getByRole("button", { name: "Assess returned forms", exact: true }).click();
+  await sourcePage
+    .getByText("Two reviewer attestations complete — identity and independence unverified", {
+      exact: true,
+    })
+    .waitFor();
+  assert(
+    await sourcePage
+      .getByRole("button", { name: "Export reviewed PPTX", exact: true })
+      .isDisabled(),
+  );
+  const assessedDownload = sourcePage.waitForEvent("download");
+  await sourcePage.getByRole("button", { name: "Download assessment", exact: true }).click();
+  const assessed = JSON.parse(await readFile(await (await assessedDownload).path(), "utf8"));
+  assert.equal(assessed.scientificCertification, false);
+  assert.equal(assessed.independentlyVerified, false);
+  results.push(
+    "Offline returned-form assessment checks content hashes and preserves the scientific-review gate even with complete self-attestations",
+  );
   await sourcePage.screenshot({ path: join(output, "juw-source-review-offline.png") });
   await sourceContext.close();
   results.push(

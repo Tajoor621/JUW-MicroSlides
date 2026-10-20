@@ -410,6 +410,105 @@ try {
       }
     },
   );
+  await check(
+    "Embedding API fixtures require stable model digests and never confer calibration",
+    async () => {
+      const savedFetch = globalThis.fetch,
+        savedStorage = globalThis.localStorage;
+      try {
+        globalThis.localStorage = {
+          getItem: () =>
+            JSON.stringify({
+              url: "http://localhost:11434",
+              model: "fixture",
+              embeddingModel: "fixture",
+            }),
+        };
+        const copy = structuredClone(d);
+        copy.slides = [copy.slides[1]];
+        copy.slides[0].bullets = [
+          "Bacterial first teaching statement.",
+          "Bacterial second teaching statement.",
+        ];
+        copy.slides[0].leftBullets = [];
+        copy.slides[0].rightBullets = [];
+        let tags = 0,
+          changed = false;
+        globalThis.fetch = async (url) =>
+          new Response(
+            JSON.stringify(
+              String(url).endsWith("/api/tags")
+                ? {
+                    models: [
+                      { name: "fixture", digest: (changed && ++tags > 1 ? "b" : "a").repeat(64) },
+                    ],
+                  }
+                : {
+                    model: "fixture",
+                    embeddings: [
+                      [1, 0],
+                      [0, 1],
+                    ],
+                  },
+            ),
+          );
+        const report = await sem.semanticReview(copy);
+        assert.equal(report.modelDigest, "a".repeat(64));
+        assert.equal(report.independentlyCalibrated, false);
+        changed = true;
+        await assert.rejects(() => sem.semanticReview(copy), /changed during screening/);
+        globalThis.fetch = async (url) =>
+          new Response(
+            JSON.stringify(
+              String(url).endsWith("/api/tags")
+                ? { models: [{ name: "fixture", digest: "a".repeat(64) }] }
+                : {
+                    embeddings: [
+                      [1, 0],
+                      [0, 1],
+                    ],
+                  },
+            ),
+          );
+        await assert.rejects(() => sem.semanticReview(copy), /did not identify/);
+      } finally {
+        globalThis.fetch = savedFetch;
+        globalThis.localStorage = savedStorage;
+      }
+    },
+  );
+  await check(
+    "Single-slide source summaries prefer explanatory paragraphs over first-person results",
+    async () => {
+      const input = {
+        topic: "Bacterial chromosome segregation",
+        discipline: "Bacteriology",
+        level: "Graduate",
+        notes: "",
+        mode: "manual",
+        count: 1,
+      };
+      const seed = generateLocalDeck(input);
+      seed.slides = [];
+      const opening =
+        "Bacterial chromosome segregation is the distribution of duplicated chromosomes into daughter cells. Bacterial chromosome segregation coordinates genome inheritance during the cell division cycle.";
+      seed.sourceDocuments = [
+        {
+          ...d.sourceDocuments[0],
+          text:
+            "We found bacterial chromosome segregation rates were altered in the selected culture conditions. Our bacterial chromosome segregation observations were restricted to the sampled bacterial culture.\n\n" +
+            opening,
+        },
+      ];
+      const { enrichTopicEvidence } = await server.ssrLoadModule("/src/lib/topic-evidence.ts");
+      const result = await enrichTopicEvidence(seed, input);
+      assert.equal(result.slides.length, 1);
+      assert.match(result.slides[0].bullets[0], /is the distribution/);
+      assert.match(result.slides[0].notes, /Source paragraph context/);
+      assert(result.slides[0].notes.includes(opening));
+      assert(result.slides[0].claims.every((c) => c.status !== "lecturer-reviewed"));
+    },
+  );
   const corpus = JSON.parse(await readFile("benchmarks/microbiology-topics.json", "utf8"));
   await check(
     "Broad benchmark manifest covers 200 unique topics with explicit unqualified science status",

@@ -1,0 +1,1156 @@
+{
+  "appVersion": "V6.2.1",
+  "sourceFingerprint": "97a833f91a9335d9b12d55ba4bb84716aec3b675627a62b454b0a823c9085b88",
+  "workingTreeDirty": true,
+  "commit": "50a19bca65dd2afc52ffb8883f179f989ba0899c",
+  "generatedAt": "2026-10-20T04:52:39.148Z",
+  "machine": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.19.0"
+  },
+  "scope": {
+    "start": 1,
+    "stride": 50,
+    "attempted": 4,
+    "manifest": 200
+  },
+  "results": [
+    {
+      "id": "micro-002",
+      "topic": "Bacterial endospores",
+      "domain": "Bacterial cell biology",
+      "requested": 10,
+      "actual": 10,
+      "completed": true,
+      "elapsedMs": 26289,
+      "lexicalDuplicatePairs": 0,
+      "claims": 19,
+      "claimsWithPassages": 19,
+      "fullTextClaims": 13,
+      "referenceCount": 9,
+      "publicationChecks": [
+        {
+          "id": "epmc-MED-39854521",
+          "identifier": "10.1371/journal.pone.0318186",
+          "checkedAt": 1792471752639,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-37910513",
+          "identifier": "10.1016/j.xpro.2023.102678",
+          "checkedAt": 1792471752680,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-36339735",
+          "identifier": "10.3168/jdsc.2021-0170",
+          "checkedAt": 1792471752599,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-33264453",
+          "identifier": "10.1111/1462-2920.15343",
+          "checkedAt": 1792471756978,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-31130935",
+          "identifier": "10.3389/fmicb.2019.00945",
+          "checkedAt": 1792471756932,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-30061638",
+          "identifier": "10.1038/s41598-018-29879-5",
+          "checkedAt": 1792471756922,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-39043143",
+          "identifier": "10.1016/j.cub.2024.06.006",
+          "checkedAt": 1792471761297,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-AGR-IND608163831",
+          "identifier": "",
+          "checkedAt": 1792471756979,
+          "status": "unknown",
+          "providers": [],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-36463735",
+          "identifier": "10.1016/j.jhazmat.2022.130505",
+          "checkedAt": 1792471761230,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        }
+      ],
+      "criticalFindings": 19,
+      "semanticVerdict": "not-run-in-this-benchmark",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "recordedSemanticVerdict": "not-run-no-installed-model"
+    },
+    {
+      "id": "micro-052",
+      "topic": "Bacterial conjugation",
+      "domain": "Microbial genetics",
+      "requested": 50,
+      "actual": 50,
+      "completed": true,
+      "elapsedMs": 69691,
+      "lexicalDuplicatePairs": 0,
+      "claims": 105,
+      "claimsWithPassages": 105,
+      "fullTextClaims": 13,
+      "referenceCount": 49,
+      "publicationChecks": [
+        {
+          "id": "epmc-MED-42110713",
+          "identifier": "10.1155/ijm/3323758",
+          "checkedAt": 1792471777225,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-40768349",
+          "identifier": "10.1073/pnas.2505446122",
+          "checkedAt": 1792471777187,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-40821579",
+          "identifier": "10.1021/acsomega.5c03425",
+          "checkedAt": 1792471777190,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-40422289",
+          "identifier": "10.1128/aem.00868-25",
+          "checkedAt": 1792471781499,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-37508224",
+          "identifier": "10.3390/antibiotics12071127",
+          "checkedAt": 1792471781538,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-36995224",
+          "identifier": "10.1128/spectrum.03688-22",
+          "checkedAt": 1792471781605,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-41956307",
+          "identifier": "10.1016/j.biotechadv.2026.108894",
+          "checkedAt": 1792471786245,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-41401781",
+          "identifier": "10.1016/j.cub.2025.11.022",
+          "checkedAt": 1792471786630,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-40300599",
+          "identifier": "10.1016/j.cels.2025.101268",
+          "checkedAt": 1792471786262,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-36750723",
+          "identifier": "10.1038/s41467-023-36349-8",
+          "checkedAt": 1792471790906,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-36511856",
+          "identifier": "10.1093/nar/gkac1164",
+          "checkedAt": 1792471790970,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-37614897",
+          "identifier": "10.1128/jmbe.00237-22",
+          "checkedAt": 1792471791758,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-34671336",
+          "identifier": "10.3389/fmicb.2021.750200",
+          "checkedAt": 1792471795900,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-35697796",
+          "identifier": "10.1038/s41564-022-01146-4",
+          "checkedAt": 1792471795817,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-34149661",
+          "identifier": "10.3389/fmicb.2021.673260",
+          "checkedAt": 1792471795851,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-35635697",
+          "identifier": "10.1007/978-1-0716-2221-6_6",
+          "checkedAt": 1792471800820,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-33732782",
+          "identifier": "10.21769/bioprotoc.3893",
+          "checkedAt": 1792471800727,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-34755474",
+          "identifier": "10.1111/1751-7915.13967",
+          "checkedAt": 1792471800728,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-35472548",
+          "identifier": "10.1016/j.jhazmat.2022.128889",
+          "checkedAt": 1792471805024,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-32961700",
+          "identifier": "10.3390/biomedicines8090362",
+          "checkedAt": 1792471805119,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-30688297",
+          "identifier": "10.3791/57812",
+          "checkedAt": 1792471805045,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-33361328",
+          "identifier": "10.1128/msystems.01226-20",
+          "checkedAt": 1792471809326,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-30685311",
+          "identifier": "10.1016/j.ijantimicag.2019.01.011",
+          "checkedAt": 1792471809477,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-32379323",
+          "identifier": "10.1093/nar/gkaa313",
+          "checkedAt": 1792471810396,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-31309702",
+          "identifier": "10.1111/1758-2229.12784",
+          "checkedAt": 1792471814595,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-30941540",
+          "identifier": "10.1007/s00284-019-01676-x",
+          "checkedAt": 1792471814579,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-30258061",
+          "identifier": "10.1038/s41598-018-32342-0",
+          "checkedAt": 1792471814579,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-30403128",
+          "identifier": "10.1021/acs.biochem.8b00888",
+          "checkedAt": 1792471819304,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-28541217",
+          "identifier": "10.1109/tnb.2017.2706757",
+          "checkedAt": 1792471819327,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-AGR-IND604859643",
+          "identifier": "10.1007/s13213-015-1098-x",
+          "checkedAt": 1792471819304,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-25154632",
+          "identifier": "10.1111/1574-6976.12085",
+          "checkedAt": 1792471824813,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-30201608",
+          "identifier": "10.1074/jbc.ra118.004716",
+          "checkedAt": 1792471823561,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-25825348",
+          "identifier": "10.1016/j.tim.2015.02.012",
+          "checkedAt": 1792471823620,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-26812051",
+          "identifier": "10.1371/journal.pone.0148098",
+          "checkedAt": 1792471829394,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-26915347",
+          "identifier": "10.1111/mmi.13359",
+          "checkedAt": 1792471829505,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-28994778",
+          "identifier": "10.3791/56216",
+          "checkedAt": 1792471829389,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-25897682",
+          "identifier": "10.1038/ncomms7925",
+          "checkedAt": 1792471829706,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-28117821",
+          "identifier": "10.3791/54854",
+          "checkedAt": 1792471829742,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-26436830",
+          "identifier": "10.1016/j.plasmid.2015.10.001",
+          "checkedAt": 1792471829691,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-25330493",
+          "identifier": "10.1109/tnb.2014.2363002",
+          "checkedAt": 1792471829851,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-24809026",
+          "identifier": "10.3389/fcimb.2014.00054",
+          "checkedAt": 1792471829858,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-25409531",
+          "identifier": "10.1021/sb500036q",
+          "checkedAt": 1792471829853,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-24559997",
+          "identifier": "10.1016/j.bpj.2014.01.012",
+          "checkedAt": 1792471829963,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-28457609",
+          "identifier": "10.1016/j.cell.2017.04.010",
+          "checkedAt": 1792471830018,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42754197",
+          "identifier": "10.1016/j.envpol.2026.129168",
+          "checkedAt": 1792471830092,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-20632805",
+          "identifier": "10.2217/fmb.10.70",
+          "checkedAt": 1792471830208,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-18765719",
+          "identifier": "10.1128/iai.00445-08",
+          "checkedAt": 1792471830717,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-41752183",
+          "identifier": "10.3390/ijms27042048",
+          "checkedAt": 1792471830774,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42383490",
+          "identifier": "10.1093/plphys/kiag385",
+          "checkedAt": 1792471831012,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        }
+      ],
+      "criticalFindings": 105,
+      "semanticVerdict": "not-run-in-this-benchmark",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "recordedSemanticVerdict": "not-run-no-installed-model"
+    },
+    {
+      "id": "micro-102",
+      "topic": "Antimicrobial susceptibility testing",
+      "domain": "Diagnostic microbiology",
+      "requested": 10,
+      "actual": 10,
+      "completed": true,
+      "elapsedMs": 27493,
+      "lexicalDuplicatePairs": 0,
+      "claims": 22,
+      "claimsWithPassages": 22,
+      "fullTextClaims": 15,
+      "referenceCount": 9,
+      "publicationChecks": [
+        {
+          "id": "epmc-MED-42555697",
+          "identifier": "10.25259/ijmr_214_2026",
+          "checkedAt": 1792471841829,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42626954",
+          "identifier": "10.1128/jcm.00259-26",
+          "checkedAt": 1792471841828,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42776995",
+          "identifier": "10.1371/journal.pone.0358947",
+          "checkedAt": 1792471841870,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42827905",
+          "identifier": "10.1016/j.isci.2026.117421",
+          "checkedAt": 1792471846246,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42330052",
+          "identifier": "10.1021/acs.analchem.6c01690",
+          "checkedAt": 1792471846183,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-41954409",
+          "identifier": "10.1128/jcm.01788-25",
+          "checkedAt": 1792471846941,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42772324",
+          "identifier": "10.71150/jm.2606005",
+          "checkedAt": 1792471858637,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42892549",
+          "identifier": "10.1016/j.ijid.2026.109193",
+          "checkedAt": 1792471858658,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42296363",
+          "identifier": "10.1073/pnas.2603171123",
+          "checkedAt": 1792471858614,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        }
+      ],
+      "criticalFindings": 22,
+      "semanticVerdict": "not-run-in-this-benchmark",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "recordedSemanticVerdict": "not-run-no-installed-model"
+    },
+    {
+      "id": "micro-152",
+      "topic": "Microbial fermentation scale-up",
+      "domain": "Industrial microbiology",
+      "requested": 50,
+      "actual": 50,
+      "completed": true,
+      "elapsedMs": 100220,
+      "lexicalDuplicatePairs": 0,
+      "claims": 108,
+      "claimsWithPassages": 108,
+      "fullTextClaims": 15,
+      "referenceCount": 49,
+      "publicationChecks": [
+        {
+          "id": "epmc-MED-39796251",
+          "identifier": "10.3390/ijms26010396",
+          "checkedAt": 1792471873526,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-37834143",
+          "identifier": "10.3390/ijms241914696",
+          "checkedAt": 1792471874934,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-33726825",
+          "identifier": "10.1186/s13068-021-01903-3",
+          "checkedAt": 1792471874882,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42808311",
+          "identifier": "10.1111/1541-4337.70664",
+          "checkedAt": 1792471879113,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42773614",
+          "identifier": "10.1002/mbo3.70387",
+          "checkedAt": 1792471879204,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42764329",
+          "identifier": "10.1186/s40643-026-01132-2",
+          "checkedAt": 1792471879103,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42822304",
+          "identifier": "10.1016/j.jenvman.2026.131068",
+          "checkedAt": 1792471883542,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-41365134",
+          "identifier": "10.1016/j.ijfoodmicro.2025.111571",
+          "checkedAt": 1792471883492,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42874258",
+          "identifier": "10.1016/j.jenvman.2026.131175",
+          "checkedAt": 1792471883516,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42833513",
+          "identifier": "10.1016/j.biotechadv.2026.109069",
+          "checkedAt": 1792471887740,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42758249",
+          "identifier": "10.1007/s42770-026-02088-3",
+          "checkedAt": 1792471887882,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42821105",
+          "identifier": "10.1007/s00203-026-05217-6",
+          "checkedAt": 1792471890879,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42747475",
+          "identifier": "10.1080/10408398.2026.2731532",
+          "checkedAt": 1792471895407,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42612163",
+          "identifier": "10.1002/bit.70351",
+          "checkedAt": 1792471895358,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42861325",
+          "identifier": "10.1016/j.vas.2026.100881",
+          "checkedAt": 1792471895357,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42640835",
+          "identifier": "10.1002/bit.70337",
+          "checkedAt": 1792471900773,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42584715",
+          "identifier": "10.1007/s10529-026-03750-4",
+          "checkedAt": 1792471900780,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42824670",
+          "identifier": "10.3389/fmicb.2026.1939398",
+          "checkedAt": 1792471900886,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42842337",
+          "identifier": "10.1111/1750-3841.71520",
+          "checkedAt": 1792471905080,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42748675",
+          "identifier": "10.1016/j.foodchem.2026.151154",
+          "checkedAt": 1792471905080,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42798921",
+          "identifier": "10.1021/acsomega.6c07847",
+          "checkedAt": 1792471905057,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42865593",
+          "identifier": "10.3389/fbioe.2026.1824449",
+          "checkedAt": 1792471911065,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42713331",
+          "identifier": "10.1016/j.crfs.2026.101549",
+          "checkedAt": 1792471911068,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42534443",
+          "identifier": "10.1002/imt2.70161",
+          "checkedAt": 1792471911063,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42867715",
+          "identifier": "10.1007/s11274-026-05339-5",
+          "checkedAt": 1792471915369,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42821129",
+          "identifier": "10.1007/s10482-026-02430-7",
+          "checkedAt": 1792471915368,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42802759",
+          "identifier": "10.1007/s13205-026-05082-6",
+          "checkedAt": 1792471915399,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42565891",
+          "identifier": "10.1007/s00203-026-05131-x",
+          "checkedAt": 1792471919665,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42682646",
+          "identifier": "10.3389/fmicb.2026.1928844",
+          "checkedAt": 1792471919663,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42634117",
+          "identifier": "10.1111/1541-4337.70618",
+          "checkedAt": 1792471922366,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42778925",
+          "identifier": "10.1186/s12934-026-03082-y",
+          "checkedAt": 1792471926788,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42772231",
+          "identifier": "10.1016/j.ijfoodmicro.2026.112038",
+          "checkedAt": 1792471926883,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42480946",
+          "identifier": "10.1016/j.biortech.2026.135477",
+          "checkedAt": 1792471926805,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42684591",
+          "identifier": "10.1007/s11274-026-05233-0",
+          "checkedAt": 1792471932445,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42820986",
+          "identifier": "10.1007/s00203-026-05233-6",
+          "checkedAt": 1792471932601,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42543106",
+          "identifier": "10.1016/j.biortech.2026.135563",
+          "checkedAt": 1792471932449,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42814149",
+          "identifier": "10.1007/s10532-026-10377-9",
+          "checkedAt": 1792471936711,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42891173",
+          "identifier": "10.3389/fmicb.2026.1854827",
+          "checkedAt": 1792471936934,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42757640",
+          "identifier": "10.1111/1750-3841.71337",
+          "checkedAt": 1792471936829,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42738790",
+          "identifier": "10.3390/molecules31173131",
+          "checkedAt": 1792471942370,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-AGR-IND609544837",
+          "identifier": "",
+          "checkedAt": 1792471936935,
+          "status": "unknown",
+          "providers": [],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42776411",
+          "identifier": "10.1007/s12602-026-11217-1",
+          "checkedAt": 1792471942266,
+          "status": "no-notice-found",
+          "providers": ["Crossref incoming updates", "Europe PMC"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42433271",
+          "identifier": "10.1016/j.synbio.2026.06.002",
+          "checkedAt": 1792471947565,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42849626",
+          "identifier": "10.1016/j.biortech.2026.136033",
+          "checkedAt": 1792471947541,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42838484",
+          "identifier": "10.1016/j.nbt.2026.10.003",
+          "checkedAt": 1792471947536,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42664880",
+          "identifier": "10.1016/j.ultsonch.2026.108026",
+          "checkedAt": 1792471954563,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42765094",
+          "identifier": "10.14202/vetworld.2026.3372-3384",
+          "checkedAt": 1792471954661,
+          "status": "unknown",
+          "providers": ["Europe PMC"],
+          "notices": [],
+          "complete": false
+        },
+        {
+          "id": "epmc-MED-42773318",
+          "identifier": "10.1007/s11250-026-05363-5",
+          "checkedAt": 1792471951876,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        },
+        {
+          "id": "epmc-MED-42773662",
+          "identifier": "10.13345/j.cjb.260148",
+          "checkedAt": 1792471958903,
+          "status": "no-notice-found",
+          "providers": ["Europe PMC", "Crossref incoming updates"],
+          "notices": [],
+          "complete": true
+        }
+      ],
+      "criticalFindings": 108,
+      "semanticVerdict": "not-run-in-this-benchmark",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "recordedSemanticVerdict": "not-run-no-installed-model"
+    }
+  ],
+  "limitations": "Live retrieval and measured timing. No fabricated completion, semantic calibration or scientific certification. Under-five-minute readiness requires source review and representative Windows hardware, not retrieval timing alone.",
+  "reportingCorrection": "The running benchmark used the older no-installed-model label. A separate CPU model had been installed; no semantic deck screen ran in this benchmark. Original labels are retained below; no scientific result is changed.",
+  "fullTextQuoteContainmentAudit": {
+    "evidenceRecords": 56,
+    "matchedSavedSource": 56,
+    "normalization": "Whitespace only",
+    "scientificInterpretationVerified": false
+  }
+}

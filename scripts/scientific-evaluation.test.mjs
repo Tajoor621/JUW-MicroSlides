@@ -119,3 +119,43 @@ test("disagreement and redundancy require correction; self-attestation never cer
   b.decisions[0].redundantWith = [pack.items[1].id];
   assert.equal(assessReviews(pack, [a, b]).status, "corrections-or-adjudication-required");
 });
+
+test("returned forms reject tampered packs, notes and evidence changes", async () => {
+  const { makeScientificReviewPack } = await import("../src/lib/scientific-review-pack.ts");
+  const { validateScientificReviewReturns } =
+    await import("../src/lib/scientific-review-assessment.ts");
+  const currentDeck = { ...deck, topic: "Study context" };
+  const reviewPack = await makeScientificReviewPack(currentDeck);
+  const forms = ["A", "B"].map((id) => ({
+    ...completed(id),
+    packHash: reviewPack.packHash,
+    completedAt: new Date().toISOString(),
+    decisions: reviewPack.items.map((i) => ({
+      id: i.id,
+      contentHash: i.contentHash,
+      verdict: "supported",
+      rationale: "Software fixture only",
+      sourceUrls: ["https://example.org/study"],
+      redundantWith: [],
+    })),
+  }));
+  const result = await validateScientificReviewReturns(
+    currentDeck,
+    JSON.stringify(reviewPack),
+    forms.map((r) => JSON.stringify(r)),
+  );
+  assert.equal(result.status, "two-reviewer-attestations-complete");
+  assert.equal(result.scientificCertification, false);
+  const tampered = structuredClone(reviewPack);
+  tampered.items[0].text += " Changed";
+  await assert.rejects(
+    () => validateScientificReviewReturns(currentDeck, JSON.stringify(tampered), []),
+    /hash mismatch/,
+  );
+  const changed = structuredClone(currentDeck);
+  changed.slides[0].notes += " Changed";
+  await assert.rejects(
+    () => validateScientificReviewReturns(changed, JSON.stringify(reviewPack), []),
+    /changed after/,
+  );
+});

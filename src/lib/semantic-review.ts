@@ -63,6 +63,35 @@ export async function semanticReview(deck: Deck, signal?: AbortSignal) {
     throw Error(
       "Semantic screening supports up to 400 teaching statements per deck; reduce overcrowded content. Nothing was silently omitted.",
     );
+  if (!rows.length)
+    throw Error("No teaching statements to screen; no semantic verdict is available.");
+  const base = validateLocalAiUrl(config.url);
+  const modelDigest = async () => {
+    const response = await fetch(`${base}/api/tags`, {
+      credentials: "omit",
+      signal: AbortSignal.any([AbortSignal.timeout(10000), ...(signal ? [signal] : [])]),
+    });
+    if (!response.ok) throw Error("Cannot establish the installed embedding model identity.");
+    const data = await response.json();
+    const installed = Array.isArray(data.models)
+      ? data.models.find(
+          (m: { name?: string; model?: string }) =>
+            m.name === config.embeddingModel ||
+            m.model === config.embeddingModel ||
+            m.name === `${config.embeddingModel}:latest`,
+        )
+      : undefined;
+    if (
+      !installed ||
+      typeof installed.digest !== "string" ||
+      !/^[a-f0-9]{64}$/i.test(installed.digest)
+    )
+      throw Error(
+        "Installed embedding model digest is unavailable; no reproducible semantic verdict is available.",
+      );
+    return installed.digest as string;
+  };
+  const digest = await modelDigest();
   const embeddings: number[][] = [];
   const start = performance.now();
   let model = "";
@@ -90,11 +119,17 @@ export async function semanticReview(deck: Deck, signal?: AbortSignal) {
       data.embeddings.some((e: unknown) => !Array.isArray(e) || e.length > 8192)
     )
       throw Error("Incomplete embedding response.");
+    if (typeof data.model !== "string" || !data.model.trim())
+      throw Error("Embedding response did not identify its model.");
     if (model && data.model !== model) throw Error("Embedding model changed between batches.");
     model = data.model;
     embeddings.push(...data.embeddings);
   }
+  if ((await modelDigest()) !== digest)
+    throw Error("Installed model changed during screening; rerun the complete check.");
   return {
+    modelDigest: digest,
+    independentlyCalibrated: false,
     findings: compareEmbeddings(rows, embeddings),
     model,
     threshold: 0.9,

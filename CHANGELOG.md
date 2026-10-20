@@ -93,3 +93,9 @@ See README for remaining limits, deployment setup, and validation commands.
 - Recorded a concrete introductory-slide pedagogy failure from an archived research deck. Independent human review and actual embedding-model qualification remain pending.
 
 - Follow-up source audit: flagged one damaged archived full-text quotation among 119 records. Added a critical saved-source quotation-mismatch gate that lecturer confirmation cannot override, with comparator-preservation regression coverage.
+
+## V6.2.1 — measured semantics, preserved study context and returned reviews (2026-10-20)
+
+- Ran an actual pinned q8 MiniLM model on all 27 development pairs offline. Published model/runtime hashes and raw scores; the default threshold missed six of eight labelled repetitions. Model/threshold remains unqualified; no automatic threshold change or content deletion.
+- Preserved paragraph/sentence adjacency and source paragraph context in speaker notes. Fixed abstract markup handling of scientific comparisons and Unicode; excluded oversized paragraphs rather than truncating. Preferred explanatory wording for one-slide source summaries and separated the passage cache from earlier extraction.
+- Completed offline in-app return assessment for two reviewer forms, with content/source hashes, malformed/stale/incomplete/disagreement/redundancy checks and downloadable results. Shared validation with the CLI; self-attestations never certify science or unlock reviewed export.
