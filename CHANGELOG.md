@@ -80,3 +80,5 @@ See README for remaining limits, deployment setup, and validation commands.
 - Record guidance version/jurisdiction and lecturer currency declarations; retain actual evidence access and source provenance in editable PowerPoint notes.
 - Add optional full-deck embedding screening, explicit model limitations, a 200-topic live benchmark and separate actual PowerPoint/physical classroom qualification paths.
 - Replace repeated whole-candidate duplicate scans with bounded incremental evidence screening. Keep exact count and final repetition gates. Application version remains V6.2.1.
+
+- Retry transient literature requests within a bounded budget; surface service failures separately from insufficient evidence. Add regression coverage for preprint exclusion and retry completion.

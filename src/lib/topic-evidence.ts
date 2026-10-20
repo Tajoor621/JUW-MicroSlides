@@ -360,6 +360,7 @@ export async function enrichTopicEvidence(
       sourceDocument: doc,
     });
   let successful = 0;
+  const requestErrors: string[] = [];
   const fullTextAttempts = new Set<string>();
   async function expandFullTexts() {
     const candidates = [...papers.values()]
@@ -416,6 +417,7 @@ export async function enrichTopicEvidence(
       onProgress?.(
         `Research search ${round + 1}/3 · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
       );
+      const attempted = work;
       const responses = await Promise.allSettled(
         work.map(async ({ query, cursor }) => {
           const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&pageSize=100&cursorMark=${encodeURIComponent(cursor)}&query=${encodeURIComponent(`(${query}) AND HAS_ABSTRACT:y`)}`;
@@ -433,7 +435,7 @@ export async function enrichTopicEvidence(
         }),
       );
       work = [];
-      for (const result of responses)
+      for (const [position, result] of responses.entries())
         if (result.status === "fulfilled") {
           successful++;
           for (const p of result.value.papers) {
@@ -446,7 +448,17 @@ export async function enrichTopicEvidence(
           }
           if (result.value.cursor && result.value.papers.length)
             work.push({ query: result.value.query, cursor: result.value.cursor });
+        } else {
+          const reason =
+            result.reason instanceof Error ? result.reason.message : "Request unavailable";
+          requestErrors.push(reason);
+          onProgress?.(
+            `Research request failed: ${reason}. Retrying within the bounded search budget.`,
+          );
+          if (!controller.signal.aborted) work.push(attempted[position]);
         }
+      if (requestErrors.length && work.length && round < 2 && !controller.signal.aborted)
+        await new Promise((resolve) => setTimeout(resolve, 500 * (round + 1)));
       onProgress?.("Retrieving licensed open full text and screening publication notices…");
       await expandFullTexts();
       try {
@@ -464,7 +476,7 @@ export async function enrichTopicEvidence(
       throw new DeckCompletionError(
         target,
         original.length + evidence.length,
-        `The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
+        `${successful ? "The research service supplied too little usable text." : `No research request succeeded (${requestErrors.at(-1) || "service unavailable"}). Reconnect and retry, or use attributed cached sources.`} Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
       );
     const added = evidence.slice(0, needed);
     if (target === 1 && added[0]) added[0] = { ...added[0], title: input.topic };
