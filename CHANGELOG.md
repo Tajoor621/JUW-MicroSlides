@@ -1,3 +1,9 @@
+## Saved sample identity repair — V6.2.1 (2026-10-20)
+
+- Native reviewer crash testing exposed sample regeneration during workspace hydration. Removed automatic replacement of persisted sample decks, preserving saved content, claim IDs and review-pack identity across restart.
+- Fresh samples now receive deterministic claim IDs after their stable slide IDs are assigned. Existing saved IDs remain untouched.
+- Added repeat-hydration regression checks; retained the strict native whole-library comparison that found the defect.
+
 ## Native reviewer recovery qualification — V6.2.1 (2026-10-20)
 
 - Confirmed the preceding Windows installer, transaction and native UI workflow succeeded.

@@ -9,12 +9,30 @@ const server = await createServer({
   logLevel: "error",
 });
 try {
-  const { generateLocalDeck } = await server.ssrLoadModule("/src/lib/generate-deck.ts");
+  const { generateLocalDeck, sampleDeck } = await server.ssrLoadModule("/src/lib/generate-deck.ts");
   const { replacementSnapshot, inspectedReplacement } = await server.ssrLoadModule(
     "/src/lib/slide-replacement.ts",
   );
   const { deckEvidenceSummary } = await server.ssrLoadModule("/src/lib/deck-evidence-summary.ts");
   const { useDeckStore } = await server.ssrLoadModule("/src/lib/deck-store.ts");
+  const seed = sampleDeck();
+  assert.deepEqual(sampleDeck(), seed, "Fresh sample claim IDs must be deterministic");
+  const savedSeed = structuredClone(seed);
+  savedSeed.slides[1].notes += " Preserved legacy annotation";
+  const merge = useDeckStore.persist.getOptions().merge;
+  const recovered = merge(
+    { library: [savedSeed], activeId: savedSeed.id },
+    useDeckStore.getState(),
+  );
+  assert.deepEqual(
+    recovered.library,
+    [savedSeed],
+    "Hydration must never regenerate saved sample content or identifiers",
+  );
+  assert.equal(recovered.activeId, savedSeed.id);
+  const twice = merge({ library: recovered.library, activeId: recovered.activeId }, recovered);
+  assert.deepEqual(twice.library, [savedSeed], "Repeated hydration preserves review pack identity");
+  console.log("PASS fresh sample IDs and saved sample/review identity survive repeated hydration");
   const deck = generateLocalDeck({
     topic: "Bacterial genome architecture",
     discipline: "Bacteriology",

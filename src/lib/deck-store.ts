@@ -379,9 +379,9 @@ export const useDeckStore = create<DeckState>()(
       }),
       merge: (persisted, current) => {
         const p = (persisted || {}) as Partial<DeckState>;
-        const pLib = (p.library ?? [])
-          .filter((d) => d.slides.length > 0)
-          .map((d) => (d.id === "sample-enzyme-mic4511" && d.updatedAt === 1 ? sampleDeck() : d));
+        // A saved sample is still lecturer work. Refreshing it here changes claim IDs
+        // and invalidates review packs on every restart, even without an edit.
+        const pLib = (p.library ?? []).filter((d) => d.slides.length > 0);
         const cLib = current.library.filter((d) => d.slides.length > 0);
         const lib = pLib.length ? pLib : cLib;
         if (!lib.length) return current;

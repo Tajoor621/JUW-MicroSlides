@@ -187,6 +187,10 @@ export function sampleDeck(): Deck {
   });
   deck.id = "sample-enzyme-mic4511";
   deck.updatedAt = 1;
-  deck.slides.forEach((s, i) => (s.id = `sample-s-${i}`));
-  return deck;
+  deck.slides.forEach((s, i) => {
+    s.id = `sample-s-${i}`;
+    // This is a fresh, unreviewed seed. Create its claim IDs after stable slide IDs.
+    s.claims = [];
+  });
+  return reconcileDeck(deck);
 }
