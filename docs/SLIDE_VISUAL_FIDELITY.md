@@ -26,3 +26,7 @@ Run `node scripts/test-slide-fidelity.mjs`, `npm run typecheck`, `npm run test:p
 - Bitmap quality is limited by the original image resolution and compression.
 - PowerPoint SVG support varies by Office version; modern desktop PowerPoint is recommended.
 - Installed fonts and office rendering engines can alter text metrics. Keep fonts installed and test actual presentation hardware.
+
+## Export-parity regression correction (20 October 2026)
+
+The browser qualification exposed an actual defect: data-URI SVG attachments displayed in the preview but were missing from the PPTX. The export scene now retains image sources even before intrinsic dimensions become available; SVG data is encoded as base64 and embedded without rasterization. The full 50-slide desktop/mobile parity test passed on commit `ad58628`, including image placement. A further ZIP-level regression assertion verifies that the exported PPTX contains genuine `.svg` media rather than only rasterized artwork. Passing that final assertion and independent desktop PowerPoint inspection remain separate gates.

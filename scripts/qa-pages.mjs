@@ -98,7 +98,7 @@ function pptxXmlFiles(buffer) {
     const name = buffer.subarray(offset + 46, offset + 46 + n).toString();
     const local = buffer.readUInt32LE(offset + 42);
     const start = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28);
-    if (name.endsWith(".xml") || name.endsWith(".rels") || name.endsWith(".png")) {
+    if (name.endsWith(".xml") || name.endsWith(".rels") || name.endsWith(".png") || name.endsWith(".svg")) {
       const data = buffer.subarray(start, start + size);
       const uncompressed = method === 8 ? inflateRawSync(data) : data;
       files[name] = uncompressed.toString(name.endsWith(".png") ? "base64" : "utf8");
@@ -657,6 +657,10 @@ try {
     const bytes = await readFile(await file.path());
     assert.equal(slideCountInPptx(bytes), 50);
     const xml = pptxXmlFiles(bytes);
+    const embeddedVectors = Object.entries(xml).filter(([name, data]) =>
+      name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\\s>]/i.test(data)
+    );
+    assert(embeddedVectors.length > 0, "PPTX must retain at least one genuine SVG vector asset for sharp zooming");
     const firstSlide = xml["ppt/slides/slide1.xml"];
     const logoBox = metrics[0].images[0];
     const logoPic = [...firstSlide.matchAll(/<p:pic>.*?<\/p:pic>/gs)]
