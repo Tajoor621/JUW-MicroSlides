@@ -83,3 +83,4 @@ See README for remaining limits, deployment setup, and validation commands.
 
 - Retry transient literature requests within a bounded budget; surface service failures separately from insufficient evidence. Add regression coverage for preprint exclusion and retry completion.
 - Preserve literal scientific comparison signs and decoded Unicode symbols in full-text claim passages; verify quotation containment against archived source text.
+- Separate the corrected evidence-parser cache namespace from prior parsed bodies; keep the visible application version and saved projects intact.

@@ -341,7 +341,7 @@ export async function enrichTopicEvidence(
   if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 75000);
-  const cacheKey = `research:${input.topic.toLowerCase().trim().slice(0, 240)}`;
+  const cacheKey = `research-body-v2:${input.topic.toLowerCase().trim().slice(0, 240)}`;
   const papers = new Map<string, Paper>();
   try {
     const cached = JSON.parse((await readLocalRecord(cacheKey)) || "null");
