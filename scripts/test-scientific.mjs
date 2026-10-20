@@ -244,6 +244,31 @@ try {
       d.slides[1].citations[0].publicationCheck,
     );
   });
+  await check("Damaged saved quotations remain critical after lecturer confirmation", () => {
+    const copy = structuredClone(d);
+    const claim = copy.slides[1].claims[0];
+    claim.status = "lecturer-reviewed";
+    claim.evidence = [
+      {
+        sourceUrl: copy.sourceDocuments[0].url,
+        locator: "Results",
+        access: "textbook",
+        checkedAt: Date.now(),
+        quote: "Activity increased at p 4.0, p < 0.05.",
+      },
+    ];
+    copy.sourceDocuments[0].text = "Activity increased at p < 0.01. Threshold > 4.0, p < 0.05.";
+    assert(
+      integrity
+        .integrityAudit(copy)
+        .some((f) => f.category === "Source quotation mismatch" && f.severity === "critical"),
+    );
+    assert(!integrity.classroomReady(copy));
+    claim.evidence[0].quote = "Threshold > 4.0,\n p < 0.05.";
+    assert(!integrity.integrityAudit(copy).some((f) => f.category === "Source quotation mismatch"));
+    claim.evidence[0].quote = "Threshold < 4.0, p < 0.05.";
+    assert(integrity.integrityAudit(copy).some((f) => f.category === "Source quotation mismatch"));
+  });
   await check("Clinical recommendation without current guideline record remains critical", () => {
     d.slides[1].claims[0].classification = "guideline";
     assert(

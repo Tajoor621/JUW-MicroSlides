@@ -91,3 +91,5 @@ See README for remaining limits, deployment setup, and validation commands.
 - Added six source-backed scientific hard cases, domain-separated development calibration, all raw cosine scores, confusion metrics, descriptive uncertainty, corpus hashes and installed-model digest checks. Missing models remain untested; no automatic production-threshold changes.
 - Added content-hashed scientific review packs covering titles, notes, teaching claims and figures, two blank external reviewer forms, and strict completeness/staleness/disagreement/redundancy checks. Self-attestations never become scientific certification.
 - Recorded a concrete introductory-slide pedagogy failure from an archived research deck. Independent human review and actual embedding-model qualification remain pending.
+
+- Follow-up source audit: flagged one damaged archived full-text quotation among 119 records. Added a critical saved-source quotation-mismatch gate that lecturer confirmation cannot override, with comparator-preservation regression coverage.

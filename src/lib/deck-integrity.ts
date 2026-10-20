@@ -169,6 +169,23 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           e.sourceUrl &&
           (!e.citationId || s.citations.some((r) => r.id === e.citationId)),
       );
+      for (const e of linked) {
+        const saved = (deck.sourceDocuments || []).filter((d) => d.url === e.sourceUrl);
+        const normalizeSpace = (text: string) => text.replace(/\s+/g, " ").trim();
+        if (
+          saved.length &&
+          !saved.some((d) => normalizeSpace(d.text).includes(normalizeSpace(e.quote)))
+        )
+          findings.push({
+            slideId: s.id,
+            index,
+            quote: c.text,
+            severity: "critical",
+            category: "Source quotation mismatch",
+            message:
+              "The evidence quotation does not occur in the saved source text. Re-extract and review the original passage, including numbers, units and comparisons. Lecturer confirmation cannot override this mismatch.",
+          });
+      }
       if (!linked.length || c.status === "unreviewed" || c.status === "stale")
         findings.push({
           slideId: s.id,

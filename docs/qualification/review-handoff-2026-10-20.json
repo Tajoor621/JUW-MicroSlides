@@ -207,5 +207,21 @@
       "reviewStatus": "incomplete",
       "completedHumanReviews": 0
     }
-  ]
+  ],
+  "archivedQuoteAudit": {
+    "claims": 530,
+    "fullTextEvidenceRecords": 119,
+    "savedSourceQuoteMatches": 118,
+    "savedSourceQuoteMismatches": 1,
+    "limitations": "Whitespace-normalized exact containment only. A matching quote is not validation of interpretation or factual accuracy. Archived samples predate the corrected parser.",
+    "affected": [
+      {
+        "topic": "Soil nitrogen fixation",
+        "slide": 5,
+        "claimId": "research-ahawcsny-claim-0-1tepql3",
+        "source": "https://europepmc.org/articles/PMC12819599",
+        "disposition": "Re-extract original result and statistical context; independent domain review required."
+      }
+    ]
+  }
 }
