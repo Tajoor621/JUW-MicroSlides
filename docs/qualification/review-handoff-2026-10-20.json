@@ -1,0 +1,211 @@
+{
+  "date": "2026-10-20",
+  "status": "review-packs-prepared-no-independent-review-completed",
+  "cases": 20,
+  "items": 1310,
+  "completedHumanReviews": 0,
+  "semanticModelStatus": "not-tested",
+  "limitations": "Archived draft cohort, not the full 200-topic manifest or current source revision. Packs contain private notes and quoted evidence and remain local. Hashes identify prepared review content, not validated science.",
+  "results": [
+    {
+      "case": "micro-001",
+      "topic": "Bacterial chromosome segregation",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "6543cd3b0102d155f1019a40f3576710fb05e358c657b8af45b1caa07a1783d3",
+      "packHash": "3ffd506675a39dad73a64ce63b1b7844c78f6a73666c9dd4f3dd588be435cdea",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-011",
+      "topic": "Archaeal ether lipids",
+      "slides": 25,
+      "items": 124,
+      "deckHash": "f64f9781e1672d3229c8bdece4c0dc7e5729e152570b9bef251927892467f22e",
+      "packHash": "1599fbe7a2a5a76714ede323b207799c9f191b82a325a53fd2f0a5d990d7109b",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-021",
+      "topic": "Bacteriophage lytic cycles",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "1acec9742473931f3e017f1736968c1778f28f77a81e382bc86fe9f3a92b9e82",
+      "packHash": "58e98395af9f8429d27e11ac6283785f6bb2874b30f08f1f31fa868fe5ca89f4",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-031",
+      "topic": "Fungal cell wall synthesis",
+      "slides": 25,
+      "items": 127,
+      "deckHash": "66162781a68939714148c379f481e269b1d4be12105baf29d26838d5644b5ec8",
+      "packHash": "2b097010d9e2a58fcf366b3aa9ea32a74cde788b1415ded443e1a1e29b892be0",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-041",
+      "topic": "Plasmodium liver stages",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "8e82a64195d10615523d897dd84cd6a4305995d37e1c973ee4d3a8ec60cbcd56",
+      "packHash": "0600f293114ccb5e13a13d793ae79c621cc6c046888d2c58f06e0a22f3119051",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-051",
+      "topic": "Bacterial transformation",
+      "slides": 25,
+      "items": 127,
+      "deckHash": "89156cd0a0f53f52332bae53191eec0928142f3e16371afb40128fb672803233",
+      "packHash": "eced6641bac81e4f656ab891e938b6a65062fdd17c19bfdb89c4187ae1b48527",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-061",
+      "topic": "Bacterial pangenomes",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "d296e90868a79448a5e6d7b06fc0aed3d79da7e24d4959ec6f5544c79e8b455e",
+      "packHash": "e1a5461300df0b0a8aa1a0b4a7fd85eaafb6635822f1f0380f2b4069ddbc2054",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-071",
+      "topic": "Innate recognition of bacteria",
+      "slides": 25,
+      "items": 127,
+      "deckHash": "7ab8cd04540571f76b3c1185684e9f6861f4bddf0e2905d3e978b5b5fb666a07",
+      "packHash": "fdb0da56a1b13e75e67e550ab232342e38d9e56c3cf8e7d591e6ae642e8e74f7",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-081",
+      "topic": "Beta-lactamase mechanisms",
+      "slides": 1,
+      "items": 6,
+      "deckHash": "99dd33e46e25bd8f5f7d08841803ad55e25a5096a9021113cffc184114b4bc32",
+      "packHash": "3ae36adeec43b77e23e9e08ce8d56e5bf69c51930f658f6249fef51c83f0f3fb",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-091",
+      "topic": "Staphylococcus aureus pathogenesis",
+      "slides": 25,
+      "items": 125,
+      "deckHash": "bb90d81fe8297d07d2fc7fa8c5996c863c743abd0eb3211687d80338bc442f30",
+      "packHash": "bea31ec5a5ba20f179873b464dc9c5f298a36e0dac689ffd9da572a25ed43081",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-101",
+      "topic": "Blood culture contamination",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "32f7f78f5ad3b8187eed2cffa4bd141dd9f24db316badd9ebc219204dc00f5bd",
+      "packHash": "9aed98de0ea79ae3def08b6126ab6a617b71989c6dbe6484355d6ab9094e42f1",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-111",
+      "topic": "Hand hygiene in healthcare",
+      "slides": 25,
+      "items": 124,
+      "deckHash": "16cf51e2bb45241bf32d691033a3c05bde09c9ce5fe7e97f08aa249dccba8a24",
+      "packHash": "21c19d01ab0081e223e6371bbc8bd43a50f76ff4e9062278cbaaffb782dd3e55",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-121",
+      "topic": "Bacterial outbreak genomics",
+      "slides": 1,
+      "items": 6,
+      "deckHash": "9a31279e9cac63992c06d02421bb785b7ff715855068b9aa9d9e422727dc037b",
+      "packHash": "f54c0dc60cad9048159c8afdb81f44ea9d165304d8937caaa10db2fde26c3201",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-131",
+      "topic": "Soil nitrogen fixation",
+      "slides": 25,
+      "items": 129,
+      "deckHash": "7749d085dd5c48661b8e2b5971e3a9aceb2543d61ce51172cf3a851814f3818d",
+      "packHash": "c16c578001993c66c3f336ba56679a14e7e00bc6af2868adce8562cfdb4fcea7",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-141",
+      "topic": "Foodborne Salmonella transmission",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "7eee8c3439dcfa000086632d6de7b84c2d8b234c9fc750f751f9a2ad822cc4ea",
+      "packHash": "8cf8d8cc939854dd7ac83d27e80da36af992079a76cddbbe4406a2247b210254",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-151",
+      "topic": "Enzyme immobilization",
+      "slides": 25,
+      "items": 125,
+      "deckHash": "25651a9a7d7a8fc7c13fca91ff8b14b5d8b99b6ca577f04623c0278bb75e7dda",
+      "packHash": "c678d622f80f78de13a9258ffb38ef2643e11c1fa238722a9f439575af1d2fe8",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-161",
+      "topic": "Gut microbiome colonization resistance",
+      "slides": 1,
+      "items": 6,
+      "deckHash": "99f55d09e7288f323fb26516afed49a38ffd67d6384caec5d4201f0210888d02",
+      "packHash": "14148a966a63a7a5d8f177f459a38fe6f9e3635ee1d2751c166863f425733a3a",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-171",
+      "topic": "Antimicrobial resistance in livestock",
+      "slides": 25,
+      "items": 126,
+      "deckHash": "78ab8b36eec70ddb0a97cb580aaa4def09ff6e2ac88271d9d922ae2da47a83eb",
+      "packHash": "3b40698a57b254ae68fa0e6480167b8d345d964e99de6f441417052c2495da5c",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-181",
+      "topic": "Bacterial growth curve measurement",
+      "slides": 1,
+      "items": 5,
+      "deckHash": "daff7a3bca85d3aa9a7790eea8fad0c5e11f85806660268bc6d4fa81ba7567f8",
+      "packHash": "877f144afadc0fe03854ca555ed5388c3f0bb3377980508d597d2d89ca1b08e0",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    },
+    {
+      "case": "micro-191",
+      "topic": "Tuberculosis guideline applicability",
+      "slides": 25,
+      "items": 123,
+      "deckHash": "fbf7f4c47557754df6ca8518cd8e874e849f43c1aff4776b035d6b0adc08e6c1",
+      "packHash": "3d9250814eda06050605fe61f97db7ffe190af49460f3c85a332078a5a32751a",
+      "reviewStatus": "incomplete",
+      "completedHumanReviews": 0
+    }
+  ]
+}

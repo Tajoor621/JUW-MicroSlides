@@ -33,7 +33,8 @@
     "desktop:icons": "tauri icon public/juw-crest-transparent.svg --output src-tauri/icons",
     "test:scientific": "node scripts/test-scientific.mjs",
     "benchmark:live": "node scripts/benchmark-live.mjs",
-    "benchmark:semantic": "node scripts/benchmark-semantic.mjs"
+    "benchmark:semantic": "node scripts/benchmark-semantic.mjs",
+    "review:scientific": "node scripts/scientific-review.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",

@@ -1,3 +1,4 @@
+import { downloadScientificReviewPack } from "@/lib/scientific-review-pack";
 import { SourceLibrary } from "./source-library";
 import { semanticReview } from "@/lib/semantic-review";
 import { citationIdentifier, statusIsFresh } from "@/lib/publication-status";
@@ -158,9 +159,35 @@ export function SpecialistReview() {
           <span>{all.length} total review items</span>
         </div>
       </section>
+      <section className="space-y-2 rounded border border-border p-3">
+        <h4 className="text-sm font-medium">Independent scientific review</h4>
+        <p className="text-xs text-muted">
+          Download all slide text, private notes, claim evidence and figure links with two blank
+          external reviewer forms. Share deliberately. Qualified reviewers must check sources,
+          scientific context and repetition independently. Preparing this pack does not certify the
+          deck.
+        </p>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={Boolean(busy)}
+          onClick={async () => {
+            setBusy("review-pack");
+            try {
+              await downloadScientificReviewPack(deck);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Review pack could not be saved");
+            } finally {
+              setBusy("");
+            }
+          }}
+        >
+          {busy === "review-pack" ? "Preparing review pack…" : "Download independent review pack"}
+        </Button>
+      </section>
       <SourceLibrary />
       <section className="space-y-2 rounded border border-border p-3">
-        <h4 className="text-sm font-medium">Semantic repetition and contradiction screening</h4>
+        <h4 className="text-sm font-medium">Semantic overlap screening</h4>
         <p className="text-xs text-muted">
           Uses your installed embedding model for the entire deck. Scores are model-dependent review
           candidates, not proof of repetition or scientific truth. Changed numbers and negation are

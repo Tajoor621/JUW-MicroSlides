@@ -84,3 +84,10 @@ See README for remaining limits, deployment setup, and validation commands.
 - Retry transient literature requests within a bounded budget; surface service failures separately from insufficient evidence. Add regression coverage for preprint exclusion and retry completion.
 - Preserve literal scientific comparison signs and decoded Unicode symbols in full-text claim passages; verify quotation containment against archived source text.
 - Separate the corrected evidence-parser cache namespace from prior parsed bodies; keep the visible application version and saved projects intact.
+
+## V6.2.1 — scientific review handoff and reproducible semantic evaluation (2026-10-20)
+
+- Replaced misleading semantic repetition/contradiction labels with related-statement and changed-wording review candidates; reject nonfinite screening thresholds.
+- Added six source-backed scientific hard cases, domain-separated development calibration, all raw cosine scores, confusion metrics, descriptive uncertainty, corpus hashes and installed-model digest checks. Missing models remain untested; no automatic production-threshold changes.
+- Added content-hashed scientific review packs covering titles, notes, teaching claims and figures, two blank external reviewer forms, and strict completeness/staleness/disagreement/redundancy checks. Self-attestations never become scientific certification.
+- Recorded a concrete introductory-slide pedagogy failure from an archived research deck. Independent human review and actual embedding-model qualification remain pending.

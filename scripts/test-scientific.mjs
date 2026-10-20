@@ -134,25 +134,29 @@ try {
       );
     },
   );
-  await check("Semantic vector scoring distinguishes overlap from changed negation/results", () => {
-    const rows = [
-      { index: 0, text: "The isolate is susceptible at 2 mg." },
-      { index: 1, text: "The isolate is susceptible at 2 mg." },
-      { index: 2, text: "The isolate is not susceptible at 8 mg." },
-      { index: 3, text: "An unrelated fungal mechanism." },
-    ];
-    const findings = sem.compareEmbeddings(rows, [
-      [1, 0],
-      [1, 0],
-      [1, 0],
-      [0, 1],
-    ]);
-    assert.equal(findings.filter((f) => f.kind === "possible-repetition").length, 1);
-    assert.equal(findings.filter((f) => f.kind === "possible-contradiction").length, 2);
-    assert.throws(() => sem.compareEmbeddings(rows, [[1, 0]]));
-    assert.throws(() => sem.cosine([NaN], [1]));
-    assert.throws(() => sem.cosine([0], [1]));
-  });
+  await check(
+    "Semantic screening labels candidates without asserting scientific relationships",
+    () => {
+      const rows = [
+        { index: 0, text: "The isolate is susceptible at 2 mg." },
+        { index: 1, text: "The isolate is susceptible at 2 mg." },
+        { index: 2, text: "The isolate is not susceptible at 8 mg." },
+        { index: 3, text: "An unrelated fungal mechanism." },
+      ];
+      const findings = sem.compareEmbeddings(rows, [
+        [1, 0],
+        [1, 0],
+        [1, 0],
+        [0, 1],
+      ]);
+      assert.equal(findings.filter((f) => f.kind === "related-statements").length, 1);
+      assert.equal(findings.filter((f) => f.kind === "changed-wording-review").length, 2);
+      assert.throws(() => sem.compareEmbeddings(rows, [[1, 0]]));
+      assert.throws(() => sem.compareEmbeddings([], [], NaN));
+      assert.throws(() => sem.cosine([NaN], [1]));
+      assert.throws(() => sem.cosine([0], [1]));
+    },
+  );
   await check("Embedding screening never treats fabricated vectors as model calibration", () =>
     assert.equal(
       sem.compareEmbeddings(

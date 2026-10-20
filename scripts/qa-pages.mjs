@@ -222,6 +222,32 @@ try {
   assert.equal(sourceProject.sourceDocuments[0].license, "Software fixture, CC0");
   await sourcePage.getByRole("button", { name: "Screen semantic overlap", exact: true }).click();
   await sourcePage.getByText(/Choose an installed embedding model in Settings/).waitFor();
+  const reviewPackEvent = sourcePage.waitForEvent("download");
+  await sourcePage
+    .getByRole("button", { name: "Download independent review pack", exact: true })
+    .click();
+  const reviewPackDownload = await reviewPackEvent;
+  const reviewZip = await SourceZip.loadAsync(await readFile(await reviewPackDownload.path()));
+  const reviewPack = JSON.parse(await reviewZip.file("pack.json").async("string"));
+  const { digest, assessReviews } = await import("./scientific-evaluation.mjs");
+  const { packHash, ...reviewContent } = reviewPack;
+  assert.equal(packHash, digest(reviewContent));
+  assert(reviewPack.items.some((i) => i.field === "title"));
+  assert.equal(reviewPack.sourceSnapshotHashes[0].sha256, digest(sourceProject.sourceDocuments[0]));
+  const externalForms = await Promise.all(
+    ["reviewer-A", "reviewer-B"].map(async (id) =>
+      JSON.parse(await reviewZip.file(`${id}.json`).async("string")),
+    ),
+  );
+  assert.equal(assessReviews(reviewPack, externalForms).status, "incomplete");
+  assert(
+    externalForms.every(
+      (f) => f.reviewer.independent === false && f.decisions.every((d) => d.verdict === "pending"),
+    ),
+  );
+  results.push(
+    "Offline independent review ZIP preserves content hashes and separate blank reviewer forms without certifying science",
+  );
   await sourcePage.screenshot({ path: join(output, "juw-source-review-offline.png") });
   await sourceContext.close();
   results.push(

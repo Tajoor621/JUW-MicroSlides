@@ -90,3 +90,9 @@ The [professional release backlog and acceptance metrics](docs/PROFESSIONAL-ROAD
 ## Scientific source and qualification extension (V6.2.1)
 
 Open full-text evidence, authoritative-source passages, correction/retraction checks, guideline currency declarations and optional local embedding screening are available in Review. See [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md) for the 200-topic live benchmark, actual Microsoft PowerPoint test and outstanding independent-review/hardware gates. Software test success is not scientific certification.
+
+### Independent scientific review handoff
+
+In **Review → Independent scientific review**, choose **Download independent review pack**. This works offline and uses the Windows save dialog in the desktop app. The ZIP contains hashed slide text, private notes, claim passages, figure links, instructions and separate blank forms for two external reviewers. Share it deliberately. It does not contain a scientific pass or authenticated reviewer identities.
+
+The reproducible development calibration and reviewer completeness checks are documented in [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md). [The prepared review cohort](docs/qualification/review-handoff-2026-10-20.json) covers 20 archived decks and 1,310 review items; independent human decisions and installed-model calibration remain pending.

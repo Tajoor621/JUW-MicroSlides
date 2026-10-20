@@ -7,7 +7,7 @@ export type SemanticFinding = {
   a: string;
   b: string;
   similarity: number;
-  kind: "possible-repetition" | "possible-contradiction";
+  kind: "related-statements" | "changed-wording-review";
 };
 export function cosine(a: number[], b: number[]) {
   if (!a.length || a.length !== b.length || [...a, ...b].some((n) => !Number.isFinite(n)))
@@ -21,7 +21,12 @@ export function compareEmbeddings(
   embeddings: number[][],
   threshold = 0.9,
 ): SemanticFinding[] {
-  if (rows.length !== embeddings.length || threshold < 0.7 || threshold > 1)
+  if (
+    rows.length !== embeddings.length ||
+    !Number.isFinite(threshold) ||
+    threshold < 0.7 ||
+    threshold > 1
+  )
     throw Error("Invalid semantic screening input.");
   embeddings.forEach((e) => cosine(e, e));
   const findings: SemanticFinding[] = [];
@@ -42,7 +47,7 @@ export function compareEmbeddings(
         a: a.text,
         b: b.text,
         similarity: score,
-        kind: altered ? "possible-contradiction" : "possible-repetition",
+        kind: altered ? "changed-wording-review" : "related-statements",
       });
     }
   return findings.sort((a, b) => b.similarity - a.similarity);
@@ -97,6 +102,6 @@ export async function semanticReview(deck: Deck, signal?: AbortSignal) {
     elapsedMs: Math.round(performance.now() - start),
     checkedAt: Date.now(),
     limitations:
-      "Embedding similarity is model-dependent screening, not a calibrated finding of redundancy or contradiction. Review both passages and their context. No content is removed automatically.",
+      "Embedding similarity identifies related statements, not factual truth, repetition or contradiction. Changed wording flags only numbers or negation; other scientific differences can be missed. The threshold is uncalibrated for this model. Review both passages and their context. No content is removed automatically.",
   };
 }

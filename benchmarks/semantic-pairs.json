@@ -1,5 +1,5 @@
 {
-  "purpose": "Seed evaluation cases; not an independently labelled calibration corpus",
+  "purpose": "Development cases, including source-backed AI-reviewed hard negatives; no independently labelled gold corpus",
   "threshold": 0.9,
   "cases": [
     {
@@ -169,6 +169,90 @@
       "b": "Nitrogen fixation is the oxidation of ammonia into nitrate.",
       "proposedLabel": "contradiction",
       "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-022",
+      "domain": "Bacteriology",
+      "a": "Bacterial endospores support survival during adverse conditions.",
+      "b": "Fungal reproductive spores support reproduction.",
+      "proposedLabel": "distinct",
+      "reviewState": "AI-source-reviewed-needs-independent-review",
+      "evidence": {
+        "url": "https://openstax.org/books/microbiology/pages/3-3-unique-characteristics-of-prokaryotic-cells",
+        "locator": "Endospores",
+        "accessed": "2026-10-20",
+        "rationale": "Similar terminology describes different biological roles; do not merge as repetition."
+      }
+    },
+    {
+      "id": "pair-023",
+      "domain": "Bacteriology",
+      "a": "Water moves into a cell in a hypotonic environment.",
+      "b": "Water moves out of a cell in a hypertonic environment.",
+      "proposedLabel": "distinct",
+      "reviewState": "AI-source-reviewed-needs-independent-review",
+      "evidence": {
+        "url": "https://openstax.org/books/microbiology/pages/3-3-unique-characteristics-of-prokaryotic-cells",
+        "locator": "Common Cell Morphologies and Arrangements",
+        "accessed": "2026-10-20",
+        "rationale": "Opposite directions under different conditions are compatible facts, not a contradiction."
+      }
+    },
+    {
+      "id": "pair-024",
+      "domain": "Bacteriology",
+      "a": "Water moves into a cell in a hypotonic environment.",
+      "b": "Water moves out of a cell in a hypotonic environment.",
+      "proposedLabel": "contradiction",
+      "reviewState": "AI-source-reviewed-needs-independent-review",
+      "evidence": {
+        "url": "https://openstax.org/books/microbiology/pages/3-3-unique-characteristics-of-prokaryotic-cells",
+        "locator": "Common Cell Morphologies and Arrangements",
+        "accessed": "2026-10-20",
+        "rationale": "The environmental condition is identical but the predicted direction is reversed."
+      }
+    },
+    {
+      "id": "pair-025",
+      "domain": "Bacteriology",
+      "a": "Bacterial cytoplasmic ribosomes are 70S.",
+      "b": "Eukaryotic cytoplasmic ribosomes are 80S.",
+      "proposedLabel": "distinct",
+      "reviewState": "AI-source-reviewed-needs-independent-review",
+      "evidence": {
+        "url": "https://openstax.org/books/microbiology/pages/3-3-unique-characteristics-of-prokaryotic-cells",
+        "locator": "Ribosomes",
+        "accessed": "2026-10-20",
+        "rationale": "Different cellular contexts explain different numbers; number changes alone do not establish contradiction."
+      }
+    },
+    {
+      "id": "pair-026",
+      "domain": "Diagnostic microbiology",
+      "a": "SARS-CoV-2 RNA can remain detectable after transmission risk has passed.",
+      "b": "A positive SARS-CoV-2 RNA test always establishes ongoing transmission risk.",
+      "proposedLabel": "contradiction",
+      "reviewState": "AI-source-reviewed-needs-independent-review",
+      "evidence": {
+        "url": "https://www.cdc.gov/covid/hcp/clinical-care/overview-testing-sars-cov-2.html",
+        "locator": "NAAT disadvantages",
+        "accessed": "2026-10-20",
+        "rationale": "RNA persistence prevents an unconditional inference about infectiousness from a positive result alone."
+      }
+    },
+    {
+      "id": "pair-027",
+      "domain": "Diagnostic microbiology",
+      "a": "A negative SARS-CoV-2 antigen result does not rule out infection.",
+      "b": "Infection can still be present after a negative SARS-CoV-2 antigen test.",
+      "proposedLabel": "repetition",
+      "reviewState": "AI-source-reviewed-needs-independent-review",
+      "evidence": {
+        "url": "https://www.cdc.gov/covid/hcp/clinical-care/overview-testing-sars-cov-2.html",
+        "locator": "Viral tests",
+        "accessed": "2026-10-20",
+        "rationale": "Equivalent statements with different negation structure should not automatically be called contradictory."
+      }
     }
   ]
 }
