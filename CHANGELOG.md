@@ -72,3 +72,11 @@ See README for remaining limits, deployment setup, and validation commands.
 - Preserved complete CSL-JSON/BibTeX source metadata, including structured book/report references, and added deck bibliography export as CSL-JSON.
 - Persisted local-model outlines and completed batches; retries of an identical request/model resume completed work. Added an injected-interruption test and coverage for every accepted slide count.
 - Added an explicit professional release backlog, lecturer journeys and measurable qualification criteria.
+
+### V6.2.1 — scientific source and qualification extension (2026-10-20)
+
+- Add bounded Europe PMC open full-text retrieval, source-body traceability, official-publisher source library and portable/offline source preservation.
+- Check incoming Crossref/Europe PMC publication notices; preserve adverse status through partial outages; block reviewed export for adverse notices and mismatched identifiers.
+- Record guidance version/jurisdiction and lecturer currency declarations; retain actual evidence access and source provenance in editable PowerPoint notes.
+- Add optional full-deck embedding screening, explicit model limitations, a 200-topic live benchmark and separate actual PowerPoint/physical classroom qualification paths.
+- Replace repeated whole-candidate duplicate scans with bounded incremental evidence screening. Keep exact count and final repetition gates. Application version remains V6.2.1.

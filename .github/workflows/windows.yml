@@ -23,6 +23,7 @@ jobs:
           workspaces: src-tauri -> target
           cache-on-failure: true
       - run: npm run typecheck
+      - run: npm run test:scientific
       - run: npm run test:professional
       - run: npm run desktop:build
       - name: Install the NSIS package and its WebView2 dependency

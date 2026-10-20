@@ -30,7 +30,10 @@
     "desktop": "tauri",
     "desktop:build": "tauri build",
     "test:professional": "node scripts/test-professional.mjs",
-    "desktop:icons": "tauri icon public/juw-crest-transparent.svg --output src-tauri/icons"
+    "desktop:icons": "tauri icon public/juw-crest-transparent.svg --output src-tauri/icons",
+    "test:scientific": "node scripts/test-scientific.mjs",
+    "benchmark:live": "node scripts/benchmark-live.mjs",
+    "benchmark:semantic": "node scripts/benchmark-semantic.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",
@@ -74,6 +77,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.0.0",
+    "fast-xml-parser": "^5.11.2",
     "jose": "6.2.9",
     "jszip": "^3.10.2",
     "kysely": "^0.28.5",

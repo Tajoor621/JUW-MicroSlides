@@ -1,0 +1,174 @@
+{
+  "purpose": "Seed evaluation cases; not an independently labelled calibration corpus",
+  "threshold": 0.9,
+  "cases": [
+    {
+      "id": "pair-001",
+      "domain": "Bacteriology",
+      "a": "Bacterial endospores are dormant structures that can resist harsh conditions.",
+      "b": "Endospores allow some bacteria to persist in a dormant, stress-resistant state.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-002",
+      "domain": "Bacteriology",
+      "a": "Bacterial endospores are dormant structures that can resist harsh conditions.",
+      "b": "The Gram-negative outer membrane contains lipopolysaccharide.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-003",
+      "domain": "Bacteriology",
+      "a": "Bacterial endospores are dormant structures that can resist harsh conditions.",
+      "b": "Bacterial endospores are metabolically active reproductive structures.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-004",
+      "domain": "Virology",
+      "a": "Viruses depend on host ribosomes to translate their proteins.",
+      "b": "Viral proteins are translated using ribosomes of the host cell.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-005",
+      "domain": "Virology",
+      "a": "Viruses depend on host ribosomes to translate their proteins.",
+      "b": "Enveloped viruses contain a lipid membrane around the capsid.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-006",
+      "domain": "Virology",
+      "a": "Viruses depend on host ribosomes to translate their proteins.",
+      "b": "Viruses translate proteins using their own ribosomes.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-007",
+      "domain": "Mycology",
+      "a": "Fungi are eukaryotic organisms with membrane-bound nuclei.",
+      "b": "Fungal cells contain a nucleus and have eukaryotic organization.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-008",
+      "domain": "Mycology",
+      "a": "Fungi are eukaryotic organisms with membrane-bound nuclei.",
+      "b": "Fungal cell walls commonly contain chitin.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-009",
+      "domain": "Mycology",
+      "a": "Fungi are eukaryotic organisms with membrane-bound nuclei.",
+      "b": "Fungi are prokaryotes without membrane-bound nuclei.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-010",
+      "domain": "Parasitology",
+      "a": "Malaria is caused by Plasmodium parasites.",
+      "b": "Parasites in the genus Plasmodium cause malaria.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-011",
+      "domain": "Parasitology",
+      "a": "Malaria is caused by Plasmodium parasites.",
+      "b": "Giardia can colonize the small intestine.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-012",
+      "domain": "Parasitology",
+      "a": "Malaria is caused by Plasmodium parasites.",
+      "b": "Malaria is caused by a bacterial pathogen.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-013",
+      "domain": "Microbial genetics",
+      "a": "Conjugation transfers genetic material through direct contact between bacterial cells.",
+      "b": "Direct cell-to-cell contact permits genetic transfer during bacterial conjugation.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-014",
+      "domain": "Microbial genetics",
+      "a": "Conjugation transfers genetic material through direct contact between bacterial cells.",
+      "b": "Transformation involves uptake of extracellular DNA.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-015",
+      "domain": "Microbial genetics",
+      "a": "Conjugation transfers genetic material through direct contact between bacterial cells.",
+      "b": "Bacterial conjugation requires no contact between cells.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-016",
+      "domain": "Diagnostic microbiology",
+      "a": "Detection of bacterial DNA alone does not establish that the cells are viable.",
+      "b": "A positive DNA assay by itself cannot confirm living bacterial cells.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-017",
+      "domain": "Diagnostic microbiology",
+      "a": "Detection of bacterial DNA alone does not establish that the cells are viable.",
+      "b": "Culture conditions can influence recovery of an organism.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-018",
+      "domain": "Diagnostic microbiology",
+      "a": "Detection of bacterial DNA alone does not establish that the cells are viable.",
+      "b": "Detection of bacterial DNA alone proves that the cells are viable.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-019",
+      "domain": "Microbial ecology",
+      "a": "Nitrogen fixation converts atmospheric nitrogen into forms organisms can assimilate.",
+      "b": "Biological fixation makes atmospheric nitrogen available in an assimilable form.",
+      "proposedLabel": "repetition",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-020",
+      "domain": "Microbial ecology",
+      "a": "Nitrogen fixation converts atmospheric nitrogen into forms organisms can assimilate.",
+      "b": "Nitrification oxidizes reduced nitrogen compounds.",
+      "proposedLabel": "distinct",
+      "reviewState": "developer-authored-needs-independent-review"
+    },
+    {
+      "id": "pair-021",
+      "domain": "Microbial ecology",
+      "a": "Nitrogen fixation converts atmospheric nitrogen into forms organisms can assimilate.",
+      "b": "Nitrogen fixation is the oxidation of ammonia into nitrate.",
+      "proposedLabel": "contradiction",
+      "reviewState": "developer-authored-needs-independent-review"
+    }
+  ]
+}

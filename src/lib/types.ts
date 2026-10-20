@@ -35,6 +35,7 @@ export interface MediaItem {
 }
 
 export interface Citation {
+  publicationCheck?: import("./publication-status").PublicationCheck;
   id: string;
   type?: "article-journal" | "book" | "chapter" | "report" | "webpage";
   url?: string;
@@ -87,6 +88,7 @@ export interface Slide {
 }
 
 export interface Deck {
+  sourceDocuments?: import("./source-documents").SourceDocument[];
   id: string;
   title: string;
   topic: string;
@@ -110,6 +112,7 @@ export interface Deck {
 export type DeckMetaPatch = Partial<
   Pick<
     Deck,
+    | "sourceDocuments"
     | "title"
     | "topic"
     | "discipline"

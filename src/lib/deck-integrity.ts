@@ -1,3 +1,5 @@
+import { citationIdentifier, statusIsFresh } from "./publication-status";
+import { guidanceNeedsReview } from "./source-documents";
 import type { Deck, Slide, Claim } from "./types";
 export const statementKey = (s: string) =>
   s
@@ -99,6 +101,53 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
       message: `Overlaps slide ${d.first + 1}. Similarity screening requires lecturer review; replace redundant teaching content.`,
     });
   deck.slides.forEach((s, index) => {
+    for (const citation of s.citations) {
+      const check = citation.publicationCheck;
+      const add = (severity: "critical" | "warning", category: string, message: string) =>
+        findings.push({ slideId: s.id, index, quote: citation.title, severity, category, message });
+      if (check && check.identifier !== citationIdentifier(citation))
+        add(
+          "critical",
+          "Source identity changed",
+          "The identifier changed after the publication check. Check this reference again.",
+        );
+      else if (check?.metadataMatch === false)
+        add(
+          "critical",
+          "Reference mismatch",
+          "The identifier resolves to a different title. Correct and recheck the citation.",
+        );
+      else if (check && ["retracted", "concern", "corrected", "notice"].includes(check.status))
+        add(
+          "critical",
+          "Publication notice",
+          `${check.status}: inspect the notice and replace affected claims. The app does not clear this through a claim-review checkbox.`,
+        );
+      else if (
+        (citation.doi || citation.pmid) &&
+        (!check || !statusIsFresh(check) || !check.complete)
+      )
+        add(
+          "warning",
+          "Publication status incomplete",
+          "Run online reference checks. Missing, partial or older-than-seven-day checks do not establish current publication status.",
+        );
+    }
+    for (const doc of deck.sourceDocuments || [])
+      if (
+        guidanceNeedsReview(doc) &&
+        s.claims?.some((c) => c.evidence.some((e) => e.sourceUrl === doc.url))
+      )
+        findings.push({
+          slideId: s.id,
+          index,
+          quote: doc.title,
+          severity: "critical",
+          category: "Guideline currency",
+          message:
+            "Record publication/version date and jurisdiction, then confirm the publisher has not superseded this guidance (repeat within 30 days). This interval is a review policy, not a clinical validity period.",
+        });
+
     if (
       (index > 0 || deck.slides.length === 1) &&
       (s.layout === "title" || (!slideStatements(s).length && !s.media.length))
@@ -139,6 +188,23 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           category: "Source excerpt",
           message:
             "Traceable excerpt; abstract access and publication metadata do not establish scientific validity. Review the original study.",
+        });
+      if (
+        c.classification === "guideline" &&
+        !linked.some((e) =>
+          deck.sourceDocuments?.some(
+            (d) => d.url === e.sourceUrl && d.access === "guideline" && !guidanceNeedsReview(d),
+          ),
+        )
+      )
+        findings.push({
+          slideId: s.id,
+          index,
+          quote: c.text,
+          severity: "critical",
+          category: "Guideline currency",
+          message:
+            "Attach a saved guideline with its version, jurisdiction and recent publisher-currency confirmation. An abstract cannot establish current clinical guidance.",
         });
       for (const e of linked)
         if (e.access === "abstract")

@@ -1,8 +1,15 @@
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
-import { duplicateStatements, reconcileClaims } from "./deck-integrity";
+import { statementSimilarity, reconcileClaims } from "./deck-integrity";
 import type { Deck, GenerateInput, Slide, Citation } from "./types";
 import { topicTerms, profileFor } from "./topic-content";
 import { researchTheme } from "./slide-themes";
+import {
+  fetchOpenArticle,
+  sourceDocumentSchema,
+  guidanceNeedsReview,
+  type SourceDocument,
+} from "./source-documents";
+import { europeNotices, noticeStatus } from "./publication-status";
 import { uid } from "./utils";
 import { DeckCompletionError, requestedCount } from "./deck-completion";
 
@@ -19,6 +26,14 @@ type Paper = {
   source?: string;
   title?: string;
   abstractText?: string;
+  pmcid?: string;
+  isOpenAccess?: string;
+  isRetracted?: string;
+  license?: string;
+  pubTypeList?: { pubType?: string[] };
+  commentCorrectionList?: { commentCorrection?: { type?: string; id?: string; source?: string }[] };
+  fullBody?: string;
+  sourceDocument?: SourceDocument;
   authorString?: string;
   pubYear?: string;
   journalInfo?: { journal?: { title?: string } };
@@ -132,16 +147,28 @@ function chunks(sentences: string[]): string[][] {
     result[result.length - 2].push(...result.pop()!);
   return result.filter((c) => c.length >= 2);
 }
-function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): Slide[] {
+function sourceSlides(
+  papers: Paper[],
+  topic: string,
+  usedBodies: Set<string>,
+  limit = 50,
+): Slide[] {
   const ranked = papers
     .flatMap((p) => {
-      if (!p.title || !p.abstractText) return [];
-      const score = relevance(topic, `${p.title} ${text(p.abstractText)}`);
+      if (p.source === "PPR" || p.pubTypeList?.pubType?.some((t) => /preprint/i.test(t))) return [];
+      if (p.sourceDocument && guidanceNeedsReview(p.sourceDocument)) return [];
+      const notices = europeNotices(p);
+      if (["retracted", "concern", "notice", "corrected"].includes(noticeStatus(notices, true)))
+        return [];
+      const passage = p.fullBody || p.abstractText;
+      if (!p.title || !passage) return [];
+      const score = relevance(topic, `${p.title} ${text(passage)}`);
       if (score < 0.6) return [];
-      const sentences = text(p.abstractText)
+      const sentences = text(passage)
         .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
         .filter(
           (s) =>
+            (!p.fullBody || relevance(topic, s) >= 0.6) &&
             s.length > 40 &&
             s.length < 800 &&
             !/copyright|all rights reserved|trial registration|competing interest|author contribution|funding:/i.test(
@@ -149,13 +176,24 @@ function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): 
             ),
         );
       if (sentences.length < 2) return [];
-      return [{ p, score, parts: chunks(sentences.slice(0, 24)) }];
+      return [
+        {
+          p,
+          score:
+            score +
+            (p.sourceDocument?.access === "textbook" || p.sourceDocument?.access === "guideline"
+              ? 0.4
+              : 0) +
+            (p.fullBody ? 0.2 : 0),
+          parts: chunks(sentences.slice(0, 24)),
+        },
+      ];
     })
     .sort((a, b) => b.score - a.score);
   const groups: Slide[][] = [],
     headings = new Set<string>();
   // Every passage is used at most once. Longer abstracts contribute several coherent sections.
-  for (const { p, parts } of ranked) {
+  for (const { p, parts } of ranked.slice(0, 150)) {
     const slides: Slide[] = [];
     const sourceTitle = text(p.title!);
     const citation: Citation = {
@@ -166,12 +204,21 @@ function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): 
       year: p.pubYear || "n.d.",
       doi: p.doi,
       pmid: p.pmid,
+      url: p.sourceDocument?.url,
+      type:
+        p.sourceDocument?.access === "textbook"
+          ? "book"
+          : p.sourceDocument?.access === "guideline"
+            ? "report"
+            : "article-journal",
     };
-    const source = p.pmid
-      ? `https://pubmed.ncbi.nlm.nih.gov/${p.pmid}/`
-      : p.doi
-        ? `https://doi.org/${p.doi}`
-        : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`;
+    const source =
+      p.sourceDocument?.url ||
+      (p.pmid
+        ? `https://pubmed.ncbi.nlm.nih.gov/${p.pmid}/`
+        : p.doi
+          ? `https://doi.org/${p.doi}`
+          : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`);
     for (let part = 0; part < parts.length; part++) {
       const bullets = parts[part];
       const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");
@@ -194,41 +241,64 @@ function sourceSlides(papers: Paper[], topic: string, usedBodies: Set<string>): 
         layout: "content",
         theme: "molecular",
         title,
-        subtitle: "Research evidence · source excerpt",
+        subtitle: `${p.sourceDocument?.access || (p.fullBody ? "Full-text" : "Abstract")} · source excerpt`,
         bullets,
         leftBullets: [],
         rightBullets: [],
-        notes: `Source: ${sourceTitle}\n${source}\nPassage ${part + 1} of ${parts.length} from the publication abstract. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.`,
+        notes: `Source: ${sourceTitle}\n${source}\nPassage ${part + 1} of ${parts.length} from the ${p.fullBody ? "article body" : "publication abstract"}. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.`,
         citations: [citation],
         media: [],
       };
       const traced = reconcileClaims(draft);
       traced.claims = traced.claims?.map((c) => ({
         ...c,
-        classification: "study-result",
+        classification:
+          p.sourceDocument?.access === "guideline"
+            ? "guideline"
+            : p.sourceDocument?.access === "textbook"
+              ? "foundational"
+              : "study-result",
         status: "supported-excerpt",
         evidence: [
           {
             citationId: citation.id,
             sourceUrl: source,
-            locator: `Abstract, passage ${part + 1}`,
+            locator: `${p.sourceDocument?.locator || (p.fullBody ? "Article body" : "Abstract")}, excerpt group ${part + 1}; locate exact quoted text`,
             quote: c.text,
-            access: "abstract",
+            access: p.sourceDocument?.access || (p.fullBody ? "full-text" : "abstract"),
             checkedAt: Date.now(),
           },
         ],
       }));
-      if (!duplicateStatements([...groups.flat(), ...slides, traced]).length) slides.push(traced);
+      slides.push(traced);
     }
     const strength = (slide: Slide) =>
       relevance(topic, slide.bullets.join(" ")) +
       (/result|showed|found|demonstrat|observed|measured/i.test(slide.bullets.join(" ")) ? 0.3 : 0);
     groups.push(slides.sort((a, b) => strength(b) - strength(a)));
   }
-  // Take one section per study before deeper sections, so one long paper cannot dominate the deck.
-  return Array.from({ length: Math.max(0, ...groups.map((g) => g.length)) }, (_, part) =>
-    groups.flatMap((g) => (g[part] ? [g[part]] : [])),
-  ).flat();
+  // Round-robin across studies; compare each new statement once against accepted content.
+  // Rechecking every historical pair for each candidate was cubic and blocked cancellation timers.
+  const accepted: Slide[] = [],
+    statements: string[] = [];
+  for (let part = 0; part < Math.max(0, ...groups.map((g) => g.length)); part++) {
+    for (const group of groups) {
+      const slide = group[part];
+      if (
+        !slide ||
+        slide.bullets.some((line, i) =>
+          [...statements, ...slide.bullets.slice(0, i)].some(
+            (previous) => statementSimilarity(previous, line) >= 0.86,
+          ),
+        )
+      )
+        continue;
+      accepted.push(slide);
+      statements.push(...slide.bullets);
+      if (accepted.length >= limit) return accepted;
+    }
+  }
+  return accepted;
 }
 export async function enrichTopicEvidence(
   deck: Deck,
@@ -237,6 +307,27 @@ export async function enrichTopicEvidence(
   onProgress?: (message: string) => void,
 ): Promise<Deck> {
   const target = requestedCount(input.count);
+  try {
+    const saved = JSON.parse((await readLocalRecord("teaching-source-library")) || "[]");
+    if (Array.isArray(saved) && saved.length <= 30) {
+      const docs = saved.flatMap((raw) => {
+        const parsed = sourceDocumentSchema.safeParse(raw);
+        return parsed.success &&
+          !guidanceNeedsReview(parsed.data) &&
+          relevance(input.topic, `${parsed.data.title} ${parsed.data.text}`) >= 0.6
+          ? [parsed.data]
+          : [];
+      });
+      deck = {
+        ...deck,
+        sourceDocuments: [
+          ...new Map([...(deck.sourceDocuments || []), ...docs].map((d) => [d.id, d])).values(),
+        ].slice(0, 30),
+      };
+    }
+  } catch {
+    /* An unreadable source library must never fabricate evidence. */
+  }
   const original = deck.slides.filter((s) => s.title !== "Evidence required");
   if (original.length >= target)
     return { ...deck, slides: original.slice(0, target), requestedCount: target };
@@ -259,9 +350,66 @@ export async function enrichTopicEvidence(
   } catch {
     /* Unavailable cache must not invent evidence. */
   }
+  for (const doc of deck.sourceDocuments || [])
+    papers.set(`document:${doc.id}`, {
+      id: doc.id,
+      title: doc.title,
+      fullBody: doc.text,
+      authorString: doc.publisher,
+      pubYear: doc.publishedDate.slice(0, 4) || "n.d.",
+      sourceDocument: doc,
+    });
   let successful = 0;
+  const fullTextAttempts = new Set<string>();
+  async function expandFullTexts() {
+    const candidates = [...papers.values()]
+      .filter(
+        (p) =>
+          p.pmcid &&
+          p.isOpenAccess === "Y" &&
+          !p.fullBody &&
+          !fullTextAttempts.has(p.pmcid) &&
+          relevance(input.topic, `${p.title} ${p.abstractText}`) >= 0.6 &&
+          !europeNotices(p).length,
+      )
+      .slice(0, Math.max(0, 6 - fullTextAttempts.size));
+    for (let i = 0; i < candidates.length; i += 3) {
+      const batch = candidates.slice(i, i + 3);
+      const results = await Promise.allSettled(
+        batch.map(async (p) => {
+          fullTextAttempts.add(p.pmcid!);
+          const fullBody = await fetchOpenArticle(p.pmcid!, controller.signal);
+          return { p, fullBody };
+        }),
+      );
+      for (const result of results)
+        if (result.status === "fulfilled") {
+          const { p, fullBody } = result.value;
+          p.fullBody = fullBody;
+          p.sourceDocument = {
+            id: p.pmcid!,
+            title: text(p.title || "Article"),
+            url: `https://europepmc.org/articles/${p.pmcid}`,
+            publisher: p.journalInfo?.journal?.title || "Journal",
+            access: "full-text",
+            text: fullBody,
+            locator: "Article body; exact quoted text",
+            license: p.license || "Open-access subset; confirm article-specific reuse terms",
+            retrievedAt: Date.now(),
+            publishedDate: p.pubYear || "",
+            jurisdiction: "",
+            acquisition: "provider-xml",
+          };
+        }
+    }
+  }
   const bodyKeys = new Set(core.map((s) => s.bullets.join(" ").toLowerCase().replace(/\W/g, "")));
-  let evidence: Slide[] = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys));
+  let evidence: Slide[] = sourceSlides(
+    [...papers.values()],
+    input.topic,
+    new Set(bodyKeys),
+    needed,
+  );
   let work = queries.map((query) => ({ query, cursor: "*" }));
   try {
     for (let round = 0; round < 3 && work.length && evidence.length < needed; round++) {
@@ -299,6 +447,8 @@ export async function enrichTopicEvidence(
           if (result.value.cursor && result.value.papers.length)
             work.push({ query: result.value.query, cursor: result.value.cursor });
         }
+      onProgress?.("Retrieving licensed open full text and screening publication notices…");
+      await expandFullTexts();
       try {
         await writeLocalRecord(
           cacheKey,
@@ -307,7 +457,7 @@ export async function enrichTopicEvidence(
       } catch {
         /* Online generation can continue with an explicit uncached source. */
       }
-      evidence = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys));
+      evidence = sourceSlides([...papers.values()], input.topic, new Set(bodyKeys), needed);
       if (signal?.aborted) throw signal.reason;
     }
     if (evidence.length < needed)
@@ -326,9 +476,22 @@ export async function enrichTopicEvidence(
     return {
       ...deck,
       slides,
+      sourceDocuments: [
+        ...new Map(
+          [
+            ...(deck.sourceDocuments || []),
+            ...[...papers.values()].flatMap((p) =>
+              p.sourceDocument &&
+              added.some((s) => s.citations.some((c) => c.url === p.sourceDocument!.url))
+                ? [p.sourceDocument]
+                : [],
+            ),
+          ].map((d) => [d.id, d]),
+        ).values(),
+      ].slice(0, 30),
       requestedCount: target,
       contentWarnings: [
-        `${added.length} slides contain attributed source excerpts retrieved through ${successful} research searches. Review the full studies; source retrieval is not scientific certification.`,
+        `${added.length} slides contain attributed source excerpts retrieved through ${successful} research searches. Open full-text retrieval is bounded to six articles per request. Metadata notices are screened; absence of a notice is not proof of validity. Cached evidence may be stale; run reference checks before teaching.`,
       ],
       updatedAt: Date.now(),
     };

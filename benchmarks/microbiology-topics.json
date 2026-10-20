@@ -1,0 +1,1608 @@
+{
+  "schemaVersion": 1,
+  "appVersion": "V6.2.1",
+  "purpose": "Coverage manifest, not a scientifically validated gold corpus",
+  "reviewPolicy": "Two independent microbiology educators must evaluate factual accuracy, scope, study limitations, clinical currency and conceptual repetition against archived evidence. Software success is recorded separately.",
+  "cases": [
+    {
+      "id": "micro-001",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial chromosome segregation",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-002",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial endospores",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-003",
+      "domain": "Bacterial cell biology",
+      "topic": "Peptidoglycan synthesis",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-004",
+      "domain": "Bacterial cell biology",
+      "topic": "Gram-negative outer membrane",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-005",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial flagellar motility",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-006",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial chemotaxis",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-007",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial capsule biosynthesis",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-008",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial cell division",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-009",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial membrane transport",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-010",
+      "domain": "Bacterial cell biology",
+      "topic": "Bacterial protein secretion systems",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-011",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal ether lipids",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-012",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal S-layers",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-013",
+      "domain": "Archaeal microbiology",
+      "topic": "Methanogenesis",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-014",
+      "domain": "Archaeal microbiology",
+      "topic": "Haloarchaeal adaptation",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-015",
+      "domain": "Archaeal microbiology",
+      "topic": "Thermoacidophilic archaea",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-016",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal transcription",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-017",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal viruses",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-018",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal ammonia oxidation",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-019",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal chromosome organization",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-020",
+      "domain": "Archaeal microbiology",
+      "topic": "Archaeal CRISPR immunity",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-021",
+      "domain": "Virology",
+      "topic": "Bacteriophage lytic cycles",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-022",
+      "domain": "Virology",
+      "topic": "Bacteriophage lysogeny",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-023",
+      "domain": "Virology",
+      "topic": "Influenza antigenic drift",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-024",
+      "domain": "Virology",
+      "topic": "Influenza antigenic shift",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-025",
+      "domain": "Virology",
+      "topic": "Coronavirus replication",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-026",
+      "domain": "Virology",
+      "topic": "Retroviral integration",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-027",
+      "domain": "Virology",
+      "topic": "Herpesvirus latency",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-028",
+      "domain": "Virology",
+      "topic": "Viral entry mechanisms",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-029",
+      "domain": "Virology",
+      "topic": "Viral quasispecies",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-030",
+      "domain": "Virology",
+      "topic": "Viral assembly and release",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-031",
+      "domain": "Mycology",
+      "topic": "Fungal cell wall synthesis",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-032",
+      "domain": "Mycology",
+      "topic": "Candida biofilms",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-033",
+      "domain": "Mycology",
+      "topic": "Aspergillus conidiation",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-034",
+      "domain": "Mycology",
+      "topic": "Cryptococcus capsule",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-035",
+      "domain": "Mycology",
+      "topic": "Fungal dimorphism",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-036",
+      "domain": "Mycology",
+      "topic": "Dermatophyte pathogenesis",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-037",
+      "domain": "Mycology",
+      "topic": "Fungal antifungal resistance",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-038",
+      "domain": "Mycology",
+      "topic": "Mycorrhizal symbiosis",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-039",
+      "domain": "Mycology",
+      "topic": "Fungal spore dispersal",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-040",
+      "domain": "Mycology",
+      "topic": "Fungal genome architecture",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-041",
+      "domain": "Parasitology",
+      "topic": "Plasmodium liver stages",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-042",
+      "domain": "Parasitology",
+      "topic": "Plasmodium erythrocytic stages",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-043",
+      "domain": "Parasitology",
+      "topic": "Toxoplasma life cycle",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-044",
+      "domain": "Parasitology",
+      "topic": "Leishmania intracellular survival",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-045",
+      "domain": "Parasitology",
+      "topic": "Trypanosoma antigenic variation",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-046",
+      "domain": "Parasitology",
+      "topic": "Giardia intestinal colonization",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-047",
+      "domain": "Parasitology",
+      "topic": "Entamoeba tissue invasion",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-048",
+      "domain": "Parasitology",
+      "topic": "Cryptosporidium transmission",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-049",
+      "domain": "Parasitology",
+      "topic": "Schistosoma immune evasion",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-050",
+      "domain": "Parasitology",
+      "topic": "Taenia life cycles",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-051",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial transformation",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-052",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial conjugation",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-053",
+      "domain": "Microbial genetics",
+      "topic": "Generalized transduction",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-054",
+      "domain": "Microbial genetics",
+      "topic": "Specialized transduction",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-055",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial operon regulation",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-056",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial horizontal gene transfer",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-057",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial transposons",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-058",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial plasmid incompatibility",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-059",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial mutation repair",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-060",
+      "domain": "Microbial genetics",
+      "topic": "Bacterial restriction modification",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-061",
+      "domain": "Microbial genomics",
+      "topic": "Bacterial pangenomes",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-062",
+      "domain": "Microbial genomics",
+      "topic": "Metagenomic assembly",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-063",
+      "domain": "Microbial genomics",
+      "topic": "Microbial long-read sequencing",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-064",
+      "domain": "Microbial genomics",
+      "topic": "Microbial genome annotation",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-065",
+      "domain": "Microbial genomics",
+      "topic": "Bacterial comparative genomics",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-066",
+      "domain": "Microbial genomics",
+      "topic": "Microbial phylogenomics",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-067",
+      "domain": "Microbial genomics",
+      "topic": "Bacterial single-cell genomics",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-068",
+      "domain": "Microbial genomics",
+      "topic": "Microbial genome binning",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-069",
+      "domain": "Microbial genomics",
+      "topic": "Microbial metatranscriptomics",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-070",
+      "domain": "Microbial genomics",
+      "topic": "Microbial metaproteomics",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-071",
+      "domain": "Immunology",
+      "topic": "Innate recognition of bacteria",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-072",
+      "domain": "Immunology",
+      "topic": "Complement activation pathways",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-073",
+      "domain": "Immunology",
+      "topic": "Antigen presentation during infection",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-074",
+      "domain": "Immunology",
+      "topic": "T-cell responses to viruses",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-075",
+      "domain": "Immunology",
+      "topic": "B-cell memory after infection",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-076",
+      "domain": "Immunology",
+      "topic": "Mucosal immunity to pathogens",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-077",
+      "domain": "Immunology",
+      "topic": "Neutrophil antimicrobial mechanisms",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-078",
+      "domain": "Immunology",
+      "topic": "Macrophage activation in infection",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-079",
+      "domain": "Immunology",
+      "topic": "Microbial immune evasion",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-080",
+      "domain": "Immunology",
+      "topic": "Immunopathology during infection",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-081",
+      "domain": "Antimicrobial resistance",
+      "topic": "Beta-lactamase mechanisms",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-082",
+      "domain": "Antimicrobial resistance",
+      "topic": "Carbapenem resistance",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-083",
+      "domain": "Antimicrobial resistance",
+      "topic": "Methicillin resistance in staphylococci",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-084",
+      "domain": "Antimicrobial resistance",
+      "topic": "Vancomycin resistance in enterococci",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-085",
+      "domain": "Antimicrobial resistance",
+      "topic": "Bacterial efflux pumps",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-086",
+      "domain": "Antimicrobial resistance",
+      "topic": "Colistin resistance",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-087",
+      "domain": "Antimicrobial resistance",
+      "topic": "Fluoroquinolone resistance",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-088",
+      "domain": "Antimicrobial resistance",
+      "topic": "Antifungal azole resistance",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-089",
+      "domain": "Antimicrobial resistance",
+      "topic": "HIV antiviral resistance",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-090",
+      "domain": "Antimicrobial resistance",
+      "topic": "Antibiotic tolerance and persistence",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-091",
+      "domain": "Clinical bacteriology",
+      "topic": "Staphylococcus aureus pathogenesis",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-092",
+      "domain": "Clinical bacteriology",
+      "topic": "Streptococcus pneumoniae virulence",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-093",
+      "domain": "Clinical bacteriology",
+      "topic": "Escherichia coli pathotypes",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-094",
+      "domain": "Clinical bacteriology",
+      "topic": "Klebsiella pneumoniae capsules",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-095",
+      "domain": "Clinical bacteriology",
+      "topic": "Pseudomonas aeruginosa virulence",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-096",
+      "domain": "Clinical bacteriology",
+      "topic": "Acinetobacter baumannii persistence",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-097",
+      "domain": "Clinical bacteriology",
+      "topic": "Clostridioides difficile toxins",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-098",
+      "domain": "Clinical bacteriology",
+      "topic": "Helicobacter pylori colonization",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-099",
+      "domain": "Clinical bacteriology",
+      "topic": "Neisseria meningitidis invasion",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-100",
+      "domain": "Clinical bacteriology",
+      "topic": "Mycobacterium tuberculosis persistence",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-101",
+      "domain": "Diagnostic microbiology",
+      "topic": "Blood culture contamination",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-102",
+      "domain": "Diagnostic microbiology",
+      "topic": "Antimicrobial susceptibility testing",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-103",
+      "domain": "Diagnostic microbiology",
+      "topic": "MALDI-TOF microbial identification",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-104",
+      "domain": "Diagnostic microbiology",
+      "topic": "Clinical PCR interpretation",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-105",
+      "domain": "Diagnostic microbiology",
+      "topic": "Bacterial 16S sequencing limitations",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-106",
+      "domain": "Diagnostic microbiology",
+      "topic": "Rapid antigen test interpretation",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-107",
+      "domain": "Diagnostic microbiology",
+      "topic": "Serological window periods",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-108",
+      "domain": "Diagnostic microbiology",
+      "topic": "Clinical metagenomic sequencing",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-109",
+      "domain": "Diagnostic microbiology",
+      "topic": "Fungal microscopy",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-110",
+      "domain": "Diagnostic microbiology",
+      "topic": "Parasite stool diagnostics",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-111",
+      "domain": "Infection prevention",
+      "topic": "Hand hygiene in healthcare",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-112",
+      "domain": "Infection prevention",
+      "topic": "Microbial sterilization validation",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-113",
+      "domain": "Infection prevention",
+      "topic": "Healthcare surface disinfection",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-114",
+      "domain": "Infection prevention",
+      "topic": "Airborne pathogen transmission",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-115",
+      "domain": "Infection prevention",
+      "topic": "Contact precautions for infection",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-116",
+      "domain": "Infection prevention",
+      "topic": "Catheter-associated biofilms",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-117",
+      "domain": "Infection prevention",
+      "topic": "Surgical site microbial contamination",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-118",
+      "domain": "Infection prevention",
+      "topic": "Medical device reprocessing",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-119",
+      "domain": "Infection prevention",
+      "topic": "Hospital waterborne pathogens",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-120",
+      "domain": "Infection prevention",
+      "topic": "Microbial outbreak containment",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-121",
+      "domain": "Microbial epidemiology",
+      "topic": "Bacterial outbreak genomics",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-122",
+      "domain": "Microbial epidemiology",
+      "topic": "Viral wastewater surveillance",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-123",
+      "domain": "Microbial epidemiology",
+      "topic": "Microbial transmission networks",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-124",
+      "domain": "Microbial epidemiology",
+      "topic": "Zoonotic spillover mechanisms",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-125",
+      "domain": "Microbial epidemiology",
+      "topic": "Pathogen reproductive number interpretation",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-126",
+      "domain": "Microbial epidemiology",
+      "topic": "Microbial case-control studies",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-127",
+      "domain": "Microbial epidemiology",
+      "topic": "Pathogen diagnostic predictive values",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-128",
+      "domain": "Microbial epidemiology",
+      "topic": "Microbial surveillance bias",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-129",
+      "domain": "Microbial epidemiology",
+      "topic": "Hospital pathogen genomic clusters",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-130",
+      "domain": "Microbial epidemiology",
+      "topic": "Wastewater antimicrobial resistance surveillance",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-131",
+      "domain": "Environmental microbiology",
+      "topic": "Soil nitrogen fixation",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-132",
+      "domain": "Environmental microbiology",
+      "topic": "Microbial nitrification",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-133",
+      "domain": "Environmental microbiology",
+      "topic": "Microbial denitrification",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-134",
+      "domain": "Environmental microbiology",
+      "topic": "Microbial sulfur oxidation",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-135",
+      "domain": "Environmental microbiology",
+      "topic": "Microbial iron reduction",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-136",
+      "domain": "Environmental microbiology",
+      "topic": "Marine microbial carbon cycling",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-137",
+      "domain": "Environmental microbiology",
+      "topic": "Freshwater cyanobacteria blooms",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-138",
+      "domain": "Environmental microbiology",
+      "topic": "Microbial bioremediation",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-139",
+      "domain": "Environmental microbiology",
+      "topic": "Extremophile environmental adaptation",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-140",
+      "domain": "Environmental microbiology",
+      "topic": "Microbial drinking water indicators",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-141",
+      "domain": "Food microbiology",
+      "topic": "Foodborne Salmonella transmission",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-142",
+      "domain": "Food microbiology",
+      "topic": "Listeria cold adaptation",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-143",
+      "domain": "Food microbiology",
+      "topic": "Food spoilage bacteria",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-144",
+      "domain": "Food microbiology",
+      "topic": "Food fermentation starter cultures",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-145",
+      "domain": "Food microbiology",
+      "topic": "Botulism toxin production",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-146",
+      "domain": "Food microbiology",
+      "topic": "Bacterial food preservation hurdles",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-147",
+      "domain": "Food microbiology",
+      "topic": "Foodborne viral contamination",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-148",
+      "domain": "Food microbiology",
+      "topic": "Mycotoxin-producing fungi",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-149",
+      "domain": "Food microbiology",
+      "topic": "Microbial hazard analysis in foods",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-150",
+      "domain": "Food microbiology",
+      "topic": "Foodborne Campylobacter ecology",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-151",
+      "domain": "Industrial microbiology",
+      "topic": "Enzyme immobilization",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-152",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial fermentation scale-up",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-153",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial bioreactor oxygen transfer",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-154",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial secondary metabolite production",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-155",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial enzyme screening",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-156",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial bioplastic synthesis",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-157",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial biofuel production",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-158",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial strain improvement",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-159",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial downstream processing",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-160",
+      "domain": "Industrial microbiology",
+      "topic": "Microbial fermentation contamination",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-161",
+      "domain": "Human microbiome",
+      "topic": "Gut microbiome colonization resistance",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-162",
+      "domain": "Human microbiome",
+      "topic": "Oral microbial ecology",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-163",
+      "domain": "Human microbiome",
+      "topic": "Skin microbiome homeostasis",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-164",
+      "domain": "Human microbiome",
+      "topic": "Vaginal microbiome ecology",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-165",
+      "domain": "Human microbiome",
+      "topic": "Gut microbiome metabolomics",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-166",
+      "domain": "Human microbiome",
+      "topic": "Microbiome study confounding",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-167",
+      "domain": "Human microbiome",
+      "topic": "Microbiome compositional data",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-168",
+      "domain": "Human microbiome",
+      "topic": "Microbiome sampling bias",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-169",
+      "domain": "Human microbiome",
+      "topic": "Bacteriophages in gut ecology",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-170",
+      "domain": "Human microbiome",
+      "topic": "Microbiome causal inference",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-171",
+      "domain": "One Health",
+      "topic": "Antimicrobial resistance in livestock",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-172",
+      "domain": "One Health",
+      "topic": "Wildlife pathogen reservoirs",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-173",
+      "domain": "One Health",
+      "topic": "Vector microbiome interactions",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-174",
+      "domain": "One Health",
+      "topic": "Aquaculture bacterial disease",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-175",
+      "domain": "One Health",
+      "topic": "Plant-associated bacterial pathogens",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-176",
+      "domain": "One Health",
+      "topic": "Soil resistome transmission",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-177",
+      "domain": "One Health",
+      "topic": "Zoonotic influenza ecology",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-178",
+      "domain": "One Health",
+      "topic": "Companion animal bacterial infections",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-179",
+      "domain": "One Health",
+      "topic": "Environmental antimicrobial residues",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-180",
+      "domain": "One Health",
+      "topic": "One Health pathogen surveillance",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-181",
+      "domain": "Microbial methods",
+      "topic": "Bacterial growth curve measurement",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-182",
+      "domain": "Microbial methods",
+      "topic": "Bacterial viable count limitations",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-183",
+      "domain": "Microbial methods",
+      "topic": "Flow cytometry of bacteria",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-184",
+      "domain": "Microbial methods",
+      "topic": "Confocal imaging of biofilms",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-185",
+      "domain": "Microbial methods",
+      "topic": "Microbial fluorescence in situ hybridization",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-186",
+      "domain": "Microbial methods",
+      "topic": "Microbial isotope tracing",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-187",
+      "domain": "Microbial methods",
+      "topic": "Microbial experimental controls",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-188",
+      "domain": "Microbial methods",
+      "topic": "Microbial culture media selection",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-189",
+      "domain": "Microbial methods",
+      "topic": "Microbial sample preservation",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-190",
+      "domain": "Microbial methods",
+      "topic": "Microbial assay reproducibility",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-191",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Tuberculosis guideline applicability",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-192",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Malaria guideline version appraisal",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-193",
+      "domain": "Clinical guidance appraisal",
+      "topic": "HIV guideline version appraisal",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-194",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Antibiotic stewardship guideline appraisal",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-195",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Sepsis microbiological sampling guidance",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-196",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Vaccination guidance jurisdiction",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-197",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Fungal infection guideline appraisal",
+      "requestedCount": 1,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-198",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Infection prevention guideline currency",
+      "requestedCount": 10,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-199",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Diagnostic guideline evidence grading",
+      "requestedCount": 25,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    },
+    {
+      "id": "micro-200",
+      "domain": "Clinical guidance appraisal",
+      "topic": "Travel infection guideline applicability",
+      "requestedCount": 50,
+      "level": "Graduate",
+      "scientificVerdict": "needs-independent-review"
+    }
+  ]
+}

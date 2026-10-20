@@ -44,3 +44,7 @@ A single slide scene remains the geometry contract for preview, audience and exp
 | Lecturer satisfaction     | ≥4.7/5 from at least 20 lecturers across microbiology subdisciplines; ≥95% complete generation, evidence correction and presentation tasks without assistance.                                                              |
 
 No measured result should be replaced by a product promise. The qualification file records present implementation limits.
+
+## V6.2.1 scientific qualification implementation
+
+Open full-text retrieval, attributed authoritative-source library, incoming publication notices, guideline currency declarations, optional embedding screening, a 200-topic coverage manifest and real PowerPoint/hardware qualification protocols are now implemented. Acceptance and unfulfilled gates are tracked in [SCIENTIFIC-QUALIFICATION.md](SCIENTIFIC-QUALIFICATION.md). Independent science review, model calibration, broad live completion and actual hardware qualification remain P0 release gates; no blanket accuracy score is inferred from software fixtures.

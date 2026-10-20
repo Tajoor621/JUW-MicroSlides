@@ -1,0 +1,117 @@
+{
+  "appVersion": "V6.2.1",
+  "status": "pending-physical-qualification",
+  "requiredEnvironmentFields": [
+    "commit",
+    "windowsBuild",
+    "cpu",
+    "ramGiB",
+    "gpu",
+    "displayTopology",
+    "dpi",
+    "powerPointVersion",
+    "webView2Version",
+    "localModelDigest",
+    "evidencePath",
+    "witness",
+    "testedAt"
+  ],
+  "cases": [
+    {
+      "id": "cold-offline",
+      "description": "Cold offline startup after complete first setup",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "cached-generation",
+      "description": "Offline generation using cached sources and installed local model",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "uncached-failure",
+      "description": "Unavailable evidence fails without replacing saved work",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "source-library",
+      "description": "Offline source text, licences, dates, claims and status history",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "portable-roundtrip",
+      "description": "Portable project open/edit/save/export without network",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "projector-hotplug",
+      "description": "Audience monitor attach, detach and reconnect",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "mixed-dpi",
+      "description": "100/150/200 percent DPI across laptop and projector",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "monitor-reorder",
+      "description": "Primary display and monitor arrangement changes",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "sleep-resume",
+      "description": "Presenter continuity across sleep and resume",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "session-lock",
+      "description": "Lock/unlock during lecture without private audience leakage",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "keyboard-screenreader",
+      "description": "Keyboard-only and Windows screen-reader operation",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "low-disk",
+      "description": "Low disk produces explicit error with recoverable original",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "power-interruption",
+      "description": "Forced termination and recovery at transaction boundaries",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "long-lecture",
+      "description": "Two-hour presentation with large figures and no growing leak",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "office-fonts",
+      "description": "Actual Microsoft PowerPoint fonts, symbols, captions and editability",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "cold-warm-latency",
+      "description": "Representative model/laptop timing, cold and warm P50/P95",
+      "status": "pending",
+      "evidence": []
+    }
+  ]
+}

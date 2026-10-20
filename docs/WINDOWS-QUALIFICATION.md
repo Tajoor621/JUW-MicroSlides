@@ -41,3 +41,7 @@ When the app is already running, a second launch focuses it and asks the lecture
 Backups retain the legacy maximum of 400 for reading historical work; new generation, additions, replacement editing and PowerPoint exports enforce the 50-slide ceiling. Export an explicit reduced working copy when using an older oversized deck. No automatic migration deletes slides.
 
 Source excerpts retain their limited scientific meaning. Foundational knowledge is not assigned a verified status automatically. A lecturer's attestation records responsibility and source linkage; it is not independent peer review.
+
+## Scientific and renderer qualification extension
+
+See [SCIENTIFIC-QUALIFICATION.md](SCIENTIFIC-QUALIFICATION.md) for the 200-topic live-source benchmark, publication-notice handling, semantic screening limitations, actual licensed PowerPoint runner and physical classroom checklist. These add reproducible qualification paths; they do not mark the remaining hardware/independent-review gates as passed.

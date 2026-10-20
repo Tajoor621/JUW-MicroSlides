@@ -86,3 +86,7 @@ For Windows, `npm run desktop:build` builds the Tauri installer; GitHub Actions 
 See [Windows implementation and qualification](docs/WINDOWS-QUALIFICATION.md) for implemented functionality, exact validation scope and remaining scientific, export, hardware and release gates. A successful CI run is not a 10/10 scientific-quality certification.
 
 The [professional release backlog and acceptance metrics](docs/PROFESSIONAL-ROADMAP.md) define the remaining P0/P1/P2 work and the three lecturer workflows. CSL-JSON reference import/export preserves structured source metadata. Identical local-model requests can resume saved completed batches.
+
+## Scientific source and qualification extension (V6.2.1)
+
+Open full-text evidence, authoritative-source passages, correction/retraction checks, guideline currency declarations and optional local embedding screening are available in Review. See [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md) for the 200-topic live benchmark, actual Microsoft PowerPoint test and outstanding independent-review/hardware gates. Software test success is not scientific certification.

@@ -1,3 +1,4 @@
+import { checkPublication, type PublicationCheck } from "./publication-status";
 import type { Deck, Slide, Citation } from "./types";
 import { profileFor, topicOverlap } from "./topic-content";
 export type ReviewIssue = {
@@ -303,6 +304,8 @@ export type ReferenceCheck = {
   status: "matched" | "mismatch" | "not-found" | "unavailable" | "uncheckable";
   message: string;
   url?: string;
+  publication?: PublicationCheck;
+  cached?: boolean;
 };
 const overlap = (a: string, b: string) => {
   const first = new Set(
@@ -320,15 +323,18 @@ const overlap = (a: string, b: string) => {
 export async function checkReferenceMetadata(citations: Citation[]): Promise<ReferenceCheck[]> {
   const unique = [...new Map(citations.map((c) => [c.doi || c.pmid || c.id, c])).values()].slice(
     0,
-    30,
+    200,
   );
   const results: ReferenceCheck[] = [];
   for (let offset = 0; offset < unique.length; offset += 3) {
     const batch = await Promise.all(
       unique.slice(offset, offset + 3).map(async (c) => {
+        const publication = await checkPublication(c);
         const identifier = c.doi || c.pmid;
         if (!identifier)
           return {
+            publication,
+            cached: publication.cached,
             id: c.id,
             title: c.title,
             status: "uncheckable" as const,
@@ -347,6 +353,8 @@ export async function checkReferenceMetadata(citations: Citation[]): Promise<Ref
           });
           if (response.status === 404)
             return {
+              publication,
+              cached: publication.cached,
               id: c.id,
               title: c.title,
               status: "not-found" as const,
@@ -359,6 +367,8 @@ export async function checkReferenceMetadata(citations: Citation[]): Promise<Ref
           const actual = c.doi ? json.message?.title?.[0] : json.resultList?.result?.[0]?.title;
           if (!actual)
             return {
+              publication,
+              cached: publication.cached,
               id: c.id,
               title: c.title,
               status: "not-found" as const,
@@ -366,17 +376,22 @@ export async function checkReferenceMetadata(citations: Citation[]): Promise<Ref
               url: source,
             };
           const match = overlap(c.title, actual) >= 0.6;
+          publication.metadataMatch = match;
           return {
+            publication,
+            cached: publication.cached,
             id: c.id,
             title: c.title,
             status: match ? ("matched" as const) : ("mismatch" as const),
             message: match
-              ? "Identifier and title match provider metadata. Claim support, study quality and retraction status have not been established."
+              ? "Identifier and title match provider metadata. Publication notices are reported separately; claim support and study quality still require review."
               : `Identifier resolves to a different title: ${actual}`,
             url: source,
           };
         } catch {
           return {
+            publication,
+            cached: publication.cached,
             id: c.id,
             title: c.title,
             status: "unavailable" as const,

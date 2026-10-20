@@ -1,3 +1,4 @@
+import { audienceFrame } from "@/lib/audience-frame";
 import { useEffect, useState } from "react";
 import { useDeckStore } from "@/lib/deck-store";
 import { isDesktop } from "@/lib/desktop";
@@ -71,19 +72,7 @@ export function DesktopPresenter() {
     if (!deck) return;
     const ch = new BroadcastChannel(CHANNEL);
     const send = () => {
-      // Do not transmit private notes or the whole library to the audience window.
-      const safeSlide = { ...deck.slides[index], notes: "", claims: [] };
-      const safeDeck = { ...deck, slides: [], mediaPool: [] };
-      ch.postMessage({
-        type: "frame",
-        frame: {
-          deck: safeDeck,
-          slide: safeSlide,
-          index,
-          total: deck.slides.length,
-          citationStyle: style,
-        },
-      });
+      ch.postMessage({ type: "frame", frame: audienceFrame(deck, index, style) });
     };
     ch.onmessage = (e) => {
       if (e.data?.type === "ready") send();

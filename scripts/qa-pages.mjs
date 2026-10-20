@@ -137,6 +137,96 @@ try {
   results.push("Editable backup includes slides and references");
   // Exercise each palette and layout on both viewports, then compare actual
   // exported native text coordinates to the scaled editor, not a second template.
+  // Source-library flow, offline persistence and portable scientific provenance.
+  const sourceContext = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+    acceptDownloads: true,
+  });
+  await sourceContext.addInitScript(
+    ({ deck }) =>
+      localStorage.setItem(
+        "juw-microslides-v661-intro-logo",
+        JSON.stringify({
+          state: { library: [deck], activeId: deck.id, selectedIndex: 1 },
+          version: 0,
+        }),
+      ),
+    {
+      deck: {
+        ...backup.decks[0],
+        mediaPool: [],
+        slides: backup.decks[0].slides.map((s) => ({ ...s, media: [] })),
+      },
+    },
+  );
+  const sourcePage = await sourceContext.newPage();
+  sourcePage.on("pageerror", (e) => errors.push(e.message));
+  const publisherUrl = "https://www.cdc.gov/juw-qualification-fixture";
+  await sourcePage.route(publisherUrl, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: "<html><body><nav>Navigation excluded</nav><main><h1>Source fixture</h1><p>This is an attributed test passage for source preservation. It is a software fixture and makes no scientific assertion.</p><script>window.injectedSource=true</script></main></body></html>",
+    }),
+  );
+  await sourcePage.goto(url);
+  await saved(sourcePage);
+  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
+  await sourcePage.getByText("Authoritative source library", { exact: true }).click();
+  await sourcePage.getByLabel("Source document URL", { exact: true }).fill(publisherUrl);
+  await sourcePage.getByRole("button", { name: "Read open HTML page", exact: true }).click();
+  await sourcePage.waitForFunction(() =>
+    document
+      .querySelector('[aria-label="Source document passage"]')
+      .value.includes("attributed test passage"),
+  );
+  assert(!(await sourcePage.evaluate(() => window.injectedSource)));
+  assert(
+    !(
+      await sourcePage.getByLabel("Source document passage", { exact: true }).inputValue()
+    ).includes("Navigation excluded"),
+  );
+  await sourcePage
+    .getByLabel("Source document title", { exact: true })
+    .fill("Publisher source preservation fixture");
+  await sourcePage.getByLabel("Source locator", { exact: true }).fill("Main paragraph 1");
+  await sourcePage.getByLabel("Source reuse terms", { exact: true }).fill("Software fixture, CC0");
+  await sourcePage.getByRole("button", { name: "Save attributed source", exact: true }).click();
+  await saved(sourcePage);
+  await sourcePage
+    .getByRole("link", { name: "Publisher source preservation fixture", exact: true })
+    .waitFor();
+  await sourcePage.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await sourcePage.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await sourceContext.setOffline(true);
+  await sourcePage.reload();
+  await saved(sourcePage);
+  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
+  await sourcePage.getByText("Authoritative source library", { exact: true }).click();
+  await sourcePage
+    .getByRole("link", { name: "Publisher source preservation fixture", exact: true })
+    .waitFor();
+  await sourcePage.getByText(/Lecture workspace · Web companion/).click();
+  const sourceDownloadEvent = sourcePage.waitForEvent("download");
+  await sourcePage.getByRole("button", { name: "Save portable project", exact: true }).click();
+  const sourceDownload = await sourceDownloadEvent;
+  const { default: SourceZip } = await import("jszip");
+  const sourceZip = await SourceZip.loadAsync(await readFile(await sourceDownload.path()));
+  const sourceProject = JSON.parse(await sourceZip.file("deck.json").async("string"));
+  assert.equal(sourceProject.sourceDocuments[0].url, publisherUrl);
+  assert.equal(sourceProject.sourceDocuments[0].acquisition, "publisher-html");
+  assert.match(sourceProject.sourceDocuments[0].text, /attributed test passage/);
+  assert.equal(sourceProject.sourceDocuments[0].license, "Software fixture, CC0");
+  await sourcePage.getByRole("button", { name: "Screen semantic overlap", exact: true }).click();
+  await sourcePage.getByText(/Choose an installed embedding model in Settings/).waitFor();
+  await sourcePage.screenshot({ path: join(output, "juw-source-review-offline.png") });
+  await sourceContext.close();
+  results.push(
+    "Publisher HTML is inert, attributed source text survives offline reopening and portable export, and missing embeddings cannot produce a semantic pass",
+  );
   const parityThemes = [
     "classic",
     "gram",
@@ -260,6 +350,27 @@ try {
           };
         }),
       );
+      if (width === 1280 && process.env.JUW_QUALIFY_PPTX === "1") {
+        await pp.evaluate(() => {
+          const clone = document.querySelector("[data-slide-stage]").cloneNode(true);
+          clone.id = "qualification-baseline";
+          Object.assign(clone.style, {
+            position: "fixed",
+            left: "0",
+            top: "0",
+            transform: "none",
+            width: "1280px",
+            height: "720px",
+            zIndex: "2147483647",
+            boxShadow: "none",
+          });
+          document.body.append(clone);
+        });
+        await pp.locator("#qualification-baseline").screenshot({
+          path: join(output, `preview-slide-${String(i + 1).padStart(3, "0")}.png`),
+        });
+        await pp.locator("#qualification-baseline").evaluate((el) => el.remove());
+      }
       if (i < 49) await pp.keyboard.press("ArrowRight");
     }
     const download = pp.waitForEvent("download");
@@ -371,6 +482,22 @@ try {
       );
     }
     await file.saveAs(join(output, `juw-parity-${width}.pptx`));
+    if (width === 1280 && process.env.JUW_QUALIFY_PPTX === "1")
+      await writeFile(
+        join(output, "powerpoint-baseline.json"),
+        JSON.stringify(
+          {
+            version: "V6.2.1",
+            slides: 50,
+            width: 1280,
+            height: 720,
+            metrics,
+            draftMask: { x: 192, y: 16, w: 672, h: 24 },
+          },
+          null,
+          2,
+        ),
+      );
     await pp.screenshot({ path: join(output, `juw-parity-${width}.png`) });
     parityByViewport.push(metrics);
     await pc.close();

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { publicationCheckSchema } from "./publication-schema";
+import { sourceDocumentSchema } from "./source-documents";
 import { LAYOUTS, LEVELS, CITATION_STYLES } from "./types";
 import { SLIDE_THEMES } from "./slide-themes";
 const text = z.string().max(100000);
@@ -30,6 +32,7 @@ const media = z.object({
   keywords: z.array(text).max(100),
 });
 export const citationSchema = z.object({
+  publicationCheck: publicationCheckSchema.optional(),
   cslJson: z.string().max(100_000).optional(),
   type: z.enum(["article-journal", "book", "chapter", "report", "webpage"]).optional(),
   url: z
@@ -93,6 +96,7 @@ const slide = z.object({
   media: z.array(media).max(100),
 });
 export const deckSchema = z.object({
+  sourceDocuments: z.array(sourceDocumentSchema).max(30).optional(),
   id: text,
   title: text,
   topic: text,

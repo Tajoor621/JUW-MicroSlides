@@ -147,6 +147,32 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
       [
         `Integrity status: ${ready ? "Lecturer evidence gate clear; not independent certification" : "DRAFT"}. ${integrityAudit(deck).length} screening findings.`,
         source.notes,
+        source.claims?.length
+          ? "Claim evidence trail:\n" +
+            source.claims
+              .map(
+                (c) =>
+                  `${c.text} [${c.classification}; ${c.status}]\n${c.evidence.map((e) => `${e.sourceUrl} · ${e.locator} · ${e.access} · checked ${new Date(e.checkedAt).toISOString()}\n${e.quote}`).join("\n")}`,
+              )
+              .join("\n\n")
+          : "",
+        source.citations.some((c) => c.publicationCheck)
+          ? "Publication-status checks (provider metadata, not scientific certification):\n" +
+            source.citations
+              .filter((c) => c.publicationCheck)
+              .map(
+                (c) =>
+                  `${c.title}: ${c.publicationCheck!.status}; checked ${new Date(c.publicationCheck!.checkedAt).toISOString()}; ${c.publicationCheck!.providers.join(", ")}; complete=${c.publicationCheck!.complete}\n${c.publicationCheck!.notices.map((n) => `${n.type}: ${n.url}`).join("\n")}`,
+              )
+              .join("\n")
+          : "",
+        deck.sourceDocuments
+          ?.filter((d) => source.claims?.some((c) => c.evidence.some((e) => e.sourceUrl === d.url)))
+          .map(
+            (d) =>
+              `Source document: ${d.title} · ${d.publisher} · ${d.url}\n${d.locator} · ${d.license} · version ${d.publishedDate || "unspecified"} · jurisdiction ${d.jurisdiction || "unspecified"} · retrieved ${new Date(d.retrievedAt).toISOString()} · ${d.acquisition}`,
+          )
+          .join("\n"),
         source.citations.length
           ? "Full slide references:\n" +
             source.citations

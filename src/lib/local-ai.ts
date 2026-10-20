@@ -10,6 +10,7 @@ export function localAiConfig() {
     return JSON.parse(localStorage.getItem("juw-local-ai") || "null") as {
       url: string;
       model: string;
+      embeddingModel?: string;
     } | null;
   } catch {
     return null;

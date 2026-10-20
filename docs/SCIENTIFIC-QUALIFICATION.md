@@ -1,0 +1,63 @@
+# Scientific and classroom qualification — V6.2.1
+
+## What this update establishes
+
+The application remains V6.2.1. Scientific accuracy across every possible topic cannot be proven by retrieval, an LLM or a passing software test. Keep three separate outcomes: software contract passed, source passage traceable, and independent scientific review completed. None implies the others.
+
+Implemented:
+
+- Europe PMC open-access article-body XML retrieval, bounded to six articles per generation request and 2 MB per download. JATS paragraphs retain body order; figures, tables and reference lists are excluded from text extraction. Abstract-only responses never become full text. Full text and quoted passage provenance are preserved in projects. Open access does not establish peer review or unrestricted figure reuse; article-specific terms remain visible.
+- CDC, WHO, OpenStax, NCBI and Europe PMC source library: public HTTPS publisher allowlist; open HTML extraction when browser access permits; explicitly labelled lecturer-passage import otherwise. No arbitrary website crawler or PDF extraction. Exact passages, locator, edition/version, acquisition method, reuse terms and retrieval date survive offline reopening and portable backup. Current source-library selection is stored locally for subsequent research generation; it is not a cloud service.
+- Default research excerpt generation excludes indexed preprints and records with known retraction, concern, correction or notice metadata. Full-text access and authoritative teaching documents rank above abstract-only records after topical filtering. This is a transparent retrieval preference, not an automated study-quality assessment.
+- Incoming Crossref updates and Europe PMC correction/retraction links are checked independently of title/identifier matching. The check date, providers, completeness and notice URLs are visible and saved with citations. Unknown, partial, cached and stale checks cannot be described as a clean scientific bill of health. Partial connectivity cannot clear a cached adverse notice. Known adverse notices and identifier/title mismatches block reviewed export; draft export remains available. Correction quarantine is deliberately conservative: inspect and replace affected source relationships before reviewed export.
+- The seven-day publication-check refresh and thirty-day guideline-confirmation interval are application review policies, not scientific expiry dates. Guidance requires publisher version/date, population/jurisdiction and explicit lecturer confirmation of current publisher status. Claims classified as guidelines cannot rely on an abstract alone. The application does not automatically establish that a publisher page is the latest applicable clinical recommendation.
+- Optional Ollama embedding review scans all teaching statements in batches with truncation disabled. It returns candidate repetition/contradiction pairs, model name, cosine score and threshold. Altered numbers/negation are surfaced separately. Up to 400 statements; excessive decks fail explicitly. The default 0.90 threshold is uncalibrated. No model or model failure means no semantic verdict, never a pass. No automatic deletions. The screen shows the first 100 candidates; the downloaded report includes all candidates.
+- Source-aware claim editor: choose a saved source, supply an exact supporting passage, select actual access and explicitly review it. Quotes from saved documents must occur in that document; textual occurrence does not prove entailment. Claim evidence and publication notices are carried in PPTX speaker notes without appending slides.
+- Evidence candidate assembly uses bounded incremental duplicate screening rather than repeatedly auditing every historical pair. The final exact-count and duplicate gates still run before replacing work.
+
+## Reproducible software and live benchmarks
+
+`npm run test:scientific` runs deterministic contracts, including real provider notice-label forms, notice direction, identifier mismatch, future/stale timestamps, malformed XML, hostile publisher URLs, guideline requirements, vector validation, adverse-source export blocking, provider failure and source preservation. These tests use fixtures; they are not a scientific accuracy score.
+
+`benchmarks/microbiology-topics.json` defines 200 distinct topics across 20 areas, including bacteria, archaea, viruses, fungi, parasites, genetics, genomics, immunology, AMR, diagnostics, infection prevention, epidemiology, environmental/food/industrial microbiology, microbiomes, One Health, methods and guidance appraisal. It is a coverage manifest, not a gold standard. Every case starts `needs-independent-review`.
+
+`npm run benchmark:live` retrieves real evidence, forces research generation instead of rewarding bundled templates, checks exact count, records source access and claim traceability, queries publication notices, archives the generated deck locally and measures elapsed time. It never silently substitutes source fixtures or marks a deck classroom-ready. Default: first three cases. Environment controls `JUW_BENCH_START`, `JUW_BENCH_LIMIT`, `JUW_BENCH_STRIDE`, `JUW_BENCH_OUTPUT`; a balanced first-case-per-domain sample uses stride 10 and limit 20. The GitHub manual workflow supports the full 200-case run. Results record commit, machine, partial failures and missing scientific/semantic verdicts. A failed retrieval is a failure, not padding. Exit is nonzero if any case is incomplete.
+
+For every case and every supported count, qualification requires:
+
+| Measure | Release criterion |
+| --- | --- |
+| Exact count | 100% of successful requests deliver exactly 1–50 as requested; report incomplete requests separately |
+| Coverage | 200 topics, all 50 requested counts, clinical and nonclinical scope; no hidden topic exclusions |
+| Source traceability | Every factual statement linked to an exact archived source passage/locator or explicitly labelled textbook/consensus basis |
+| Scientific accuracy | Two independent qualified microbiology educators; all material errors corrected; disagreements adjudicated; never infer this from quote matching |
+| Conceptual repetition | Independently labelled paraphrase/contradiction corpus; sensitivity ≥95%, precision ≥95%, confidence intervals reported by domain; no model threshold selected using the holdout |
+| Clinical guidance | Current applicable primary guidance and correction/retraction metadata checked at export; unresolved clinical claims block reviewed release |
+| Timing | P95 under five minutes from request to reviewed professional deck on a specified representative Windows laptop, including retrieval/model startup and review; retrieval-only timing is reported separately |
+
+Independent reviewers must record case ID, deck SHA-256, source snapshot SHA-256, domain expertise, review date, all factual errors (including titles, captions and notes), contextual omissions, redundant concepts and adjudication. Do not commit third-party copyrighted full texts to the repository. Review pseudonymized results separately from private reviewer identity. Holdout sets must be independently authored and kept out of model prompts, heuristic development and threshold selection. No independent reviewers or calibrated embedding model are bundled in this release.
+
+`npm run benchmark:semantic` evaluates an explicitly supplied installed local embedding model (`JUW_EMBEDDING_MODEL`, optional `JUW_EMBEDDING_URL`) against 21 developer-authored seed pairs across seven domains. It writes an exploratory report; missing models exit nonzero with `not-tested`. These labels are not an independent gold standard, and the resulting precision/recall must never be advertised as calibrated accuracy. Expand, independently label and hold out the corpus before qualifying thresholds.
+
+## Actual PowerPoint qualification
+
+The manual `Actual PowerPoint qualification` workflow requires a disposable, logged-on Windows lab runner labelled `juw-powerpoint`, with licensed desktop Microsoft PowerPoint. It must never run untrusted pull-request code. GitHub-hosted Windows has no licensed PowerPoint; hosted CI success is not renderer qualification.
+
+1. `JUW_QUALIFY_PPTX=1 npm run qa:pages` creates 50 theme/layout preview rasters at 1280×720 and the matching editable PPTX.
+2. `scripts/qualify-powerpoint.ps1` opens the export in actual PowerPoint, exports PNGs, inventories editable text, verifies notes, edits a title, saves a copy and verifies the edit after reopening. Missing PowerPoint writes `not-tested` and exits nonzero. It does not substitute another renderer.
+3. `scripts/compare-powerpoint.py` compares the actual render with preview, saves every diff and applies explicit initial release limits: normalized mean channel error ≤0.005 and ≤2% pixels differing by >32. The intentional draft label is the only masked region. These limits require visual review and can fail; they are not a promise of pixel identity. Install Pillow 11.3.0 in the qualification environment.
+4. A reviewer inspects all diffs, multilingual/scientific glyphs, font fallback, figure captions/attribution and paragraph editing in PowerPoint. Existing text remains editable as native lines; whole-paragraph reflow is not qualified.
+
+## Offline and classroom hardware qualification
+
+Automated production-browser checks cover offline shell reopening, durable projects, exact counts, export geometry, source caching, corrupt recovery and upgrades. Native Windows checks cover installation, transactional persistence, forced termination/reopen and separate audience rendering. Physical classroom qualification remains pending until witnessed evidence is attached.
+
+Use `benchmarks/classroom-qualification.json` as the release checklist. Record OS/build, CPU/RAM/GPU, display topology/DPI, PowerPoint/WebView2 versions, app commit, installed local models, cold/warm timing and evidence paths. Required cases include cold airplane-mode startup after setup; cached-topic generation with model ready; uncached-topic failure preserving work; source-library and project reopen; offline export; projector hotplug and removal; mixed 100/150/200% DPI; monitor rearrangement; sleep/resume; locked session; keyboard/screen-reader operation; low disk; power interruption; long lecture and large figures. Audience views must not contain presenter notes or private source-library data.
+
+A `pending`, `not-tested`, fixture-only or provider-unavailable result is never converted to `passed` by documentation, an average score or the fixed V6.2.1 label.
+
+## Provider specifications
+
+- Europe PMC REST and open-access full-text scope: https://europepmc.org/RestfulWebService and https://europepmc.org/help
+- Crossref updates filter and incoming corrections: https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/ and https://www.crossref.org/documentation/register-maintain-records/maintaining-your-metadata/registering-updates/
+- Ollama embeddings API, arrays and truncation: https://docs.ollama.com/api/embed

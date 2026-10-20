@@ -6,6 +6,7 @@ export function LocalAiSettings() {
   const config = localAiConfig();
   const [url, setUrl] = useState(config?.url || "http://localhost:11434");
   const [model, setModel] = useState(config?.model || "llama3.2");
+  const [embeddingModel, setEmbeddingModel] = useState(config?.embeddingModel || "");
   return (
     <section className="space-y-2 rounded border border-border p-3">
       <h3 className="text-sm font-medium">Optional local AI (Ollama)</h3>
@@ -32,6 +33,17 @@ export function LocalAiSettings() {
           onChange={(e) => setModel(e.target.value)}
         />
       </label>
+      <label className="block text-xs">
+        Installed embedding model (optional semantic review)
+        <input
+          aria-label="Embedding model"
+          className="block w-full rounded border border-border bg-elevated p-2"
+          value={embeddingModel}
+          onChange={(e) => setEmbeddingModel(e.target.value)}
+          maxLength={100}
+          placeholder="e.g. embeddinggemma"
+        />
+      </label>
       <div className="flex gap-2">
         <Button
           size="sm"
@@ -42,7 +54,11 @@ export function LocalAiSettings() {
                 throw new Error("Enter an installed model name (maximum 100 characters).");
               localStorage.setItem(
                 "juw-local-ai",
-                JSON.stringify({ url: validateLocalAiUrl(url), model: model.trim() }),
+                JSON.stringify({
+                  url: validateLocalAiUrl(url),
+                  model: model.trim(),
+                  embeddingModel: embeddingModel.trim(),
+                }),
               );
               toast.success("Local AI configured. Select AI mode to generate.");
             } catch (e) {

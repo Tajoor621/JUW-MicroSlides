@@ -26,12 +26,18 @@ jobs:
       - run: npm run test:research
       - run: npm run test:topics
       - run: npm run test:generation
+      - run: npm run test:scientific
       - run: npm run test:professional
       - run: npm run build:pages
       - run: npx playwright install --with-deps chromium
       - run: npm run qa:pages
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scientific-contract-results
+          path: qualification-results/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist-pages

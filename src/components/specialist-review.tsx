@@ -1,3 +1,6 @@
+import { SourceLibrary } from "./source-library";
+import { semanticReview } from "@/lib/semantic-review";
+import { citationIdentifier, statusIsFresh } from "@/lib/publication-status";
 import { integrityAudit } from "@/lib/deck-integrity";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -10,12 +13,17 @@ export function SpecialistReview() {
   const slide = useDeckStore((s) => s.slide());
   const selected = useDeckStore((s) => s.selectedIndex);
   const select = useDeckStore((s) => s.select);
+  const [semantic, setSemantic] = useState<{
+    signature: string;
+    report: Awaited<ReturnType<typeof semanticReview>>;
+  } | null>(null);
   const [vision, setVision] = useState(false);
   const [scope, setScope] = useState("deck");
   const [busy, setBusy] = useState("");
   const [refs, setRefs] = useState<{
     deckId: string;
     checkedAt: string;
+    signature: string;
     items: ReferenceCheck[];
   } | null>(null);
   const [ai, setAi] = useState<{
@@ -46,6 +54,13 @@ export function SpecialistReview() {
   );
   const issues = scope === "slide" ? all.filter((i) => i.index === selected) : all;
   const signature = JSON.stringify([deck?.topic, slide]);
+  const deckSignature = JSON.stringify(
+    deck?.slides.map((s) => [s.title, s.bullets, s.leftBullets, s.rightBullets]),
+  );
+  const referenceSignature = (d: typeof deck) =>
+    JSON.stringify(
+      d?.slides.flatMap((s) => s.citations).map(({ publicationCheck: _check, ...r }) => r),
+    );
   if (!deck || !slide) return <p>Select a deck to review.</p>;
   const high = all.filter((i) => i.severity === "high").length;
   const media = deck.slides.reduce((n, s) => n + s.media.length, 0);
@@ -53,8 +68,37 @@ export function SpecialistReview() {
     if (!deck) return;
     setBusy("references");
     try {
+      const before = referenceSignature(deck);
       const items = await checkReferenceMetadata(deck.slides.flatMap((s) => s.citations));
-      setRefs({ deckId: deck.id, checkedAt: new Date().toLocaleString(), items });
+      const live = useDeckStore.getState().deck();
+      if (!live || live.id !== deck.id || referenceSignature(live) !== before)
+        throw Error(
+          "References changed during checking. Run the check again for the current revision.",
+        );
+      const byIdentifier = new Map(
+        items.filter((r) => r.publication).map((r) => [r.publication!.identifier, r.publication!]),
+      );
+      const selectedBefore = useDeckStore.getState().selectedIndex;
+      useDeckStore.getState().replaceActive({
+        ...live,
+        slides: live.slides.map((s) => ({
+          ...s,
+          citations: s.citations.map((c) => ({
+            ...c,
+            publicationCheck: byIdentifier.get(citationIdentifier(c)) || c.publicationCheck,
+          })),
+        })),
+        updatedAt: Date.now(),
+      });
+      useDeckStore.getState().select(selectedBefore);
+      setRefs({
+        deckId: deck.id,
+        signature: before,
+        checkedAt: new Date().toLocaleString(),
+        items,
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Reference check failed");
     } finally {
       setBusy("");
     }
@@ -84,7 +128,9 @@ export function SpecialistReview() {
       limitations:
         "Built-in rules are screening checks, not scientific certification. Image pixels are not inspected. Reference metadata matching does not establish claim support.",
       issues: all,
-      referenceChecks: refs?.deckId === deck!.id ? refs.items : [],
+      referenceChecks:
+        refs?.deckId === deck!.id && refs.signature === referenceSignature(deck) ? refs.items : [],
+      semanticReview: semantic?.signature === deckSignature ? semantic.report : undefined,
       aiReview: ai?.signature === signature ? ai : undefined,
     };
     const url = URL.createObjectURL(
@@ -111,6 +157,57 @@ export function SpecialistReview() {
           <span className="text-danger">{high} high-priority flags</span>
           <span>{all.length} total review items</span>
         </div>
+      </section>
+      <SourceLibrary />
+      <section className="space-y-2 rounded border border-border p-3">
+        <h4 className="text-sm font-medium">Semantic repetition and contradiction screening</h4>
+        <p className="text-xs text-muted">
+          Uses your installed embedding model for the entire deck. Scores are model-dependent review
+          candidates, not proof of repetition or scientific truth. Changed numbers and negation are
+          flagged separately.
+        </p>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={Boolean(busy)}
+          onClick={async () => {
+            setBusy("semantic");
+            try {
+              setSemantic({ signature: deckSignature, report: await semanticReview(deck) });
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Semantic check unavailable");
+            } finally {
+              setBusy("");
+            }
+          }}
+        >
+          {busy === "semantic" ? "Screening entire deck…" : "Screen semantic overlap"}
+        </Button>
+        {semantic &&
+          (semantic.signature !== deckSignature ? (
+            <p className="text-xs">Content changed; rerun semantic screening.</p>
+          ) : (
+            <div className="space-y-2 text-xs">
+              <p>
+                {semantic.report.statements} statements · {semantic.report.model} ·{" "}
+                {semantic.report.elapsedMs} ms · threshold {semantic.report.threshold}
+              </p>
+              <p>{semantic.report.limitations}</p>
+              <p>
+                {semantic.report.findings.length} candidate pairs (showing up to 100; full results
+                in downloaded report)
+              </p>
+              {semantic.report.findings.slice(0, 100).map((f, i) => (
+                <div key={i} className="rounded border border-border p-2">
+                  <button className="underline" onClick={() => select(f.second)}>
+                    Slides {f.first + 1} / {f.second + 1} · {f.kind} · {f.similarity.toFixed(3)}
+                  </button>
+                  <blockquote>{f.a}</blockquote>
+                  <blockquote>{f.b}</blockquote>
+                </div>
+              ))}
+            </div>
+          ))}
       </section>
       {deck.contentWarnings?.map((w, i) => (
         <p key={i} className="rounded border border-border p-2 text-xs text-muted">
@@ -181,10 +278,11 @@ export function SpecialistReview() {
         >
           {busy === "references" ? "Checking…" : "Check references online"}
         </Button>
-        {refs?.deckId === deck.id && (
+        {refs?.deckId === deck.id && refs.signature === referenceSignature(deck) && (
           <div className="space-y-2">
             <p className="text-xs text-muted">
-              Checked {refs.checkedAt}. Rerun after changing references.
+              Checked {refs.checkedAt}. Maximum 200 unique references per run; references beyond
+              this remain unchecked. Rerun after changing references.
             </p>
             {refs.items.length === 0 ? (
               <p className="text-xs">
@@ -198,6 +296,37 @@ export function SpecialistReview() {
                     {r.status.toUpperCase()} · {r.title}
                   </p>
                   <p className="mt-1 text-muted">{r.message}</p>
+                  {r.publication && (
+                    <div className="mt-2 space-y-1">
+                      <p>
+                        Publication status: {r.publication.status} ·{" "}
+                        {r.publication.complete
+                          ? "all configured providers answered"
+                          : "partial / unknown"}
+                      </p>
+                      <p>
+                        {r.publication.providers.join(", ") || "No provider response"} · checked{" "}
+                        {new Date(r.publication.checkedAt).toLocaleString()}
+                        {!statusIsFresh(r.publication) ? " · STALE" : ""}
+                        {r.cached ? " · CACHED" : ""}
+                      </p>
+                      <p>
+                        No notice found means only that the queried providers returned no notice. It
+                        does not establish study quality or current clinical applicability.
+                      </p>
+                      {r.publication.notices.map((n, i) => (
+                        <a
+                          key={i}
+                          className="block underline"
+                          href={n.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {n.type}: open notice
+                        </a>
+                      ))}
+                    </div>
+                  )}
                   {r.url && (
                     <a className="underline" href={r.url} target="_blank" rel="noopener noreferrer">
                       Open record
