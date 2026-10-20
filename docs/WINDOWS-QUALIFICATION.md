@@ -45,3 +45,11 @@ Source excerpts retain their limited scientific meaning. Foundational knowledge 
 ## Scientific and renderer qualification extension
 
 See [SCIENTIFIC-QUALIFICATION.md](SCIENTIFIC-QUALIFICATION.md) for the 200-topic live-source benchmark, publication-notice handling, semantic screening limitations, actual licensed PowerPoint runner and physical classroom checklist. These add reproducible qualification paths; they do not mark the remaining hardware/independent-review gates as passed.
+
+## Verified build and native reviewer extension — 2026-10-20
+
+Build `b0f25383e76ffd41745589ca19c47e76b11fed69` passed [Windows workflow 39401881074](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/39401881074): NSIS installation with WebView2, Rust transaction tests and the standard-user native UI test all succeeded. Its matching Pages build/deployment also passed. This records hosted Windows evidence, not a physical lecturer device.
+
+The extended native test exercises the reviewer workspace with a distinctly labelled synthetic pack: local pack integrity, keyboard navigation, incomplete-form checks, SQLite draft writes, forced termination, explicit restoration, unchanged lecture library and local checkpoint deletion. It blocks remote HTTP(S) renderer requests during the review flow and verifies that none are needed; this is not an OS airplane-mode test and does not intercept Rust networking. It records the source commit, OS build, CPU/RAM, single-fixture timings and screenshots, with explicit limitations. Failed runs write diagnostics rather than a success report. The Windows-native-QA workflow artifact is the authoritative result for each new build.
+
+The human review handoff is available in the app. No qualified human reviewers, licensed interactive PowerPoint lab runner or physical classroom hardware are available in this execution environment. Those gates remain pending; neither synthetic review forms nor hosted Windows results may close them.

@@ -1,3 +1,9 @@
+## Native reviewer recovery qualification — V6.2.1 (2026-10-20)
+
+- Confirmed the preceding Windows installer, transaction and native UI workflow succeeded.
+- Extended native Windows QA to check reviewer draft persistence across forced termination, explicit recovery, keyboard isolation, unchanged lectures and local checkpoint deletion. Remote renderer requests are blocked during the local review flow.
+- Added commit/hardware/timing provenance and failure screenshots/results. Hosted fixture timing remains separate from representative classroom performance; independent scientific review and physical PowerPoint/classroom qualification remain pending.
+
 ## Guided review and safe editing — V6.2.1 (2026-10-20)
 
 - Added a searchable lecture evidence overview with missing-passage, lecturer-review, abstract-only and critical-finding filters, a reference-to-slide map, direct evidence navigation and JSON export. Counts describe recorded evidence, not scientific accuracy.
