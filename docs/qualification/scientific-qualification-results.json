@@ -1,0 +1,654 @@
+{
+  "appVersion": "V6.2.1",
+  "status": "software-and-live-retrieval-evidence-not-scientific-certification",
+  "scope": {
+    "manifestTopics": 200,
+    "sampledDomains": 20,
+    "liveRequestsInitiallyCompleted": 8,
+    "liveRequestsInitiallyAttempted": 20,
+    "retryRequestsCompleted": 12,
+    "retryRequestsAttempted": 12,
+    "uniqueTopicsEventuallyCompleted": 20,
+    "extraFiftySlideCase": {
+      "id": "micro-004",
+      "topic": "Gram-negative outer membrane",
+      "domain": "Bacterial cell biology",
+      "requested": 50,
+      "actual": 50,
+      "completed": true,
+      "elapsedMs": 155603,
+      "lexicalDuplicatePairs": 0,
+      "claims": 105,
+      "claimsWithPassages": 105,
+      "fullTextClaims": 8,
+      "referenceCount": 49,
+      "criticalFindings": 105,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 30,
+        "unknown": 19
+      }
+    }
+  },
+  "sourceRuns": {
+    "balanced": {
+      "commit": "dc11eb23ce3d24df56f018ab2d264c1859459d95",
+      "sourceFingerprint": "73f4252508029cc86b9ae4cdc9081e94fd85e9bd58c6b85d6be5ed0e57216c98",
+      "workingTreeDirty": true,
+      "generatedAt": "2026-10-20T03:32:46.472Z",
+      "machine": {
+        "platform": "linux",
+        "arch": "x64",
+        "node": "v24.19.0"
+      },
+      "scope": {
+        "start": 0,
+        "stride": 10,
+        "attempted": 20,
+        "manifest": 200
+      }
+    },
+    "balanced-retry": {
+      "commit": "5eaad3ddee04ffde2ded47a39c692d07c509bcf2",
+      "sourceFingerprint": "b9dd8854128c84d99cf4fe46dce85516a2ebcb6e20580088ad088acec98423b2",
+      "workingTreeDirty": true,
+      "generatedAt": "2026-10-20T03:44:57.127Z",
+      "machine": {
+        "platform": "linux",
+        "arch": "x64",
+        "node": "v24.19.0"
+      },
+      "scope": {
+        "start": 80,
+        "stride": 10,
+        "attempted": 12,
+        "manifest": 200
+      }
+    },
+    "live-fifty": {
+      "commit": "76113b71b8094cc4fa1f776f55ab12447c87b4b9",
+      "sourceFingerprint": "396eab20c276eea4354065658bc71ed8a37f92c36b07e50541e813f0646e6d74",
+      "workingTreeDirty": true,
+      "generatedAt": "2026-10-20T03:38:28.193Z",
+      "machine": {
+        "platform": "linux",
+        "arch": "x64",
+        "node": "v24.19.0"
+      },
+      "scope": {
+        "start": 3,
+        "stride": 1,
+        "attempted": 1,
+        "manifest": 200
+      }
+    }
+  },
+  "observedCases": [
+    {
+      "id": "micro-001",
+      "topic": "Bacterial chromosome segregation",
+      "domain": "Bacterial cell biology",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 25180,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-011",
+      "topic": "Archaeal ether lipids",
+      "domain": "Archaeal microbiology",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 83885,
+      "lexicalDuplicatePairs": 0,
+      "claims": 49,
+      "claimsWithPassages": 49,
+      "fullTextClaims": 10,
+      "referenceCount": 24,
+      "criticalFindings": 49,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 7,
+        "no-notice-found": 17
+      }
+    },
+    {
+      "id": "micro-021",
+      "topic": "Bacteriophage lytic cycles",
+      "domain": "Virology",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 18732,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-031",
+      "topic": "Fungal cell wall synthesis",
+      "domain": "Mycology",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 83367,
+      "lexicalDuplicatePairs": 0,
+      "claims": 52,
+      "claimsWithPassages": 52,
+      "fullTextClaims": 10,
+      "referenceCount": 24,
+      "criticalFindings": 52,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 8,
+        "no-notice-found": 16
+      }
+    },
+    {
+      "id": "micro-041",
+      "topic": "Plasmodium liver stages",
+      "domain": "Parasitology",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 22873,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-051",
+      "topic": "Bacterial transformation",
+      "domain": "Microbial genetics",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 86251,
+      "lexicalDuplicatePairs": 0,
+      "claims": 52,
+      "claimsWithPassages": 52,
+      "fullTextClaims": 8,
+      "referenceCount": 24,
+      "criticalFindings": 52,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 20,
+        "unknown": 4
+      }
+    },
+    {
+      "id": "micro-061",
+      "topic": "Bacterial pangenomes",
+      "domain": "Microbial genomics",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 17666,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-071",
+      "topic": "Innate recognition of bacteria",
+      "domain": "Immunology",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 66645,
+      "lexicalDuplicatePairs": 0,
+      "claims": 52,
+      "claimsWithPassages": 52,
+      "fullTextClaims": 7,
+      "referenceCount": 24,
+      "criticalFindings": 52,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 15,
+        "no-notice-found": 9
+      }
+    },
+    {
+      "id": "micro-081",
+      "topic": "Beta-lactamase mechanisms",
+      "domain": "Antimicrobial resistance",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 23441,
+      "lexicalDuplicatePairs": 0,
+      "claims": 3,
+      "claimsWithPassages": 3,
+      "fullTextClaims": 3,
+      "referenceCount": 1,
+      "criticalFindings": 3,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-091",
+      "topic": "Staphylococcus aureus pathogenesis",
+      "domain": "Clinical bacteriology",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 81233,
+      "lexicalDuplicatePairs": 0,
+      "claims": 50,
+      "claimsWithPassages": 50,
+      "fullTextClaims": 9,
+      "referenceCount": 24,
+      "criticalFindings": 50,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 15,
+        "unknown": 9
+      }
+    },
+    {
+      "id": "micro-101",
+      "topic": "Blood culture contamination",
+      "domain": "Diagnostic microbiology",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 21474,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-111",
+      "topic": "Hand hygiene in healthcare",
+      "domain": "Infection prevention",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 77706,
+      "lexicalDuplicatePairs": 0,
+      "claims": 49,
+      "claimsWithPassages": 49,
+      "fullTextClaims": 12,
+      "referenceCount": 24,
+      "criticalFindings": 49,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 12,
+        "no-notice-found": 12
+      }
+    },
+    {
+      "id": "micro-121",
+      "topic": "Bacterial outbreak genomics",
+      "domain": "Microbial epidemiology",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 26513,
+      "lexicalDuplicatePairs": 0,
+      "claims": 3,
+      "claimsWithPassages": 3,
+      "fullTextClaims": 3,
+      "referenceCount": 1,
+      "criticalFindings": 3,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 1
+      }
+    },
+    {
+      "id": "micro-131",
+      "topic": "Soil nitrogen fixation",
+      "domain": "Environmental microbiology",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 81529,
+      "lexicalDuplicatePairs": 0,
+      "claims": 54,
+      "claimsWithPassages": 54,
+      "fullTextClaims": 12,
+      "referenceCount": 24,
+      "criticalFindings": 54,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 11,
+        "no-notice-found": 13
+      }
+    },
+    {
+      "id": "micro-141",
+      "topic": "Foodborne Salmonella transmission",
+      "domain": "Food microbiology",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 20279,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-151",
+      "topic": "Enzyme immobilization",
+      "domain": "Industrial microbiology",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 96271,
+      "lexicalDuplicatePairs": 0,
+      "claims": 50,
+      "claimsWithPassages": 50,
+      "fullTextClaims": 12,
+      "referenceCount": 24,
+      "criticalFindings": 50,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 16,
+        "unknown": 8
+      }
+    },
+    {
+      "id": "micro-161",
+      "topic": "Gut microbiome colonization resistance",
+      "domain": "Human microbiome",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 25895,
+      "lexicalDuplicatePairs": 0,
+      "claims": 3,
+      "claimsWithPassages": 3,
+      "fullTextClaims": 3,
+      "referenceCount": 1,
+      "criticalFindings": 3,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-171",
+      "topic": "Antimicrobial resistance in livestock",
+      "domain": "One Health",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 85315,
+      "lexicalDuplicatePairs": 0,
+      "claims": 51,
+      "claimsWithPassages": 51,
+      "fullTextClaims": 12,
+      "referenceCount": 24,
+      "criticalFindings": 51,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 14,
+        "unknown": 10
+      }
+    },
+    {
+      "id": "micro-181",
+      "topic": "Bacterial growth curve measurement",
+      "domain": "Microbial methods",
+      "requested": 1,
+      "actual": 1,
+      "completed": true,
+      "elapsedMs": 21076,
+      "lexicalDuplicatePairs": 0,
+      "claims": 2,
+      "claimsWithPassages": 2,
+      "fullTextClaims": 2,
+      "referenceCount": 1,
+      "criticalFindings": 2,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "no-notice-found": 1
+      }
+    },
+    {
+      "id": "micro-191",
+      "topic": "Tuberculosis guideline applicability",
+      "domain": "Clinical guidance appraisal",
+      "requested": 25,
+      "actual": 25,
+      "completed": true,
+      "elapsedMs": 65934,
+      "lexicalDuplicatePairs": 0,
+      "claims": 48,
+      "claimsWithPassages": 48,
+      "fullTextClaims": 4,
+      "referenceCount": 24,
+      "criticalFindings": 48,
+      "semanticVerdict": "not-run-no-installed-model",
+      "scientificVerdict": "needs-independent-review",
+      "classroomReady": false,
+      "publicationStatusCounts": {
+        "unknown": 15,
+        "no-notice-found": 9
+      }
+    }
+  ],
+  "initialAttemptFailures": [
+    {
+      "id": "micro-081",
+      "topic": "Beta-lactamase mechanisms",
+      "requested": 1,
+      "completed": false,
+      "elapsedMs": 4,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 1-slide deck is not complete yet (0 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-091",
+      "topic": "Staphylococcus aureus pathogenesis",
+      "requested": 25,
+      "completed": false,
+      "elapsedMs": 3,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 25-slide deck is not complete yet (1 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-101",
+      "topic": "Blood culture contamination",
+      "requested": 1,
+      "completed": false,
+      "elapsedMs": 3,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 1-slide deck is not complete yet (0 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-111",
+      "topic": "Hand hygiene in healthcare",
+      "requested": 25,
+      "completed": false,
+      "elapsedMs": 3,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 25-slide deck is not complete yet (1 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-121",
+      "topic": "Bacterial outbreak genomics",
+      "requested": 1,
+      "completed": false,
+      "elapsedMs": 3,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 1-slide deck is not complete yet (0 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-131",
+      "topic": "Soil nitrogen fixation",
+      "requested": 25,
+      "completed": false,
+      "elapsedMs": 2,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 25-slide deck is not complete yet (1 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-141",
+      "topic": "Foodborne Salmonella transmission",
+      "requested": 1,
+      "completed": false,
+      "elapsedMs": 2,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 1-slide deck is not complete yet (0 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-151",
+      "topic": "Enzyme immobilization",
+      "requested": 25,
+      "completed": false,
+      "elapsedMs": 3,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 25-slide deck is not complete yet (1 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-161",
+      "topic": "Gut microbiome colonization resistance",
+      "requested": 1,
+      "completed": false,
+      "elapsedMs": 2,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 1-slide deck is not complete yet (0 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-171",
+      "topic": "Antimicrobial resistance in livestock",
+      "requested": 25,
+      "completed": false,
+      "elapsedMs": 3,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 25-slide deck is not complete yet (1 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-181",
+      "topic": "Bacterial growth curve measurement",
+      "requested": 1,
+      "completed": false,
+      "elapsedMs": 2,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 1-slide deck is not complete yet (0 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    },
+    {
+      "id": "micro-191",
+      "topic": "Tuberculosis guideline applicability",
+      "requested": 25,
+      "completed": false,
+      "elapsedMs": 2,
+      "scientificVerdict": "not-evaluated",
+      "reason": "The 25-slide deck is not complete yet (1 usable slides). The research service supplied too little usable text. Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept."
+    }
+  ],
+  "softwareValidation": {
+    "countFixtures": 99,
+    "productionBrowserChecks": 36,
+    "scientificContractChecks": 16,
+    "researchIntegrityChecks": 13,
+    "topicMediaChecks": 14,
+    "previewThemeLayoutCombinations": 50,
+    "nativeWindows": "See GitHub Actions for exact source-commit qualification; native WebView2 is not Microsoft PowerPoint."
+  },
+  "notQualified": [
+    "Scientific truth or claim entailment across the 200-topic manifest or all possible topics",
+    "Independent specialist review of scientific headings, figures, captions and notes",
+    "Calibrated semantic precision/recall or independently labelled holdout corpus",
+    "Actual Microsoft PowerPoint raster/edit qualification",
+    "Physical projector, mixed-DPI, hotplug, sleep/resume and accessibility hardware qualification",
+    "P95 time to an independently reviewed professional deck on representative Windows laptops"
+  ],
+  "limitations": [
+    "These are real literature requests and measured times, without literature fixtures. Early source samples predate final text-parser fixes; exact parsed-body/Unicode behavior is separately covered by the final regression suite. Source fingerprints and dirty-worktree markers are retained rather than assigning a false final-commit identity.",
+    "The initial 8/20 result is retained. All remaining cases completed in a fresh retry run; this is eventual success, not a 100 percent first-attempt completion rate. Provider failures included HTTP 503.",
+    "Recorded passage counts measure saved links/locators, not correctness, quality, complete full-text coverage or expert review. Abstract-only claims remain distinguishable from full-text claims.",
+    "Every sample remains classroomReady=false. No missing model, missing PowerPoint installation or unperformed hardware test has been marked passed.",
+    "The observed 50-slide time includes retrieval and publication metadata checks. It excludes independent lecturer review, actual PowerPoint inspection and hardware qualification."
+  ]
+}
