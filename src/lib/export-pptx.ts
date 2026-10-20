@@ -40,14 +40,18 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
   pptx.theme = { headFontFace: "Georgia", bodyFontFace: "Arial" };
   const images = new Map<string, string | null>();
   async function imageData(src: string, width: number, height: number, cover: boolean) {
+    // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
+    if (/^data:image\/svg\+xml[;,]/i.test(src)) return src;
     const key = `${src}:${width}:${height}:${cover}`;
     if (!images.has(key)) {
       let data: string | null = null;
       try {
         const image = await loadImage(src);
         const canvas = document.createElement("canvas");
-        // Rasterise artwork alone, at 2× resolution. Text is never rasterised.
-        const resolution = Math.min(2, 3200 / width, 1800 / height);
+        // Rasterize bitmap artwork only. Export at up to 3x, bounded by source pixels;
+        // upscaling a small image cannot restore missing photographic detail.
+        const resolution = Math.max(1, Math.min(3, 4096 / width, 2304 / height,
+          image.naturalWidth / width, image.naturalHeight / height));
         canvas.width = Math.max(1, Math.round(width * resolution));
         canvas.height = Math.max(1, Math.round(height * resolution));
         const ctx = canvas.getContext("2d");

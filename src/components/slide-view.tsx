@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
-import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
+import { researchTheme, themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
 import { cn, mediaDisplaySrc } from "@/lib/utils";
 import { topicArtworkSvg } from "@/lib/topic-artwork";
@@ -45,7 +45,9 @@ export function SlideView({
   const department = deck?.department ?? JUW.department;
   const isTitle = slide.layout === "title";
   const artwork = topicArtworkSvg(deck?.topic ?? slide.title);
-  const tokens = themeOf(isTitle ? "classic" : slide.theme);
+  const titleTheme = researchTheme(deck?.topic ?? slide.title, deck?.discipline ?? "", "content");
+  const visualTheme = isTitle ? titleTheme : slide.theme;
+  const tokens = themeOf(visualTheme);
 
   return (
     <div
@@ -59,7 +61,7 @@ export function SlideView({
         )}
         data-slide-stage
         style={{
-          ...themeVars(isTitle ? "classic" : slide.theme),
+          ...themeVars(visualTheme),
           width: 1280,
           height: 720,
           position: "absolute",
