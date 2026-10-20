@@ -311,6 +311,13 @@ try {
         "[data-slide-stage] .slide-title-text, [data-slide-stage] .slide-content-heading",
       );
       await heading.waitFor();
+      await pp.evaluate(async () => {
+        await document.fonts.ready;
+        await Promise.all(
+          [...document.querySelectorAll("[data-slide-stage] img")].map((img) => img.decode()),
+        );
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
       assert.match(await heading.innerText(), new RegExp(`Parity${i} subject title`, "i"));
       metrics.push(
         await heading.evaluate((el) => {
@@ -473,7 +480,7 @@ try {
               Math.abs(Number(size[2]) / 9525 - img.h) < 1
             );
           }),
-          "Logo and attached image placement must match the preview",
+          `Slide ${i + 1}: logo / image placement must match the settled preview: ${JSON.stringify(img)}`,
         );
 
       assert(

@@ -38,6 +38,11 @@ jobs:
         with:
           name: scientific-contract-results
           path: qualification-results/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-export-qualification
+          path: ${{ runner.temp }}/juw-qa/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist-pages
