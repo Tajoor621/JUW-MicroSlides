@@ -1,3 +1,11 @@
+# V6.2.1 — update recovery and integration readiness (2026-10-21)
+
+- Fixed build discovery being blocked by an invalid or stalled service-worker registration. Published build metadata is checked independently; offline-cache maintenance is bounded and reports a recoverable status without deleting saved decks or caches.
+- Removed a redundant worker update immediately after registration, avoiding an installation/activation race on mobile browsers.
+- Preserved both caller cancellation and a 12-second deadline for every media provider, so one stalled provider cannot wait indefinitely.
+- Added an explicit local-AI connection test for server reachability and installed generation/embedding model names. It does not run inference, save settings, download models or certify scientific/vision capability.
+- Added regression coverage for invalid/empty/installing/hung workers, offline checks, cache activation, model availability and media cancellation. V6.2.1 remains fixed.
+
 ## Native transport qualification correction — V6.2.1 (2026-10-20)
 
 - Corrected the offline review test to recognize Tauri's local IPC bridge as native transport, with explicit tests rejecting remote hostname lookalikes. Remote requests remain blocked during review.

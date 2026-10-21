@@ -34,6 +34,32 @@ export function validateLocalAiUrl(raw: string) {
     throw new Error("Use your own local computer's localhost or private LAN address.");
   return u.origin;
 }
+/** Tests reachability and installed model names without running inference or
+ * changing settings. This cannot certify a model's scientific/vision quality. */
+export async function probeLocalAi(
+  config: { url: string; model: string; embeddingModel?: string },
+  signal?: AbortSignal,
+) {
+  const origin = validateLocalAiUrl(config.url);
+  const response = await localAiFetch(`${origin}/api/tags`, {
+    credentials: "omit",
+    signal: AbortSignal.any([AbortSignal.timeout(8000), ...(signal ? [signal] : [])]),
+  });
+  if (!response.ok)
+    throw new Error(`Ollama returned ${response.status}. Check the server address.`);
+  const parsed = z
+    .object({ models: z.array(z.object({ name: z.string() })).max(10000) })
+    .parse(await response.json());
+  const names = parsed.models.map((m) => m.name);
+  const canonical = (name: string) => (name.includes(":") ? name : `${name}:latest`);
+  const installed = (name: string) => names.some((n) => canonical(n) === canonical(name.trim()));
+  return {
+    models: names,
+    generationReady: installed(config.model),
+    embeddingReady:
+      Boolean(config.embeddingModel?.trim()) && installed(config.embeddingModel || ""),
+  };
+}
 async function chat(prompt: string, json = false, images: string[] = [], signal?: AbortSignal) {
   signal?.throwIfAborted();
   const config = localAiConfig();

@@ -169,6 +169,58 @@ try {
     if (previous === undefined) delete process.env.JUW_ENABLE_PAID_CLOUD_AI;
     else process.env.JUW_ENABLE_PAID_CLOUD_AI = previous;
   }
+  const { probeLocalAi } = await server.ssrLoadModule("/src/lib/local-ai.ts");
+  const { searchMediaLibrary } = await server.ssrLoadModule("/src/lib/media-library.ts");
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async (url) => {
+      assert.equal(url, "http://localhost:11434/api/tags");
+      return Response.json({
+        models: [{ name: "llama3.2:latest" }, { name: "embeddinggemma:latest" }],
+      });
+    };
+    assert.deepEqual(
+      await probeLocalAi({
+        url: "http://localhost:11434",
+        model: "llama3.2",
+        embeddingModel: "embeddinggemma",
+      }),
+      {
+        models: ["llama3.2:latest", "embeddinggemma:latest"],
+        generationReady: true,
+        embeddingReady: true,
+      },
+    );
+    const absent = await probeLocalAi({ url: "http://localhost:11434", model: "missing" });
+    assert.equal(absent.generationReady, false);
+    assert.equal(absent.embeddingReady, false);
+    await assert.rejects(
+      () => probeLocalAi({ url: "https://example.org", model: "x" }),
+      /local computer/,
+    );
+    const cancel = new AbortController();
+    let providerSignals = 0;
+    globalThis.fetch = async (_url, options) => {
+      assert.notEqual(
+        options.signal,
+        cancel.signal,
+        "Caller cancellation does not replace the deadline",
+      );
+      providerSignals++;
+      return new Promise((_resolve, reject) =>
+        options.signal.addEventListener("abort", () => reject(options.signal.reason), {
+          once: true,
+        }),
+      );
+    };
+    const pending = searchMediaLibrary("enzyme", 1, cancel.signal);
+    cancel.abort();
+    const result = await pending;
+    assert.equal(providerSignals, 3);
+    assert.equal(result.providers.filter((p) => p.error).length, 3);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
   console.log(
     "PASS audit regressions: source context, claim provenance, publication summaries, shared-media packing, bounded streams and paid-AI opt-in",
   );

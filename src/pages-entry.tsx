@@ -17,9 +17,10 @@ if (!isDesktop() && "serviceWorker" in navigator) {
         scope: import.meta.env.BASE_URL,
         updateViaCache: "none",
       })
-      .then(async (registration) => {
+      .then((registration) => {
         registration.waiting?.postMessage("SKIP_WAITING");
-        await registration.update();
+        // register() already checks for an update. A second immediate update can
+        // race with installation/activation on mobile browsers.
       })
       .catch(() => console.warn("Offline installation failed; reconnect and reload to retry."));
   };

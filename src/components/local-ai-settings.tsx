@@ -1,12 +1,42 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { localAiConfig, validateLocalAiUrl } from "@/lib/local-ai";
+import { localAiConfig, validateLocalAiUrl, probeLocalAi } from "@/lib/local-ai";
 import { Button } from "./ui/button";
 export function LocalAiSettings() {
   const config = localAiConfig();
   const [url, setUrl] = useState(config?.url || "http://localhost:11434");
   const [model, setModel] = useState(config?.model || "llama3.2");
   const [embeddingModel, setEmbeddingModel] = useState(config?.embeddingModel || "");
+  const [status, setStatus] = useState("");
+  const [checking, setChecking] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => {
+    request.current?.abort();
+    setChecking(false);
+    setStatus("");
+    return () => request.current?.abort();
+  }, [url, model, embeddingModel]);
+  async function testConnection() {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setChecking(true);
+    setStatus("Checking server and installed model names…");
+    try {
+      const result = await probeLocalAi({ url, model, embeddingModel }, controller.signal);
+      if (controller.signal.aborted) return;
+      setStatus(
+        `${result.generationReady ? "Server reachable; generation model found." : "Server reachable, but the generation model is missing."} ${embeddingModel.trim() ? (result.embeddingReady ? "Embedding model found." : "Embedding model is missing; semantic screening is unavailable.") : "No embedding model selected; semantic screening is unavailable."} This checks availability, not scientific accuracy or image capability. Save settings to use this configuration.`,
+      );
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setStatus(
+          `Connection failed. ${error instanceof Error ? error.message : "Server unavailable."} Ensure Ollama is running and browser access is allowed. Knowledge mode remains available.`,
+        );
+    } finally {
+      if (request.current === controller) setChecking(false);
+    }
+  }
   return (
     <section className="space-y-2 rounded border border-border p-3">
       <h3 className="text-sm font-medium">Optional local AI (Ollama)</h3>
@@ -44,7 +74,15 @@ export function LocalAiSettings() {
           placeholder="e.g. embeddinggemma"
         />
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={checking}
+          onClick={() => void testConnection()}
+        >
+          {checking ? "Checking connection…" : "Test local AI connection"}
+        </Button>
         <Button
           size="sm"
           variant="secondary"
@@ -60,7 +98,7 @@ export function LocalAiSettings() {
                   embeddingModel: embeddingModel.trim(),
                 }),
               );
-              toast.success("Local AI configured. Select AI mode to generate.");
+              toast.success("Local AI settings saved. Test the connection before generating.");
             } catch (e) {
               toast.error(e instanceof Error ? e.message : "Invalid settings");
             }
@@ -73,12 +111,20 @@ export function LocalAiSettings() {
           variant="ghost"
           onClick={() => {
             localStorage.removeItem("juw-local-ai");
+            request.current?.abort();
+            setChecking(false);
+            setStatus("Local AI disconnected. Knowledge mode remains available.");
             toast.message("Local AI disconnected.");
           }}
         >
           Disconnect
         </Button>
       </div>
+      {status && (
+        <p role="status" className="text-xs leading-relaxed text-muted">
+          {status}
+        </p>
+      )}
     </section>
   );
 }

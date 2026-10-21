@@ -1346,6 +1346,39 @@ try {
   await up.getByRole("button", { name: "Check for updates", exact: true }).click();
   await up.getByText("Up to date", { exact: true }).waitFor();
   results.push("Visible build ID and update checking agree with fresh build metadata");
+  await up.evaluate(() => {
+    ServiceWorkerRegistration.prototype.update = async () => {
+      throw new DOMException("The object is in an invalid state.", "InvalidStateError");
+    };
+  });
+  await up.getByRole("button", { name: "Check for updates", exact: true }).click();
+  await up.getByText(/Offline cache could not refresh/).waitFor();
+  assert.match(await up.locator("[data-app-build]").innerText(), /Up to date/);
+  assert(await up.getByRole("button", { name: "Check for updates", exact: true }).isEnabled());
+  assert(await up.getByRole("button", { name: "Generate", exact: true }).isEnabled());
+  results.push(
+    "InvalidStateError in worker updates preserves build discovery and an interactive editor",
+  );
+  await up.route("http://localhost:11434/api/tags", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ models: [{ name: "llama3.2:latest" }] }),
+    }),
+  );
+  await up.getByRole("button", { name: "Settings", exact: true }).click();
+  await up.getByRole("button", { name: "Test local AI connection", exact: true }).click();
+  await up.getByText(/Server reachable; generation model found/).waitFor();
+  await up.getByLabel("Local AI model", { exact: true }).fill("missing-model");
+  await up.getByRole("button", { name: "Test local AI connection", exact: true }).click();
+  await up.getByText(/generation model is missing/).waitFor();
+  await up.unroute("http://localhost:11434/api/tags");
+  await up.route("http://localhost:11434/api/tags", (route) => route.abort());
+  await up.getByRole("button", { name: "Test local AI connection", exact: true }).click();
+  await up.getByText(/Connection failed/).waitFor();
+  await up.getByRole("button", { name: "Close", exact: true }).click();
+  results.push(
+    "Local AI readiness identifies installed/missing models and server failure without saving settings",
+  );
   await upgrade.setOffline(true);
   await up.reload();
   await saved(up);
