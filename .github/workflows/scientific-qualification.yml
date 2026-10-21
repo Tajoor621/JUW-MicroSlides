@@ -10,6 +10,10 @@ on:
         description: "Number of real topics (1–200); no fixtures"
         default: "3"
         required: true
+      counts:
+        description: "manifest, all (1–50), or comma-separated counts; all is expensive"
+        default: "manifest"
+        required: true
 permissions:
   contents: read
 jobs:
@@ -27,6 +31,7 @@ jobs:
         env:
           JUW_BENCH_START: ${{ inputs.start }}
           JUW_BENCH_LIMIT: ${{ inputs.limit }}
+          JUW_BENCH_COUNTS: ${{ inputs.counts }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
