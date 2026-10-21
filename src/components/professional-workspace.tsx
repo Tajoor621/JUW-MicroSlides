@@ -245,11 +245,11 @@ export function ProfessionalWorkspace() {
           </Button>
         </div>
         <p className="text-xs text-muted">
-          The evidence gate covers bullet statements; review scientific headings, captions and
-          speaker notes separately. Regeneration: select a slide, use the replacement editor below,
-          inspect the complete proposal, then apply. Evidence review becomes stale for changed
-          claims. Ctrl+N: new lecture · Ctrl+S: project · Ctrl+O: project library · F5: present ·
-          Escape: exit.
+          The evidence gate covers bullet statements, headings, figures and speaker notes. Review
+          every factual field in Evidence. Regeneration: select a slide, use the replacement editor
+          below, inspect the complete proposal, then apply. Evidence review becomes stale for
+          changed claims. Ctrl+N: new lecture · Ctrl+S: project · Ctrl+O: project library · F5:
+          present · Escape: exit.
         </p>
         {slide && !legacy && <ReplacementEditor key={slide.id} />}
         {usage && <p className="text-xs">{usage}</p>}
