@@ -1,6 +1,7 @@
 import { z } from "zod";
 export const publicationCheckSchema = z.object({
   metadataMatch: z.boolean().optional(),
+  metadataTitle: z.string().max(100000).optional(),
   identifier: z.string().max(1000),
   checkedAt: z.number().finite(),
   status: z.enum(["retracted", "concern", "corrected", "notice", "no-notice-found", "unknown"]),
