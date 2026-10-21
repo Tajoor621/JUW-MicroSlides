@@ -113,7 +113,8 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       let local = generateLocalDeck(input);
       if (input.mode === "ai") {
         setProgress("Drafting and checking the research deck…");
-        const result = await generateAiDeck({ data: input });
+        const result = await generateAiDeck({ data: input, signal: controller.current.signal });
+        controller.current.signal.throwIfAborted();
         if (result.ok) local = result.deck;
         else {
           local = result.deck ?? local;
@@ -157,8 +158,9 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
       if (local.contentWarnings?.length)
         toast.message(local.contentWarnings[0], { duration: 12000 });
     } catch (error) {
-      const message =
-        error instanceof Error
+      const message = controller.current?.signal.aborted
+        ? "Generation cancelled. Your previous deck and completed checkpoints are preserved."
+        : error instanceof Error
           ? error.message
           : "The requested deck could not be completed. Add source material and retry.";
       setGenerationError(message);
@@ -400,9 +402,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
           variant="secondary"
           onClick={() => {
             controller.current?.abort();
-            setProgress(
-              "Cancellation requested; waiting for the current local-model call to stop.",
-            );
+            setProgress("Cancelling generation…");
           }}
         >
           Cancel generation
