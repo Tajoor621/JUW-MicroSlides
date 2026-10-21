@@ -94,6 +94,12 @@ try {
       },
     ],
     [
+      "numeric substring mismatch",
+      (s) => {
+        s.teaching.quantitative[0].value = "8";
+      },
+    ],
+    [
       "source quotation",
       (s) => {
         s.teaching.quantitative[0].quote = "A fabricated quotation missing from the saved source.";

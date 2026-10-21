@@ -107,7 +107,13 @@ export function teachingFindings(deck: Deck) {
         add(
           "Quantitative data need a numeric value, units, HTTPS source quotation and experimental conditions.",
         );
-      if (q.value.trim() && !q.quote.includes(q.value.trim()))
+      const numericTokens = (text: string): string[] =>
+        text.match(/[+-]?\d+(?:[.,]\d+)*(?:[eE][+-]?\d+)?/g) || [];
+      if (
+        q.value.trim() &&
+        (!q.quote.includes(q.value.trim()) ||
+          numericTokens(q.value).some((n) => !numericTokens(q.quote).includes(n)))
+      )
         add(
           "The numerical value must occur in the saved-source quotation; explain derived calculations in notes.",
         );
