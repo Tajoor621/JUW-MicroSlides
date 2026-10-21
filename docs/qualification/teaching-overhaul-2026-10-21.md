@@ -58,3 +58,9 @@ Tests use explicitly synthetic software fixtures. Their quotations, primary-refe
 - Complete npm audit reported zero vulnerabilities. Server, Pages and desktop frontend builds passed.
 - The development shell rendered on desktop/mobile without uncaught application errors or horizontal overflow. Its injected external platform script was unavailable in the restricted network (`ERR_EMPTY_RESPONSE`); the branding integration was preserved. This is not reported as a clean external-platform connectivity pass.
 - New-head GitHub CI, native Windows installation, the full topic/count matrix, licensed PowerPoint/Google Slides rendering and independent scientific/accessibility review remain separate release qualifications. Previous-head results do not qualify this new source revision.
+
+### Final authoring and CI guardrails
+
+Recent-paper discovery preserves existing reviewed citation metadata, deduplicates DOI/PMID aliases and rejects a result if the research context changed during the request. Structured teaching edits are schema-checked before saving; an oversized paste preserves the previous valid value instead of crashing the editor. Regression checks cover both behaviours.
+
+The first new-head Pages run passed all 42 application workflows but its additional reviewed-export evidence step failed because a test output path assumed `/workspace`. The test now uses the configured CI artifact directory or an operating-system temporary directory, and the Pages job retains those PDFs with the other browser qualification evidence. This was a test-path portability defect, not an export-gate bypass.

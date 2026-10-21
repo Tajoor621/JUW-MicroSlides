@@ -211,3 +211,41 @@ export function quantitativeCandidate(deck: Deck): Teaching["quantitative"][numb
     }
   }
 }
+
+/** Candidate discovery must never replace an instructor's reviewed record. */
+export function mergeCitationCandidates(
+  existing: import("./types").Citation[],
+  candidates: import("./types").Citation[],
+) {
+  const doi = (value: string | undefined) =>
+    value
+      ?.replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, "")
+      .trim()
+      .toLowerCase();
+  const result = [...existing];
+  for (const candidate of candidates)
+    if (
+      !result.some(
+        (c) =>
+          c.id === candidate.id ||
+          (c.pmid && candidate.pmid && c.pmid.trim() === candidate.pmid.trim()) ||
+          (doi(c.doi) && doi(c.doi) === doi(candidate.doi)) ||
+          (c.url && c.url === candidate.url),
+      )
+    )
+      result.push(candidate);
+  return result;
+}
+export function teachingResearchContext(deck: Deck, slide: Slide) {
+  return JSON.stringify([
+    deck.topic,
+    deck.discipline,
+    deck.level,
+    slide.title,
+    slide.subtitle,
+    slide.bullets,
+    slide.leftBullets,
+    slide.rightBullets,
+    slide.teaching,
+  ]);
+}

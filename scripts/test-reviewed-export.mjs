@@ -1,8 +1,11 @@
 import { createRequire } from "node:module";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createServer as httpServer } from "node:http";
-import { extname, resolve } from "node:path";
+import { extname, resolve, join } from "node:path";
+import { tmpdir } from "node:os";
 const root = process.cwd();
+const output = process.env.JUW_QA_OUTPUT || join(tmpdir(), "juw-reviewed-export");
+await mkdir(output, { recursive: true });
 const require = createRequire(root + "/package.json");
 const { createServer } = await import(require.resolve("vite"));
 const { chromium } = require("playwright");
@@ -127,8 +130,8 @@ try {
           !pdfBytes.includes(Buffer.from("/FontFile2"))
         )
           throw Error("PDF must contain embedded TrueType fonts");
-        await mkdir("/workspace/screenshots", { recursive: true });
-        await writeFile("/workspace/screenshots/juw-teaching-fixture.pdf", pdfBytes);
+
+        await writeFile(join(output, "juw-teaching-fixture.pdf"), pdfBytes);
         const packEvent = page.waitForEvent("download");
         await page.getByRole("button", { name: "Export teaching pack", exact: true }).click();
         const pack = await JSZip.loadAsync(await readFile(await (await packEvent).path()));
@@ -153,6 +156,11 @@ try {
         await page.keyboard.press("ArrowRight");
         await point.waitFor({ state: "visible" });
         await page.keyboard.press("Escape");
+        const definition = page.getByLabel("Core definition", { exact: true }),
+          originalDefinition = await definition.inputValue();
+        await definition.fill("x".repeat(3001));
+        if ((await definition.inputValue()) !== originalDefinition)
+          throw Error("Oversized paste must preserve the valid authoring field");
         await page
           .getByLabel("Core definition", { exact: true })
           .fill("Changed scientific definition requiring fresh review.");
@@ -207,7 +215,7 @@ try {
   const darkPdfEvent = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export reviewed PDF", exact: true }).click();
   await writeFile(
-    "/workspace/screenshots/juw-teaching-dark.pdf",
+    join(output, "juw-teaching-dark.pdf"),
     await readFile(await (await darkPdfEvent).path()),
   );
   await page.getByRole("button", { name: "First Deck setup", exact: true }).click();

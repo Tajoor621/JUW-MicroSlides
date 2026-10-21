@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useDeckStore } from "@/lib/deck-store";
 import {
   DIAGRAMS,
+  teachingSchema,
+  mergeCitationCandidates,
+  teachingResearchContext,
   teachingOf,
   teachingFindings,
   lectureMinutes,
@@ -29,7 +32,16 @@ export function TeachingPanel() {
       </p>
     );
   const p = teachingOf(slide),
-    update = (value: Partial<Teaching>) => patch(index, { teaching: { ...p, ...value } });
+    update = (value: Partial<Teaching>) => {
+      const next = teachingSchema.safeParse({ ...p, ...value });
+      if (!next.success) {
+        toast.error(
+          next.error.issues[0]?.message || "This teaching field exceeds its supported limit.",
+        );
+        return;
+      }
+      patch(index, { teaching: next.data });
+    };
   const field = (
     key: keyof Pick<
       Teaching,
@@ -412,7 +424,8 @@ export function TeachingPanel() {
             onClick={async () => {
               setBusy(true);
               const requestedDeck = deck.id,
-                requestedSlide = slide.id;
+                requestedSlide = slide.id,
+                requestedContext = teachingResearchContext(deck, slide);
               try {
                 const year = new Date().getFullYear();
                 const result = await searchPubmed({
@@ -426,20 +439,14 @@ export function TeachingPanel() {
                   !live ||
                   live.id !== requestedDeck ||
                   position < 0 ||
-                  live.slides[position].locked
+                  live.slides[position].locked ||
+                  teachingResearchContext(live, live.slides[position]) !== requestedContext
                 )
                   throw Error(
-                    "The requested slide is no longer available for citation attachment.",
+                    "The research topic or slide changed while searching. Existing work is preserved; request fresh candidates.",
                   );
                 patch(position, {
-                  citations: [
-                    ...new Map(
-                      [...live.slides[position].citations, ...rows].map((c) => [
-                        c.pmid || c.doi || c.id,
-                        c,
-                      ]),
-                    ).values(),
-                  ],
+                  citations: mergeCitationCandidates(live.slides[position].citations, rows),
                 });
                 toast.message(
                   `${rows.length} recent PubMed candidates attached for verification. Journal impact and study quality still require assessment.`,

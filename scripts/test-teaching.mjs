@@ -11,8 +11,13 @@ const vite = await createServer({
 });
 try {
   const { deck, slide, review } = await teachingFixture(vite);
-  const { teachingFindings, citationMatchesUrl, quantitativeCandidate } =
-    await vite.ssrLoadModule("/src/lib/teaching.ts");
+  const {
+    teachingFindings,
+    citationMatchesUrl,
+    quantitativeCandidate,
+    mergeCitationCandidates,
+    teachingResearchContext,
+  } = await vite.ssrLoadModule("/src/lib/teaching.ts");
   const { teachingReleaseFindings, teachingReady } = await vite.ssrLoadModule(
     "/src/lib/teaching-readiness.ts",
   );
@@ -29,6 +34,28 @@ try {
   const copied = structuredClone(deck);
   copied.id = "copy";
   assert(teachingReady(copied), "Copy identity does not change scientific content");
+  const prior = deck.slides[0].citations[0],
+    candidate = {
+      ...prior,
+      id: "new-provider-id",
+      evidenceKind: undefined,
+      publicationCheck: undefined,
+    };
+  const merged = mergeCitationCandidates([prior], [candidate]);
+  assert.equal(merged.length, 1);
+  assert.equal(merged[0], prior, "Discovery preserves reviewed metadata");
+  assert.equal(
+    mergeCitationCandidates(
+      [{ ...prior, pmid: undefined, doi: "https://doi.org/10.1/TEST" }],
+      [{ ...candidate, doi: "10.1/test" }],
+    ).length,
+    1,
+    "DOI aliases do not erase existing records",
+  );
+  const context = teachingResearchContext(deck, slide),
+    changedContext = structuredClone(deck);
+  changedContext.slides[0].title = "Different research context";
+  assert.notEqual(context, teachingResearchContext(changedContext, changedContext.slides[0]));
   const extraRef = structuredClone(deck);
   extraRef.slides[0].citations.push({
     id: "unverified-extra",
