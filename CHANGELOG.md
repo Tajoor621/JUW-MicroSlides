@@ -123,3 +123,12 @@ See README for remaining limits, deployment setup, and validation commands.
 - Ran an actual pinned q8 MiniLM model on all 27 development pairs offline. Published model/runtime hashes and raw scores; the default threshold missed six of eight labelled repetitions. Model/threshold remains unqualified; no automatic threshold change or content deletion.
 - Preserved paragraph/sentence adjacency and source paragraph context in speaker notes. Fixed abstract markup handling of scientific comparisons and Unicode; excluded oversized paragraphs rather than truncating. Preferred explanatory wording for one-slide source summaries and separated the passage cache from earlier extraction.
 - Completed offline in-app return assessment for two reviewer forms, with content/source hashes, malformed/stale/incomplete/disagreement/redundancy checks and downloadable results. Shared validation with the CLI; self-attestations never certify science or unlock reviewed export.
+
+## V6.2.1 — 21 October 2026
+
+- Block reviewed export on missing/partial/unknown/stale or identity-unconfirmed DOI/PMID checks.
+- Add source-linked lecturer decisions for titles, subtitles, notes and figures, editable figure provenance, SHA-256 context invalidation, backup preservation and PPTX decision trails.
+- Abort in-flight local-model generation without entering the research fallback or replacing saved lectures; retain completed checkpoints.
+- Add unique archives for the complete 200-topic × 50-count live matrix and a bounded, manual workflow with partial-result retention.
+- Add external semantic-corpus input and fixed-threshold acceptance checks with explicit independent-verification limits; retain the existing failed calibration status.
+- Add regression checks to Pages and Windows verification. Scientific reviewers, licensed PowerPoint, physical classroom tests and signed distribution remain pending external evidence.
