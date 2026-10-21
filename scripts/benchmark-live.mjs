@@ -1,3 +1,4 @@
+import { benchmarkPlan } from "./benchmark-plan.mjs";
 // Real literature retrieval; no network/model fixtures. This is not an independent scientific verdict.
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
@@ -30,22 +31,9 @@ const workingTreeDirty = Boolean(
   execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim(),
 );
 const corpus = JSON.parse(await readFile("benchmarks/microbiology-topics.json", "utf8"));
-const start = Number(process.env.JUW_BENCH_START || 0),
-  limit = Number(process.env.JUW_BENCH_LIMIT || 3);
-if (
-  !Number.isInteger(start) ||
-  start < 0 ||
-  start >= 200 ||
-  !Number.isInteger(limit) ||
-  limit < 1 ||
-  limit > 200
-)
-  throw Error("Choose start 0–199 and limit 1–200.");
-const stride = Number(process.env.JUW_BENCH_STRIDE || 1);
-if (!Number.isInteger(stride) || stride < 1 || stride > 200) throw Error("Invalid stride");
-const selectedCases = corpus.cases
-  .filter((_, i) => i >= start && (i - start) % stride === 0)
-  .slice(0, limit);
+const plan = benchmarkPlan(corpus.cases);
+const { start, stride } = plan;
+const selectedCases = plan.jobs;
 const output = process.env.JUW_BENCH_OUTPUT || "qualification-results/live";
 const server = await createServer({
   configFile: false,
@@ -101,6 +89,7 @@ try {
         ).length;
       const result = {
         id: c.id,
+        caseId: c.caseId,
         topic: c.topic,
         domain: c.domain,
         requested: c.requestedCount,
@@ -126,6 +115,7 @@ try {
     } catch (e) {
       results.push({
         id: c.id,
+        caseId: c.caseId,
         topic: c.topic,
         requested: c.requestedCount,
         completed: false,
@@ -145,7 +135,15 @@ try {
           commit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
           generatedAt: new Date().toISOString(),
           machine: { platform: process.platform, arch: process.arch, node: process.version },
-          scope: { start, stride, attempted: results.length, manifest: 200 },
+          scope: {
+            start,
+            stride,
+            counts: plan.counts,
+            topics: plan.topics,
+            planned: selectedCases.length,
+            attempted: results.length,
+            manifest: corpus.cases.length,
+          },
           results,
           limitations:
             "Live retrieval and measured timing. No fabricated completion, semantic calibration or scientific certification. Under-five-minute readiness requires source review and representative Windows hardware, not retrieval timing alone.",
