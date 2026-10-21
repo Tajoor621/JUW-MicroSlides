@@ -30,7 +30,7 @@
     "dev:desktop": "npm run desktop:icons && vite --config vite.desktop.config.ts",
     "build:desktop": "vite build --config vite.desktop.config.ts && node scripts/build-desktop.mjs",
     "desktop": "tauri",
-    "desktop:build": "tauri build",
+    "desktop:build": "tauri build -- --locked",
     "test:professional": "node scripts/test-professional.mjs",
     "desktop:icons": "tauri icon public/juw-crest-transparent.svg --output src-tauri/icons",
     "test:scientific": "node scripts/test-scientific.mjs",

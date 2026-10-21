@@ -30,7 +30,7 @@ jobs:
       - run: npm run test:release
       - run: npm run test:lecturer
       - run: cargo metadata --locked --format-version 1 --no-deps --manifest-path src-tauri/Cargo.toml
-      - run: npm run desktop:build -- --locked
+      - run: npm run desktop:build
       - name: Install the NSIS package and its WebView2 dependency
         shell: pwsh
         run: |
