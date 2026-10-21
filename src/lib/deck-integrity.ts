@@ -1,3 +1,4 @@
+import { surfaceFindings } from "./surface-review";
 import { citationIdentifier, statusIsFresh } from "./publication-status";
 import { guidanceNeedsReview } from "./source-documents";
 import type { Deck, Slide, Claim } from "./types";
@@ -101,6 +102,15 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
       message: `Overlaps slide ${d.first + 1}. Similarity screening requires lecturer review; replace redundant teaching content.`,
     });
   deck.slides.forEach((s, index) => {
+    for (const finding of surfaceFindings(deck, s))
+      findings.push({
+        slideId: s.id,
+        index,
+        quote: finding.text,
+        severity: "critical",
+        category: finding.media ? "Figure review" : "Heading and notes review",
+        message: `${finding.field}: ${finding.problem}`,
+      });
     for (const citation of s.citations) {
       const check = citation.publicationCheck;
       const add = (severity: "critical" | "warning", category: string, message: string) =>
@@ -125,10 +135,15 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
         );
       else if (
         (citation.doi || citation.pmid) &&
-        (!check || !statusIsFresh(check) || !check.complete)
+        (!check ||
+          !statusIsFresh(check) ||
+          !check.complete ||
+          check.status !== "no-notice-found" ||
+          check.metadataMatch !== true ||
+          check.metadataTitle !== citation.title)
       )
         add(
-          "warning",
+          "critical",
           "Publication status incomplete",
           "Run online reference checks. Missing, partial or older-than-seven-day checks do not establish current publication status.",
         );
@@ -170,6 +185,18 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           (!e.citationId || s.citations.some((r) => r.id === e.citationId)),
       );
       for (const e of linked) {
+        const identifier =
+          e.sourceUrl.match(/^https?:\/\/(?:dx\.)?doi\.org\/(.+)/i)?.[1]?.toLowerCase() ||
+          e.sourceUrl.match(/^https?:\/\/pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/i)?.[1];
+        if (identifier && !s.citations.some((ref) => citationIdentifier(ref) === identifier))
+          findings.push({
+            slideId: s.id,
+            index,
+            quote: c.text,
+            severity: "critical",
+            category: "Unlinked source identifier",
+            message: "Attach and check the bibliographic record for this DOI or PMID passage.",
+          });
         const saved = (deck.sourceDocuments || []).filter((d) => d.url === e.sourceUrl);
         const normalizeSpace = (text: string) => text.replace(/\s+/g, " ").trim();
         if (
