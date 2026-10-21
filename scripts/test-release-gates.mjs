@@ -93,6 +93,13 @@ try {
     surfaceReviewProblem(deck, slide, unlinkedSurface.field, unlinkedSurface),
     /bibliographic record/,
   );
+  assert(
+    surfaceReviewProblem(deck, slide, unlinkedSurface.field, {
+      ...unlinkedSurface,
+      sourceUrl: "https://doi.org/%ZZ",
+    }),
+    "Malformed source encoding must produce a finding, never crash the editor",
+  );
   const nonfactual = {
     ...slide.surfaceReviews[0],
     verdict: "not-factual",
