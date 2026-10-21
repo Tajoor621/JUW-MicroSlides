@@ -3,10 +3,17 @@ import type { Citation, GenerateInput } from "./types";
 import { generateLocalDeck } from "./generate-deck";
 const unavailable =
   "Cloud AI is not configured on this static site. Use Knowledge mode; no API key is sent from this browser.";
-export async function generateAiDeck({ data }: { data: GenerateInput }) {
+export async function generateAiDeck({
+  data,
+  signal,
+}: {
+  data: GenerateInput;
+  signal?: AbortSignal;
+}) {
   try {
-    return { ok: true as const, deck: await generateLocalAiDeck(data) };
+    return { ok: true as const, deck: await generateLocalAiDeck(data, signal) };
   } catch (error) {
+    signal?.throwIfAborted();
     return {
       ok: false as const,
       error: `${error instanceof Error ? error.message : unavailable} Continuing with research generation for the requested slide count.`,
