@@ -132,3 +132,9 @@ See README for remaining limits, deployment setup, and validation commands.
 - Add unique archives for the complete 200-topic × 50-count live matrix and a bounded, manual workflow with partial-result retention.
 - Add external semantic-corpus input and fixed-threshold acceptance checks with explicit independent-verification limits; retain the existing failed calibration status.
 - Add regression checks to Pages and Windows verification. Scientific reviewers, licensed PowerPoint, physical classroom tests and signed distribution remain pending external evidence.
+
+### Full qualification execution follow-up
+
+- Correct GitHub matrix-output newline encoding and exercise the planner as a real CLI.
+- Enable an owner-labelled same-repository PR to run all 10,000 live topic/count cases without merging or deployment.
+- Aggregate lightweight per-topic reports with explicit missing/failure accounting and a fixed source identity; retain independent scientific and hardware qualification as separate gates.

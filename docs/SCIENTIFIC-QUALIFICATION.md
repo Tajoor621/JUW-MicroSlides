@@ -134,3 +134,12 @@ The manual **Scientific topic and count matrix** workflow shards by topic, limit
 The qualification command uses the **predeclared threshold**, never one selected on the holdout. It reports confidence intervals and explicitly leaves identity/blinding verification to the coordinator. Even perfect supplied measurements produce `numerical-criteria-met-needs-independent-verification`, not scientific certification. The failed public MiniLM development result remains failed; no threshold is changed automatically.
 
 `npm run test:release` exercises the new export boundaries, context invalidation, figure provenance, schema persistence and live-request cancellation using explicitly synthetic fixtures. Pages and Windows CI both run it. Independent reviewers, licensed PowerPoint results, signed same-version distribution and witnessed physical classroom tests remain separate unfinished release requirements.
+
+
+## Full-matrix execution and evidence accounting — 21 October 2026
+
+The matrix planner writes a real newline-delimited GitHub output value; its CLI is exercised end to end in regression tests. A same-repository PR can start the complete 200-topic × 50-count run when the owner applies the `run-full-scientific-qualification` label. Other labels and fork PRs do not start it. This uses read-only repository permissions, two concurrent topic jobs, no paid inference API, and no deployment steps. The workflow pins all jobs to the triggering source commit.
+
+Manual dispatch still supports smaller selections. Full runs can take many hours or days. Failed requests remain failures; the workflow does not pad decks, change the accepted count or award scientific approval to complete the matrix. Partial per-topic reports are retained after failures/timeouts where the runner reached them.
+
+A final summary job checks every planned topic/count ID against the downloaded metadata reports, detects missing/duplicate/foreign results and mixed source revisions, verifies exact counts, lexical checks and recorded claim passages, and reports retrieval P95 separately from professional readiness. Missing reports and cancelled/failed requests cannot turn into a pass. The lightweight summary artifacts exclude archived full texts; complete decks remain in separate topic artifacts for deliberate scientific review. Even a complete generation matrix keeps independent science, semantic-model, licensed PowerPoint, physical hardware and signing gates open.
