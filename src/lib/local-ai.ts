@@ -32,7 +32,8 @@ export function validateLocalAiUrl(raw: string) {
     throw new Error("Use your own local computer's localhost or private LAN address.");
   return u.origin;
 }
-async function chat(prompt: string, json = false, images: string[] = []) {
+async function chat(prompt: string, json = false, images: string[] = [], signal?: AbortSignal) {
+  signal?.throwIfAborted();
   const config = localAiConfig();
   if (!config)
     throw new Error(
@@ -42,7 +43,7 @@ async function chat(prompt: string, json = false, images: string[] = []) {
     method: "POST",
     credentials: "omit",
     headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(55000),
+    signal: AbortSignal.any([AbortSignal.timeout(55000), ...(signal ? [signal] : [])]),
     body: JSON.stringify({
       model: config.model,
       stream: false,
@@ -76,7 +77,8 @@ const generatedSlide = z.object({
   rightBullets: z.array(z.string().max(3000)).max(12).default([]),
   notes: z.string().max(10000).default(""),
 });
-export async function generateLocalAiDeck(input: GenerateInput) {
+export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSignal) {
+  signal?.throwIfAborted();
   const count = requestedCount(input.count);
   const deck = generateLocalDeck({ ...input, count });
   const slides: Slide[] = count === 1 ? [] : [deck.slides[0]];
@@ -108,6 +110,8 @@ export async function generateLocalAiDeck(input: GenerateInput) {
       await chat(
         `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
         true,
+        [],
+        signal,
       ),
     );
   const { headings } = z
@@ -155,11 +159,15 @@ export async function generateLocalAiDeck(input: GenerateInput) {
   }
   rows.forEach((row, i) => appendRow(row, headings[i]));
   for (let offset = rows.length; offset < headings.length; offset += 8) {
+    signal?.throwIfAborted();
     const batch = headings.slice(offset, offset + 8);
     const response = await chat(
       `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes}]}.`,
       true,
+      [],
+      signal,
     );
+    signal?.throwIfAborted();
     const parsed = z
       .object({ slides: z.array(generatedSlide).min(1).max(8) })
       .parse(JSON.parse(response));
@@ -186,6 +194,7 @@ export async function generateLocalAiDeck(input: GenerateInput) {
     ],
     generationSource: "local-ai" as const,
   };
+  signal?.throwIfAborted();
   return assertCompleteDeck(made, count);
 }
 export async function localCopilot(data: {
