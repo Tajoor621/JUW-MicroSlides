@@ -74,6 +74,7 @@ export interface Slide {
   id: string;
   layout: Layout;
   claims?: Claim[];
+  surfaceReviews?: import("./surface-review").SurfaceReview[];
   locked?: boolean;
   teachingPurpose?: string;
   theme: SlideTheme;
