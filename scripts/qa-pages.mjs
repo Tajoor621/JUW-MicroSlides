@@ -98,7 +98,12 @@ function pptxXmlFiles(buffer) {
     const name = buffer.subarray(offset + 46, offset + 46 + n).toString();
     const local = buffer.readUInt32LE(offset + 42);
     const start = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28);
-    if (name.endsWith(".xml") || name.endsWith(".rels") || name.endsWith(".png") || name.endsWith(".svg")) {
+    if (
+      name.endsWith(".xml") ||
+      name.endsWith(".rels") ||
+      name.endsWith(".png") ||
+      name.endsWith(".svg")
+    ) {
       const data = buffer.subarray(start, start + size);
       const uncompressed = method === 8 ? inflateRawSync(data) : data;
       files[name] = uncompressed.toString(name.endsWith(".png") ? "base64" : "utf8");
@@ -375,13 +380,11 @@ try {
     buffer: Buffer.from(JSON.stringify(tampered)),
   });
   await reviewer.getByText(/Review pack hash mismatch/).waitFor();
-  await reviewer
-    .getByLabel("Open scientific review pack", { exact: true })
-    .setInputFiles({
-      name: "pack.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(reviewPack)),
-    });
+  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
+    name: "pack.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(reviewPack)),
+  });
   await reviewer.getByLabel("Review item", { exact: true }).waitFor();
   assert.equal(
     await reviewer.getByText("Restore my saved review draft", { exact: true }).count(),
@@ -657,8 +660,9 @@ try {
     const bytes = await readFile(await file.path());
     assert.equal(slideCountInPptx(bytes), 50);
     const xml = pptxXmlFiles(bytes);
-    const embeddedVectors = Object.entries(xml).filter(([name, data]) =>
-      name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\s>]/i.test(data)
+    const embeddedVectors = Object.entries(xml).filter(
+      ([name, data]) =>
+        name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\s>]/i.test(data),
     );
     assert(embeddedVectors.length > 0, "PPTX must retain genuine SVG vector artwork");
     const firstSlide = xml["ppt/slides/slide1.xml"];
@@ -1197,6 +1201,30 @@ try {
   );
   results.push(
     "Substantive single-slide generation, blocked unreviewed export, portable project UI roundtrip, slide locking and version recovery work together",
+  );
+  await pro.getByRole("button", { name: "Evidence", exact: true }).click();
+  await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
+  await pro.getByLabel("Additional evidence decision", { exact: true }).selectOption("not-factual");
+  await pro
+    .getByLabel("Additional review rationale", { exact: true })
+    .fill("Topic heading only; this fixture decision does not approve scientific content.");
+  await pro.getByLabel("I checked the complete field", { exact: false }).check();
+  await pro.getByRole("button", { name: "Record field review", exact: true }).click();
+  await saved(pro);
+  await pro.getByText("Current lecturer decision recorded.", { exact: true }).waitFor();
+  await pro.screenshot({ path: join(output, "juw-surface-review.png") });
+  await pro.getByRole("button", { name: "Edit", exact: true }).click();
+  await pro
+    .getByRole("textbox", { name: "Title", exact: true })
+    .fill("Changed scientific heading fixture");
+  await pro.getByRole("button", { name: "Evidence", exact: true }).click();
+  await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
+  await pro
+    .getByText("Content or source context changed; review this field again.", { exact: true })
+    .waitFor();
+  assert(await pro.getByRole("button", { name: "Record field review", exact: true }).isDisabled());
+  results.push(
+    "Heading/notes/figure review controls record explicit decisions and invalidate them after an edit; old attestations cannot approve changed content",
   );
   await professional.close();
   legacyWorkerFixture = true;
