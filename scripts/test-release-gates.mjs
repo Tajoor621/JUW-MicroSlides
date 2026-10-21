@@ -85,6 +85,14 @@ try {
     }),
     (e) => e.name === "AbortError",
   );
+  const unlinkedSurface = {
+    ...slide.surfaceReviews[0],
+    sourceUrl: "https://doi.org/10.1234/unlinked",
+  };
+  assert.match(
+    surfaceReviewProblem(deck, slide, unlinkedSurface.field, unlinkedSurface),
+    /bibliographic record/,
+  );
   const nonfactual = {
     ...slide.surfaceReviews[0],
     verdict: "not-factual",
