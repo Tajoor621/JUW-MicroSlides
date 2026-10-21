@@ -377,6 +377,7 @@ export async function checkReferenceMetadata(citations: Citation[]): Promise<Ref
             };
           const match = overlap(c.title, actual) >= 0.6;
           publication.metadataMatch = match;
+          publication.metadataTitle = c.title;
           return {
             publication,
             cached: publication.cached,
