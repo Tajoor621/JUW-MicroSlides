@@ -4,7 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "overrides": {
-    "nf3": "0.3.17"
+    "nf3": "0.3.17",
+    "image-size": "2.0.3",
+    "source-map-js": "1.2.2"
   },
   "scripts": {
     "dev": "node scripts/with-app-env.mjs vite dev --host 0.0.0.0 --port 8080",
@@ -38,7 +40,9 @@
     "benchmark:semantic:local": "node scripts/benchmark-semantic-local.mjs",
     "test:lecturer": "node scripts/test-lecturer-workflow.mjs",
     "test:release": "node scripts/test-release-gates.mjs",
-    "qualify:semantic": "node scripts/qualify-semantic.mjs"
+    "qualify:semantic": "node scripts/qualify-semantic.mjs",
+    "test:audit": "node scripts/test-audit-regressions.mjs",
+    "qa:reviewed-export": "node scripts/test-reviewed-export.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",
@@ -126,7 +130,7 @@
     "prettier": "^3.4.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.2.0"
+    "vite": "8.2.4"
   },
   "engines": {
     "node": ">=24.0.0"

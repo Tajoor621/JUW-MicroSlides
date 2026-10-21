@@ -138,3 +138,12 @@ See README for remaining limits, deployment setup, and validation commands.
 - Correct GitHub matrix-output newline encoding and exercise the planner as a real CLI.
 - Enable an owner-labelled same-repository PR to run all 10,000 live topic/count cases without merging or deployment.
 - Aggregate lightweight per-topic reports with explicit missing/failure accounting and a fixed source identity; retain independent scientific and hardware qualification as separate gates.
+
+### Professional audit remediation
+
+- Bind review freshness to saved source-content digests and claim evidence; align overview publication checks with export.
+- Block reviewed downloads when original figures cannot decode; preserve draft warnings.
+- Repair shared-media portable saving and enforce streaming image/project budgets.
+- Add a bounded, cancellable, authoring-only native Ollama bridge without broadening renderer CSP.
+- Patch JavaScript advisories; commit native dependency/toolchain locks, add native auditing and record installer provenance.
+- Expand regression/production-download checks and restart owner-authorized scientific matrices when the PR source changes. See docs/qualification/audit-remediation-2026-10-21.md for verified work and remaining external gates.

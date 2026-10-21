@@ -20,6 +20,7 @@ jobs:
           cache: npm
       - run: npm install --global npm@11.9.0
       - run: npm ci
+      - run: npm audit --audit-level=high
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
@@ -28,6 +29,7 @@ jobs:
       - run: npm run test:generation
       - run: npm run test:scientific
       - run: npm run test:professional
+      - run: npm run test:audit
       - run: npm run test:release
       - run: npm run test:lecturer
       - run: npm run build:pages
@@ -35,6 +37,7 @@ jobs:
       - run: npm run qa:pages
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
+      - run: npm run qa:reviewed-export
       - uses: actions/upload-artifact@v4
         if: always()
         with:

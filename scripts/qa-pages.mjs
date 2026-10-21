@@ -1202,6 +1202,9 @@ try {
   results.push(
     "Substantive single-slide generation, blocked unreviewed export, portable project UI roundtrip, slide locking and version recovery work together",
   );
+  // The restored revision may intentionally retain the slide's locked state.
+  const recoveredLock = pro.getByRole("button", { name: "Unlock selected slide", exact: true });
+  if (await recoveredLock.isVisible()) await recoveredLock.click();
   await pro.getByRole("button", { name: "Evidence", exact: true }).click();
   await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
   await pro.getByLabel("Additional evidence decision", { exact: true }).selectOption("not-factual");

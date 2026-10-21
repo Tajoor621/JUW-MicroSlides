@@ -1,7 +1,7 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 import { z } from "zod";
-import type { Deck, Slide } from "./types";
+import type { Deck, Slide, Claim } from "./types";
 import { guidanceNeedsReview } from "./source-documents";
 
 const https = z
@@ -31,6 +31,15 @@ export function surfaceItems(slide: Slide) {
     ...slide.media.map((m, i) => ({ field: `media.${i}`, text: m.title, media: true })),
   ];
 }
+const sourceTextHashes = new WeakMap<object, { text: string; digest: string }>();
+function sourceContext(doc: NonNullable<Deck["sourceDocuments"]>[number]) {
+  const cached = sourceTextHashes.get(doc);
+  const digest =
+    cached?.text === doc.text ? cached.digest : bytesToHex(sha256(utf8ToBytes(doc.text)));
+  if (!cached || cached.text !== doc.text) sourceTextHashes.set(doc, { text: doc.text, digest });
+  const { text: _text, ...metadata } = doc;
+  return { ...metadata, textSha256: digest };
+}
 // Exact serialized context invalidates attestations after scientific content or provenance changes.
 // Bind actual image data so retaining an original URL cannot hide a replaced figure.
 function canonical(value: unknown): unknown {
@@ -44,6 +53,35 @@ function canonical(value: unknown): unknown {
     );
   }
   return value;
+}
+export function claimSourceSnapshot(deck: Deck, claim: Claim) {
+  return bytesToHex(
+    sha256(
+      utf8ToBytes(
+        JSON.stringify(
+          canonical({
+            text: claim.text,
+            evidence: claim.evidence,
+            sources: (deck.sourceDocuments || [])
+              .filter((d) => claim.evidence.some((e) => e.sourceUrl === d.url))
+              .map(sourceContext),
+          }),
+        ),
+      ),
+    ),
+  );
+}
+export function attestClaim(deck: Deck, claim: Claim): Claim {
+  return { ...claim, sourceSnapshot: claimSourceSnapshot(deck, claim) };
+}
+export function claimReviewIsCurrent(deck: Deck, claim: Claim) {
+  const bound =
+    claim.sourceSnapshot ||
+    deck.sourceDocuments?.some((d) => claim.evidence.some((e) => e.sourceUrl === d.url));
+  return (
+    claim.status === "lecturer-reviewed" &&
+    (!bound || claim.sourceSnapshot === claimSourceSnapshot(deck, claim))
+  );
 }
 export function surfaceSnapshot(deck: Deck, slide: Slide, field: string) {
   return bytesToHex(
@@ -72,7 +110,7 @@ export function surfaceSnapshot(deck: Deck, slide: Slide, field: string) {
               licenseUrl: m.licenseUrl,
             })),
             citations: slide.citations.map(({ publicationCheck: _check, ...citation }) => citation),
-            sources: (deck.sourceDocuments || []).map(({ text: _text, ...metadata }) => metadata),
+            sources: (deck.sourceDocuments || []).map(sourceContext),
           }),
         ),
       ),

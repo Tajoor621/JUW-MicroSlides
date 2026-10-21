@@ -1,7 +1,7 @@
 name: Scientific topic and count matrix
 on:
   pull_request:
-    types: [labeled]
+    types: [labeled, synchronize]
   workflow_dispatch:
     inputs:
       start:
@@ -18,12 +18,12 @@ on:
         required: true
 concurrency:
   group: scientific-matrix-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   plan:
-    if: github.event_name == 'workflow_dispatch' || (github.event.label.name == 'run-full-scientific-qualification' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.head.repo.full_name == github.repository && (github.event.label.name == 'run-full-scientific-qualification' || (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'run-full-scientific-qualification'))))
     runs-on: ubuntu-latest
     outputs:
       topics: ${{ steps.plan.outputs.topics }}

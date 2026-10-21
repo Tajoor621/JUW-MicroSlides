@@ -1,4 +1,5 @@
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
+import { localAiFetch } from "./local-ai-transport";
 import { z } from "zod";
 import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
 import { assertCompleteDeck, requestedCount } from "./deck-completion";
@@ -39,7 +40,7 @@ async function chat(prompt: string, json = false, images: string[] = [], signal?
     throw new Error(
       "Local AI is not configured. Open Settings to configure your own Ollama server, or use Knowledge mode.",
     );
-  const response = await fetch(`${validateLocalAiUrl(config.url)}/api/chat`, {
+  const response = await localAiFetch(`${validateLocalAiUrl(config.url)}/api/chat`, {
     method: "POST",
     credentials: "omit",
     headers: { "Content-Type": "application/json" },

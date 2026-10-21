@@ -1,4 +1,5 @@
 import { spawn, execFileSync } from "node:child_process";
+import { createServer } from "node:http";
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -98,6 +99,49 @@ function stop() {
 const errors = [];
 try {
   let page = await start();
+  const localModel = createServer((req, res) => {
+    if (req.url === "/api/tags") {
+      res.setHeader("content-type", "application/json");
+      res.end('{"models":[]}');
+    }
+    // Chat deliberately remains pending to exercise cancellation of the native request.
+  });
+  await new Promise((resolve) => localModel.listen(0, "127.0.0.1", resolve));
+  try {
+    const port = localModel.address().port;
+    const native = await page.evaluate(async (port) => {
+      const invoke = (command, args) => window.__TAURI_INTERNALS__.invoke(command, args);
+      const text = await invoke("local_ai_request", {
+        id: "qa-tags",
+        url: `http://127.0.0.1:${port}/api/tags`,
+        body: null,
+      });
+      let publicRejected = false;
+      try {
+        await invoke("local_ai_request", {
+          id: "qa-public",
+          url: "https://example.com/api/tags",
+          body: null,
+        });
+      } catch {
+        publicRejected = true;
+      }
+      const pending = invoke("local_ai_request", {
+        id: "qa-cancel",
+        url: `http://127.0.0.1:${port}/api/chat`,
+        body: "{}",
+      }).then(
+        () => false,
+        (e) => String(e).includes("cancelled"),
+      );
+      await invoke("cancel_local_ai", { id: "qa-cancel" });
+      return { models: JSON.parse(text).models, publicRejected, cancelled: await pending };
+    }, port);
+    assert.deepEqual(native, { models: [], publicRejected: true, cancelled: true });
+  } finally {
+    localModel.closeAllConnections();
+    await new Promise((r) => localModel.close(r));
+  }
   await page.locator("#gen-topic").fill("Bacterial genome architecture");
   await page.locator("#gen-count").fill("6");
   const generationStart = performance.now();
@@ -277,6 +321,21 @@ try {
     }
   });
   assert(rejected, "Audience window must not read project storage");
+  assert(
+    await audience.evaluate(async () => {
+      try {
+        await window.__TAURI_INTERNALS__.invoke("local_ai_request", {
+          id: "qa-audience",
+          url: "http://localhost/api/tags",
+          body: null,
+        });
+        return false;
+      } catch {
+        return true;
+      }
+    }),
+    "Audience window must not invoke local model requests",
+  );
   await page.screenshot({ path: join(output, "windows-presenter.png") });
   await audience.screenshot({ path: join(output, "windows-audience.png") });
   assert.deepEqual(errors, []);
@@ -292,6 +351,7 @@ try {
         timings,
         checks: [
           "Native WebView UI renders",
+          "Native local-AI bridge returns local JSON, rejects public hosts and cancels requests",
           "Exact six-slide generation",
           "Second launch preserves a single workspace writer",
           "SQLite persistence survives forced termination",

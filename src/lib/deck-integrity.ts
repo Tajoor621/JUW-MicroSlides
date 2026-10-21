@@ -1,5 +1,5 @@
-import { surfaceFindings } from "./surface-review";
-import { citationIdentifier, statusIsFresh } from "./publication-status";
+import { surfaceFindings, claimReviewIsCurrent } from "./surface-review";
+import { citationIdentifier, publicationCheckIsCurrent } from "./publication-status";
 import { guidanceNeedsReview } from "./source-documents";
 import type { Deck, Slide, Claim } from "./types";
 export const statementKey = (s: string) =>
@@ -133,15 +133,7 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           "Publication notice",
           `${check.status}: inspect the notice and replace affected claims. The app does not clear this through a claim-review checkbox.`,
         );
-      else if (
-        (citation.doi || citation.pmid) &&
-        (!check ||
-          !statusIsFresh(check) ||
-          !check.complete ||
-          check.status !== "no-notice-found" ||
-          check.metadataMatch !== true ||
-          check.metadataTitle !== citation.title)
-      )
+      else if ((citation.doi || citation.pmid) && !publicationCheckIsCurrent(citation))
         add(
           "critical",
           "Publication status incomplete",
@@ -177,6 +169,16 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           "Replace this placeholder or title-only page with substantive visible teaching content before reviewed export.",
       });
     for (const c of reconcileClaims(s).claims || []) {
+      if (c.status === "lecturer-reviewed" && !claimReviewIsCurrent(deck, c))
+        findings.push({
+          slideId: s.id,
+          index,
+          quote: c.text,
+          severity: "critical",
+          category: "Source review changed",
+          message:
+            "The evidence or saved source revision changed. Review and confirm this claim again.",
+        });
       const linked = c.evidence.filter(
         (e) =>
           e.quote.trim() &&

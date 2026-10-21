@@ -68,6 +68,7 @@ export interface Claim {
     checkedAt: number;
   }[];
   reviewedAt?: number;
+  sourceSnapshot?: string;
 }
 
 export interface Slide {

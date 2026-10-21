@@ -64,6 +64,10 @@ const claim = z.object({
   classification: z.enum(["unclassified", "foundational", "study-result", "guideline"]),
   status: z.enum(["unreviewed", "supported-excerpt", "lecturer-reviewed", "stale"]),
   reviewedAt: z.number().optional(),
+  sourceSnapshot: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   evidence: z
     .array(
       z.object({

@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -16,8 +16,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - run: npm install --global npm@11.9.0
       - run: npm ci
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.1
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
@@ -25,16 +26,18 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:scientific
       - run: npm run test:professional
+      - run: npm run test:audit
       - run: npm run test:release
       - run: npm run test:lecturer
-      - run: npm run desktop:build
+      - run: cargo metadata --locked --format-version 1 --no-deps --manifest-path src-tauri/Cargo.toml
+      - run: npm run desktop:build -- --locked
       - name: Install the NSIS package and its WebView2 dependency
         shell: pwsh
         run: |
           $setup = Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
           $installed = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait -PassThru
           if ($installed.ExitCode -ne 0) { throw "Installer failed: $($installed.ExitCode)" }
-      - run: cargo test --release --manifest-path src-tauri/Cargo.toml
+      - run: cargo test --locked --release --manifest-path src-tauri/Cargo.toml
       # WebView2 150+ ignores CDP env settings on elevated hosts (wry#1782).
       # Exercise the unchanged release binary with an ordinary lecturer's token.
       - name: Native UI test as a standard user
@@ -51,6 +54,23 @@ jobs:
         with:
           name: Windows-native-QA
           path: desktop-qa/
+      - name: Record artifact provenance
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe
+          $provenance = @{
+            commit = '${{ github.sha }}'
+            appVersion = 'V6.2.1'
+            rust = (rustc --version)
+            node = (node --version)
+            npm = (npm --version)
+            cargoLockSha256 = (Get-FileHash src-tauri/Cargo.lock -Algorithm SHA256).Hash
+            npmLockSha256 = (Get-FileHash package-lock.json -Algorithm SHA256).Hash
+            installers = @($files | ForEach-Object { @{ name = $_.Name; sha256 = (Get-FileHash $_.FullName -Algorithm SHA256).Hash; signature = (Get-AuthenticodeSignature $_.FullName).Status.ToString() } })
+            physicalClassroomQualified = $false
+            independentlyScientificallyQualified = $false
+          }
+          $provenance | ConvertTo-Json -Depth 5 | Set-Content desktop-qa/artifact-provenance.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -2,6 +2,7 @@
 use rusqlite::{Connection, OptionalExtension, params};
 use std::sync::Mutex;
 use tauri::{Manager, State, WebviewWindow, Emitter};
+mod local_ai;
 struct Database(Mutex<Connection>);
 fn authorized(window: &WebviewWindow) -> Result<(), String> {
     if window.label() == "main" { Ok(()) } else { Err("Audience window cannot access project storage".into()) }
@@ -57,6 +58,7 @@ fn launch_project(window:WebviewWindow)->Result<Option<Vec<u8>>,String>{
 
 fn main() {
     tauri::Builder::default()
+      .manage(local_ai::Requests::default())
       .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
           if let Some(window)=app.get_webview_window("main") {
               let _=window.unminimize(); let _=window.set_focus();
@@ -72,7 +74,7 @@ fn main() {
           conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS state(key TEXT PRIMARY KEY,value TEXT NOT NULL);")?;
           app.manage(Database(Mutex::new(conn))); Ok(())
       })
-      .invoke_handler(tauri::generate_handler![state_get,state_put,launch_project])
+      .invoke_handler(tauri::generate_handler![state_get,state_put,launch_project,local_ai::local_ai_request,local_ai::cancel_local_ai])
       .run(tauri::generate_context!()).expect("Application startup failed; existing database remains on disk");
 }
 

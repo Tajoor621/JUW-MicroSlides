@@ -31,6 +31,19 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
   const ready = !findings.some((finding) => finding.severity === "critical");
   if (options.classroom && !ready)
     throw new Error("Resolve critical evidence and repetition findings before reviewed export.");
+  // Check required originals before scene capture can turn failures into placeholder text.
+  if (options.classroom) {
+    for (const [index, source] of deck.slides.entries()) {
+      if (source.layout === "title" || !source.media[0]) continue;
+      try {
+        await loadImage(source.media[0].src);
+      } catch {
+        throw new Error(
+          `Slide ${index + 1}: a required image could not be decoded. Repair or remove it and review the slide again.`,
+        );
+      }
+    }
+  }
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: "JUW_PREVIEW", width: 1280 / 96, height: 720 / 96 });
@@ -43,6 +56,7 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
   async function imageData(src: string, width: number, height: number, cover: boolean) {
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
     if (/^data:image\/svg\+xml[;,]/i.test(src)) {
+      if (options.classroom) await loadImage(src);
       // PptxGenJS expects a base64-encoded SVG payload; percent-encoded data
       // URIs may be silently omitted from the generated slide XML.
       if (/^data:image\/svg\+xml;base64,/i.test(src)) return src;
@@ -144,6 +158,10 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
       } else {
         const data = await imageData(item.src, item.w, item.h, item.cover);
         if (!data) {
+          if (options.classroom)
+            throw new Error(
+              `Slide ${i + 1}: a required image could not be decoded. Repair or remove it and review the slide again.`,
+            );
           slide.addText("Original image unavailable", {
             ...box,
             fontFace: "Arial",

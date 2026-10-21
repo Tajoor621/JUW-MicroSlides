@@ -67,7 +67,7 @@ export async function semanticReview(deck: Deck, signal?: AbortSignal) {
     throw Error("No teaching statements to screen; no semantic verdict is available.");
   const base = validateLocalAiUrl(config.url);
   const modelDigest = async () => {
-    const response = await fetch(`${base}/api/tags`, {
+    const response = await localAiFetch(`${base}/api/tags`, {
       credentials: "omit",
       signal: AbortSignal.any([AbortSignal.timeout(10000), ...(signal ? [signal] : [])]),
     });
@@ -97,7 +97,7 @@ export async function semanticReview(deck: Deck, signal?: AbortSignal) {
   let model = "";
   for (let offset = 0; offset < rows.length; offset += 24) {
     const batch = rows.slice(offset, offset + 24);
-    const r = await fetch(`${validateLocalAiUrl(config.url)}/api/embed`, {
+    const r = await localAiFetch(`${validateLocalAiUrl(config.url)}/api/embed`, {
       method: "POST",
       credentials: "omit",
       signal: AbortSignal.any([AbortSignal.timeout(45000), ...(signal ? [signal] : [])]),
@@ -140,3 +140,4 @@ export async function semanticReview(deck: Deck, signal?: AbortSignal) {
       "Embedding similarity identifies related statements, not factual truth, repetition or contradiction. Changed wording flags only numbers or negation; other scientific differences can be missed. The threshold is uncalibrated for this model. Review both passages and their context. No content is removed automatically.",
   };
 }
+import { localAiFetch } from "./local-ai-transport";

@@ -1,4 +1,5 @@
 import { SurfaceEvidenceEditor } from "./surface-evidence-editor";
+import { attestClaim, claimReviewIsCurrent } from "@/lib/surface-review";
 import { useState, useEffect } from "react";
 import { useDeckStore } from "@/lib/deck-store";
 import { reconcileClaims } from "@/lib/deck-integrity";
@@ -56,7 +57,11 @@ export function ClaimEvidenceEditor() {
             </label>
             <p className="text-sm">{claim.text}</p>
             <p className="text-xs">
-              Status: {claim.status} · {claim.evidence.length} evidence link(s)
+              Status:{" "}
+              {claim.status === "lecturer-reviewed" && !claimReviewIsCurrent(deck, claim)
+                ? "stale — source or evidence changed; review again"
+                : claim.status}{" "}
+              · {claim.evidence.length} evidence link(s)
             </p>
             {claim.evidence.map((e, i) => (
               <blockquote key={i} className="border-l-2 pl-2 text-xs">
@@ -190,7 +195,7 @@ export function ClaimEvidenceEditor() {
                   patch(index, {
                     claims: claims.map((c) =>
                       c.id === claim.id
-                        ? {
+                        ? attestClaim(deck, {
                             ...c,
                             classification,
                             status: "lecturer-reviewed",
@@ -205,7 +210,7 @@ export function ClaimEvidenceEditor() {
                                 checkedAt: Date.now(),
                               },
                             ],
-                          }
+                          })
                         : c,
                     ),
                   });
@@ -231,7 +236,11 @@ export function ClaimEvidenceEditor() {
                   patch(index, {
                     claims: claims.map((c) =>
                       c.id === claim.id
-                        ? { ...c, status: "lecturer-reviewed", reviewedAt: Date.now() }
+                        ? attestClaim(deck, {
+                            ...c,
+                            status: "lecturer-reviewed",
+                            reviewedAt: Date.now(),
+                          })
                         : c,
                     ),
                   });

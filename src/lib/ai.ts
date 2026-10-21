@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requirePaidAiAccess } from "./paid-ai-access.server";
 import { reserveAiRequest } from "./ai-limits";
 import { LEVELS } from "./types";
 import { createServerFn } from "@tanstack/react-start";
@@ -48,11 +49,11 @@ export const generateAiDeck = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AiOk | AiFail> => {
     const fallback = generateLocalDeck(data);
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) {
+    if (!apiKey || !(await requirePaidAiAccess())) {
       return {
         ok: false,
         error:
-          "AI is not available in this environment. Continuing with research generation for the requested slide count.",
+          "Paid cloud AI is disabled or authenticated access is unavailable. Continuing with research generation. Configure local Ollama for zero-cost AI.",
         deck: fallback,
       };
     }
@@ -124,7 +125,7 @@ export const askCopilot = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<AiAskOk | AiFail> => {
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) {
+    if (!apiKey || !(await requirePaidAiAccess())) {
       return {
         ok: false,
         error: "AI copilot is unavailable here. Try Edit to rewrite bullets by hand.",
