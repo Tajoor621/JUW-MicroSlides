@@ -47,3 +47,14 @@ Tests use explicitly synthetic software fixtures. Their quotations, primary-refe
 1. Review a representative real lecture with named microbiology instructors: verify claims, template annotations, equations, experimental conditions, numerical values, primary papers and media reuse terms, then record explicit final verification.
 2. Run current-head Windows/Pages/security checks and actual licensed PowerPoint plus Google Slides import checks, including dense methods, research equations, dark mode and calibrated micrographs. Resolve rendering/accessibility defects before release.
 3. Complete the outstanding export qualifications: PPTX font embedding, tagged-PDF/Office accessibility and automatic bibliography pagination. Preserve the honest draft/release boundaries until those capabilities are implemented and independently assessed.
+
+### Local verification results for this implementation
+
+- Type checking passed. Lint passed with the same four pre-existing warnings and no errors.
+- All 276 baseline unit tests passed, alongside the research, topic/media, generation-count, scientific-workflow, professional, lecturer, release, audit and new teaching-gate contracts.
+- Production Pages QA passed 42 workflows with no uncaught errors, including reviewed synthetic 50-slide desktop/mobile exports and blocked unreviewed exports.
+- Reviewed-format browser checks passed corrupt PNG/SVG rejection, native editable schematic primitives, embedded-font PDF, complete teaching-pack contents, reveal controls, review invalidation, named-verification image/layout preflight, dark-mode re-verification/PDF and guided wizard choices.
+- `pdffonts` confirmed that the generated teaching PDF uses embedded TrueType fonts with Unicode mapping. Light and dark PDF samples and desktop/mobile screenshots were inspected.
+- Complete npm audit reported zero vulnerabilities. Server, Pages and desktop frontend builds passed.
+- The development shell rendered on desktop/mobile without uncaught application errors or horizontal overflow. Its injected external platform script was unavailable in the restricted network (`ERR_EMPTY_RESPONSE`); the branding integration was preserved. This is not reported as a clean external-platform connectivity pass.
+- New-head GitHub CI, native Windows installation, the full topic/count matrix, licensed PowerPoint/Google Slides rendering and independent scientific/accessibility review remain separate release qualifications. Previous-head results do not qualify this new source revision.

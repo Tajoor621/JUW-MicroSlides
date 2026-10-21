@@ -165,6 +165,74 @@ try {
     }
     await page.close();
   }
+  const page = await browser.newPage({ acceptDownloads: true });
+  const unstamped = structuredClone(fixtures[3]);
+  delete unstamped.teachingVerification;
+  await page.goto(`http://127.0.0.1:${server.address().port}/JUW-MicroSlides/`);
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  await page.getByLabel("Restore backup", { exact: true }).setInputFiles({
+    name: "unstamped.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(
+      JSON.stringify({ format: "juw-microslides", schemaVersion: 1, decks: [unstamped] }),
+    ),
+  });
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.locator("summary").filter({ hasText: "Lecture workspace" }).click();
+  const exportButton = page.getByRole("button", { name: "Export reviewed PPTX", exact: true });
+  if (!(await exportButton.isDisabled()))
+    throw Error("Prepared-by metadata must not impersonate final verification");
+  await page.getByText("Final instructor verification", { exact: true }).click();
+  await page
+    .getByLabel("Verifying instructor name", { exact: true })
+    .fill("Synthetic QA instructor");
+  await page.getByRole("button", { name: "Record instructor verification", exact: true }).click();
+  await page
+    .getByText("Instructor verification recorded after image and layout preflight.", {
+      exact: true,
+    })
+    .waitFor();
+  if (await exportButton.isDisabled())
+    throw Error("Valid named verification must unlock teaching export");
+  await page.getByLabel("Projector contrast", { exact: true }).selectOption("dark");
+  if (!(await exportButton.isDisabled()))
+    throw Error("Contrast changes must invalidate final layout verification");
+  await page.getByRole("button", { name: "Record instructor verification", exact: true }).click();
+  await page.waitForFunction(
+    () =>
+      ![...document.querySelectorAll("button")].find(
+        (b) => b.textContent === "Export reviewed PPTX",
+      )?.disabled,
+  );
+  const darkPdfEvent = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export reviewed PDF", exact: true }).click();
+  await writeFile(
+    "/workspace/screenshots/juw-teaching-dark.pdf",
+    await readFile(await (await darkPdfEvent).path()),
+  );
+  await page.getByRole("button", { name: "First Deck setup", exact: true }).click();
+  await page.getByRole("button", { name: "Guided First Deck setup", exact: true }).click();
+  await page.getByLabel("Wizard topic", { exact: true }).fill("Enzyme immobilization");
+  await page.getByRole("button", { name: "Continue to Discipline", exact: true }).click();
+  const discipline = await page.getByLabel("Wizard discipline").inputValue();
+  await page.getByRole("button", { name: "Continue to Level", exact: true }).click();
+  await page.getByLabel("Wizard level").selectOption("Medical school");
+  await page.getByRole("button", { name: "Continue to Slide count", exact: true }).click();
+  await page.getByLabel("Wizard slide count").fill("12");
+  await page.getByRole("button", { name: "Continue to Evidence check", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  if (
+    (await dialog.locator("#count").inputValue()) !== "12" ||
+    (await dialog.locator("#level").inputValue()) !== "Medical school"
+  )
+    throw Error("Wizard choices must reach the generator");
+  if ((await dialog.locator("#disc").inputValue()) !== discipline)
+    throw Error("Wizard discipline must remain selected");
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.close();
+  console.log(
+    "PASS named verification preflight, dark-mode re-verification/PDF, and First Deck wizard choices",
+  );
 } finally {
   await browser.close();
   server.close();
