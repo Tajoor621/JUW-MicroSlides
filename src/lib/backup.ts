@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { surfaceReviewSchema } from "./surface-review";
 import { publicationCheckSchema } from "./publication-schema";
 import { sourceDocumentSchema } from "./source-documents";
 import { LAYOUTS, LEVELS, CITATION_STYLES } from "./types";
@@ -81,6 +82,7 @@ const claim = z.object({
 });
 const slide = z.object({
   claims: z.array(claim).max(500).optional(),
+  surfaceReviews: z.array(surfaceReviewSchema).max(103).optional(),
   locked: z.boolean().optional(),
   teachingPurpose: text.optional(),
   id: text,
