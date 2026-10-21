@@ -117,11 +117,16 @@ export function surfaceReviewProblem(
   )
     return "Factual content needs an exact supporting passage, HTTPS source and locator.";
   const source = new URL(review.sourceUrl);
-  const sourceId = ["doi.org", "dx.doi.org", "pubmed.ncbi.nlm.nih.gov"].includes(source.hostname)
-    ? decodeURIComponent(source.pathname)
+  let sourceId = "";
+  if (["doi.org", "dx.doi.org", "pubmed.ncbi.nlm.nih.gov"].includes(source.hostname)) {
+    try {
+      sourceId = decodeURIComponent(source.pathname)
         .replace(/^\/|\/$/g, "")
-        .toLowerCase()
-    : "";
+        .toLowerCase();
+    } catch {
+      return "Correct the malformed DOI or PMID source URL.";
+    }
+  }
   if (
     sourceId &&
     !slide.citations.some(
