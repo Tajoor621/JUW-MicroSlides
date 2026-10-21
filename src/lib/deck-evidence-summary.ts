@@ -1,5 +1,6 @@
 import { integrityAudit, reconcileClaims } from "./deck-integrity";
-import { citationIdentifier, statusIsFresh } from "./publication-status";
+import { claimReviewIsCurrent } from "./surface-review";
+import { citationIdentifier, publicationCheckIsCurrent } from "./publication-status";
 import type { Deck, Citation } from "./types";
 export function deckEvidenceSummary(deck: Deck, now = Date.now()) {
   const findings = integrityAudit(deck);
@@ -29,7 +30,7 @@ export function deckEvidenceSummary(deck: Deck, now = Date.now()) {
         ),
       }))
       .filter((row) => row.evidence.length);
-    const reviewed = linked.filter((c) => c.claim.status === "lecturer-reviewed").length;
+    const reviewed = linked.filter((c) => claimReviewIsCurrent(deck, c.claim)).length;
     const abstractOnly = linked.filter((c) =>
       c.evidence.every((e) => e.access === "abstract"),
     ).length;
@@ -60,16 +61,7 @@ export function deckEvidenceSummary(deck: Deck, now = Date.now()) {
     c.publicationCheck &&
     ["retracted", "concern", "corrected", "notice"].includes(c.publicationCheck.status);
   const current = identifiable.filter((row) =>
-    row.citations.every(
-      (c) =>
-        c.publicationCheck &&
-        c.publicationCheck.identifier === citationIdentifier(c) &&
-        c.publicationCheck.complete &&
-        c.publicationCheck.metadataMatch !== false &&
-        !adverse(c) &&
-        c.publicationCheck.status === "no-notice-found" &&
-        statusIsFresh(c.publicationCheck, now),
-    ),
+    row.citations.every((c) => publicationCheckIsCurrent(c, now)),
   );
   const sum = (
     key:

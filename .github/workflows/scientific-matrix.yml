@@ -1,0 +1,102 @@
+name: Scientific topic and count matrix
+on:
+  pull_request:
+    types: [labeled, synchronize]
+  workflow_dispatch:
+    inputs:
+      start:
+        description: First topic index (0–199)
+        default: "0"
+        required: true
+      limit:
+        description: Topics (1–200); 200 with all counts schedules 10000 live requests
+        default: "3"
+        required: true
+      counts:
+        description: all (1–50), manifest, or comma-separated integers
+        default: "1,25,50"
+        required: true
+concurrency:
+  group: scientific-matrix-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  plan:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.head.repo.full_name == github.repository && (github.event.label.name == 'run-full-scientific-qualification' || (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'run-full-scientific-qualification'))))
+    runs-on: ubuntu-latest
+    outputs:
+      topics: ${{ steps.plan.outputs.topics }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - id: plan
+        env:
+          JUW_BENCH_START: ${{ inputs.start || '0' }}
+          JUW_BENCH_LIMIT: ${{ inputs.limit || '200' }}
+          JUW_BENCH_COUNTS: ${{ inputs.counts || 'all' }}
+        run: node scripts/plan-scientific-matrix.mjs
+  live:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        topic: ${{ fromJSON(needs.plan.outputs.topics) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run benchmark:live
+        env:
+          JUW_BENCH_START: ${{ matrix.topic }}
+          JUW_BENCH_LIMIT: "1"
+          JUW_BENCH_COUNTS: ${{ inputs.counts || 'all' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-topic-${{ matrix.topic }}
+          path: qualification-results/live/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-summary-${{ matrix.topic }}
+          path: qualification-results/live/report.json
+  summarize:
+    if: always() && needs.plan.result == 'success'
+    needs: [plan, live]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: live-summary-*
+          path: qualification-results/matrix-input/
+      - name: Check every planned topic/count result
+        run: node scripts/summarize-scientific-matrix.mjs
+        env:
+          JUW_BENCH_START: ${{ inputs.start || '0' }}
+          JUW_BENCH_LIMIT: ${{ inputs.limit || '200' }}
+          JUW_BENCH_COUNTS: ${{ inputs.counts || 'all' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-scientific-matrix-summary
+          path: qualification-results/matrix-summary/

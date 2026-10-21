@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { slideEvidenceBasis } from "@/lib/evidence-basis";
+import { EvidenceBadge } from "./evidence-badge";
+import { teachingReady } from "@/lib/teaching-readiness";
+import { teachingReferences } from "@/lib/teaching-bibliography";
+import { TeachingContent } from "./teaching-content";
+import { teachingOf, methodSlide } from "@/lib/teaching";
+import { useDeckStore } from "@/lib/deck-store";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
 import { researchTheme, themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
@@ -17,6 +24,9 @@ export function SlideView({
   editable = false,
   onPatch,
   onPatchDeck,
+  revealCount = 999,
+  reviewRequired,
+  evidenceBasis,
 }: {
   slide: Slide;
   deck?: Deck | null;
@@ -28,6 +38,9 @@ export function SlideView({
   editable?: boolean;
   onPatch?: (patch: Partial<Slide>) => void;
   onPatchDeck?: (patch: DeckMetaPatch) => void;
+  revealCount?: number;
+  reviewRequired?: boolean;
+  evidenceBasis?: Record<string, string[]>;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -37,6 +50,11 @@ export function SlideView({
     observer.observe(host.current);
     return () => observer.disconnect();
   }, []);
+  const basis = evidenceBasis || slideEvidenceBasis(slide);
+  const draft = useMemo(
+    () => reviewRequired ?? (!deck?.slides.length || !teachingReady(deck)),
+    [deck, reviewRequired],
+  );
   const media = slide.layout === "title" ? undefined : slide.media[0];
   const canEdit = editable && !present;
   const course = deck?.course ?? JUW.course;
@@ -47,12 +65,36 @@ export function SlideView({
   const artwork = topicArtworkSvg(deck?.topic ?? slide.title);
   const titleTheme = researchTheme(deck?.topic ?? slide.title, deck?.discipline ?? "", "content");
   const visualTheme = isTitle ? titleTheme : slide.theme;
-  const tokens = themeOf(visualTheme);
+  const baseTokens = themeOf(visualTheme);
+  const tokens =
+    deck?.exportMode === "dark"
+      ? {
+          ...baseTokens,
+          slide: "#0B1520",
+          ink: "#F1F5F9",
+          navy: "#FFFFFF",
+          band: "#17344C",
+          muted: "#C5D6E8",
+          dark: true,
+        }
+      : baseTokens;
+  const teaching = teachingOf(slide);
+  const teachingLayout = !!slide.teaching;
 
   return (
     <div
       ref={host}
       className={cn("slide-viewport relative w-full overflow-hidden", className)}
+      onDragOver={(e) => {
+        if (editable) e.preventDefault();
+      }}
+      onDrop={(e) => {
+        if (!editable) return;
+        e.preventDefault();
+        const id = e.dataTransfer.getData("application/juw-media");
+        const item = deck?.mediaPool.find((m) => m.id === id);
+        if (item) useDeckStore.getState().attachMedia(item);
+      }}
       style={{ aspectRatio: "16 / 9" }}
     >
       <article
@@ -62,6 +104,13 @@ export function SlideView({
         data-slide-stage
         style={{
           ...themeVars(visualTheme),
+          ...{
+            "--color-slide": tokens.slide,
+            "--color-ink": tokens.ink,
+            "--color-navy": tokens.navy,
+            "--color-ink-muted": tokens.muted,
+            "--color-frame-band": tokens.band,
+          },
           width: 1280,
           height: 720,
           position: "absolute",
@@ -197,10 +246,30 @@ export function SlideView({
                 <div
                   className={cn(
                     "mt-3 min-h-0 flex-1",
-                    slide.layout === "two-column" && "grid gap-4 @min-[640px]:grid-cols-2",
+                    !teachingLayout &&
+                      slide.layout === "two-column" &&
+                      "grid gap-4 @min-[640px]:grid-cols-2",
                   )}
                 >
-                  {slide.layout === "two-column" ? (
+                  {slide.layout === "bibliography" ? (
+                    <ol
+                      className="grid grid-cols-2 gap-x-8 gap-y-3 text-base leading-snug"
+                      aria-label="Complete bibliography"
+                    >
+                      {(deck ? teachingReferences(deck, citationStyle) : []).map((text, i) => (
+                        <li key={i}>
+                          {i + 1}. {text}
+                        </li>
+                      ))}
+                    </ol>
+                  ) : teachingLayout ? (
+                    <TeachingContent
+                      basis={basis}
+                      slide={slide}
+                      color={tokens.accent}
+                      reveal={present ? revealCount : 999}
+                    />
+                  ) : slide.layout === "two-column" ? (
                     <>
                       <BulletList
                         items={slide.leftBullets}
@@ -270,6 +339,22 @@ export function SlideView({
               </div>
             )}
 
+            {slide.layout !== "title" && slide.layout !== "bibliography" && (
+              <div className="relative z-[1] space-y-1 px-8 pb-1 text-xs">
+                {methodSlide(slide) && (
+                  <p className="border-l-4 border-amber-600 pl-2">
+                    <strong>Common pitfalls / misconceptions:</strong>{" "}
+                    {teaching.pitfall ||
+                      "Review required — record a method-specific misconception."}
+                    <EvidenceBadge basis={basis} field="teaching.pitfall" />
+                  </p>
+                )}
+                <p>
+                  <strong>Key takeaway:</strong> {teaching.takeaway || "Review required"}
+                  <EvidenceBadge basis={basis} field="teaching.takeaway" />
+                </p>
+              </div>
+            )}
             {slide.citations.length > 0 && slide.layout !== "title" && (
               <footer className="relative z-[1] border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted @min-[640px]:px-8">
                 {slide.citations
@@ -279,6 +364,25 @@ export function SlideView({
               </footer>
             )}
 
+            {!draft && deck?.teachingVerification && (
+              <p className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">
+                Last verified by {deck.teachingVerification.instructor} on{" "}
+                {new Date(deck.teachingVerification.at).toISOString().slice(0, 10)} · Lecturer
+                self-attestation
+              </p>
+            )}
+            {draft && (
+              <p
+                className="relative z-[1] border-t border-amber-600 px-8 text-xs font-semibold text-ink"
+                role="status"
+              >
+                Draft — evidence review required
+              </p>
+            )}
+            <div className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">
+              {deck?.courseCode} · {new Date(deck?.updatedAt || 0).toISOString().slice(0, 10)} · For
+              educational use only
+            </div>
             {slide.layout !== "title" && (
               <span className="pointer-events-none absolute bottom-1.5 left-3 z-[1] font-mono text-[9px] tabular-nums text-ink-muted">
                 {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}

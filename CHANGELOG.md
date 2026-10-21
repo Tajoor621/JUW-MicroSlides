@@ -1,3 +1,11 @@
+# V6.2.1 — update recovery and integration readiness (2026-10-21)
+
+- Fixed build discovery being blocked by an invalid or stalled service-worker registration. Published build metadata is checked independently; offline-cache maintenance is bounded and reports a recoverable status without deleting saved decks or caches.
+- Removed a redundant worker update immediately after registration, avoiding an installation/activation race on mobile browsers.
+- Preserved both caller cancellation and a 12-second deadline for every media provider, so one stalled provider cannot wait indefinitely.
+- Added an explicit local-AI connection test for server reachability and installed generation/embedding model names. It does not run inference, save settings, download models or certify scientific/vision capability.
+- Added regression coverage for invalid/empty/installing/hung workers, offline checks, cache activation, model availability and media cancellation. V6.2.1 remains fixed.
+
 ## Native transport qualification correction — V6.2.1 (2026-10-20)
 
 - Corrected the offline review test to recognize Tauri's local IPC bridge as native transport, with explicit tests rejecting remote hostname lookalikes. Remote requests remain blocked during review.
@@ -123,3 +131,27 @@ See README for remaining limits, deployment setup, and validation commands.
 - Ran an actual pinned q8 MiniLM model on all 27 development pairs offline. Published model/runtime hashes and raw scores; the default threshold missed six of eight labelled repetitions. Model/threshold remains unqualified; no automatic threshold change or content deletion.
 - Preserved paragraph/sentence adjacency and source paragraph context in speaker notes. Fixed abstract markup handling of scientific comparisons and Unicode; excluded oversized paragraphs rather than truncating. Preferred explanatory wording for one-slide source summaries and separated the passage cache from earlier extraction.
 - Completed offline in-app return assessment for two reviewer forms, with content/source hashes, malformed/stale/incomplete/disagreement/redundancy checks and downloadable results. Shared validation with the CLI; self-attestations never certify science or unlock reviewed export.
+
+## V6.2.1 — 21 October 2026
+
+- Block reviewed export on missing/partial/unknown/stale or identity-unconfirmed DOI/PMID checks.
+- Add source-linked lecturer decisions for titles, subtitles, notes and figures, editable figure provenance, SHA-256 context invalidation, backup preservation and PPTX decision trails.
+- Abort in-flight local-model generation without entering the research fallback or replacing saved lectures; retain completed checkpoints.
+- Add unique archives for the complete 200-topic × 50-count live matrix and a bounded, manual workflow with partial-result retention.
+- Add external semantic-corpus input and fixed-threshold acceptance checks with explicit independent-verification limits; retain the existing failed calibration status.
+- Add regression checks to Pages and Windows verification. Scientific reviewers, licensed PowerPoint, physical classroom tests and signed distribution remain pending external evidence.
+
+### Full qualification execution follow-up
+
+- Correct GitHub matrix-output newline encoding and exercise the planner as a real CLI.
+- Enable an owner-labelled same-repository PR to run all 10,000 live topic/count cases without merging or deployment.
+- Aggregate lightweight per-topic reports with explicit missing/failure accounting and a fixed source identity; retain independent scientific and hardware qualification as separate gates.
+
+### Professional audit remediation
+
+- Bind review freshness to saved source-content digests and claim evidence; align overview publication checks with export.
+- Block reviewed downloads when original figures cannot decode; preserve draft warnings.
+- Repair shared-media portable saving and enforce streaming image/project budgets.
+- Add a bounded, cancellable, authoring-only native Ollama bridge without broadening renderer CSP.
+- Patch JavaScript advisories; commit native dependency/toolchain locks, add native auditing and record installer provenance.
+- Expand regression/production-download checks and restart owner-authorized scientific matrices when the PR source changes. See docs/qualification/audit-remediation-2026-10-21.md for verified work and remaining external gates.

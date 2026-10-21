@@ -181,11 +181,19 @@ export function TopicMediaPanel() {
                 size="sm"
                 variant="ghost"
                 onClick={() =>
-                  useDeckStore
-                    .getState()
-                    .patchSlide(useDeckStore.getState().selectedIndex, {
-                      media: [m, ...slide.media.filter((x) => x.id !== m.id)],
-                    })
+                  useDeckStore.getState().patchSlide(useDeckStore.getState().selectedIndex, {
+                    media: [m, ...slide.media.filter((x) => x.id !== m.id)],
+                    teaching: slide.teaching
+                      ? {
+                          ...slide.teaching,
+                          diagram: undefined,
+                          altText: "",
+                          labels: [],
+                          scaleBar: undefined,
+                          legend: "",
+                        }
+                      : undefined,
+                  })
                 }
               >
                 Make primary preview
@@ -390,6 +398,8 @@ function MediaCard({
           />
         ) : (
           <img
+            draggable
+            onDragStart={(e) => e.dataTransfer.setData("application/juw-media", item.id)}
             loading="lazy"
             src={item.src}
             alt={item.title}

@@ -1,5 +1,7 @@
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
+import { localAiFetch } from "./local-ai-transport";
 import { z } from "zod";
+import { teachingSchema } from "./teaching-schema";
 import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
 import { assertCompleteDeck, requestedCount } from "./deck-completion";
 import { generateLocalDeck } from "./generate-deck";
@@ -32,17 +34,44 @@ export function validateLocalAiUrl(raw: string) {
     throw new Error("Use your own local computer's localhost or private LAN address.");
   return u.origin;
 }
-async function chat(prompt: string, json = false, images: string[] = []) {
+/** Tests reachability and installed model names without running inference or
+ * changing settings. This cannot certify a model's scientific/vision quality. */
+export async function probeLocalAi(
+  config: { url: string; model: string; embeddingModel?: string },
+  signal?: AbortSignal,
+) {
+  const origin = validateLocalAiUrl(config.url);
+  const response = await localAiFetch(`${origin}/api/tags`, {
+    credentials: "omit",
+    signal: AbortSignal.any([AbortSignal.timeout(8000), ...(signal ? [signal] : [])]),
+  });
+  if (!response.ok)
+    throw new Error(`Ollama returned ${response.status}. Check the server address.`);
+  const parsed = z
+    .object({ models: z.array(z.object({ name: z.string() })).max(10000) })
+    .parse(await response.json());
+  const names = parsed.models.map((m) => m.name);
+  const canonical = (name: string) => (name.includes(":") ? name : `${name}:latest`);
+  const installed = (name: string) => names.some((n) => canonical(n) === canonical(name.trim()));
+  return {
+    models: names,
+    generationReady: installed(config.model),
+    embeddingReady:
+      Boolean(config.embeddingModel?.trim()) && installed(config.embeddingModel || ""),
+  };
+}
+async function chat(prompt: string, json = false, images: string[] = [], signal?: AbortSignal) {
+  signal?.throwIfAborted();
   const config = localAiConfig();
   if (!config)
     throw new Error(
       "Local AI is not configured. Open Settings to configure your own Ollama server, or use Knowledge mode.",
     );
-  const response = await fetch(`${validateLocalAiUrl(config.url)}/api/chat`, {
+  const response = await localAiFetch(`${validateLocalAiUrl(config.url)}/api/chat`, {
     method: "POST",
     credentials: "omit",
     headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(55000),
+    signal: AbortSignal.any([AbortSignal.timeout(55000), ...(signal ? [signal] : [])]),
     body: JSON.stringify({
       model: config.model,
       stream: false,
@@ -68,6 +97,7 @@ async function chat(prompt: string, json = false, images: string[] = []) {
   return body.message.content as string;
 }
 const generatedSlide = z.object({
+  teaching: teachingSchema.optional(),
   layout: z.enum(["title", "content", "two-column", "full-image", "blank"]).default("content"),
   title: z.string().min(1).max(1000),
   subtitle: z.string().max(2000).default(""),
@@ -76,7 +106,8 @@ const generatedSlide = z.object({
   rightBullets: z.array(z.string().max(3000)).max(12).default([]),
   notes: z.string().max(10000).default(""),
 });
-export async function generateLocalAiDeck(input: GenerateInput) {
+export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSignal) {
+  signal?.throwIfAborted();
   const count = requestedCount(input.count);
   const deck = generateLocalDeck({ ...input, count });
   const slides: Slide[] = count === 1 ? [] : [deck.slides[0]];
@@ -108,6 +139,8 @@ export async function generateLocalAiDeck(input: GenerateInput) {
       await chat(
         `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
         true,
+        [],
+        signal,
       ),
     );
   const { headings } = z
@@ -155,11 +188,15 @@ export async function generateLocalAiDeck(input: GenerateInput) {
   }
   rows.forEach((row, i) => appendRow(row, headings[i]));
   for (let offset = rows.length; offset < headings.length; offset += 8) {
+    signal?.throwIfAborted();
     const batch = headings.slice(offset, offset + 8);
     const response = await chat(
-      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes}]}.`,
+      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
       true,
+      [],
+      signal,
     );
+    signal?.throwIfAborted();
     const parsed = z
       .object({ slides: z.array(generatedSlide).min(1).max(8) })
       .parse(JSON.parse(response));
@@ -186,6 +223,7 @@ export async function generateLocalAiDeck(input: GenerateInput) {
     ],
     generationSource: "local-ai" as const,
   };
+  signal?.throwIfAborted();
   return assertCompleteDeck(made, count);
 }
 export async function localCopilot(data: {

@@ -1,3 +1,4 @@
+import { prepareTeachingDeck } from "./teaching";
 import { duplicateStatements } from "./deck-integrity";
 import { MAX_SLIDES, type Deck } from "./types";
 
@@ -45,5 +46,5 @@ export function assertCompleteDeck(deck: Deck, count: number) {
     throw new Error(
       `Repetition detected on slide ${duplicates[0].second + 1}; the deck has not replaced your work.`,
     );
-  return deck;
+  return prepareTeachingDeck(deck);
 }

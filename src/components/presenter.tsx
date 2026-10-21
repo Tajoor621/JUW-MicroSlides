@@ -1,6 +1,6 @@
 import { DesktopPresenter } from "./desktop-presenter";
 import { isDesktop } from "@/lib/desktop";
-import { useEffect } from "react";
+import { useSlideReveal } from "./use-slide-reveal";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useDeckStore } from "@/lib/deck-store";
 import { SlideView } from "./slide-view";
@@ -14,23 +14,13 @@ export function Presenter() {
   const select = useDeckStore((s) => s.select);
   const style = useDeckStore((s) => s.citationStyle);
   const slide = deck?.slides[index];
-
-  useEffect(() => {
-    if (!presenting) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPresenting(false);
-      if (e.key === "ArrowRight" || e.key === " ") {
-        e.preventDefault();
-        select(index + 1);
-      }
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        select(index - 1);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [presenting, index, select, setPresenting]);
+  const { progressive, setProgressive, revealCount, next, previous } = useSlideReveal(
+    slide,
+    index,
+    select,
+    () => setPresenting(false),
+    presenting && !isDesktop(),
+  );
 
   if (!presenting || !deck || !slide) return null;
 
@@ -40,20 +30,18 @@ export function Presenter() {
       <div className="mb-3 flex items-center justify-between text-fg">
         <p className="truncate font-serif text-sm">{deck.title}</p>
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => select(index - 1)}
-            aria-label="Previous"
-          >
+          <label className="mr-3 text-xs">
+            <input
+              type="checkbox"
+              checked={progressive}
+              onChange={(e) => setProgressive(e.target.checked)}
+            />{" "}
+            Reveal one point at a time
+          </label>
+          <Button variant="ghost" size="icon-sm" onClick={previous} aria-label="Previous">
             <ChevronLeft />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => select(index + 1)}
-            aria-label="Next"
-          >
+          <Button variant="ghost" size="icon-sm" onClick={next} aria-label="Next">
             <ChevronRight />
           </Button>
           <Button
@@ -74,6 +62,7 @@ export function Presenter() {
           total={deck.slides.length}
           citationStyle={style}
           present
+          revealCount={revealCount}
         />
       </div>
       {slide.notes ? (

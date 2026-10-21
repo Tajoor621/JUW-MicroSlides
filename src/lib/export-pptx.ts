@@ -1,5 +1,8 @@
+import { safeExportSvg } from "./export-svg";
+import { preflightTeachingImages } from "./teaching-images";
+import { assertTeachingReady } from "./teaching-readiness";
 import { MAX_SLIDES } from "./types";
-import { classroomReady, integrityAudit } from "./deck-integrity";
+import { integrityAudit } from "./deck-integrity";
 import { isDesktop, saveFile } from "./desktop";
 import { formatCitation } from "./citations";
 import type { Deck } from "./types";
@@ -22,14 +25,21 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function exportPptx(deck: Deck, options: { classroom?: boolean } = {}) {
+export async function exportPptx(
+  deck: Deck,
+  options: { classroom?: boolean; returnBytes?: boolean } = {},
+) {
+  assertTeachingReady(deck);
+  options = { ...options, classroom: true };
   if (deck.slides.length < 1 || deck.slides.length > MAX_SLIDES)
     throw new Error(
       "PPTX requires 1–50 slides. Your legacy project is preserved; export a reduced copy.",
     );
-  const ready = classroomReady(deck);
+  const findings = integrityAudit(deck);
+  const ready = !findings.some((finding) => finding.severity === "critical");
   if (options.classroom && !ready)
     throw new Error("Resolve critical evidence and repetition findings before reviewed export.");
+  await preflightTeachingImages(deck);
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: "JUW_PREVIEW", width: 1280 / 96, height: 720 / 96 });
@@ -42,11 +52,17 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
   async function imageData(src: string, width: number, height: number, cover: boolean) {
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
     if (/^data:image\/svg\+xml[;,]/i.test(src)) {
+      if (options.classroom) await loadImage(src);
       // PptxGenJS expects a base64-encoded SVG payload; percent-encoded data
       // URIs may be silently omitted from the generated slide XML.
-      if (/^data:image\/svg\+xml;base64,/i.test(src)) return src;
+
       const comma = src.indexOf(",");
-      const svg = decodeURIComponent(src.slice(comma + 1));
+      const raw = src.slice(comma + 1);
+      const svg = safeExportSvg(
+        src.slice(0, comma).includes(";base64")
+          ? new TextDecoder().decode(Uint8Array.from(atob(raw), (c) => c.charCodeAt(0)))
+          : decodeURIComponent(raw),
+      );
       const bytes = new TextEncoder().encode(svg);
       let binary = "";
       for (let i = 0; i < bytes.length; i += 8192)
@@ -61,8 +77,16 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
         const canvas = document.createElement("canvas");
         // Rasterize bitmap artwork only. Export at up to 3x, bounded by source pixels;
         // upscaling a small image cannot restore missing photographic detail.
-        const resolution = Math.max(1, Math.min(3, 4096 / width, 2304 / height,
-          image.naturalWidth / width, image.naturalHeight / height));
+        const resolution = Math.max(
+          1,
+          Math.min(
+            3,
+            4096 / width,
+            2304 / height,
+            image.naturalWidth / width,
+            image.naturalHeight / height,
+          ),
+        );
         canvas.width = Math.max(1, Math.round(width * resolution));
         canvas.height = Math.max(1, Math.round(height * resolution));
         const ctx = canvas.getContext("2d");
@@ -100,7 +124,8 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
       const box = { x: item.x / 96, y: item.y / 96, w: item.w / 96, h: item.h / 96 };
       const transparency = Math.round((1 - item.opacity) * 100);
       if (item.kind === "rect") {
-        slide.addShape(pptx.ShapeType.rect, {
+        slide.addShape(pptx.ShapeType[item.shape || "rect"], {
+          flipV: item.flipV,
           ...box,
           fill: {
             color: item.fill || "FFFFFF",
@@ -135,6 +160,10 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
       } else {
         const data = await imageData(item.src, item.w, item.h, item.cover);
         if (!data) {
+          if (options.classroom)
+            throw new Error(
+              `Slide ${i + 1}: a required image could not be decoded. Repair or remove it and review the slide again.`,
+            );
           slide.addText("Original image unavailable", {
             ...box,
             fontFace: "Arial",
@@ -144,7 +173,7 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
           });
           continue;
         }
-        slide.addImage({ data, ...box, transparency });
+        slide.addImage({ data, ...box, transparency, altText: item.alt || "Teaching figure" });
       }
     }
     if (!ready)
@@ -160,8 +189,21 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
       });
     slide.addNotes(
       [
-        `Integrity status: ${ready ? "Lecturer evidence gate clear; not independent certification" : "DRAFT"}. ${integrityAudit(deck).length} screening findings.`,
+        `Integrity status: ${ready ? "Lecturer evidence gate clear; not independent certification" : "DRAFT"}. ${findings.length} screening findings.`,
+        `Last verified by ${deck.teachingVerification!.instructor} on ${new Date(deck.teachingVerification!.at).toISOString().slice(0, 10)}. Lecturer self-attestation, not independent certification.`,
         source.notes,
+        source.teaching
+          ? "Teaching design and discussion:\n" + JSON.stringify(source.teaching, null, 2)
+          : "",
+        source.surfaceReviews?.length
+          ? "Lecturer decisions for headings, notes and figures (not independent certification):\n" +
+            source.surfaceReviews
+              .map(
+                (r) =>
+                  `${r.field}: ${r.verdict} · ${r.rationale}\n${r.sourceUrl || "Nonfactual label"} · ${r.locator || ""}\n${r.quote || ""}`,
+              )
+              .join("\n\n")
+          : "",
         source.claims?.length
           ? "Claim evidence trail:\n" +
             source.claims
@@ -209,11 +251,12 @@ export async function exportPptx(deck: Deck, options: { classroom?: boolean } = 
     );
   }
   const name = `${ready ? "" : "draft-"}${slug(deck.title)}.pptx`;
-  if (isDesktop()) {
+  if (isDesktop() || options.returnBytes) {
     const data = (await pptx.write({
       outputType: "arraybuffer",
       compression: true,
     })) as ArrayBuffer;
+    if (options.returnBytes) return new Uint8Array(data);
     await saveFile(name, new Uint8Array(data), "pptx");
   } else await pptx.writeFile({ compression: true, fileName: name });
 }

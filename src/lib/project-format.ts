@@ -3,6 +3,44 @@ import { deckSchema } from "./backup";
 import { reconcileDeck } from "./deck-integrity";
 import type { Deck } from "./types";
 const LIMIT = 100_000_000;
+const ASSET_LIMIT = 25_000_000;
+export async function readProjectAsset(response: Response, budget: number) {
+  const limit = Math.min(ASSET_LIMIT, budget);
+  const declared = Number(response.headers.get("content-length"));
+  if (declared > limit) {
+    await response.body?.cancel();
+    throw new Error(
+      "Project media exceeds the remaining size limit (25 MB per image, 100 MB per project).",
+    );
+  }
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("Project media response has no readable body.");
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > limit) {
+        await reader.cancel();
+        throw new Error(
+          "Project media exceeds the remaining size limit (25 MB per image, 100 MB per project).",
+        );
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return bytes;
+}
 async function hash(data: Uint8Array) {
   return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new Uint8Array(data)))]
     .map((n) => n.toString(16).padStart(2, "0"))
@@ -14,7 +52,11 @@ export async function packProject(deck: Deck): Promise<Uint8Array> {
     files: Record<string, { sha256: string; bytes: number }> = {};
   let total = 0;
   const assets = new Map<string, string>();
+  const processed = new WeakSet<object>();
   for (const media of [...copy.slides.flatMap((s) => s.media), ...copy.mediaPool]) {
+    // structuredClone preserves aliases between attached and collected items.
+    if (processed.has(media)) continue;
+    processed.add(media);
     if (assets.has(media.src)) {
       media.src = assets.get(media.src)!;
       continue;
@@ -26,7 +68,7 @@ export async function packProject(deck: Deck): Promise<Uint8Array> {
     const response = await fetch(media.src, { signal: AbortSignal.timeout(15000) });
     if (!response.ok)
       throw new Error(`Could not embed ${media.title}. Save it offline or use a JSON link backup.`);
-    const data = new Uint8Array(await response.arrayBuffer());
+    const data = await readProjectAsset(response, LIMIT - total);
     total += data.length;
     if (total > LIMIT) throw new Error("Project exceeds 100 MB.");
     const id = await hash(data),

@@ -4,7 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "overrides": {
-    "nf3": "0.3.17"
+    "nf3": "0.3.17",
+    "image-size": "2.0.3",
+    "source-map-js": "1.2.2"
   },
   "scripts": {
     "dev": "node scripts/with-app-env.mjs vite dev --host 0.0.0.0 --port 8080",
@@ -28,7 +30,7 @@
     "dev:desktop": "npm run desktop:icons && vite --config vite.desktop.config.ts",
     "build:desktop": "vite build --config vite.desktop.config.ts && node scripts/build-desktop.mjs",
     "desktop": "tauri",
-    "desktop:build": "tauri build",
+    "desktop:build": "tauri build -- --locked",
     "test:professional": "node scripts/test-professional.mjs",
     "desktop:icons": "tauri icon public/juw-crest-transparent.svg --output src-tauri/icons",
     "test:scientific": "node scripts/test-scientific.mjs",
@@ -36,7 +38,12 @@
     "benchmark:semantic": "node scripts/benchmark-semantic.mjs",
     "review:scientific": "node scripts/scientific-review.mjs",
     "benchmark:semantic:local": "node scripts/benchmark-semantic-local.mjs",
-    "test:lecturer": "node scripts/test-lecturer-workflow.mjs"
+    "test:lecturer": "node scripts/test-lecturer-workflow.mjs",
+    "test:teaching": "node scripts/test-teaching.mjs",
+    "test:release": "node scripts/test-release-gates.mjs",
+    "qualify:semantic": "node scripts/qualify-semantic.mjs",
+    "test:audit": "node scripts/test-audit-regressions.mjs",
+    "qa:reviewed-export": "node scripts/test-reviewed-export.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",
@@ -44,6 +51,7 @@
     "@citation-js/plugin-csl": "^0.9.0",
     "@electric-sql/pglite": "^0.5.4",
     "@hookform/resolvers": "^5.7.0",
+    "@noble/hashes": "2.4.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.11",
@@ -82,6 +90,7 @@
     "date-fns": "^4.0.0",
     "fast-xml-parser": "^5.11.2",
     "jose": "6.2.9",
+    "jspdf": "^4.2.1",
     "jszip": "^3.10.2",
     "kysely": "^0.28.5",
     "lucide-react": "^0.510.0",
@@ -95,6 +104,7 @@
     "react-resizable-panels": "^4.6.5",
     "recharts": "^2.13.0",
     "sonner": "^2.0.7",
+    "svg2pdf.js": "^2.8.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.3.0",
     "tw-animate-css": "^1.3.4",
@@ -123,7 +133,7 @@
     "prettier": "^3.4.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.2.0"
+    "vite": "8.2.4"
   },
   "engines": {
     "node": ">=24.0.0"

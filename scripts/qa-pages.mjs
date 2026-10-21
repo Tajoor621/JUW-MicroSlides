@@ -98,7 +98,12 @@ function pptxXmlFiles(buffer) {
     const name = buffer.subarray(offset + 46, offset + 46 + n).toString();
     const local = buffer.readUInt32LE(offset + 42);
     const start = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28);
-    if (name.endsWith(".xml") || name.endsWith(".rels") || name.endsWith(".png") || name.endsWith(".svg")) {
+    if (
+      name.endsWith(".xml") ||
+      name.endsWith(".rels") ||
+      name.endsWith(".png") ||
+      name.endsWith(".svg")
+    ) {
       const data = buffer.subarray(start, start + size);
       const uncompressed = method === 8 ? inflateRawSync(data) : data;
       files[name] = uncompressed.toString(name.endsWith(".png") ? "base64" : "utf8");
@@ -375,13 +380,11 @@ try {
     buffer: Buffer.from(JSON.stringify(tampered)),
   });
   await reviewer.getByText(/Review pack hash mismatch/).waitFor();
-  await reviewer
-    .getByLabel("Open scientific review pack", { exact: true })
-    .setInputFiles({
-      name: "pack.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(reviewPack)),
-    });
+  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
+    name: "pack.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(reviewPack)),
+  });
   await reviewer.getByLabel("Review item", { exact: true }).waitFor();
   assert.equal(
     await reviewer.getByText("Restore my saved review draft", { exact: true }).count(),
@@ -555,6 +558,81 @@ try {
       })),
     ),
   };
+  // Synthetic, fully reviewed SOFTWARE fixtures exercise export geometry without bypassing gates.
+  const { createServer: createViteServer } = await import("vite");
+  const fixtureServer = await createViteServer({
+    configFile: false,
+    optimizeDeps: { noDiscovery: true, include: [] },
+    server: { middlewareMode: true },
+    resolve: { alias: { "@": root + "/src" } },
+    logLevel: "error",
+  });
+  try {
+    const { teachingFixture } = await import("./teaching-fixture.mjs");
+    const base = await teachingFixture(fixtureServer);
+    const { reconcileDeck } = await fixtureServer.ssrLoadModule("/src/lib/deck-integrity.ts");
+    const { surfaceItems, surfaceSnapshot, attestClaim } = await fixtureServer.ssrLoadModule(
+      "/src/lib/surface-review.ts",
+    );
+    const { teachingReleaseFindings } = await fixtureServer.ssrLoadModule(
+      "/src/lib/teaching-readiness.ts",
+    );
+    parityDeck.preparedBy = base.deck.preparedBy;
+    parityDeck.sourceDocuments = base.deck.sourceDocuments;
+    const figure = structuredClone(parityDeck.slides[1].media[0]);
+    figure.source = "https://example.org/synthetic-fixture";
+    parityDeck.slides = parityDeck.slides.map((slide, i) => ({
+      ...slide,
+      layout: i === 0 ? "title" : slide.layout === "title" ? "content" : slide.layout,
+      teaching: {
+        ...structuredClone(base.slide.teaching),
+        diagram: undefined,
+        diagramLabel: "",
+        definition: `Synthetic layout fixture ${i}.`,
+      },
+      bullets: slide.bullets.map((b) => `Fixture ${i}: ${b}`),
+      leftBullets: slide.leftBullets.map((b) => `Fixture ${i}: ${b}`),
+      rightBullets: slide.rightBullets.map((b) => `Fixture ${i}: ${b}`),
+      media: i === 0 ? [] : [structuredClone(figure)],
+      citations: structuredClone(base.slide.citations),
+      notes: "Synthetic layout validation only.",
+    }));
+    Object.assign(parityDeck, reconcileDeck(parityDeck));
+    for (const slide of parityDeck.slides) {
+      slide.claims = slide.claims.map((c) =>
+        attestClaim(parityDeck, {
+          ...c,
+          status: "lecturer-reviewed",
+          evidence: structuredClone(base.slide.claims[0].evidence),
+        }),
+      );
+      slide.surfaceReviews = surfaceItems(slide).map((item) => ({
+        field: item.field,
+        snapshot: surfaceSnapshot(parityDeck, slide, item.field),
+        verdict: "supported",
+        rationale: "Controlled software layout fixture; not scientific validation.",
+        reviewedAt: Date.now(),
+        sourceUrl: base.url,
+        quote: base.quote,
+        locator: "Synthetic test paragraph",
+      }));
+    }
+    const { teachingDeckSnapshot } = await fixtureServer.ssrLoadModule(
+      "/src/lib/teaching-verification.ts",
+    );
+    parityDeck.teachingVerification = {
+      instructor: "Synthetic software fixture",
+      at: Date.now(),
+      snapshot: teachingDeckSnapshot(parityDeck),
+    };
+    assert.deepEqual(
+      teachingReleaseFindings(parityDeck),
+      [],
+      "Parity export fixtures must satisfy the real gate",
+    );
+  } finally {
+    await fixtureServer.close();
+  }
   const parityByViewport = [];
   for (const width of [1280, 390]) {
     const pc = await browser.newContext({
@@ -657,8 +735,9 @@ try {
     const bytes = await readFile(await file.path());
     assert.equal(slideCountInPptx(bytes), 50);
     const xml = pptxXmlFiles(bytes);
-    const embeddedVectors = Object.entries(xml).filter(([name, data]) =>
-      name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\s>]/i.test(data)
+    const embeddedVectors = Object.entries(xml).filter(
+      ([name, data]) =>
+        name.startsWith("ppt/media/") && name.endsWith(".svg") && /<svg[\s>]/i.test(data),
     );
     assert(embeddedVectors.length > 0, "PPTX must retain genuine SVG vector artwork");
     const firstSlide = xml["ppt/slides/slide1.xml"];
@@ -798,10 +877,10 @@ try {
       assert(Math.abs(a.body.x - b.body.x) < 0.01 && Math.abs(a.body.y - b.body.y) < 0.01);
   }
   results.push(
-    "University crest retains transparent corners and an opaque original centre in desktop and mobile PowerPoint exports",
+    "University crest retains transparent corners and an opaque original centre in reviewed synthetic PowerPoint fixtures",
   );
   results.push(
-    "All 10 themes and 5 layouts preserve title/body positions, font sizes, colours, logos and attached images in desktop and mobile exports",
+    "All 10 themes preserve title/body positions, font sizes, colours, logos and attached images across desktop/mobile reviewed synthetic exports",
   );
 
   const legacyContext = await browser.newContext();
@@ -901,12 +980,12 @@ try {
     .locator('textarea[placeholder="What will you explain when presenting this slide?"]')
     .fill("QA speaker notes preserved in PowerPoint.");
   await saved(page);
-  downloadEvent = page.waitForEvent("download", { timeout: 90000 });
+  let blockedDownloads = 0;
+  page.on("download", () => blockedDownloads++);
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  const pptx = await downloadEvent;
-  await pptx.saveAs(join(output, "juw-qa.pptx"));
-  assert.equal(slideCountInPptx(await readFile(await pptx.path())), 12);
-  results.push("PowerPoint downloads successfully with exactly the deck slide count");
+  await page.getByText(/Teaching export blocked/).waitFor();
+  assert.equal(blockedDownloads, 0);
+  results.push("Unreviewed decks block ordinary PPTX export and retain recovery backups");
   await page.waitForFunction(async () => {
     const r = await navigator.serviceWorker.ready;
     return Boolean(r.active);
@@ -1043,7 +1122,7 @@ try {
   await rp.locator("#gen-count").fill("12");
   await rp.getByRole("button", { name: "Generate deck", exact: true }).click();
   await saved(rp);
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   await rp.getByRole("button", { name: "Media", exact: true }).click();
   const correct = rp.locator("article").filter({
     has: rp.getByRole("heading", { name: "QA fixture bacterial chromosome.svg", exact: true }),
@@ -1051,7 +1130,7 @@ try {
   await correct
     .getByRole("button", { name: "Download file", exact: true })
     .waitFor({ state: "visible" });
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   results.push("Media lookup collects files without attaching them");
   await rp.getByRole("button", { name: /Chromosomes and accessory replicons/ }).click();
   const fileEvent = rp.waitForEvent("download");
@@ -1094,11 +1173,11 @@ try {
   while (await rp.getByRole("button", { name: "Remove image", exact: true }).count())
     await rp.getByRole("button", { name: "Remove image", exact: true }).first().click();
   await saved(rp);
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   results.push("Removing a figure does not insert a replacement");
   await rp.getByRole("button", { name: "Add", exact: true }).click();
   await saved(rp);
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   results.push("New blank slides contain no automatically selected figures");
   await research.close();
   const coverage = await browser.newContext({ acceptDownloads: true });
@@ -1132,12 +1211,10 @@ try {
   results.push(
     "An uncatalogued microbiology topic generates exactly 25 slides from distinct source sections",
   );
-  const exactExport = cp.waitForEvent("download", { timeout: 90000 });
   await cp.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  const exactPptx = await exactExport;
-  assert.equal(slideCountInPptx(await readFile(await exactPptx.path())), 25);
+  await cp.getByText(/Teaching export blocked/).waitFor();
   results.push(
-    "Cited 25-slide research deck exports exactly 25 PowerPoint slides without appended pages",
+    "Cited research generation remains a draft until scientific teaching requirements are reviewed",
   );
   await coverage.unroute("https://www.ebi.ac.uk/europepmc/**");
   await coverage.route("https://www.ebi.ac.uk/europepmc/**", (route) =>
@@ -1198,6 +1275,33 @@ try {
   results.push(
     "Substantive single-slide generation, blocked unreviewed export, portable project UI roundtrip, slide locking and version recovery work together",
   );
+  // The restored revision may intentionally retain the slide's locked state.
+  const recoveredLock = pro.getByRole("button", { name: "Unlock selected slide", exact: true });
+  if (await recoveredLock.isVisible()) await recoveredLock.click();
+  await pro.getByRole("button", { name: "Evidence", exact: true }).click();
+  await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
+  await pro.getByLabel("Additional evidence decision", { exact: true }).selectOption("not-factual");
+  await pro
+    .getByLabel("Additional review rationale", { exact: true })
+    .fill("Topic heading only; this fixture decision does not approve scientific content.");
+  await pro.getByLabel("I checked the complete field", { exact: false }).check();
+  await pro.getByRole("button", { name: "Record field review", exact: true }).click();
+  await saved(pro);
+  await pro.getByText("Current lecturer decision recorded.", { exact: true }).waitFor();
+  await pro.screenshot({ path: join(output, "juw-surface-review.png") });
+  await pro.getByRole("button", { name: "Edit", exact: true }).click();
+  await pro
+    .getByRole("textbox", { name: "Title", exact: true })
+    .fill("Changed scientific heading fixture");
+  await pro.getByRole("button", { name: "Evidence", exact: true }).click();
+  await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
+  await pro
+    .getByText("Content or source context changed; review this field again.", { exact: true })
+    .waitFor();
+  assert(await pro.getByRole("button", { name: "Record field review", exact: true }).isDisabled());
+  results.push(
+    "Heading/notes/figure review controls record explicit decisions and invalidate them after an edit; old attestations cannot approve changed content",
+  );
   await professional.close();
   legacyWorkerFixture = true;
   const upgrade = await browser.newContext();
@@ -1242,6 +1346,39 @@ try {
   await up.getByRole("button", { name: "Check for updates", exact: true }).click();
   await up.getByText("Up to date", { exact: true }).waitFor();
   results.push("Visible build ID and update checking agree with fresh build metadata");
+  await up.evaluate(() => {
+    ServiceWorkerRegistration.prototype.update = async () => {
+      throw new DOMException("The object is in an invalid state.", "InvalidStateError");
+    };
+  });
+  await up.getByRole("button", { name: "Check for updates", exact: true }).click();
+  await up.getByText(/Offline cache could not refresh/).waitFor();
+  assert.match(await up.locator("[data-app-build]").innerText(), /Up to date/);
+  assert(await up.getByRole("button", { name: "Check for updates", exact: true }).isEnabled());
+  assert(await up.getByRole("button", { name: "Generate", exact: true }).isEnabled());
+  results.push(
+    "InvalidStateError in worker updates preserves build discovery and an interactive editor",
+  );
+  await up.route("http://localhost:11434/api/tags", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ models: [{ name: "llama3.2:latest" }] }),
+    }),
+  );
+  await up.getByRole("button", { name: "Settings", exact: true }).click();
+  await up.getByRole("button", { name: "Test local AI connection", exact: true }).click();
+  await up.getByText(/Server reachable; generation model found/).waitFor();
+  await up.getByLabel("Local AI model", { exact: true }).fill("missing-model");
+  await up.getByRole("button", { name: "Test local AI connection", exact: true }).click();
+  await up.getByText(/generation model is missing/).waitFor();
+  await up.unroute("http://localhost:11434/api/tags");
+  await up.route("http://localhost:11434/api/tags", (route) => route.abort());
+  await up.getByRole("button", { name: "Test local AI connection", exact: true }).click();
+  await up.getByText(/Connection failed/).waitFor();
+  await up.getByRole("button", { name: "Close", exact: true }).click();
+  results.push(
+    "Local AI readiness identifies installed/missing models and server failure without saving settings",
+  );
   await upgrade.setOffline(true);
   await up.reload();
   await saved(up);

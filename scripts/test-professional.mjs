@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
 const server = await createServer({
+  optimizeDeps: { noDiscovery: true, include: [] },
   configFile: false,
   server: { middlewareMode: true },
   resolve: { alias: { "@": fileURLToPath(new URL("../src", import.meta.url)) } },

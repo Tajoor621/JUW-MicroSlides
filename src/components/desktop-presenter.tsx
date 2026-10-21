@@ -1,3 +1,4 @@
+import { useSlideReveal } from "./use-slide-reveal";
 import { audienceFrame } from "@/lib/audience-frame";
 import { useEffect, useState } from "react";
 import { useDeckStore } from "@/lib/deck-store";
@@ -11,6 +12,9 @@ type Frame = {
   index: number;
   total: number;
   citationStyle: CitationStyle;
+  revealCount?: number;
+  reviewRequired?: boolean;
+  evidenceBasis?: Record<string, string[]>;
 };
 const CHANNEL = "juw-audience-v1";
 export function AudienceView() {
@@ -49,6 +53,14 @@ export function DesktopPresenter() {
   const deck = useDeckStore((s) => s.deck()),
     index = useDeckStore((s) => s.selectedIndex),
     style = useDeckStore((s) => s.citationStyle);
+  const select = useDeckStore((s) => s.select),
+    exit = useDeckStore((s) => s.setPresenting);
+  const { progressive, setProgressive, revealCount, next, previous, control } = useSlideReveal(
+    deck?.slides[index],
+    index,
+    select,
+    () => exit(false),
+  );
   const [monitors, setMonitors] = useState<
       {
         name: string | null;
@@ -72,18 +84,20 @@ export function DesktopPresenter() {
     if (!deck) return;
     const ch = new BroadcastChannel(CHANNEL);
     const send = () => {
-      ch.postMessage({ type: "frame", frame: audienceFrame(deck, index, style) });
+      ch.postMessage({
+        type: "frame",
+        frame: { ...audienceFrame(deck, index, style), revealCount },
+      });
     };
     ch.onmessage = (e) => {
       if (e.data?.type === "ready") send();
       if (e.data?.type === "control") {
-        if (e.data.key === "Escape") useDeckStore.getState().setPresenting(false);
-        else useDeckStore.getState().select(index + (e.data.key === "ArrowLeft" ? -1 : 1));
+        control(e.data.key);
       }
     };
     send();
     return () => ch.close();
-  }, [deck, index, style]);
+  }, [deck, index, style, revealCount, control]);
   useEffect(
     () => () => {
       void import("@tauri-apps/api/webviewWindow").then(async (m) => {
@@ -124,6 +138,14 @@ export function DesktopPresenter() {
     <div className="fixed inset-0 z-[80] flex flex-col gap-3 overflow-auto bg-bg p-6 text-fg">
       <div className="flex flex-wrap items-center gap-3">
         <h2>Private presenter console</h2>
+        <label>
+          <input
+            type="checkbox"
+            checked={progressive}
+            onChange={(e) => setProgressive(e.target.checked)}
+          />{" "}
+          Reveal one point at a time
+        </label>
         <span>
           {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
         </span>
@@ -156,6 +178,7 @@ export function DesktopPresenter() {
             Current · {index + 1}/{deck.slides.length}
           </p>
           <SlideView
+            revealCount={revealCount}
             slide={deck.slides[index]}
             deck={deck}
             index={index}
@@ -177,8 +200,8 @@ export function DesktopPresenter() {
         )}
       </div>
       <div className="flex gap-2">
-        <Button onClick={() => useDeckStore.getState().select(index - 1)}>Previous</Button>
-        <Button onClick={() => useDeckStore.getState().select(index + 1)}>Next</Button>
+        <Button onClick={previous}>Previous</Button>
+        <Button onClick={next}>Next</Button>
       </div>
       <p className="whitespace-pre-wrap">{deck.slides[index].notes}</p>
     </div>

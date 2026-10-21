@@ -1,4 +1,5 @@
-import { citationIdentifier, statusIsFresh } from "./publication-status";
+import { surfaceFindings, claimReviewIsCurrent } from "./surface-review";
+import { citationIdentifier, publicationCheckIsCurrent } from "./publication-status";
 import { guidanceNeedsReview } from "./source-documents";
 import type { Deck, Slide, Claim } from "./types";
 export const statementKey = (s: string) =>
@@ -101,6 +102,15 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
       message: `Overlaps slide ${d.first + 1}. Similarity screening requires lecturer review; replace redundant teaching content.`,
     });
   deck.slides.forEach((s, index) => {
+    for (const finding of surfaceFindings(deck, s))
+      findings.push({
+        slideId: s.id,
+        index,
+        quote: finding.text,
+        severity: "critical",
+        category: finding.media ? "Figure review" : "Heading and notes review",
+        message: `${finding.field}: ${finding.problem}`,
+      });
     for (const citation of s.citations) {
       const check = citation.publicationCheck;
       const add = (severity: "critical" | "warning", category: string, message: string) =>
@@ -123,12 +133,9 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           "Publication notice",
           `${check.status}: inspect the notice and replace affected claims. The app does not clear this through a claim-review checkbox.`,
         );
-      else if (
-        (citation.doi || citation.pmid) &&
-        (!check || !statusIsFresh(check) || !check.complete)
-      )
+      else if ((citation.doi || citation.pmid) && !publicationCheckIsCurrent(citation))
         add(
-          "warning",
+          "critical",
           "Publication status incomplete",
           "Run online reference checks. Missing, partial or older-than-seven-day checks do not establish current publication status.",
         );
@@ -150,7 +157,13 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
 
     if (
       (index > 0 || deck.slides.length === 1) &&
-      (s.layout === "title" || (!slideStatements(s).length && !s.media.length))
+      (s.layout === "title" ||
+        (s.layout !== "bibliography" &&
+          !slideStatements(s).length &&
+          !s.media.length &&
+          !s.teaching?.definition?.trim() &&
+          !s.teaching?.steps?.length &&
+          !s.teaching?.comparison?.length))
     )
       findings.push({
         slideId: s.id,
@@ -162,6 +175,16 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           "Replace this placeholder or title-only page with substantive visible teaching content before reviewed export.",
       });
     for (const c of reconcileClaims(s).claims || []) {
+      if (c.status === "lecturer-reviewed" && !claimReviewIsCurrent(deck, c))
+        findings.push({
+          slideId: s.id,
+          index,
+          quote: c.text,
+          severity: "critical",
+          category: "Source review changed",
+          message:
+            "The evidence or saved source revision changed. Review and confirm this claim again.",
+        });
       const linked = c.evidence.filter(
         (e) =>
           e.quote.trim() &&
@@ -170,6 +193,18 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
           (!e.citationId || s.citations.some((r) => r.id === e.citationId)),
       );
       for (const e of linked) {
+        const identifier =
+          e.sourceUrl.match(/^https?:\/\/(?:dx\.)?doi\.org\/(.+)/i)?.[1]?.toLowerCase() ||
+          e.sourceUrl.match(/^https?:\/\/pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/i)?.[1];
+        if (identifier && !s.citations.some((ref) => citationIdentifier(ref) === identifier))
+          findings.push({
+            slideId: s.id,
+            index,
+            quote: c.text,
+            severity: "critical",
+            category: "Unlinked source identifier",
+            message: "Attach and check the bibliographic record for this DOI or PMID passage.",
+          });
         const saved = (deck.sourceDocuments || []).filter((d) => d.url === e.sourceUrl);
         const normalizeSpace = (text: string) => text.replace(/\s+/g, " ").trim();
         if (

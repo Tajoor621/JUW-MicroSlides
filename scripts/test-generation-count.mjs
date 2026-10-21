@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
 const server = await createServer({
+  optimizeDeps: { noDiscovery: true, include: [] },
   configFile: false,
   server: { middlewareMode: true },
   resolve: { alias: { "@": fileURLToPath(new URL("../src", import.meta.url)) } },
@@ -150,6 +151,13 @@ try {
   globalThis.window = {
     __TAURI_INTERNALS__: {
       invoke: async (cmd, args) => {
+        if (cmd === "local_ai_request")
+          return (
+            await globalThis.fetch(args.url, {
+              method: args.body ? "POST" : "GET",
+              body: args.body,
+            })
+          ).text();
         if (cmd === "state_get") return records.get(args.key) || null;
         if (cmd === "state_put") {
           if (args.value === null) records.delete(args.key);

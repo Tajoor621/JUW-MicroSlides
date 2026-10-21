@@ -253,7 +253,21 @@ export const useDeckStore = create<DeckState>()(
         const key = mediaKey(media.src);
         if (s.media.some((m) => m.id === media.id || mediaKey(m.src) === key)) return;
         const slides = d.slides.map((sl, i) =>
-          i === get().selectedIndex ? { ...sl, media: [...sl.media, media].slice(0, 4) } : sl,
+          i === get().selectedIndex
+            ? {
+                ...sl,
+                media: [...sl.media, media].slice(0, 4),
+                teaching: sl.teaching
+                  ? {
+                      ...sl.teaching,
+                      diagram: undefined,
+                      ...(sl.teaching.diagram || !sl.media.length
+                        ? { altText: "", labels: [], scaleBar: undefined, legend: "" }
+                        : {}),
+                    }
+                  : undefined,
+              }
+            : sl,
         );
         const mediaPool = d.mediaPool ?? [];
         const next = bump({ ...d, mediaPool }, slides);

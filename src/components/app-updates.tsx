@@ -1,18 +1,20 @@
 import { isDesktop } from "@/lib/desktop";
 import { useEffect, useState } from "react";
-import { APP_BUILD, checkAppBuild } from "@/lib/app-updates";
+import { APP_BUILD, checkAppBuild, refreshOfflineShell } from "@/lib/app-updates";
 import { flushSavedDecks } from "@/lib/durable-storage";
 import { Button } from "./ui/button";
 export function AppUpdates() {
   const [latest, setLatest] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [cacheWarning, setCacheWarning] = useState(false);
   async function check() {
     setBusy(true);
     try {
       const id = await checkAppBuild();
       setLatest(id);
       setMessage(id === APP_BUILD ? "Up to date" : "A newer build is ready");
+      void refreshOfflineShell().then((ok) => setCacheWarning(!ok));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Update check failed.");
     } finally {
@@ -65,6 +67,8 @@ export function AppUpdates() {
       <span className="font-mono">Build {APP_BUILD}</span>
       <span role="status" className="min-w-0 flex-1">
         {message}
+        {cacheWarning &&
+          " · Offline cache could not refresh. You can keep editing online; retry after reconnecting."}
       </span>
       <Button
         size="sm"

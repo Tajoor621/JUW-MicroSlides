@@ -57,3 +57,9 @@ The human review handoff is available in the app. No qualified human reviewers, 
 The first extended run (`9534266`, Windows workflow 39403630262) failed its strict whole-library comparison after recovering the reviewer draft. The persisted bundled sample was being regenerated during hydration, changing claim IDs on every restart. The fix preserves all saved samples and creates stable IDs only for newly generated samples. The assertion remains unchanged; a failing run is not recorded as a pass.
 
 The following run (`dc0c317`, Windows workflow 39404986344) passed draft recovery and the whole-library comparison, then exposed a harness classification error: Tauri's virtual `http://ipc.localhost/state_put` endpoint was counted as remote. The harness now explicitly allows the native app and IPC transports, with regression cases rejecting remote lookalikes and credentialed URLs. External requests remain blocked; the saved-library assertion remains strict.
+
+## Follow-up implementation — 21 October 2026
+
+The in-flight local-model cancellation gap is now implemented with an abort signal propagated through the static/desktop service and Ollama HTTP requests. Completed valid batches are preserved for retry and cancellation never falls back to research generation. TypeScript, scientific, lecturer, release-gate and Windows CI checks remain separate from physical-device qualification.
+
+Reviewed export also requires current complete bibliographic checks and explicit decisions for headings, notes and attached figures. Earlier archived projects retain their content; their uncovered fields require review. See Scientific qualification for the new full topic/count matrix and external semantic acceptance commands. These additions do not close the licensed PowerPoint, physical classroom, signing or independent reviewer gates.

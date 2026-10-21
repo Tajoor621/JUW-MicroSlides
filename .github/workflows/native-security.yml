@@ -1,0 +1,21 @@
+name: Native dependency security
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.99.1
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-audit --version 0.22.2 --locked
+      - run: cargo audit --file src-tauri/Cargo.lock --json > native-security.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-security-report
+          path: native-security.json

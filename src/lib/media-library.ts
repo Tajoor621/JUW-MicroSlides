@@ -8,7 +8,7 @@ const clean = (s: string = "") =>
     .trim();
 async function json(url: string, signal?: AbortSignal) {
   const response = await fetch(url, {
-    signal: signal || AbortSignal.timeout(12000),
+    signal: AbortSignal.any([AbortSignal.timeout(12000), ...(signal ? [signal] : [])]),
     credentials: "omit",
   });
   if (!response.ok) throw new Error(`Service returned ${response.status}`);

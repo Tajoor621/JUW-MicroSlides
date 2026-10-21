@@ -3,7 +3,10 @@ import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { digest, splitCases, evaluateScores } from "./scientific-evaluation.mjs";
-const corpusRaw = await readFile("benchmarks/semantic-pairs.json", "utf8");
+const corpusRaw = await readFile(
+  process.env.JUW_SEMANTIC_CORPUS || "benchmarks/semantic-pairs.json",
+  "utf8",
+);
 const corpus = JSON.parse(corpusRaw),
   cases = splitCases(corpus.cases);
 const output = process.env.JUW_SEMANTIC_OUTPUT || "qualification-results/semantic";

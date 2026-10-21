@@ -15,6 +15,19 @@ export function citationIdentifier(c: Citation) {
 export function statusIsFresh(check: PublicationCheck, now = Date.now()) {
   return check.checkedAt <= now && now - check.checkedAt < 7 * 86400000;
 }
+export function publicationCheckIsCurrent(c: Citation, now = Date.now()) {
+  const check = c.publicationCheck;
+  return !!(
+    citationIdentifier(c) &&
+    check &&
+    check.identifier === citationIdentifier(c) &&
+    check.complete &&
+    check.metadataMatch === true &&
+    check.metadataTitle === c.title &&
+    check.status === "no-notice-found" &&
+    statusIsFresh(check, now)
+  );
+}
 type NoticeRecord = { type?: string; id?: string; source?: string; reference?: string };
 export function europeNotices(record: {
   isRetracted?: string;
