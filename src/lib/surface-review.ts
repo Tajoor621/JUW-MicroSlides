@@ -116,6 +116,23 @@ export function surfaceReviewProblem(
     !review.locator?.trim()
   )
     return "Factual content needs an exact supporting passage, HTTPS source and locator.";
+  const source = new URL(review.sourceUrl);
+  const sourceId = ["doi.org", "dx.doi.org", "pubmed.ncbi.nlm.nih.gov"].includes(source.hostname)
+    ? decodeURIComponent(source.pathname)
+        .replace(/^\/|\/$/g, "")
+        .toLowerCase()
+    : "";
+  if (
+    sourceId &&
+    !slide.citations.some(
+      (citation) =>
+        (citation.doi
+          ?.replace(/^https?:\/\/(?:dx\.)?doi.org\//i, "")
+          .trim()
+          .toLowerCase() || citation.pmid?.trim()) === sourceId,
+    )
+  )
+    return "Attach and check the bibliographic record for this DOI or PMID source.";
   const sources = (deck.sourceDocuments || []).filter((d) => d.url === review.sourceUrl);
   const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
   if (sources.length && !sources.some((d) => normalize(d.text).includes(normalize(review.quote!))))
