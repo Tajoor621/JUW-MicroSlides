@@ -368,7 +368,7 @@ try {
         ],
         limitations: [
           "Synthetic local fixtures, not independent scientific review or model performance qualification",
-          "Remote renderer URLs are blocked during review; OS airplane mode and Rust networking are not tested",
+          "Remote renderer URLs are blocked during review; loopback Rust transport uses a synthetic fixture. OS airplane mode, physical LAN reachability and real-model inference remain untested",
           "Generation timing is one bundled six-slide fixture on hosted CI, not P95 time-to-reviewed-deck",
           "Physical projectors, mixed DPI and installer UX require real-device review",
         ],

@@ -49,11 +49,6 @@ jobs:
           icacls desktop-qa /grant "$($env:USERNAME):(OI)(CI)F"
           gsudo --integrity Medium node scripts/qa-desktop.mjs
           exit $LASTEXITCODE
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Windows-native-QA
-          path: desktop-qa/
       - name: Record artifact provenance
         shell: pwsh
         run: |
@@ -71,6 +66,11 @@ jobs:
             independentlyScientificallyQualified = $false
           }
           $provenance | ConvertTo-Json -Depth 5 | Set-Content desktop-qa/artifact-provenance.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Windows-native-QA
+          path: desktop-qa/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
