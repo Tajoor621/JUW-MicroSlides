@@ -157,7 +157,13 @@ export function integrityAudit(deck: Deck): IntegrityFinding[] {
 
     if (
       (index > 0 || deck.slides.length === 1) &&
-      (s.layout === "title" || (!slideStatements(s).length && !s.media.length))
+      (s.layout === "title" ||
+        (s.layout !== "bibliography" &&
+          !slideStatements(s).length &&
+          !s.media.length &&
+          !s.teaching?.definition?.trim() &&
+          !s.teaching?.steps?.length &&
+          !s.teaching?.comparison?.length))
     )
       findings.push({
         slideId: s.id,

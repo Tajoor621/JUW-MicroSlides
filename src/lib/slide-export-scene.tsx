@@ -8,6 +8,8 @@ export type Bounds = { x: number; y: number; w: number; h: number };
 export type SceneItem =
   | (Bounds & {
       kind: "rect";
+      shape?: "rect" | "ellipse" | "line";
+      flipV?: boolean;
       fill?: string;
       fillAlpha?: number;
       lineAlpha?: number;
@@ -24,7 +26,7 @@ export type SceneItem =
       color: string;
       opacity: number;
     })
-  | (Bounds & { kind: "image"; src: string; cover: boolean; opacity: number });
+  | (Bounds & { kind: "image"; src: string; cover: boolean; opacity: number; alt?: string });
 
 function rgba(value: string): { hex: string; alpha: number } {
   const canvas = document.createElement("canvas");
@@ -78,6 +80,15 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
       ),
     );
     const stage = host.querySelector<HTMLElement>("[data-slide-stage]")!;
+    const teaching = stage.querySelector<HTMLElement>("[data-teaching-content]");
+    if (
+      teaching &&
+      (teaching.scrollHeight > teaching.clientHeight + 2 ||
+        [...teaching.children].some((c) => c.scrollHeight > c.clientHeight + 2))
+    )
+      throw Error(
+        `Slide ${index + 1}: teaching content overflows its column. Move detail to speaker notes.`,
+      );
     const origin = stage.getBoundingClientRect();
     const items: SceneItem[] = [];
     const bounds = (r: DOMRect): Bounds => ({
@@ -92,6 +103,46 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
       const opacity = inheritedOpacity * Number(css.opacity);
       const box = bounds(el.getBoundingClientRect());
       if (!box.w || !box.h) return;
+      if (el instanceof SVGSVGElement && el.hasAttribute("data-teaching-diagram")) {
+        // Original teaching templates use a deliberately small SVG vocabulary.
+        // Export each primitive as an editable Office shape/text box.
+        const scale = el.getScreenCTM()?.a || 1;
+        for (const node of el.querySelectorAll("rect,circle,line,text")) {
+          const style = getComputedStyle(node),
+            b = bounds(node.getBoundingClientRect());
+          const alpha = opacity * Number(style.opacity);
+          if (node.tagName === "text") {
+            items.push({
+              ...b,
+              kind: "text",
+              text: node.textContent || "",
+              font: "Arial",
+              size: parseFloat(style.fontSize) * scale,
+              bold: Number(style.fontWeight) >= 600,
+              color: color(style.fill) || "17344c",
+              opacity: alpha,
+            });
+          } else {
+            const isLine = node.tagName === "line";
+            const line = node as SVGLineElement;
+            items.push({
+              ...b,
+              kind: "rect",
+              shape: isLine ? "line" : node.tagName === "circle" ? "ellipse" : "rect",
+              flipV:
+                isLine &&
+                (line.x2.baseVal.value - line.x1.baseVal.value) *
+                  (line.y2.baseVal.value - line.y1.baseVal.value) <
+                  0,
+              fill: isLine || style.fill === "none" ? undefined : color(style.fill),
+              line: style.stroke === "none" ? undefined : color(style.stroke),
+              lineWidth: parseFloat(style.strokeWidth) * scale,
+              opacity: alpha,
+            });
+          }
+        }
+        return;
+      }
       if (el instanceof SVGSVGElement) {
         const clone = el.cloneNode(true) as SVGSVGElement;
         clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -103,6 +154,10 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
           kind: "image",
           src: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(clone))}`,
           cover: false,
+          alt:
+            el.getAttribute("aria-label") ||
+            el.querySelector("title")?.textContent ||
+            "Vector illustration",
           opacity,
         });
         return;
@@ -130,6 +185,7 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
             ...box,
             kind: "image",
             src: el.currentSrc || el.src,
+            alt: el.alt,
             cover: css.objectFit === "cover",
             opacity,
           });

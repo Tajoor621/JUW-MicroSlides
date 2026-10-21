@@ -36,7 +36,13 @@ const TOPIC_CHIPS = [
   "Enzyme Immobilization",
 ];
 
-export function GenerateForm({ compact = false }: { compact?: boolean }) {
+export function GenerateForm({
+  compact = false,
+  lockDisciplineInitially = false,
+}: {
+  compact?: boolean;
+  lockDisciplineInitially?: boolean;
+}) {
   const generate = useDeckStore((s) => s.generate);
   const draft = useDeckStore((s) => s.generateDraft);
   const patchDraft = useDeckStore((s) => s.patchGenerateDraft);
@@ -44,7 +50,7 @@ export function GenerateForm({ compact = false }: { compact?: boolean }) {
   const controller = useRef<AbortController | null>(null);
   const [progress, setProgress] = useState("");
   const [generationError, setGenerationError] = useState("");
-  const [lockDiscipline, setLockDiscipline] = useState(false);
+  const [lockDiscipline, setLockDiscipline] = useState(lockDisciplineInitially);
   const [lockCourse, setLockCourse] = useState(false);
 
   function disciplineFor(topic: string, locked: boolean, current: string) {

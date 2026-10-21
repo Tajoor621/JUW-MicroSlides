@@ -558,6 +558,81 @@ try {
       })),
     ),
   };
+  // Synthetic, fully reviewed SOFTWARE fixtures exercise export geometry without bypassing gates.
+  const { createServer: createViteServer } = await import("vite");
+  const fixtureServer = await createViteServer({
+    configFile: false,
+    optimizeDeps: { noDiscovery: true, include: [] },
+    server: { middlewareMode: true },
+    resolve: { alias: { "@": root + "/src" } },
+    logLevel: "error",
+  });
+  try {
+    const { teachingFixture } = await import("./teaching-fixture.mjs");
+    const base = await teachingFixture(fixtureServer);
+    const { reconcileDeck } = await fixtureServer.ssrLoadModule("/src/lib/deck-integrity.ts");
+    const { surfaceItems, surfaceSnapshot, attestClaim } = await fixtureServer.ssrLoadModule(
+      "/src/lib/surface-review.ts",
+    );
+    const { teachingReleaseFindings } = await fixtureServer.ssrLoadModule(
+      "/src/lib/teaching-readiness.ts",
+    );
+    parityDeck.preparedBy = base.deck.preparedBy;
+    parityDeck.sourceDocuments = base.deck.sourceDocuments;
+    const figure = structuredClone(parityDeck.slides[1].media[0]);
+    figure.source = "https://example.org/synthetic-fixture";
+    parityDeck.slides = parityDeck.slides.map((slide, i) => ({
+      ...slide,
+      layout: i === 0 ? "title" : slide.layout === "title" ? "content" : slide.layout,
+      teaching: {
+        ...structuredClone(base.slide.teaching),
+        diagram: undefined,
+        diagramLabel: "",
+        definition: `Synthetic layout fixture ${i}.`,
+      },
+      bullets: slide.bullets.map((b) => `Fixture ${i}: ${b}`),
+      leftBullets: slide.leftBullets.map((b) => `Fixture ${i}: ${b}`),
+      rightBullets: slide.rightBullets.map((b) => `Fixture ${i}: ${b}`),
+      media: i === 0 ? [] : [structuredClone(figure)],
+      citations: structuredClone(base.slide.citations),
+      notes: "Synthetic layout validation only.",
+    }));
+    Object.assign(parityDeck, reconcileDeck(parityDeck));
+    for (const slide of parityDeck.slides) {
+      slide.claims = slide.claims.map((c) =>
+        attestClaim(parityDeck, {
+          ...c,
+          status: "lecturer-reviewed",
+          evidence: structuredClone(base.slide.claims[0].evidence),
+        }),
+      );
+      slide.surfaceReviews = surfaceItems(slide).map((item) => ({
+        field: item.field,
+        snapshot: surfaceSnapshot(parityDeck, slide, item.field),
+        verdict: "supported",
+        rationale: "Controlled software layout fixture; not scientific validation.",
+        reviewedAt: Date.now(),
+        sourceUrl: base.url,
+        quote: base.quote,
+        locator: "Synthetic test paragraph",
+      }));
+    }
+    const { teachingDeckSnapshot } = await fixtureServer.ssrLoadModule(
+      "/src/lib/teaching-verification.ts",
+    );
+    parityDeck.teachingVerification = {
+      instructor: "Synthetic software fixture",
+      at: Date.now(),
+      snapshot: teachingDeckSnapshot(parityDeck),
+    };
+    assert.deepEqual(
+      teachingReleaseFindings(parityDeck),
+      [],
+      "Parity export fixtures must satisfy the real gate",
+    );
+  } finally {
+    await fixtureServer.close();
+  }
   const parityByViewport = [];
   for (const width of [1280, 390]) {
     const pc = await browser.newContext({
@@ -802,10 +877,10 @@ try {
       assert(Math.abs(a.body.x - b.body.x) < 0.01 && Math.abs(a.body.y - b.body.y) < 0.01);
   }
   results.push(
-    "University crest retains transparent corners and an opaque original centre in desktop and mobile PowerPoint exports",
+    "University crest retains transparent corners and an opaque original centre in reviewed synthetic PowerPoint fixtures",
   );
   results.push(
-    "All 10 themes and 5 layouts preserve title/body positions, font sizes, colours, logos and attached images in desktop and mobile exports",
+    "All 10 themes preserve title/body positions, font sizes, colours, logos and attached images across desktop/mobile reviewed synthetic exports",
   );
 
   const legacyContext = await browser.newContext();
@@ -905,12 +980,12 @@ try {
     .locator('textarea[placeholder="What will you explain when presenting this slide?"]')
     .fill("QA speaker notes preserved in PowerPoint.");
   await saved(page);
-  downloadEvent = page.waitForEvent("download", { timeout: 90000 });
+  let blockedDownloads = 0;
+  page.on("download", () => blockedDownloads++);
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  const pptx = await downloadEvent;
-  await pptx.saveAs(join(output, "juw-qa.pptx"));
-  assert.equal(slideCountInPptx(await readFile(await pptx.path())), 12);
-  results.push("PowerPoint downloads successfully with exactly the deck slide count");
+  await page.getByText(/Teaching export blocked/).waitFor();
+  assert.equal(blockedDownloads, 0);
+  results.push("Unreviewed decks block ordinary PPTX export and retain recovery backups");
   await page.waitForFunction(async () => {
     const r = await navigator.serviceWorker.ready;
     return Boolean(r.active);
@@ -1047,7 +1122,7 @@ try {
   await rp.locator("#gen-count").fill("12");
   await rp.getByRole("button", { name: "Generate deck", exact: true }).click();
   await saved(rp);
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   await rp.getByRole("button", { name: "Media", exact: true }).click();
   const correct = rp.locator("article").filter({
     has: rp.getByRole("heading", { name: "QA fixture bacterial chromosome.svg", exact: true }),
@@ -1055,7 +1130,7 @@ try {
   await correct
     .getByRole("button", { name: "Download file", exact: true })
     .waitFor({ state: "visible" });
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   results.push("Media lookup collects files without attaching them");
   await rp.getByRole("button", { name: /Chromosomes and accessory replicons/ }).click();
   const fileEvent = rp.waitForEvent("download");
@@ -1098,11 +1173,11 @@ try {
   while (await rp.getByRole("button", { name: "Remove image", exact: true }).count())
     await rp.getByRole("button", { name: "Remove image", exact: true }).first().click();
   await saved(rp);
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   results.push("Removing a figure does not insert a replacement");
   await rp.getByRole("button", { name: "Add", exact: true }).click();
   await saved(rp);
-  assert.equal(await rp.locator("[data-slide-stage] figure").count(), 0);
+  assert.equal(await rp.locator("[data-slide-stage] figure img").count(), 0);
   results.push("New blank slides contain no automatically selected figures");
   await research.close();
   const coverage = await browser.newContext({ acceptDownloads: true });
@@ -1136,12 +1211,10 @@ try {
   results.push(
     "An uncatalogued microbiology topic generates exactly 25 slides from distinct source sections",
   );
-  const exactExport = cp.waitForEvent("download", { timeout: 90000 });
   await cp.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  const exactPptx = await exactExport;
-  assert.equal(slideCountInPptx(await readFile(await exactPptx.path())), 25);
+  await cp.getByText(/Teaching export blocked/).waitFor();
   results.push(
-    "Cited 25-slide research deck exports exactly 25 PowerPoint slides without appended pages",
+    "Cited research generation remains a draft until scientific teaching requirements are reviewed",
   );
   await coverage.unroute("https://www.ebi.ac.uk/europepmc/**");
   await coverage.route("https://www.ebi.ac.uk/europepmc/**", (route) =>

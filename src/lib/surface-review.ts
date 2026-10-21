@@ -1,3 +1,4 @@
+import { TEACHING_DIAGRAM_REVISION } from "./teaching-schema";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 import { z } from "zod";
@@ -28,6 +29,47 @@ export function surfaceItems(slide: Slide) {
     ...(["title", "subtitle", "notes"] as const).flatMap((field) =>
       slide[field].trim() ? [{ field, text: slide[field], media: false }] : [],
     ),
+    ...Object.entries(slide.teaching || {})
+      .filter(([k, v]) => typeof v === "string" && v.trim() && k !== "diagram")
+      .map(([k, v]) => ({ field: `teaching.${k}`, text: String(v), media: false })),
+    ...(slide.teaching?.quantitative || []).map((q, i) => ({
+      field: `teaching.quantitative.${i}`,
+      text: `${q.metric}: ${q.value} ${q.units}; ${q.conditions}`,
+      media: false,
+    })),
+    ...(slide.teaching?.scaleBar
+      ? [
+          {
+            field: "teaching.scaleBar",
+            text: `${slide.teaching.scaleBar.pixels} original pixels = ${slide.teaching.scaleBar.physicalLength} ${slide.teaching.scaleBar.unit}; ${slide.teaching.scaleBar.calibrationSource}`,
+            media: false,
+          },
+        ]
+      : []),
+    ...(slide.teaching?.steps || []).map((text, i) => ({
+      field: `teaching.steps.${i}`,
+      text,
+      media: false,
+    })),
+    ...(slide.teaching?.labels || []).map((label, i) => ({
+      field: `teaching.labels.${i}`,
+      text: label.text,
+      media: false,
+    })),
+    ...(slide.teaching?.comparison || []).map((row, i) => ({
+      field: `teaching.comparison.${i}`,
+      text: `${row.criterion}: ${row.left} / ${row.right}`,
+      media: false,
+    })),
+    ...(slide.teaching?.diagram
+      ? [
+          {
+            field: "teaching.diagram",
+            text: `Conceptual ${slide.teaching.diagram} schematic, including its printed annotations; inspect scientific meaning and limitations.`,
+            media: false,
+          },
+        ]
+      : []),
     ...slide.media.map((m, i) => ({ field: `media.${i}`, text: m.title, media: true })),
   ];
 }
@@ -90,6 +132,10 @@ export function surfaceSnapshot(deck: Deck, slide: Slide, field: string) {
         JSON.stringify(
           canonical({
             field,
+            teaching: slide.teaching,
+            teachingTemplateRevision: slide.teaching?.diagram
+              ? TEACHING_DIAGRAM_REVISION
+              : undefined,
             topic: deck.topic,
             discipline: deck.discipline,
             level: deck.level,
@@ -146,7 +192,15 @@ export function surfaceReviewProblem(
     )
       return "Record the figure's original HTTPS source, creator and actual reuse terms.";
   }
-  if (review.verdict === "not-factual") return null;
+  if (review.verdict === "not-factual") {
+    if (
+      /^teaching\.(definition|mechanism|advantage|limitation|pitfall|takeaway|discussion|equation|assumptions|quantitative|steps|comparison|diagram$|scaleBar)/.test(
+        field,
+      )
+    )
+      return "Scientific teaching content requires a supporting source passage; it cannot be marked nonfactual.";
+    return null;
+  }
   if (
     !review.sourceUrl ||
     !review.quote ||

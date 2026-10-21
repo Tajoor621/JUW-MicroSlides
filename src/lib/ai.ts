@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { teachingSchema } from "./teaching-schema";
 import { requirePaidAiAccess } from "./paid-ai-access.server";
 import { reserveAiRequest } from "./ai-limits";
 import { LEVELS } from "./types";
@@ -24,7 +25,8 @@ const SLIDE_SCHEMA = `{
       "bullets": string[],
       "leftBullets": string[],
       "rightBullets": string[],
-      "notes": string
+      "notes": string,
+      "teaching": {"definition": string, "mechanism": string, "advantage": string, "limitation": string, "pitfall": string, "takeaway": string, "equation": string, "assumptions": string, "discussion": string}
     }
   ]
 }`;
@@ -94,7 +96,7 @@ Discipline: ${data.discipline}
 Level: ${data.level}
 Instructor notes: ${data.notes || "none"}
 JSON schema: ${SLIDE_SCHEMA}
-First slide MUST be layout=title (official JUW intro: university crest, department seal, centred title). Include learning objectives, core content, a clinical or applied slide, take-homes, and a references slide with real classic papers (author, year, journal in bullets). Each content slide: 3–5 specific factual bullets. Use concise concept headings, without repeating the full topic name. Do not substitute generic teaching prompts or unrelated examples. Never invent references or sources. No media is attached automatically.`,
+First slide MUST be layout=title (official JUW intro: university crest, department seal, centred title). Include learning objectives, core content, a clinical or applied slide, take-homes, and a references slide with real classic papers (author, year, journal in bullets). Each content slide: 3–5 specific factual bullets. Use concise concept headings, without repeating the full topic name. Do not substitute generic teaching prompts or unrelated examples. Never invent references, numerical benchmarks or sources. Supply level-appropriate teaching fields: undergraduate definitions and tradeoffs; graduate/medical mechanisms; PhD equations, assumptions and critical discussion, including effectiveness factor and Thiele modulus only where applicable. Quantitative data require saved source passages and instructor verification after generation. Never imply immobilization always increases stability. Leave unsupported fields empty and mark notes as requiring evidence review. No media is attached automatically.`,
           },
         ],
       }),
@@ -290,6 +292,7 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
               leftBullets: z.array(z.string().max(3000)).max(20).optional(),
               rightBullets: z.array(z.string().max(3000)).max(20).optional(),
               notes: z.string().max(20000).optional(),
+              teaching: teachingSchema.optional(),
             }),
           )
           .min(1)
@@ -306,6 +309,7 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
         leftBullets?: string[];
         rightBullets?: string[];
         notes?: string;
+        teaching?: Slide["teaching"];
       }>;
     };
     if (!json.slides?.length) return null;
@@ -326,6 +330,7 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
         leftBullets: s.leftBullets ?? [],
         rightBullets: s.rightBullets ?? [],
         notes: s.notes || "",
+        teaching: s.teaching,
         citations: [],
         media: [],
       });

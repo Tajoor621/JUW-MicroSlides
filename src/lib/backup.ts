@@ -1,4 +1,6 @@
+import { teachingVerificationSchema } from "./teaching-verification";
 import { z } from "zod";
+import { teachingSchema } from "./teaching-schema";
 import { surfaceReviewSchema } from "./surface-review";
 import { publicationCheckSchema } from "./publication-schema";
 import { sourceDocumentSchema } from "./source-documents";
@@ -33,6 +35,7 @@ const media = z.object({
   keywords: z.array(text).max(100),
 });
 export const citationSchema = z.object({
+  evidenceKind: z.enum(["primary", "review", "textbook"]).optional(),
   publicationCheck: publicationCheckSchema.optional(),
   cslJson: z.string().max(100_000).optional(),
   type: z.enum(["article-journal", "book", "chapter", "report", "webpage"]).optional(),
@@ -85,6 +88,7 @@ const claim = z.object({
     .max(100),
 });
 const slide = z.object({
+  teaching: teachingSchema.optional(),
   claims: z.array(claim).max(500).optional(),
   surfaceReviews: z.array(surfaceReviewSchema).max(103).optional(),
   locked: z.boolean().optional(),
@@ -102,6 +106,8 @@ const slide = z.object({
   media: z.array(media).max(100),
 });
 export const deckSchema = z.object({
+  teachingVerification: teachingVerificationSchema.optional(),
+  exportMode: z.enum(["light", "dark"]).optional(),
   sourceDocuments: z.array(sourceDocumentSchema).max(30).optional(),
   id: text,
   title: text,

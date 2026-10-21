@@ -4,7 +4,15 @@ import { replacementSnapshot } from "@/lib/slide-replacement";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
-import { classroomReady, integrityAudit } from "@/lib/deck-integrity";
+import { teachingDeckSnapshot } from "@/lib/teaching-verification";
+import {
+  teachingContentFindings,
+  teachingReleaseFindings,
+  teachingReady as classroomReady,
+} from "@/lib/teaching-readiness";
+import { teachingFindings, lectureMinutes } from "@/lib/teaching";
+import { exportTeachingPack, exportTeachingPdf } from "@/lib/export-teaching";
+import { integrityAudit } from "@/lib/deck-integrity";
 import {
   flushSavedDecks,
   listDeckRevisions,
@@ -21,6 +29,7 @@ export function ProfessionalWorkspace() {
   const deck = useDeckStore((s) => s.deck()),
     slide = useDeckStore((s) => s.slide()),
     index = useDeckStore((s) => s.selectedIndex);
+  const [instructor, setInstructor] = useState("");
   const [findings, setFindings] = useState<ReturnType<typeof integrityAudit> | null>(null),
     [auditedAt, setAuditedAt] = useState(""),
     [revisions, setRevisions] = useState<DeckRevision[]>([]),
@@ -82,12 +91,115 @@ export function ProfessionalWorkspace() {
             50; use JSON backup to retain this archive, or import an explicitly reduced copy.
           </p>
         )}
+        <p className="text-xs">
+          Estimated lecture time: {lectureMinutes(deck)} minutes. Instructor pacing and discussion
+          may change this estimate.
+        </p>
+        <label className="flex items-center gap-2 text-xs">
+          Projector / export contrast
+          <select
+            aria-label="Projector contrast"
+            className="rounded border bg-elevated p-2"
+            value={deck.exportMode || "light"}
+            onChange={(e) =>
+              useDeckStore.getState().patchDeck({ exportMode: e.target.value as "light" | "dark" })
+            }
+          >
+            <option value="light">Theme contrast</option>
+            <option value="dark">Dark lecture theatre</option>
+          </select>
+        </label>
+        <details>
+          <summary>Final instructor verification</summary>
+          <p className="text-xs">
+            This records a named local instructor attestation, not authenticated identity or
+            independent scientific certification. Any deck edit invalidates it.
+          </p>
+          <label className="block text-xs">
+            Verifying instructor name
+            <input
+              aria-label="Verifying instructor name"
+              className="m-2 rounded border bg-elevated p-2"
+              maxLength={100}
+              value={instructor}
+              onChange={(e) => setInstructor(e.target.value)}
+            />
+          </label>
+          <Button
+            size="sm"
+            disabled={busy || !instructor.trim() || teachingContentFindings(deck).length > 0}
+            onClick={() =>
+              void perform(async () => {
+                const snapshot = teachingDeckSnapshot(deck),
+                  verification = { instructor: instructor.trim(), at: Date.now(), snapshot };
+                await exportPptx(
+                  { ...deck, teachingVerification: verification },
+                  { returnBytes: true },
+                );
+                const live = useDeckStore.getState().deck();
+                if (!live || live.id !== deck.id || teachingDeckSnapshot(live) !== snapshot)
+                  throw Error(
+                    "The deck changed during verification. Your newer work is preserved; review it again.",
+                  );
+                useDeckStore.getState().patchDeck({ teachingVerification: verification });
+                toast.success("Instructor verification recorded after image and layout preflight.");
+              })
+            }
+          >
+            Record instructor verification
+          </Button>
+          <p className="text-xs">
+            {teachingReleaseFindings(deck).find((f) =>
+              /instructor verification|named instructor/.test(f.message),
+            )?.message || "Current instructor verification recorded."}
+          </p>
+        </details>
         <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => useDeckStore.getState().setGenerateOpen(true)}>
+            First Deck setup
+          </Button>
+          <Button
+            size="sm"
+            disabled={busy || legacy || !classroomReady(deck)}
+            onClick={() =>
+              void perform(async () => {
+                await exportPptx(deck);
+                toast.message(
+                  "Import the downloaded PPTX through Google Slides: File → Import slides. Inspect imported typography and accessibility before teaching.",
+                );
+              })
+            }
+          >
+            Export for Google Slides (.pptx)
+          </Button>
+          <Button
+            size="sm"
+            disabled={busy || legacy || !classroomReady(deck)}
+            onClick={() => void perform(() => exportTeachingPack(deck))}
+          >
+            Export teaching pack
+          </Button>
+          <Button
+            size="sm"
+            disabled={busy || legacy || !classroomReady(deck)}
+            onClick={() => void perform(() => exportTeachingPdf(deck))}
+          >
+            Export reviewed PDF
+          </Button>
           <Button
             size="sm"
             disabled={busy}
             onClick={() => {
-              setFindings(integrityAudit(deck));
+              setFindings([
+                ...integrityAudit(deck),
+                ...teachingFindings(deck).map((f) => ({
+                  ...f,
+                  slideId: deck.slides[f.index].id,
+                  severity: "critical" as const,
+                  category: "teaching" as const,
+                  quote: "",
+                })),
+              ]);
               setAuditedAt(deck.revisionId || String(deck.updatedAt));
             }}
           >

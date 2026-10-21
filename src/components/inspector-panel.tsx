@@ -1,3 +1,4 @@
+import { TeachingPanel } from "./teaching-panel";
 import { ClaimEvidenceEditor } from "./claim-evidence-editor";
 import { SpecialistReview } from "./specialist-review";
 import { TopicMediaPanel } from "./topic-media-panel";
@@ -88,6 +89,7 @@ function EditTab() {
       <p className="text-xs text-muted">
         Every field is live — you can also click the slide canvas and type.
       </p>
+      <TeachingPanel />
       <Field label="Layout">
         <select
           value={slide.layout}

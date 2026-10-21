@@ -1,6 +1,7 @@
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { localAiFetch } from "./local-ai-transport";
 import { z } from "zod";
+import { teachingSchema } from "./teaching-schema";
 import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
 import { assertCompleteDeck, requestedCount } from "./deck-completion";
 import { generateLocalDeck } from "./generate-deck";
@@ -70,6 +71,7 @@ async function chat(prompt: string, json = false, images: string[] = [], signal?
   return body.message.content as string;
 }
 const generatedSlide = z.object({
+  teaching: teachingSchema.optional(),
   layout: z.enum(["title", "content", "two-column", "full-image", "blank"]).default("content"),
   title: z.string().min(1).max(1000),
   subtitle: z.string().max(2000).default(""),
@@ -163,7 +165,7 @@ export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSi
     signal?.throwIfAborted();
     const batch = headings.slice(offset, offset + 8);
     const response = await chat(
-      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes}]}.`,
+      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
       true,
       [],
       signal,

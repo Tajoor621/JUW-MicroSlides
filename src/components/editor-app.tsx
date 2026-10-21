@@ -1,3 +1,4 @@
+import { exportTeachingPdf } from "@/lib/export-teaching";
 import { ProfessionalWorkspace } from "./professional-workspace";
 import { packProject } from "@/lib/project-format";
 import { saveFile } from "@/lib/desktop";
@@ -171,19 +172,23 @@ export function EditorApp() {
       toast.message("Embedding figures into PowerPoint…");
       await exportPptx(deck);
       toast.success("PowerPoint downloaded. Check layout and figure attribution before sharing.");
-    } catch {
-      toast.message("Could not write the PPTX file.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not write the PPTX file.");
     }
   }
 
   const [printing, setPrinting] = useState(false);
 
-  function onPdf() {
+  async function onPdf() {
+    if (!deck) return;
     setPrinting(true);
-    requestAnimationFrame(() => {
-      window.print();
-      setTimeout(() => setPrinting(false), 400);
-    });
+    try {
+      await exportTeachingPdf(deck);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "PDF export failed.");
+    } finally {
+      setPrinting(false);
+    }
   }
 
   const cited = deck?.slides.filter((s) => s.citations.length > 0).length ?? 0;
@@ -290,7 +295,7 @@ export function EditorApp() {
               </Button>
             </Tooltip>
             <Tooltip content="Print / PDF">
-              <Button variant="ghost" size="icon-sm" onClick={onPdf} aria-label="Print">
+              <Button variant="ghost" size="icon-sm" onClick={onPdf} aria-label="Export PDF">
                 <Printer />
               </Button>
             </Tooltip>

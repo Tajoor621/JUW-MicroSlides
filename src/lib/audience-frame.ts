@@ -1,3 +1,5 @@
+import { slideEvidenceBasis } from "./evidence-basis";
+import { teachingReady } from "./teaching-readiness";
 import type { CitationStyle, Deck, Slide } from "./types";
 /** Explicit display allowlist. New project fields remain private unless deliberately added here. */
 export function audienceFrame(deck: Deck, index: number, citationStyle: CitationStyle) {
@@ -17,6 +19,8 @@ export function audienceFrame(deck: Deck, index: number, citationStyle: Citation
     slides: [],
     mediaPool: [],
     updatedAt: deck.updatedAt,
+    exportMode: deck.exportMode,
+    teachingVerification: deck.teachingVerification,
   };
   const slide: Slide = {
     id: source.id,
@@ -27,11 +31,40 @@ export function audienceFrame(deck: Deck, index: number, citationStyle: Citation
     bullets: source.bullets,
     leftBullets: source.leftBullets,
     rightBullets: source.rightBullets,
+    teaching: source.teaching
+      ? {
+          definition: source.teaching.definition,
+          mechanism: source.teaching.mechanism,
+          advantage: source.teaching.advantage,
+          limitation: source.teaching.limitation,
+          pitfall: source.teaching.pitfall,
+          takeaway: source.teaching.takeaway,
+          diagram: source.teaching.diagram,
+          diagramLabel: source.teaching.diagramLabel,
+          altText: source.teaching.altText,
+          legend: source.teaching.legend,
+          equation: source.teaching.equation,
+          assumptions: source.teaching.assumptions,
+          discussion: source.teaching.discussion,
+          labels: source.teaching.labels,
+          steps: source.teaching.steps,
+          comparison: source.teaching.comparison,
+          quantitative: source.teaching.quantitative.map((q) => ({
+            ...q,
+            quote: "",
+            sourceUrl: "",
+          })),
+          scaleBar: source.teaching.scaleBar
+            ? { ...source.teaching.scaleBar, calibrationSource: "" }
+            : undefined,
+        }
+      : undefined,
     notes: "",
     claims: [],
     media: source.media,
     citations: source.citations.map((c) => ({
       id: c.id,
+      evidenceKind: c.evidenceKind,
       authors: c.authors,
       title: c.title,
       journal: c.journal,
@@ -44,5 +77,13 @@ export function audienceFrame(deck: Deck, index: number, citationStyle: Citation
       cslAuthors: c.cslAuthors,
     })),
   };
-  return { deck: safeDeck, slide, index, total: deck.slides.length, citationStyle };
+  return {
+    deck: safeDeck,
+    slide,
+    index,
+    total: deck.slides.length,
+    citationStyle,
+    reviewRequired: !teachingReady(deck),
+    evidenceBasis: slideEvidenceBasis(source),
+  };
 }

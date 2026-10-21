@@ -1,6 +1,15 @@
 import type { SlideTheme } from "./slide-themes";
 
-export const LAYOUTS = ["title", "content", "two-column", "full-image", "blank"] as const;
+export const LAYOUTS = [
+  "title",
+  "content",
+  "two-column",
+  "full-image",
+  "blank",
+  "comparison",
+  "process-flow",
+  "bibliography",
+] as const;
 
 export type Layout = (typeof LAYOUTS)[number];
 
@@ -35,6 +44,7 @@ export interface MediaItem {
 }
 
 export interface Citation {
+  evidenceKind?: "primary" | "review" | "textbook";
   publicationCheck?: import("./publication-status").PublicationCheck;
   id: string;
   type?: "article-journal" | "book" | "chapter" | "report" | "webpage";
@@ -72,6 +82,7 @@ export interface Claim {
 }
 
 export interface Slide {
+  teaching?: import("./teaching").Teaching;
   id: string;
   layout: Layout;
   claims?: Claim[];
@@ -90,6 +101,8 @@ export interface Slide {
 }
 
 export interface Deck {
+  teachingVerification?: { instructor: string; at: number; snapshot: string };
+  exportMode?: "light" | "dark";
   sourceDocuments?: import("./source-documents").SourceDocument[];
   id: string;
   title: string;
@@ -114,6 +127,8 @@ export interface Deck {
 export type DeckMetaPatch = Partial<
   Pick<
     Deck,
+    | "teachingVerification"
+    | "exportMode"
     | "sourceDocuments"
     | "title"
     | "topic"

@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createServer as httpServer } from "node:http";
 import { extname, resolve } from "node:path";
 const root = process.cwd();
@@ -17,29 +17,15 @@ const vite = await createServer({
 });
 let d, fixtures;
 try {
-  const { generateLocalDeck } = await vite.ssrLoadModule("/src/lib/generate-deck.ts");
-  const { reconcileDeck, classroomReady } = await vite.ssrLoadModule("/src/lib/deck-integrity.ts");
-  const { surfaceItems, surfaceSnapshot, attestClaim } = await vite.ssrLoadModule(
-    "/src/lib/surface-review.ts",
-  );
-  d = reconcileDeck(
-    generateLocalDeck({
-      topic: "Enzyme immobilization",
-      discipline: "Industrial microbiology",
-      level: "Undergraduate",
-      mode: "manual",
-      notes: "",
-      count: 1,
-    }),
-  );
-  const s = d.slides[0];
-  s.citations = [];
-  s.notes = "";
+  const { teachingFixture } = await import("./teaching-fixture.mjs");
+  const { deck, slide: s, review } = await teachingFixture(vite);
+  d = deck;
+  s.teaching.diagram = undefined;
   s.media = [
     {
       id: "audit-corrupt-image",
       kind: "photo",
-      title: "Audit figure",
+      title: "Synthetic software figure",
       src: "data:image/png;base64,aW52YWxpZA==",
       credit: "Synthetic software fixture",
       source: "https://example.org/figure",
@@ -47,64 +33,24 @@ try {
       keywords: [],
     },
   ];
-  const quote = "A source sentence retained for this controlled software audit fixture.";
-  d.sourceDocuments = [
-    {
-      id: "source",
-      title: "Audit source",
-      url: "https://openstax.org/books/microbiology/pages/1-introduction",
-      publisher: "OpenStax",
-      access: "textbook",
-      text: quote + " This is synthetic software evidence, not scientific validation.",
-      locator: "Audit paragraph",
-      license: "Audit fixture only",
-      retrievedAt: Date.now(),
-      publishedDate: "2026",
-      jurisdiction: "",
-      acquisition: "lecturer-import",
-    },
-  ];
-  for (const c of s.claims) {
-    c.status = "lecturer-reviewed";
-    c.evidence = [
-      {
-        sourceUrl: d.sourceDocuments[0].url,
-        quote,
-        locator: "Audit paragraph",
-        access: "textbook",
-        checkedAt: Date.now(),
-      },
-    ];
-  }
-  s.surfaceReviews = surfaceItems(s).map((i) => ({
-    field: i.field,
-    snapshot: surfaceSnapshot(d, s, i.field),
-    verdict: "supported",
-    rationale: "Controlled synthetic software fixture only.",
-    reviewedAt: Date.now(),
-    sourceUrl: d.sourceDocuments[0].url,
-    quote,
-    locator: "Audit paragraph",
-  }));
-  s.claims = s.claims.map((c) => attestClaim(d, c));
-  if (!classroomReady(d)) throw Error("Synthetic fixture must clear the evidence gate");
+  review();
+  const { teachingReady } = await vite.ssrLoadModule("/src/lib/teaching-readiness.ts");
+  if (!teachingReady(d)) throw Error("Synthetic fixture must clear the teaching gate");
   const invalidPng = structuredClone(d);
   s.media[0].src =
     "data:image/svg+xml;charset=utf-8," +
     encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>',
     );
-  s.surfaceReviews = surfaceItems(s).map((i) => ({
-    ...s.surfaceReviews.find((r) => r.field === i.field),
-    snapshot: surfaceSnapshot(d, s, i.field),
-  }));
+  review();
   const valid = structuredClone(d);
   s.media[0].src = "data:image/svg+xml;base64,aW52YWxpZA==";
-  s.surfaceReviews = surfaceItems(s).map((i) => ({
-    ...s.surfaceReviews.find((r) => r.field === i.field),
-    snapshot: surfaceSnapshot(d, s, i.field),
-  }));
-  fixtures = [invalidPng, structuredClone(d), valid];
+  review();
+  const invalidSvg = structuredClone(d);
+  s.media[0] = valid.slides[0].media[0];
+  s.teaching.diagram = "adsorption";
+  review();
+  fixtures = [invalidPng, invalidSvg, valid, structuredClone(d)];
 } finally {
   await vite.close();
 }
@@ -140,15 +86,13 @@ try {
     const page = await browser.newPage({ acceptDownloads: true });
     await page.goto(`http://127.0.0.1:${server.address().port}/JUW-MicroSlides/`);
     await page.getByRole("button", { name: "Library", exact: true }).click();
-    await page
-      .getByLabel("Restore backup", { exact: true })
-      .setInputFiles({
-        name: "audit.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(
-          JSON.stringify({ format: "juw-microslides", schemaVersion: 1, decks: [fixtures[i]] }),
-        ),
-      });
+    await page.getByLabel("Restore backup", { exact: true }).setInputFiles({
+      name: "audit.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(
+        JSON.stringify({ format: "juw-microslides", schemaVersion: 1, decks: [fixtures[i]] }),
+      ),
+    });
     await page.getByRole("button", { name: "Close", exact: true }).click();
     await page.locator("summary").filter({ hasText: "Lecture workspace" }).click();
     const button = page.getByRole("button", { name: "Export reviewed PPTX", exact: true });
@@ -171,6 +115,53 @@ try {
       if (xml.includes("Original image unavailable"))
         throw Error("Valid fixture exported a placeholder");
       console.log("PASS valid reviewed image still exports a PowerPoint package");
+      if (i === 3) {
+        if (!xml.includes('prst="ellipse"') || !xml.includes("Reversible surface interactions"))
+          throw Error("Schematic primitives must remain editable shapes and text");
+        const pdfEvent = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export reviewed PDF", exact: true }).click();
+        const pdf = await pdfEvent,
+          pdfBytes = await readFile(await pdf.path());
+        if (
+          !pdfBytes.subarray(0, 5).equals(Buffer.from("%PDF-")) ||
+          !pdfBytes.includes(Buffer.from("/FontFile2"))
+        )
+          throw Error("PDF must contain embedded TrueType fonts");
+        await mkdir("/workspace/screenshots", { recursive: true });
+        await writeFile("/workspace/screenshots/juw-teaching-fixture.pdf", pdfBytes);
+        const packEvent = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export teaching pack", exact: true }).click();
+        const pack = await JSZip.loadAsync(await readFile(await (await packEvent).path()));
+        for (const name of [
+          "slides.pptx",
+          "slides.pdf",
+          "references.txt",
+          "speaker-notes.md",
+          "manifest.json",
+          "accessible-transcript.html",
+          "editable-diagrams/slide-1.svg",
+          "fonts-LICENSE.txt",
+        ])
+          if (!pack.file(name)) throw Error("Teaching pack missing " + name);
+        const svg = await pack.file("editable-diagrams/slide-1.svg").async("string");
+        if (!svg.includes('xmlns="http://www.w3.org/2000/svg"'))
+          throw Error("Editable SVG is missing its namespace");
+        await page.getByRole("button", { name: "Present", exact: true }).click();
+        await page.getByLabel("Reveal one point at a time").check();
+        const point = page.locator("[data-teaching-content] li").last();
+        await point.waitFor({ state: "hidden" });
+        await page.keyboard.press("ArrowRight");
+        await point.waitFor({ state: "visible" });
+        await page.keyboard.press("Escape");
+        await page
+          .getByLabel("Core definition", { exact: true })
+          .fill("Changed scientific definition requiring fresh review.");
+        if (!(await button.isDisabled()))
+          throw Error("Editing teaching content must invalidate reviewed export");
+        console.log(
+          "PASS editable schematic shapes, embedded-font PDF, complete teaching pack, presentation reveal and edit invalidation",
+        );
+      }
     }
     await page.close();
   }

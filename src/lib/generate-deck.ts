@@ -1,3 +1,4 @@
+import { prepareTeachingDeck } from "./teaching";
 import { requestedCount } from "./deck-completion";
 import { reconcileDeck } from "./deck-integrity";
 import { JUW, lectureMeta } from "./brand";
@@ -79,7 +80,7 @@ const instruction =
 function eligible(section: TopicSection) {
   return section.bullets.length >= 2 && !section.bullets.some((b) => instruction.test(b.trim()));
 }
-export function generateLocalDeck(input: GenerateInput): Deck {
+function generateLocalDeckBase(input: GenerateInput): Deck {
   const topic = input.topic.trim() || "Microbiology";
   const profile = profileFor(topic);
   const wanted = requestedCount(input.count);
@@ -193,4 +194,8 @@ export function sampleDeck(): Deck {
     s.claims = [];
   });
   return reconcileDeck(deck);
+}
+
+export function generateLocalDeck(input: GenerateInput): Deck {
+  return prepareTeachingDeck(generateLocalDeckBase(input));
 }

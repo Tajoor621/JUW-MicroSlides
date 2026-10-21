@@ -50,7 +50,7 @@ export const THEME_TOKENS: Record<SlideTheme, ThemeTokens> = {
     slide: "#FAF7FF",
     ink: "#2A1240",
     navy: "#3D1560",
-    accent: "#C45C6A",
+    accent: "#7040A0",
     muted: "#6B5A7A",
     dark: false,
   },
