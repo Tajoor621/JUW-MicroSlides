@@ -96,7 +96,14 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
       ) : slide.layout === "clinical-case" && slide.caseData ? (
         <>
           <section className="space-y-3">
-            {field(`Case ${slide.caseData.caseNumber} — vignette`, slide.caseData.vignette)}
+            {slide.caseData.phase === "presentation" ? <>
+              {field(`Case ${slide.caseData.caseNumber} — vignette`, slide.caseData.vignette)}
+              {field("Differential diagnosis", slide.caseData.differential)}
+              {field("Laboratory work-up", slide.caseData.workup)}
+            </> : <>
+              {field("Expected results", slide.caseData.results)}
+              {field("Final diagnosis", slide.caseData.diagnosis)}
+            </>}
             {slide.media[0] && (
               <img
                 src={slide.media[0].src}
@@ -104,13 +111,9 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
                 className="max-h-40 max-w-full object-contain"
               />
             )}
-            {field("Differential diagnosis", slide.caseData.differential)}
-            {field("Laboratory work-up", slide.caseData.workup)}
           </section>
           <section className="space-y-3">
-            {field("Expected results", slide.caseData.results)}
-            {field("Final diagnosis", slide.caseData.diagnosis)}
-            {field("Management & infection control", slide.caseData.management)}
+            {slide.caseData.phase === "resolution" && field("Management & infection control", slide.caseData.management)}
             {slide.caseData.questions.map((q, i) => (
               <p key={i} className="font-semibold">
                 Q: {q}

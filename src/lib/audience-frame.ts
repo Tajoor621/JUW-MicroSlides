@@ -30,7 +30,7 @@ export function audienceFrame(deck: Deck, index: number, citationStyle: Citation
     sectionType: source.sectionType,
     scientificTable: source.scientificTable,
     protocol: source.protocol,
-    caseData: source.caseData,
+    caseData: source.caseData?.phase === "presentation" ? { ...source.caseData, results: "", diagnosis: "", management: "" } : source.caseData,
     chart: source.chart,
     taxonomy: source.taxonomy,
     revealSteps: source.revealSteps,

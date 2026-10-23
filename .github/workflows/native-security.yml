@@ -13,7 +13,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.1
       - uses: Swatinem/rust-cache@v2
       - run: cargo install cargo-audit --version 0.22.2 --locked
-      - run: cargo audit --file src-tauri/Cargo.lock --json > native-security.json
+      - name: Audit native dependencies and expose the diagnostic report
+        shell: bash
+        run: |
+          set +e
+          cargo audit --file src-tauri/Cargo.lock --json > native-security.json
+          audit_status=$?
+          cat native-security.json
+          exit "$audit_status"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

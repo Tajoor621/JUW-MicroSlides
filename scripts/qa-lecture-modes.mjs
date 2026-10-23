@@ -135,8 +135,15 @@ try {
   assert(
     (await page.getByLabel("vignette", { exact: true }).inputValue()).includes("Synthetic amber"),
   );
+  await page.getByLabel("diagnosis",{exact:true}).fill("Hidden resolution answer");
+  const caseStage=await page.locator("[data-slide-stage]").innerText();
+  assert(caseStage.includes("Synthetic amber presentation"));
+  assert(caseStage.includes("Fixture amber alternatives"));
+  assert(!caseStage.includes("Hidden resolution answer"));
+  await page.getByRole("button",{name:/04 clinical-case Case 1: resolution/i}).click();
+  assert((await page.locator("[data-slide-stage]").innerText()).includes("Synthetic amber placeholder"));
   checks.push(
-    "Clinical case mode creates three complete draft case pairs and populates labelled structured vignette fields",
+    "Clinical case mode creates three draft case pairs, populates labelled fields and keeps diagnoses hidden until the resolution phase",
   );
   await page.getByRole("button", { name: "Open generator", exact: true }).click();
   await page.getByLabel("Generation Mode", { exact: true }).selectOption("curriculum");

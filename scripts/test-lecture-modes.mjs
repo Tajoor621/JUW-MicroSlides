@@ -188,6 +188,9 @@ try {
   assert.match(caseContinuityProblem([extracted, otherCase], [true, false]), /mixes supplied/);
   assert.equal(caseContinuityProblem([extracted, otherCase], [true, true]), "");
   assert.equal(caseContinuityProblem([extracted, extracted], [false, false]), "");
+  const publicCase=audienceFrame({...reviewed,slides:[{...extracted,caseData:{...extracted.caseData,diagnosis:"Hidden until resolution",management:"Private case resolution"}}]},0,"Vancouver").slide;
+  assert.equal(publicCase.caseData.diagnosis,"");
+  assert.equal(publicCase.caseData.management,"");
   const invented = structuredClone(extracted);
   invented.caseData.questions = ["Invented scientific assumption?"];
   assert.deepEqual(
