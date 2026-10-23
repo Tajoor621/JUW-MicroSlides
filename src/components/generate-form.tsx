@@ -102,7 +102,7 @@ export function GenerateForm({
       preparedBy: draftNow.preparedBy || landing?.preparedBy || JUW.preparedBy,
       department: landing?.department || JUW.department,
       generationMode: draftNow.generationMode || "standard",
-      moduleTopics: draftNow.moduleTopics,
+      moduleTopics: draftNow.generationMode === "curriculum" ? draftNow.moduleTopics : undefined,
       includeObjectives: draftNow.includeObjectives !== false,
       includeAssessment: !!draftNow.includeAssessment,
       clinicalCases: draftNow.clinicalCases || 3,

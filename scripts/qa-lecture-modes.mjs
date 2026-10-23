@@ -167,8 +167,22 @@ try {
   assert.equal(series.length, 2);
   assert(series.every((d) => d.slides.length === 4));
   assert.equal(series[1].courseSeries.prerequisites[0], series[0].id);
+  await page.getByRole("button",{name:"Close",exact:true}).click();
+  await page.getByRole("button",{name:"Open generator",exact:true}).click();
+  await page.getByLabel("Curriculum lecture topics",{exact:true}).fill("Unfinished curriculum topic");
+  await page.getByLabel("Generation Mode",{exact:true}).selectOption("standard");
+  await page.locator("#gen-topic").fill("Enzyme immobilization");
+  await page.locator("#gen-count").fill("1");
+  await page.getByRole("button",{name:"Generate deck",exact:true}).click();
+  await page.getByRole("button",{name:"Open generator",exact:true}).waitFor({timeout:30000});
+  await page.getByRole("button",{name:"Library",exact:true}).click();
+  const shortBackupEvent=page.waitForEvent("download");
+  await page.getByRole("button",{name:"Current deck backup",exact:true}).click();
+  const shortBackup=JSON.parse(await readFile(await(await shortBackupEvent).path(),"utf8"));
+  assert.equal(shortBackup.decks[0].slides.length,1);
+  assert.equal(shortBackup.decks[0].lectureOptions.moduleTopics,undefined);
   checks.push(
-    "Curriculum generation saves both lectures atomically with four slides each, shared course identity and linked prerequisites",
+    "Curriculum generation saves linked lectures atomically; unfinished curriculum input cannot corrupt a later standard lecture backup",
   );
   assert.deepEqual(errors, []);
   await writeFile(

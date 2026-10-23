@@ -36,9 +36,10 @@ export async function generateCourseModule(
   if (
     topics.length < 2 ||
     topics.length > 12 ||
+    topics.some(topic => topic.length > 500) ||
     new Set(topics.map((t) => t.toLowerCase())).size !== topics.length
   )
-    throw Error("Enter 2–12 distinct curriculum lecture topics, one per line.");
+    throw Error("Enter 2–12 distinct curriculum lecture topics, up to 500 characters each, one per line.");
   const courseId = uid("course"),
     decks: Deck[] = [];
   for (const [i, topic] of topics.entries()) {
