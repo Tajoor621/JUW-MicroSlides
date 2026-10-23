@@ -1,3 +1,4 @@
+import { fetchPubmedAbstracts } from "./pubmed-abstracts";
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { statementSimilarity, reconcileClaims } from "./deck-integrity";
 import type { Deck, GenerateInput, Slide, Citation } from "./types";
@@ -48,6 +49,12 @@ const aliases = [
   ["microbiology", "microbial", "microorganism", "microorganisms"],
   ["qpcr", "quantitative pcr", "real-time pcr"],
   ["biofilm", "biofilms"],
+  ["stain", "staining", "stains"],
+  [
+    "mrsa",
+    "methicillin-resistant staphylococcus aureus",
+    "methicillin resistant staphylococcus aureus",
+  ],
   ["nitrogen fixation", "diazotroph", "diazotrophy"],
 ];
 const generic = new Set([
@@ -76,13 +83,43 @@ const generic = new Set([
   "study",
   "microbiology",
   "microbial",
+  "please",
+  "provide",
+  "detailed",
+  "comprehensive",
+  "complete",
+  "full",
+  "cover",
+  "covering",
+  "including",
+  "include",
+  "their",
+  "these",
+  "this",
+  "that",
+  "into",
+  "from",
+  "what",
+  "how",
+  "can",
+  "you",
 ]);
 function termsFor(topic: string) {
-  const terms = topicTerms(topic).filter((t) => !generic.has(t));
+  const terms = [...new Set(topicTerms(topic))].filter((t) => !generic.has(t) && !/^\d+$/.test(t));
   return terms.length ? terms : ["microbiology"];
 }
 function variants(term: string) {
   return aliases.find((group) => group.includes(term)) ?? [term];
+}
+const taxonGroups = [
+  ["bacteria", "bacterial", "bacterium", "bacteriology"],
+  ["archaea", "archaeal", "archaeon"],
+  ["fungi", "fungal", "fungus", "mycology"],
+  ["virus", "viruses", "viral", "virology"],
+  ["parasite", "parasites", "parasitic", "parasitology"],
+];
+function topicTaxa(terms: string[]) {
+  return taxonGroups.filter((group) => terms.some((term) => group.includes(term)));
 }
 function relevance(topic: string, body: string) {
   const terms = termsFor(topic),
@@ -101,6 +138,19 @@ function relevance(topic: string, body: string) {
   ];
   const required = taxa.filter((taxon) => taxon.test(topic));
   if (required.length === 1 && !required[0].test(body)) return 0;
+  // A comparative lecture can use a source on one requested taxon. Require the
+  // shared scientific concept too; unrelated taxon-only papers remain excluded.
+  const groups = topicTaxa(terms);
+  if (groups.length > 1) {
+    const anchors = terms.filter((term) => !groups.some((group) => group.includes(term)));
+    if (!groups.some((group) => group.some((term) => lower.includes(term.replace(/s$/, "")))))
+      return 0;
+    if (anchors.length)
+      return (
+        anchors.filter((term) => variants(term).some((v) => lower.includes(v.replace(/s$/, ""))))
+          .length / anchors.length
+      );
+  }
   return (
     terms.filter((term) => variants(term).some((v) => lower.includes(v.replace(/s$/, "")))).length /
     terms.length
@@ -125,10 +175,27 @@ export function researchQueries(topic: string) {
     profileFor(topic)
       ?.sections.slice(0, 6)
       .map((s) => `"${s.title}"`) ?? [];
+  const groups = topicTaxa(terms);
+  const anchors = terms.filter((term) => !groups.some((group) => group.includes(term)));
+  const comparative =
+    groups.length > 1
+      ? `${anchors
+          .map(
+            (term) =>
+              `(${variants(term)
+                .map((v) => `"${v}"`)
+                .join(" OR ")})`,
+          )
+          .join(" AND ")}${anchors.length ? " AND " : ""}(${groups
+          .flat()
+          .map((v) => `"${v}"`)
+          .join(" OR ")})`
+      : "";
   return [
     ...new Set([
       `"${clean}"`,
       expanded,
+      comparative,
       concepts.length ? `(${concepts.join(" OR ")})` : terms.join(" "),
     ]),
   ].filter(Boolean);
@@ -332,7 +399,7 @@ export async function enrichTopicEvidence(
   const abort = () => controller.abort(signal?.reason);
   if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
-  const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 75000);
+  const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 120000);
   const cacheKey = `research-passages-v3:${input.topic.toLowerCase().trim().slice(0, 240)}`;
   const papers = new Map<string, Paper>();
   try {
@@ -355,7 +422,10 @@ export async function enrichTopicEvidence(
   let successful = 0;
   const requestErrors: string[] = [];
   const fullTextAttempts = new Set<string>();
-  async function expandFullTexts() {
+  async function expandFullTexts(optional = false) {
+    const fullTextSignal = optional
+      ? AbortSignal.any([controller.signal, AbortSignal.timeout(4000)])
+      : controller.signal;
     const candidates = [...papers.values()]
       .filter(
         (p) =>
@@ -372,7 +442,7 @@ export async function enrichTopicEvidence(
       const results = await Promise.allSettled(
         batch.map(async (p) => {
           fullTextAttempts.add(p.pmcid!);
-          const fullBody = await fetchOpenArticle(p.pmcid!, controller.signal);
+          const fullBody = await fetchOpenArticle(p.pmcid!, fullTextSignal);
           return { p, fullBody };
         }),
       );
@@ -454,8 +524,17 @@ export async function enrichTopicEvidence(
         }
       if (requestErrors.length && work.length && round < 2 && !controller.signal.aborted)
         await new Promise((resolve) => setTimeout(resolve, 500 * (round + 1)));
-      onProgress?.("Retrieving licensed open full text and screening publication notices…");
-      await expandFullTexts();
+      // Prefer full text, but bound optional retrieval when usable abstracts already
+      // cover the count. A slow article endpoint must not block the whole lecture.
+      evidence = sourceSlides(
+        [...papers.values()],
+        input.topic,
+        new Set(bodyKeys),
+        needed,
+        target === 1,
+      );
+      onProgress?.("Screening sources and retrieving available open full text…");
+      await expandFullTexts(evidence.length >= needed);
       try {
         await writeLocalRecord(
           cacheKey,
@@ -473,11 +552,40 @@ export async function enrichTopicEvidence(
       );
       if (signal?.aborted) throw signal.reason;
     }
+    if (evidence.length < needed && !controller.signal.aborted) {
+      onProgress?.("Trying PubMed abstracts through an independent research provider…");
+      try {
+        const fallback = await fetchPubmedAbstracts(
+          queries.map((q) => `(${q})`).join(" OR "),
+          controller.signal,
+        );
+        successful++;
+        deck = { ...deck, lastLiteratureCheck: Date.now() };
+        for (const p of fallback) {
+          const key = (p.doi || p.pmid).toLowerCase();
+          if (!papers.has(key)) papers.set(key, p);
+        }
+        evidence = sourceSlides(
+          [...papers.values()],
+          input.topic,
+          new Set(bodyKeys),
+          needed,
+          target === 1,
+        );
+        await writeLocalRecord(
+          cacheKey,
+          JSON.stringify({ retrievedAt: Date.now(), papers: [...papers.values()] }),
+        ).catch(() => undefined);
+      } catch (error) {
+        signal?.throwIfAborted();
+        requestErrors.push(error instanceof Error ? error.message : "PubMed unavailable");
+      }
+    }
     if (evidence.length < needed)
       throw new DeckCompletionError(
         target,
         original.length + evidence.length,
-        `${successful ? "The research service supplied too little usable text." : `No research request succeeded (${requestErrors.at(-1) || "service unavailable"}). Reconnect and retry, or use attributed cached sources.`} Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
+        `${successful ? `Research sources supplied too little relevant text for “${input.topic}”.` : `No research request succeeded (${requestErrors.at(-1) || "service unavailable"}). Reconnect and retry, or use attributed cached sources.`} ${requestErrors.length ? ` Last provider error: ${requestErrors.at(-1)}.` : ""} Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
       );
     const added = evidence.slice(0, needed);
     if (target === 1 && added[0]) added[0] = { ...added[0], title: input.topic };

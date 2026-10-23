@@ -112,6 +112,74 @@ try {
   assert.throws(() => assertCompleteDeck(generateLocalDeck(unknown), 25), /not complete yet/);
   checks++;
   console.log("PASS missing evidence cannot be saved as a successful short deck");
+  // A real provider outage must recover through independently retrieved abstracts.
+  const { parsePubmedAbstracts, fetchPubmedAbstracts } = await server.ssrLoadModule(
+    "/src/lib/pubmed-abstracts.ts",
+  );
+  const fixtureXml = `<PubmedArticleSet><PubmedArticle><MedlineCitation><PMID>920001</PMID><Article><ArticleTitle>Bacterial quorum signalling software fixture</ArticleTitle><Abstract><AbstractText>Bacterial quorum <i>signalling</i> in fixture dataset 17 provides an attributed sentence long enough for software testing. A separate bacterial quorum signalling observation in dataset 17 is synthetic test material and requires review.</AbstractText></Abstract><Journal><Title>Software fixture</Title><JournalIssue><PubDate><Year>2026</Year></PubDate></JournalIssue></Journal></Article></MedlineCitation></PubmedArticle></PubmedArticleSet>`;
+  assert.match(
+    parsePubmedAbstracts(fixtureXml, ["920001"])[0].abstractText,
+    /quorum signalling in/,
+  );
+  assert.throws(() => parsePubmedAbstracts(fixtureXml, ["123"]), /identity mismatch/);
+  assert.throws(
+    () => parsePubmedAbstracts('<!ENTITY bad "payload">' + fixtureXml, ["920001"]),
+    /Invalid/,
+  );
+  const ownIds = fixtureXml.replace(
+    "</PubmedArticle>",
+    '<PubmedData><ReferenceList><Reference><ArticleIdList><ArticleId IdType="doi">10.1234/foreign</ArticleId></ArticleIdList></Reference></ReferenceList><ArticleIdList><ArticleId IdType="doi">10.1234/original</ArticleId></ArticleIdList></PubmedData></PubmedArticle>',
+  );
+  assert.equal(parsePubmedAbstracts(ownIds, ["920001"])[0].doi, "10.1234/original");
+  const manyIds = Array.from({ length: 60 }, (_, i) => String(930000 + i));
+  let batches = [];
+  globalThis.fetch = async (url) => {
+    if (String(url).includes("esearch.fcgi"))
+      return new Response(JSON.stringify({ esearchresult: { idlist: manyIds } }));
+    const ids = new URL(url).searchParams.get("id").split(",");
+    batches.push(ids);
+    const rows = ids.map((id) =>
+      fixtureXml.match(/<PubmedArticle>.*<\/PubmedArticle>/s)[0].replace("920001", id),
+    );
+    return new Response(`<PubmedArticleSet>${rows.join("")}</PubmedArticleSet>`);
+  };
+  assert.equal(
+    (await fetchPubmedAbstracts("software fixture", new AbortController().signal)).length,
+    60,
+  );
+  assert.deepEqual(
+    batches.map((b) => b.length),
+    [25, 25, 10],
+  );
+  const noSource = { ...input, topic: "Bacterial quorum signalling", count: 2 };
+  const failoverSeed = generateLocalDeck(noSource);
+  failoverSeed.slides = [failoverSeed.slides[0]];
+  globalThis.fetch = async (url) =>
+    String(url).includes("esearch.fcgi")
+      ? new Response(JSON.stringify({ esearchresult: { idlist: ["920001"] } }))
+      : String(url).includes("efetch.fcgi")
+        ? new Response(fixtureXml)
+        : new Response(JSON.stringify({ resultList: { result: [] } }));
+  const recovered = await enrichTopicEvidence(failoverSeed, noSource);
+  assert.equal(recovered.slides.length, 2);
+  assert.equal(recovered.slides[1].citations[0].pmid, "920001");
+  assert.match(recovered.slides[1].notes, /publication abstract/);
+  assert(recovered.slides[1].claims.every((c) => c.status === "supported-excerpt"));
+  assert.equal(failoverSeed.slides.length, 1, "Failover must not mutate the active source deck");
+  assert(
+    researchQueries("Please create a detailed presentation on bacterial genomes").some(
+      (q) => !/please|create|detailed|presentation/.test(q),
+    ),
+  );
+  assert(
+    researchQueries("Genomes in bacteria archaea and fungi").some(
+      (q) => q.includes('"bacteria" OR "bacterial"') && !q.includes(') AND ("archaea"'),
+    ),
+  );
+  checks++;
+  console.log(
+    "PASS independent PubMed abstract failover, ordered inline text, identity/entity rejection and comparative queries",
+  );
   const { generateLocalAiDeck } = await server.ssrLoadModule("/src/lib/local-ai.ts");
   globalThis.localStorage = {
     getItem: () => JSON.stringify({ url: "http://localhost:11434", model: "test-model" }),

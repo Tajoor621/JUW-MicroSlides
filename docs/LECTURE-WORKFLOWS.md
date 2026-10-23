@@ -59,3 +59,11 @@ JSON and portable recovery retain all structured fields and course membership. M
 Automated tests use explicitly synthetic software material. They cannot certify scientific accuracy, specialist credentials, real-case management, guideline applicability, actual Office/Google Slides rendering or physical classroom accessibility. Existing independent-review and physical qualification requirements remain open. These improvements do not add a hosted AI service, trusted installer signing, PPTX font embedding or PDF-UA certification. Formal source scarcity remains an explicit generation/review condition rather than a fabricated success.
 
 The [23 October software validation record](qualification/v7-software-workflows-2026-10-23.md) lists the exercised paths and remaining qualifications.
+
+## Topic generation and theme recovery
+
+The initial Enzyme Immobilization deck is a labelled saved example. Topic chips fill the request; Generate deck starts generation and saves a separate deck only when the exact requested count is complete. An unsuccessful request displays its topic, requested count and source error inline, explicitly naming the deck still displayed. It preserves the existing library. Edit the request, add attributed notes or retry when sources are available.
+
+Research uses complementary Europe PMC queries and a separately retrieved PubMed abstract fallback when the first provider cannot supply enough relevant passages. Multi-taxon comparison searches permit sources about an individual requested taxon only when they also address the shared scientific concept. Unknown, mismatched, preprint and notice-bearing PubMed records cannot silently become supporting evidence. Abstracts retain abstract-level provenance; no identifiers or scientific text are generated to fill gaps.
+
+Match the research topic is the default visual emphasis for new requests. Explicit visual emphasis remains available. Theme controls work on the introduction as well as content slides. Apply to → Entire deck coordinates all slides; This slide changes only the selected slide. Locked slides and legacy archives block deck-wide restyling. Logos, editable text, the source collection and scientific export gates are preserved. Topic ornaments remain decorative and never count as a scientific illustration.

@@ -43,6 +43,9 @@ jobs:
       - run: npm run qa:lecture
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
+      - run: npm run qa:topic-recovery
+        env:
+          JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
       - run: npm run qa:reviewed-export
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa

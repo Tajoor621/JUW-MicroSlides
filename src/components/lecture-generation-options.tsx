@@ -105,11 +105,12 @@ export function LectureGenerationOptions({
             Preferred visual style emphasis
             <select
               className={select}
-              value={draft.visualEmphasis || "morphology"}
+              value={draft.visualEmphasis || "auto"}
               onChange={(e) =>
                 patch({ visualEmphasis: e.target.value as LectureOptions["visualEmphasis"] })
               }
             >
+              <option value="auto">Match the research topic</option>
               <option value="morphology">Morphology & Stains</option>
               <option value="molecular">Molecular</option>
               <option value="clinical">Clinical</option>

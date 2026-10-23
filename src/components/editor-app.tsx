@@ -26,7 +26,7 @@ import { JUW } from "@/lib/brand";
 import { useDeckStore } from "@/lib/deck-store";
 import { exportPptx } from "@/lib/export-pptx";
 import { CITATION_STYLES, LAYOUTS, type CitationStyle, type Layout } from "@/lib/types";
-import { SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
+import { researchTheme, SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
 import { GenerateDialog } from "./generate-dialog";
 import { GeneratePanel } from "./generate-panel";
 import { InspectorPanel } from "./inspector-panel";
@@ -94,6 +94,13 @@ export function EditorApp() {
   const setSettingsOpen = useDeckStore((s) => s.setSettingsOpen);
   const setTheme = useDeckStore((s) => s.setTheme);
   const generationMode = useDeckStore((s) => s.generationMode);
+  const failure = useDeckStore((s) => s.generationFailure);
+  const generatorOpen = useDeckStore((s) => s.generatorOpen);
+  const [themeScope, setThemeScope] = useState("deck");
+  function applyTheme(theme: (typeof SLIDE_THEMES)[number]) {
+    if (themeScope === "deck") useDeckStore.getState().applyDeckTheme(theme);
+    else useDeckStore.getState().patchSlide(index, { theme });
+  }
 
   useEffect(() => {
     const finish = () => useDeckStore.getState().hydrateSample();
@@ -405,6 +412,42 @@ export function EditorApp() {
 
           <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto bg-bg p-3 sm:p-5">
             <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-3">
+              <div
+                className="rounded border border-border bg-surface px-3 py-2 text-sm"
+                aria-label="Current deck"
+              >
+                <strong>
+                  {deck?.id === "sample-enzyme-mic4511" ? "Example deck" : "Editing deck"}:
+                </strong>{" "}
+                {deck?.topic}
+                {deck?.id === "sample-enzyme-mic4511" && (
+                  <p className="mt-1 text-xs text-muted">
+                    This is a saved example, not your new generation. Enter a topic below and choose
+                    Generate deck.
+                  </p>
+                )}
+              </div>
+              {failure && !generatorOpen && (
+                <section
+                  role="alert"
+                  className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
+                >
+                  <p className="font-semibold">
+                    Generation stopped: {failure.topic} · {failure.count} requested slides
+                  </p>
+                  <p>{failure.message}</p>
+                  <p className="text-xs text-muted">
+                    Still displaying “{deck?.topic}”. Its content has not been replaced or renamed.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => useDeckStore.getState().setGeneratorOpen(true)}
+                  >
+                    Edit request and retry
+                  </Button>
+                </section>
+              )}
               <GeneratePanel />
               {deck?.contentWarnings?.length ? (
                 <div
@@ -435,13 +478,8 @@ export function EditorApp() {
                 <label className="flex items-center gap-2">
                   Theme
                   <select
-                    value={slide?.layout === "title" ? "classic" : (slide?.theme ?? "classic")}
-                    disabled={slide?.layout === "title"}
-                    onChange={(e) =>
-                      useDeckStore.getState().patchSlide(index, {
-                        theme: e.target.value as (typeof SLIDE_THEMES)[number],
-                      })
-                    }
+                    value={slide?.theme ?? "classic"}
+                    onChange={(e) => applyTheme(e.target.value as (typeof SLIDE_THEMES)[number])}
                     className="h-10 rounded-sm border border-border bg-elevated px-2 text-sm text-fg disabled:opacity-60"
                     aria-label="Slide theme"
                   >
@@ -452,26 +490,39 @@ export function EditorApp() {
                     ))}
                   </select>
                 </label>
+                <label className="flex items-center gap-2">
+                  Apply to
+                  <select
+                    aria-label="Theme applies to"
+                    value={themeScope}
+                    onChange={(e) => setThemeScope(e.target.value)}
+                    className="min-h-11 rounded-sm border border-border bg-elevated px-2 text-sm text-fg"
+                  >
+                    <option value="deck">Entire deck</option>
+                    <option value="slide">This slide</option>
+                  </select>
+                </label>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    deck && applyTheme(researchTheme(deck.topic, deck.discipline, "content"))
+                  }
+                >
+                  Match topic
+                </Button>
                 <div className="flex flex-wrap gap-1">
                   {SLIDE_THEMES.map((t) => {
                     const tok = THEME_TOKENS[t];
-                    const active =
-                      (slide?.layout === "title" ? "classic" : (slide?.theme ?? "classic")) === t;
+                    const active = (slide?.theme ?? "classic") === t;
                     return (
                       <button
                         key={t}
                         type="button"
-                        title={
-                          slide?.layout === "title"
-                            ? "The introduction keeps the official JUW frame"
-                            : tok.blurb
-                        }
-                        disabled={slide?.layout === "title" && t !== "classic"}
-                        onClick={() => {
-                          if (slide?.layout === "title") return;
-                          useDeckStore.getState().patchSlide(index, { theme: t });
-                        }}
-                        className={`h-8 rounded-sm border px-1.5 text-[10px] uppercase tracking-wide disabled:opacity-40 ${active ? "ring-2 ring-accent" : ""}`}
+                        title={tok.blurb}
+                        aria-pressed={active}
+                        onClick={() => applyTheme(t)}
+                        className={`min-h-11 rounded-sm border px-1.5 text-[10px] uppercase tracking-wide disabled:opacity-40 ${active ? "ring-2 ring-accent" : ""}`}
                         style={{ background: tok.slide, color: tok.ink, borderColor: tok.frame }}
                       >
                         {tok.label.split(" ")[0]}
@@ -532,7 +583,13 @@ export function EditorApp() {
       <SettingsDialog />
       <Presenter />
       {printing ? <PrintRoot /> : null}
-      <Toaster theme={theme === "dark" ? "dark" : "light"} position="bottom-right" />
+      <Toaster
+        theme={theme === "dark" ? "dark" : "light"}
+        position="bottom-right"
+        closeButton
+        visibleToasts={1}
+        duration={5000}
+      />
     </TooltipProvider>
   );
 }

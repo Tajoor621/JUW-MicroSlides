@@ -178,14 +178,19 @@ export function themeVars(id?: string | null): Record<string, string> {
   };
 }
 export function researchTheme(topic: string, discipline: string, layout: string): SlideTheme {
-  if (layout === "title") return "classic";
+  void layout; // Branding is fixed; topic palettes apply to introductions too.
   const subject = `${topic} ${discipline}`.toLowerCase();
+  if (/gram.?stain|acid.?fast/.test(subject)) return "gram";
+  if (/fluorescen|confocal/.test(subject)) return "fluorescence";
+  if (/outbreak|epidem|one health|transmission/.test(subject)) return "outbreak";
+  if (/virus|viral|virolog|influenza|phage|sars/.test(subject)) return "molecular";
   if (/enzyme|biotech|industrial|food|dairy|ferment/.test(subject)) return "culture";
-  if (/genom|genetic|dna|rna|pcr|molecular/.test(subject)) return "molecular";
+  if (/genom|chromosom|nucleoid|plasmid|genetic|dna|rna|pcr|molecular/.test(subject)) return "molecular";
   if (/fung|myco|candida|yeast/.test(subject)) return "mycology";
   if (/parasit|malaria|plasmod/.test(subject)) return "parasitology";
   if (/alga|phycolog/.test(subject)) return "phycology";
   if (/clinical|medical|immun|antimicrobial/.test(subject)) return "clinical";
   if (/environment|soil|outbreak|epidem/.test(subject)) return "outbreak";
+  if (/bacteriol/.test(subject)) return "gram";
   return "classic";
 }

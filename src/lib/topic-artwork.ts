@@ -4,7 +4,7 @@ export function topicArtKind(
 ): "genome" | "enzyme" | "fungal" | "parasite" | "virus" | "bacterium" {
   const t = topic.toLowerCase();
   if (/malaria|plasmod|parasite|helminth|protozo/.test(t)) return "parasite";
-  if (/fung|myco|yeast|mould|mold/.test(t)) return "fungal";
+  if (/fung|myco|yeast|mould|mold|candida|aspergill|cryptococc/.test(t)) return "fungal";
   if (/virus|viral|influenza|phage|coronavirus|sars/.test(t)) return "virus";
   if (/enzym|immobili[sz]|cataly|protein|ferment/.test(t)) return "enzyme";
   if (/genom|chromosom|nucleoid|\bdna\b|\brna\b|pcr|genetic|molecular/.test(t)) return "genome";

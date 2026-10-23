@@ -48,6 +48,7 @@ export function introSlide(topic: string, notes?: string, discipline?: string): 
       "title",
     ),
     subtitle: profile?.scope || `Research focus: ${topic.trim()}`,
+    theme: researchTheme(topic, discipline || "", "title"),
   };
 }
 export function withOfficialIntro(deck: Deck, input: GenerateInput): Deck {
@@ -62,7 +63,10 @@ export function withOfficialIntro(deck: Deck, input: GenerateInput): Deck {
   const intro = introSlide(topic, input.notes, input.discipline);
   const existing = deck.slides[0]?.layout === "title";
   const slides = existing
-    ? [{ ...deck.slides[0], ...intro, id: deck.slides[0].id }, ...deck.slides.slice(1)]
+    ? [
+        { ...deck.slides[0], ...intro, theme: deck.slides[0].theme, id: deck.slides[0].id },
+        ...deck.slides.slice(1),
+      ]
     : [intro, ...deck.slides];
   return {
     ...deck,
