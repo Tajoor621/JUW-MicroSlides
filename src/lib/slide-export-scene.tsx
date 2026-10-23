@@ -80,7 +80,9 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
       ),
     );
     const stage = host.querySelector<HTMLElement>("[data-slide-stage]")!;
-    const teaching = stage.querySelector<HTMLElement>("[data-teaching-content]");
+    const teaching = stage.querySelector<HTMLElement>(
+      "[data-teaching-content],[data-lecture-content]",
+    );
     if (
       teaching &&
       (teaching.scrollHeight > teaching.clientHeight + 2 ||

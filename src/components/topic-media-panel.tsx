@@ -1,3 +1,6 @@
+import { MEDIA_TAGS } from "@/lib/lecture-schema";
+import { taggedMedia, mediaAttachmentProblem } from "@/lib/lecture-media";
+import { ScientificDiagramTools } from "./scientific-diagram-tools";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
@@ -105,6 +108,7 @@ export function TopicMediaPanel() {
   if (!deck || !slide) return <p>Select a deck and a slide.</p>;
   return (
     <div className="space-y-4">
+      <ScientificDiagramTools />
       <div className="rounded border border-border bg-elevated p-3">
         <h3 className="font-serif text-base">Research media collection</h3>
         <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -381,6 +385,25 @@ function MediaCard({
   onAttach: () => void;
 }) {
   const [failed, setFailed] = useState(false);
+  function update(patch: Partial<MediaItem>) {
+    useDeckStore.setState((state) => ({
+      library: state.library.map((d) =>
+        d.id !== state.activeId
+          ? d
+          : {
+              ...d,
+              updatedAt: Date.now(),
+              mediaPool: d.mediaPool.some((m) => m.id === item.id)
+                ? d.mediaPool.map((m) => (m.id === item.id ? { ...m, ...patch } : m))
+                : [...d.mediaPool, { ...item, ...patch }],
+              slides: d.slides.map((s) => ({
+                ...s,
+                media: s.media.map((m) => (m.id === item.id ? { ...m, ...patch } : m)),
+              })),
+            },
+      ),
+    }));
+  }
   return (
     <article className="overflow-hidden rounded border border-border bg-elevated">
       <div className="bg-surface p-2">
@@ -411,6 +434,38 @@ function MediaCard({
       </div>
       <div className="space-y-2 p-3">
         <h4 className="text-sm font-medium leading-snug">{item.title}</h4>
+        <label className="block text-xs">
+          Scientific media tag
+          <select
+            className="min-h-11 w-full rounded border bg-elevated p-2"
+            value={taggedMedia(item).tags![0]}
+            onChange={(e) =>
+              update({ tags: [e.target.value as NonNullable<MediaItem["tags"]>[number]] })
+            }
+          >
+            {MEDIA_TAGS.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+        <details>
+          <summary className="text-xs">Attribution & reuse terms</summary>
+          {(["source", "credit", "license"] as const).map((key) => (
+            <label key={key} className="block text-xs">
+              {key}
+              <input
+                className="min-h-11 w-full rounded border bg-elevated p-2"
+                value={item[key]}
+                onChange={(e) => update({ [key]: e.target.value })}
+                maxLength={2000}
+              />
+            </label>
+          ))}
+        </details>
+        {mediaAttachmentProblem(item) && (
+          <p className="text-xs text-muted">{mediaAttachmentProblem(item)}</p>
+        )}
+
         <p className="text-xs text-muted">
           {item.provider || "Provided media"} · {item.credit} · {item.license}
         </p>
@@ -439,7 +494,12 @@ function MediaCard({
             {downloading ? "Downloading…" : "Download file"}
           </Button>
           {item.kind !== "video" && (
-            <Button size="sm" variant="accent" disabled={attached} onClick={onAttach}>
+            <Button
+              size="sm"
+              variant="accent"
+              disabled={attached || !!mediaAttachmentProblem(item)}
+              onClick={onAttach}
+            >
               {attached ? "Attached" : "Attach to selected slide"}
             </Button>
           )}

@@ -1,3 +1,4 @@
+import { lectureSlideFields, lectureDeckFields, MEDIA_TAGS } from "./lecture-schema";
 import { teachingVerificationSchema } from "./teaching-verification";
 import { z } from "zod";
 import { teachingSchema } from "./teaching-schema";
@@ -18,6 +19,7 @@ const safeSrc = z
     "Unsupported image URL",
   );
 const media = z.object({
+  tags: z.array(z.enum(MEDIA_TAGS)).max(10).optional(),
   id: text,
   kind: z.enum(["micrograph", "diagram", "icon", "photo", "gif", "chart", "video"]),
   title: text,
@@ -88,6 +90,7 @@ const claim = z.object({
     .max(100),
 });
 const slide = z.object({
+  ...lectureSlideFields,
   teaching: teachingSchema.optional(),
   claims: z.array(claim).max(500).optional(),
   surfaceReviews: z.array(surfaceReviewSchema).max(103).optional(),
@@ -106,9 +109,10 @@ const slide = z.object({
   media: z.array(media).max(100),
 });
 export const deckSchema = z.object({
+  ...lectureDeckFields,
   teachingVerification: teachingVerificationSchema.optional(),
-  exportMode: z.enum(["light", "dark"]).optional(),
-  sourceDocuments: z.array(sourceDocumentSchema).max(30).optional(),
+  exportMode: z.enum(["light", "dark", "high-contrast"]).optional(),
+  sourceDocuments: z.array(sourceDocumentSchema).max(200).optional(),
   id: text,
   title: text,
   topic: text,
@@ -147,5 +151,6 @@ export const backupSchema = z.object({
 });
 export function parseBackup(raw: string) {
   if (raw.length > 100000000) throw new Error("Backup exceeds 100 MB.");
-  return backupSchema.parse(JSON.parse(raw)).decks;
+  const embedded = raw.match(/```juw-microslides-json\s*\n([\s\S]*?)\n```/);
+  return backupSchema.parse(JSON.parse(embedded ? embedded[1] : raw)).decks;
 }

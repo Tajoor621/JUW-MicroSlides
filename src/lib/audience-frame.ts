@@ -23,6 +23,23 @@ export function audienceFrame(deck: Deck, index: number, citationStyle: Citation
     teachingVerification: deck.teachingVerification,
   };
   const slide: Slide = {
+    learningObjectives: source.learningObjectives,
+    clinicalPearl: source.clinicalPearl,
+    keyTakeaway: source.keyTakeaway,
+    difficulty: source.difficulty,
+    sectionType: source.sectionType,
+    scientificTable: source.scientificTable,
+    protocol: source.protocol,
+    caseData: source.caseData?.phase === "presentation" ? { ...source.caseData, results: "", diagnosis: "", management: "" } : source.caseData,
+    chart: source.chart,
+    taxonomy: source.taxonomy,
+    revealSteps: source.revealSteps,
+    assessment: source.assessment?.map((q) => ({
+      ...q,
+      answer: "",
+      rationale: "",
+      sourceUrl: undefined,
+    })),
     id: source.id,
     layout: source.layout,
     theme: source.theme,

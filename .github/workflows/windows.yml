@@ -23,10 +23,12 @@ jobs:
         with:
           workspaces: src-tauri -> target
           cache-on-failure: true
+      - run: npm run test:version-lock
       - run: npm run typecheck
       - run: npm run test:scientific
       - run: npm run test:professional
       - run: npm run test:audit
+      - run: npm run test:lecture
       - run: npm run test:teaching
       - run: npm run test:release
       - run: npm run test:lecturer

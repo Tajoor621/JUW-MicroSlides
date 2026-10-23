@@ -432,6 +432,7 @@ export async function enrichTopicEvidence(
       for (const [position, result] of responses.entries())
         if (result.status === "fulfilled") {
           successful++;
+          deck = { ...deck, lastLiteratureCheck: Date.now() };
           for (const p of result.value.papers) {
             const key = (
               p.doi ||

@@ -583,6 +583,8 @@ try {
     figure.source = "https://example.org/synthetic-fixture";
     parityDeck.slides = parityDeck.slides.map((slide, i) => ({
       ...slide,
+      evidenceFlags: [],
+      learningObjectives: undefined, // This fixture tests the original layouts, not objectives.
       layout: i === 0 ? "title" : slide.layout === "title" ? "content" : slide.layout,
       teaching: {
         ...structuredClone(base.slide.teaching),

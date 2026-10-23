@@ -1,6 +1,6 @@
 # JUW-MicroSlides V6.2.1
 
-The owner has fixed the application version at **V6.2.1**. Keep this version for all future fixes and feature updates; identify revisions by commit and date instead.
+The application is permanently locked to **V6.2.1**. All structured lecture improvements are delivered as commit-based revisions of this version. Existing decks remain supported.
 
 A local-first microbiology lecture editor with editable slides, citations, presentation mode, PowerPoint export, and printable slides.
 
@@ -11,6 +11,12 @@ The GitHub Pages build is a separate static entry point; it does not upload or e
 The workflow `.github/workflows/pages.yml` checks types, lint, platform tests, research/data protection checks, and desktop/mobile browser workflows before deploying. In repository **Settings → Pages → Build and deployment**, choose **GitHub Actions**. Repository administration settings are not embedded in the source code. If Actions cannot publish because Pages is disabled, enable this setting and rerun the workflow.
 
 `npm run build` retains the original server/Vercel deployment. Server AI uses a server-side `XAI_API_KEY`; never place it in a VITE variable, committed file, or browser field. Provider availability/model names must be verified in your own provider account before enabling paid requests. The per-instance AI request quota is not a global billing cap; configure a provider spending limit before a public server deployment.
+
+## Structured lecture workflows
+
+Generate standard lectures, fixed-section pathogen profiles, laboratory methods, clinical case series, and multi-lecture curriculum modules. Contextual controls add Bloom-aligned objectives, optional assessment, focus depth and visual emphasis. Structured editors support protocols, cases, tables, charts, taxonomy, learning objectives, and clinical pearls.
+
+See [lecture workflow guide](docs/LECTURE-WORKFLOWS.md) for offline source-note formatting, minimum slide counts, scientific review requirements, course building, accessible exports and complete JSON/Markdown recovery. Missing protocol timing, diagnostic evidence or taxonomy data remain explicit review blockers. Software checks do not certify scientific accuracy or replace qualified instructor review.
 
 ## Everyday use
 
@@ -87,7 +93,7 @@ Run `npm run test:topics` for the topic/media/reviewer regression suite. `qa:pag
 
 ## Windows professional workspace (V6.2.1)
 
-Use the Lecture workspace bar for whole-deck audit, reviewed export, portable projects, recovery revisions, storage information, slide locks and inspected replacements. Evidence → Claim evidence records passage-level support and explicit lecturer review. Changing statements invalidates prior review. Ordinary Export PPTX remains available as a clearly marked draft when evidence is unresolved.
+Use the Lecture workspace bar for whole-deck audit, reviewed export, portable projects, recovery revisions, storage information, slide locks and inspected replacements. Evidence → Claim evidence records passage-level support and explicit lecturer review. Changing statements invalidates prior review. Teaching exports require the current reviewed revision; draft work remains recoverable through JSON, Markdown and portable projects.
 
 New decks are limited to exactly 1–50 slides, with no automatic agenda/conclusion/reading padding. Legacy oversized backups are preserved for recovery. Offline reuse requires available topic material or downloaded research; the app does not claim to know every topic offline.
 
@@ -109,7 +115,7 @@ The reproducible development calibration and reviewer completeness checks are do
 
 **Review → Assess returned reviewer forms** loads the original pack and both external reviewer forms, checks them against the current deck and evidence, and downloads an assessment offline. Complete self-attestations remain explicitly unverified and do not unlock reviewed export. The [real local MiniLM evaluation](docs/qualification/semantic-minilm-2026-10-20.json) failed to qualify the default threshold; review the measured limitations before relying on semantic screening.
 
-The V6.2.1 release-gate update adds explicit review for headings, notes and figures, blocks reviewed export on incomplete publication checks, and supports immediate local-model cancellation. The complete topic/count matrix and external semantic evaluation workflow are documented in [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md#enforced-export-and-qualification-workflow--21-october-2026). These are software capabilities; independent science review and physical release qualification remain pending.
+The V6.2.1 release-gate update added explicit review for headings, notes and figures, blocks reviewed export on incomplete publication checks, and supports immediate local-model cancellation. The complete topic/count matrix and external semantic evaluation workflow are documented in [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md#enforced-export-and-qualification-workflow--21-october-2026). These are software capabilities; independent science review and physical release qualification remain pending.
 
 ### V6.2.1 structured teaching and release gate
 

@@ -1,15 +1,8 @@
 # Owner project instructions
 
-## Fixed application version
+## Application version
 
-The owner explicitly requires JUW-MicroSlides to remain **V6.2.1**, regardless of future fixes, feature additions, redesigns, or deployments. Do not increment the application version unless the owner explicitly changes this requirement.
-
-- Keep `JUW.version` in `src/lib/brand.ts` set to `V6.2.1`.
-- Use the shared brand version in application UI and server page metadata.
-- Keep static page metadata, repository documentation, and package metadata aligned (npm uses `6.2.1`).
-- Track subsequent work using commit hashes, dates, and changelog entries under V6.2.1.
-- Storage schema versions and content-derived cache hashes may change when technically necessary; they are independent of the fixed application version. Never freeze cache hashes or skip required data migrations to preserve the visible version.
-- Preserve all implemented functionality when changing version labels.
+The owner's latest instruction (23 October 2026) restores the permanent **V6.2.1** lock. Use **V6.2.1** in the UI and **6.2.1** in package/native metadata for every feature and fix. The earlier V7 master specification defines feature scope, not an application version change. Identify revisions by commit and date. Keep historical archives and qualification records intact. Cache and storage schema versions remain independent from the app label. Preserve all existing evidence review, media, generation, export and local-first capabilities.
 
 ## Topic content and media policy
 
@@ -36,4 +29,4 @@ The owner explicitly requires JUW-MicroSlides to remain **V6.2.1**, regardless o
 - Generation and editable/exported decks are limited to 1–50 slides. Never silently clamp, pad, repeat, or truncate to satisfy the count.
 - Preserve older 51–400-slide archives intact; changing the application cap is not permission to delete saved content.
 - Evidence statements require exact claim-to-passage relationships. Model screening, metadata matches and lecturer review are separate statuses. Editing a claim invalidates its previous review.
-- Desktop data uses transactional SQLite; portable projects preserve evidence and media with integrity checks. Visible version remains V6.2.1.
+- Desktop data uses transactional SQLite; portable projects preserve evidence and media with integrity checks. Visible version is V6.2.1.

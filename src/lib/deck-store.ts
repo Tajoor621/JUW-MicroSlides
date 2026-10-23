@@ -1,3 +1,5 @@
+import { taggedMedia, mediaAttachmentProblem } from "./lecture-media";
+import { toast } from "sonner";
 import { reconcileDeck, reconcileClaims } from "./deck-integrity";
 import { inspectedReplacement } from "./slide-replacement";
 import { MAX_SLIDES } from "./types";
@@ -101,6 +103,12 @@ const EMPTY_DRAFT: GenerateDraft = {
   courseCode: lectureMeta({}).courseCode,
   preparedBy: lectureMeta({}).preparedBy,
   mode: "manual",
+  generationMode: "standard",
+  includeObjectives: true,
+  includeAssessment: false,
+  focusDepth: "standard",
+  visualEmphasis: "morphology",
+  clinicalCases: 3,
 };
 
 export const useDeckStore = create<DeckState>()(
@@ -247,6 +255,12 @@ export const useDeckStore = create<DeckState>()(
         get().patchSlide(i, { layout });
       },
       attachMedia: (media) => {
+        const problem = mediaAttachmentProblem(media);
+        if (problem) {
+          toast.error(problem);
+          return;
+        }
+        media = taggedMedia(media);
         const d = get().deck();
         const s = get().slide();
         if (!d || !s || s.locked || d.slides.length > MAX_SLIDES) return;

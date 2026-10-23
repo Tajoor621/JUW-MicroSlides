@@ -43,7 +43,10 @@
     "test:release": "node scripts/test-release-gates.mjs",
     "qualify:semantic": "node scripts/qualify-semantic.mjs",
     "test:audit": "node scripts/test-audit-regressions.mjs",
-    "qa:reviewed-export": "node scripts/test-reviewed-export.mjs"
+    "qa:reviewed-export": "node scripts/test-reviewed-export.mjs",
+    "test:lecture": "node scripts/test-lecture-modes.mjs",
+    "qa:lecture": "node scripts/qa-lecture-modes.mjs",
+    "test:version-lock": "node --test scripts/version-lock.test.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",

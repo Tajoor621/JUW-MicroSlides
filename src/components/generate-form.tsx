@@ -1,3 +1,10 @@
+import { LectureGenerationOptions } from "./lecture-generation-options";
+import {
+  generateModeDeck,
+  applyStandardPedagogy,
+  modeMinimum,
+  generateCourseModule,
+} from "@/lib/lecture-modes";
 import { writeLocalRecord } from "@/lib/durable-storage";
 import { useRef } from "react";
 let generationRunning = false;
@@ -94,6 +101,13 @@ export function GenerateForm({
       courseCode: lockCourse ? draftNow.courseCode || dedicated.courseCode : dedicated.courseCode,
       preparedBy: draftNow.preparedBy || landing?.preparedBy || JUW.preparedBy,
       department: landing?.department || JUW.department,
+      generationMode: draftNow.generationMode || "standard",
+      moduleTopics: draftNow.generationMode === "curriculum" ? draftNow.moduleTopics : undefined,
+      includeObjectives: draftNow.includeObjectives !== false,
+      includeAssessment: !!draftNow.includeAssessment,
+      clinicalCases: draftNow.clinicalCases || 3,
+      focusDepth: draftNow.focusDepth || "standard",
+      visualEmphasis: draftNow.visualEmphasis || "morphology",
     };
     patchDraft({
       topic,
@@ -116,27 +130,86 @@ export function GenerateForm({
         "generation-job",
         JSON.stringify({ input, startedAt: Date.now(), phase: "Drafting" }),
       );
-      let local = generateLocalDeck(input);
-      if (input.mode === "ai") {
-        setProgress("Drafting and checking the research deck…");
-        const result = await generateAiDeck({ data: input, signal: controller.current.signal });
-        controller.current.signal.throwIfAborted();
-        if (result.ok) local = result.deck;
-        else {
-          local = result.deck ?? local;
-          toast.message(result.error);
-        }
-      }
       if (
-        local.slides.length < input.count ||
-        local.slides.some((s) => s.title === "Evidence required")
-      ) {
-        setProgress(
-          `Searching research to extend this ${local.slides.length}-slide draft toward ${input.count}…`,
+        (input.count > 1 || input.includeAssessment || input.generationMode !== "standard") &&
+        input.count < modeMinimum(input)
+      )
+        throw Error(`Choose at least ${modeMinimum(input)} slides for these generation options.`);
+      const reserved =
+        input.count > 2
+          ? (input.includeObjectives === false ? 0 : 1) + (input.includeAssessment ? 2 : 0)
+          : 0;
+      const sourceInput = { ...input, count: input.count - reserved };
+      let local;
+      let series: import("@/lib/types").Deck[] | undefined;
+      if (input.generationMode === "curriculum") {
+        series = await generateCourseModule(
+          input,
+          controller.current.signal,
+          setProgress,
+          input.mode === "ai"
+            ? async (data) => {
+                const r = await generateAiDeck({ data, signal: controller.current!.signal });
+                if (!r.ok) throw Error(r.error);
+                return r.deck;
+              }
+            : undefined,
         );
-        local = await enrichTopicEvidence(local, input, controller.current.signal, setProgress);
+        local = series[0];
+      } else if (input.generationMode !== "standard")
+        local = await generateModeDeck(
+          input,
+          controller.current.signal,
+          setProgress,
+          input.mode === "ai"
+            ? async (data) => {
+                const r = await generateAiDeck({ data, signal: controller.current!.signal });
+                if (!r.ok) throw Error(r.error);
+                return r.deck;
+              }
+            : undefined,
+        );
+      else {
+        local = generateLocalDeck(sourceInput);
+        if (input.mode === "ai") {
+          setProgress("Drafting and checking the research deck…");
+          const result = await generateAiDeck({
+            data: sourceInput,
+            signal: controller.current.signal,
+          });
+          controller.current.signal.throwIfAborted();
+          if (result.ok) local = result.deck;
+          else {
+            local = result.deck ?? local;
+            toast.message(result.error);
+          }
+        }
+        if (
+          input.includeAssessment &&
+          local.slides.filter((s) => s.claims?.some((c) => c.evidence.length)).length < 3
+        )
+          local = {
+            ...local,
+            slides: local.slides[0]?.layout === "title" ? [local.slides[0]] : [],
+            sourceDocuments: local.sourceDocuments,
+          };
+        if (
+          local.slides.length < sourceInput.count ||
+          local.slides.some((s) => s.title === "Evidence required")
+        ) {
+          setProgress(
+            `Searching research to extend this ${local.slides.length}-slide draft toward ${input.count}…`,
+          );
+          local = await enrichTopicEvidence(
+            local,
+            sourceInput,
+            controller.current.signal,
+            setProgress,
+          );
+        }
+        local = applyStandardPedagogy(local, input);
       }
-      if (input.count > 1 && local.slides[0]) {
+      if (!series && input.count > 1 && local.slides[0]) {
         local.slides[0] = {
           ...local.slides[0],
           layout: "title",
@@ -155,7 +228,16 @@ export function GenerateForm({
         );
       local.generationSource ??= "knowledge";
       assertCompleteDeck(local, input.count);
-      generate(input, local);
+      if (series) {
+        const complete = series;
+        useDeckStore.setState((state) => ({
+          library: [...complete, ...state.library],
+          activeId: complete[0].id,
+          selectedIndex: 0,
+          generateOpen: false,
+          generatorOpen: false,
+        }));
+      } else generate(input, local);
       await writeLocalRecord("generation-job", null);
       await writeLocalRecord("local-ai-checkpoint", null);
       toast.success(
@@ -187,6 +269,7 @@ export function GenerateForm({
       }}
     >
       <fieldset disabled={busy} className="contents">
+        <LectureGenerationOptions draft={draft} patch={patchDraft} />
         {generationError && (
           <p role="alert" className="rounded-sm border border-accent p-3 text-sm text-fg">
             {generationError}

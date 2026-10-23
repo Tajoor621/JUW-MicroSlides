@@ -45,11 +45,14 @@ export function authoritativePublisher(raw: string) {
     "ncbi.nlm.nih.gov": "NCBI",
     "europepmc.org": "Europe PMC",
     "ebi.ac.uk": "EMBL-EBI",
+    "eucast.org": "EUCAST",
+    "clsi.org": "CLSI",
+    "idsociety.org": "IDSA",
   };
   const host = Object.keys(providers).find((h) => u.hostname === h || u.hostname.endsWith(`.${h}`));
   if (!host)
     throw Error(
-      "Use a CDC, WHO, OpenStax, NCBI or Europe PMC source. Other references remain available through citation import.",
+      "Use a CDC, WHO, OpenStax, NCBI, Europe PMC, EUCAST, CLSI or IDSA source. Other references remain available through citation import.",
     );
   return providers[host];
 }
