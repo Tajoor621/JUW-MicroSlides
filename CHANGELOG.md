@@ -1,5 +1,12 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — available downloads and automatic draft cleanup (23 October 2026)
+
+- Ordinary toolbar PPTX/PDF downloads no longer require clearing instructor sign-offs. Keep draft labels, provenance and exact slide count. Reviewed exports and Teaching Packs retain all evidence/instructor gates; unavailable assets and invalid counts still fail explicitly.
+- Group review notes by reason and affected slides. Do not present every missing field attestation as a separate confirmed scientific error.
+- Populate available teaching fields from verbatim linked source passages, without inventing scientific wording or review approvals. Before ordinary export, safely remove exact repeated points only when slide content remains; preserve removed wording in notes, references, count, recovery history and Undo.
+- Ambiguous scientific corrections remain source-grounded proposals. Automatic cleanup is not independent scientific validation.
+
 ## V6.2.1 — syllabus recovery and actionable export findings (23 October 2026)
 
 - Search sentence-separated syllabus sections independently, retain structural genome context, prefer directly focused sources and require section coverage when enough content slots exist. Exact counts and source/evidence review gates remain enforced.

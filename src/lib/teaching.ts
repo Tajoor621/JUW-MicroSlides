@@ -2,6 +2,7 @@ import { teachingSchema, type Teaching } from "./teaching-schema";
 export { teachingSchema, DIAGRAMS, type Teaching } from "./teaching-schema";
 import type { Deck, Slide } from "./types";
 import { publicationCheckIsCurrent } from "./publication-status";
+import { completeSourcedTeaching } from "./draft-improvements";
 export function teachingOf(s: Slide): Teaching {
   return teachingSchema.parse(s.teaching || {});
 }
@@ -31,7 +32,10 @@ export function suggestedDiagram(title: string): Teaching["diagram"] | undefined
 export function prepareTeachingDeck(deck: Deck): Deck {
   return {
     ...deck,
-    slides: deck.slides.map((s, i) => {
+    slides: deck.slides.map((original, i) => {
+      const s = original.claims?.some((c) => c.evidence.length)
+        ? completeSourcedTeaching(original)
+        : original;
       if (s.layout === "bibliography") return s;
       if (i === 0 && s.layout === "title" && deck.slides.length > 1) return s;
       const diagram = suggestedDiagram(s.title);

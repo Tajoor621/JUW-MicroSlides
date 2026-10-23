@@ -41,18 +41,23 @@ export function SpecialistReview() {
       deck
         ? [
             ...reviewDeck(deck),
-            ...integrityAudit(deck).map((i, n) => ({
-              id: `integrity-${n}`,
-              source: undefined,
-              slideId: i.slideId,
-              index: i.index,
-              severity: i.severity === "critical" ? ("high" as const) : ("medium" as const),
-              category: i.category,
-              quote: i.quote,
-              problem: i.message,
-              suggestion:
-                "Inspect the supporting source in Claim evidence, then record an explicit lecturer review or replace the statement.",
-            })),
+            ...integrityAudit(deck)
+              .filter(
+                (i) =>
+                  !i.message.includes("Record a decision and a specific rationale for this field."),
+              )
+              .map((i, n) => ({
+                id: `integrity-${n}`,
+                source: undefined,
+                slideId: i.slideId,
+                index: i.index,
+                severity: i.severity === "critical" ? ("high" as const) : ("medium" as const),
+                category: i.category,
+                quote: i.quote,
+                problem: i.message,
+                suggestion:
+                  "Inspect the supporting source in Claim evidence, then record an explicit lecturer review or replace the statement.",
+              })),
           ]
         : [],
     [deck],
@@ -149,6 +154,29 @@ export function SpecialistReview() {
   }
   return (
     <div className="space-y-4">
+      <section className="space-y-2 rounded border border-border p-3 text-xs">
+        <p>
+          Automatic cleanup preserves slide count and citations. Only literal duplicates with
+          remaining slide content are removed; source-linked teaching fields use the original
+          wording. Scientific changes require evidence. Missing instructor sign-offs are grouped as
+          review tasks, not reported here as scientific errors.
+        </p>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            const live = useDeckStore.getState().deck();
+            if (!live) return;
+            const changes = useDeckStore.getState().applySafeCorrections();
+            toast.message(
+              changes
+                ? `Applied ${changes} safe corrections. Undo is available.`
+                : "No safe automatic correction is available. Inspect the source before changing scientific content.",
+            );
+          }}
+        >
+          Apply safe corrections
+        </Button>
+      </section>
       <DuplicateReview />
       <section className="rounded border border-border bg-elevated p-3">
         <h3 className="font-serif text-base">Microbiology specialist review</h3>

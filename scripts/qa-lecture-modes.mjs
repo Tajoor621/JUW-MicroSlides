@@ -104,9 +104,22 @@ try {
   await page.getByRole("button", { name: "Add row", exact: true }).click();
   assert(await page.getByLabel("Row 2, Characteristic", { exact: true }).isVisible());
   checks.push("Scientific tables support direct cell editing and row allocation");
+  const ordinaryDeck = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  await page.getByText(/Teaching export blocked/).waitFor();
-  checks.push("Unreviewed structured scientific content cannot export");
+  assert(await (await ordinaryDeck).path());
+  if (
+    (await page
+      .getByText("Reviewed release options", { exact: true })
+      .locator("..")
+      .getAttribute("open")) === null
+  )
+    await page.getByText("Reviewed release options", { exact: true }).click();
+  await page
+    .getByRole("alert", { name: "Export readiness" })
+    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
+    .click();
+  await page.getByText(/Reviewed export needs review/).waitFor();
+  checks.push("Structured draft downloads are available while reviewed release remains gated");
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page
@@ -135,13 +148,15 @@ try {
   assert(
     (await page.getByLabel("vignette", { exact: true }).inputValue()).includes("Synthetic amber"),
   );
-  await page.getByLabel("diagnosis",{exact:true}).fill("Hidden resolution answer");
-  const caseStage=await page.locator("[data-slide-stage]").innerText();
+  await page.getByLabel("diagnosis", { exact: true }).fill("Hidden resolution answer");
+  const caseStage = await page.locator("[data-slide-stage]").innerText();
   assert(caseStage.includes("Synthetic amber presentation"));
   assert(caseStage.includes("Fixture amber alternatives"));
   assert(!caseStage.includes("Hidden resolution answer"));
-  await page.getByRole("button",{name:/04 clinical-case Case 1: resolution/i}).click();
-  assert((await page.locator("[data-slide-stage]").innerText()).includes("Synthetic amber placeholder"));
+  await page.getByRole("button", { name: /04 clinical-case Case 1: resolution/i }).click();
+  assert(
+    (await page.locator("[data-slide-stage]").innerText()).includes("Synthetic amber placeholder"),
+  );
   checks.push(
     "Clinical case mode creates three draft case pairs, populates labelled fields and keeps diagnoses hidden until the resolution phase",
   );
@@ -167,20 +182,24 @@ try {
   assert.equal(series.length, 2);
   assert(series.every((d) => d.slides.length === 4));
   assert.equal(series[1].courseSeries.prerequisites[0], series[0].id);
-  await page.getByRole("button",{name:"Close",exact:true}).click();
-  await page.getByRole("button",{name:"Open generator",exact:true}).click();
-  await page.getByLabel("Curriculum lecture topics",{exact:true}).fill("Unfinished curriculum topic");
-  await page.getByLabel("Generation Mode",{exact:true}).selectOption("standard");
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByRole("button", { name: "Open generator", exact: true }).click();
+  await page
+    .getByLabel("Curriculum lecture topics", { exact: true })
+    .fill("Unfinished curriculum topic");
+  await page.getByLabel("Generation Mode", { exact: true }).selectOption("standard");
   await page.locator("#gen-topic").fill("Enzyme immobilization");
   await page.locator("#gen-count").fill("1");
-  await page.getByRole("button",{name:"Generate deck",exact:true}).click();
-  await page.getByRole("button",{name:"Open generator",exact:true}).waitFor({timeout:30000});
-  await page.getByRole("button",{name:"Library",exact:true}).click();
-  const shortBackupEvent=page.waitForEvent("download");
-  await page.getByRole("button",{name:"Current deck backup",exact:true}).click();
-  const shortBackup=JSON.parse(await readFile(await(await shortBackupEvent).path(),"utf8"));
-  assert.equal(shortBackup.decks[0].slides.length,1);
-  assert.equal(shortBackup.decks[0].lectureOptions.moduleTopics,undefined);
+  await page.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Open generator", exact: true })
+    .waitFor({ timeout: 30000 });
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  const shortBackupEvent = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Current deck backup", exact: true }).click();
+  const shortBackup = JSON.parse(await readFile(await (await shortBackupEvent).path(), "utf8"));
+  assert.equal(shortBackup.decks[0].slides.length, 1);
+  assert.equal(shortBackup.decks[0].lectureOptions.moduleTopics, undefined);
   checks.push(
     "Curriculum generation saves linked lectures atomically; unfinished curriculum input cannot corrupt a later standard lecture backup",
   );

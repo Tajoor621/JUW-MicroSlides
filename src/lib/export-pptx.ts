@@ -2,7 +2,7 @@ import { embedPortableFonts, loadPortableFonts } from "./pptx-fonts";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
 import { preflightTeachingImages } from "./teaching-images";
-import { assertTeachingReady } from "./teaching-readiness";
+import { assertTeachingReady, teachingReady } from "./teaching-readiness";
 import { MAX_SLIDES } from "./types";
 import { integrityAudit } from "./deck-integrity";
 import { isDesktop, saveFile } from "./desktop";
@@ -31,14 +31,15 @@ export async function exportPptx(
   deck: Deck,
   options: { classroom?: boolean; returnBytes?: boolean } = {},
 ) {
-  assertTeachingReady(deck);
-  options = { ...options, classroom: true };
+  // Reviewed release remains strict; ordinary downloads explicitly use draft mode.
+  options = { ...options, classroom: options.classroom !== false };
+  if (options.classroom) assertTeachingReady(deck);
   if (deck.slides.length < 1 || deck.slides.length > MAX_SLIDES)
     throw new Error(
       "PPTX requires 1–50 slides. Your legacy project is preserved; export a reduced copy.",
     );
   const findings = integrityAudit(deck);
-  const ready = !findings.some((finding) => finding.severity === "critical");
+  const ready = teachingReady(deck);
   if (options.classroom && !ready)
     throw new Error("Resolve critical evidence and repetition findings before reviewed export.");
   await preflightTeachingImages(deck);

@@ -28,6 +28,21 @@ export function teachingReleaseFindings(deck: Deck) {
 export function teachingReady(deck: Deck) {
   return teachingReleaseFindings(deck).length === 0;
 }
+/** Review queue, grouped by reason and affected slide, rather than error totals. */
+export function groupedReviewNotes(issues: ReturnType<typeof teachingReleaseFindings>) {
+  const groups = new Map<string, { message: string; indices: number[] }>();
+  for (const issue of issues) {
+    let message = issue.message.replace(/^[\w.]+: /, "");
+    if (/^Overlaps slide/.test(message))
+      message = "Compare overlapping teaching points and their sources.";
+    else if (/Record a decision and a specific rationale/.test(message))
+      message = "Instructor review is pending for populated teaching fields.";
+    const group = groups.get(message) || { message, indices: [] };
+    if (!group.indices.includes(issue.index)) group.indices.push(issue.index);
+    groups.set(message, group);
+  }
+  return [...groups.values()];
+}
 export function assertTeachingReady(deck: Deck) {
   const issues = teachingReleaseFindings(deck);
   if (issues.length)

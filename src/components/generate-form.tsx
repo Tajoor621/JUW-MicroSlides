@@ -233,7 +233,7 @@ export function GenerateForm({
           "Generation cancelled. Your previous deck is preserved; the request is saved for retry.",
         );
       local.generationSource ??= "knowledge";
-      assertCompleteDeck(local, input.count);
+      local = assertCompleteDeck(local, input.count);
       if (series) {
         const complete = series;
         useDeckStore.setState((state) => ({

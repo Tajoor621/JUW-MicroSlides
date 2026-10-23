@@ -984,10 +984,27 @@ try {
   await saved(page);
   let blockedDownloads = 0;
   page.on("download", () => blockedDownloads++);
+  const draftDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  await page.getByText(/Teaching export blocked/).waitFor();
-  assert.equal(blockedDownloads, 0);
-  results.push("Unreviewed decks block ordinary PPTX export and retain recovery backups");
+  const draftBytes = await readFile(await (await draftDownload).path());
+  assert(slideCountInPptx(draftBytes) >= 1 && slideCountInPptx(draftBytes) <= 50);
+  assert.equal(blockedDownloads, 1);
+  if (
+    (await page
+      .getByText("Reviewed release options", { exact: true })
+      .locator("..")
+      .getAttribute("open")) === null
+  )
+    await page.getByText("Reviewed release options", { exact: true }).click();
+  await page
+    .getByRole("alert", { name: "Export readiness" })
+    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
+    .click();
+  await page.getByText(/Reviewed export needs review/).waitFor();
+  assert.equal(blockedDownloads, 1);
+  results.push(
+    "Ordinary PPTX downloads retain draft status; reviewed export still enforces evidence and recovery backups",
+  );
   await page.waitForFunction(async () => {
     const r = await navigator.serviceWorker.ready;
     return Boolean(r.active);
@@ -1213,8 +1230,21 @@ try {
   results.push(
     "An uncatalogued microbiology topic generates exactly 25 slides from distinct source sections",
   );
+  const researchDraft = cp.waitForEvent("download");
   await cp.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  await cp.getByText(/Teaching export blocked/).waitFor();
+  assert.equal(slideCountInPptx(await readFile(await (await researchDraft).path())), 25);
+  if (
+    (await cp
+      .getByText("Reviewed release options", { exact: true })
+      .locator("..")
+      .getAttribute("open")) === null
+  )
+    await cp.getByText("Reviewed release options", { exact: true }).click();
+  await cp
+    .getByRole("alert", { name: "Export readiness" })
+    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
+    .click();
+  await cp.getByText(/Reviewed export needs review/).waitFor();
   results.push(
     "Cited research generation remains a draft until scientific teaching requirements are reviewed",
   );

@@ -23,6 +23,7 @@ import type {
   Slide,
 } from "./types";
 import { mediaKey, uid } from "./utils";
+import { improveDraft } from "./draft-improvements";
 
 // Decks are never silently evicted; users control deletion.
 
@@ -63,6 +64,7 @@ interface DeckState {
   removeSlide: (index: number) => void;
   moveSlide: (index: number, dir: -1 | 1) => void;
   patchSlide: (index: number, patch: Partial<Slide>) => void;
+  applySafeCorrections: () => number;
   applyInspectedReplacement: (
     slideId: string,
     proposal: unknown,
@@ -238,6 +240,16 @@ export const useDeckStore = create<DeckState>()(
         );
         const next = bump(d, slides);
         set({ library: get().library.map((x) => (x.id === next.id ? next : x)) });
+      },
+      applySafeCorrections: () => {
+        const d = get().deck();
+        if (!d || d.slides.length > MAX_SLIDES) return 0;
+        const result = improveDraft(d);
+        if (result.changes.length) {
+          const next = bump(d, result.deck.slides);
+          set({ library: get().library.map((x) => (x.id === next.id ? next : x)) });
+        }
+        return result.changes.length;
       },
       applyInspectedReplacement: (slideId, proposal, snapshot, keepFigures) => {
         const deck = get().deck();
