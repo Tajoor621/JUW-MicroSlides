@@ -72,6 +72,10 @@ try {
   review();
   if (!teachingReady(d)) throw Error("Protocol fixture must clear the software gate");
   fixtures.push(structuredClone(d));
+  d.exportTypography = "portable";
+  review();
+  if (!teachingReady(d)) throw Error("Portable fixture must clear the software gate");
+  fixtures.push(structuredClone(d));
 } finally {
   await vite.close();
 }
@@ -136,6 +140,28 @@ try {
       if (xml.includes("Original image unavailable"))
         throw Error("Valid fixture exported a placeholder");
       console.log("PASS valid reviewed image still exports a PowerPoint package");
+      if (i === 5) {
+        if (!(await page.locator('[data-typography="portable"]').count()))
+          throw Error("Backup must restore portable preview typography");
+        const fonts = Object.keys(zip.files).filter((p) => p.endsWith(".fntdata"));
+        if (fonts.length !== 2 || !xml.includes('typeface="DejaVu Sans"'))
+          throw Error("Portable PowerPoint must contain regular and bold fonts with editable text");
+        for (const path of fonts) {
+          const data = await zip.file(path).async("nodebuffer");
+          if (data.readUInt16LE(34) !== 0x504c || data.readUInt32LE(0) !== data.length)
+            throw Error("Portable font part must have a valid EOT header");
+        }
+        await writeFile(
+          join(output, "juw-portable-fonts.pptx"),
+          await readFile(await download.path()),
+        );
+        await page.getByLabel("Lecture typography", { exact: true }).selectOption("original");
+        if (!(await button.isDisabled()))
+          throw Error("Typography changes require fresh layout verification");
+        console.log(
+          "PASS restored portable typography, embedded EOT PowerPoint and verification invalidation",
+        );
+      }
       if (i === 4) {
         await page.locator("summary").filter({ hasText: "Handouts & accessible exports" }).click();
         for (const [label, filename] of [
@@ -244,6 +270,28 @@ try {
     .waitFor();
   if (await exportButton.isDisabled())
     throw Error("Valid named verification must unlock teaching export");
+  await page.getByLabel("Lecture typography", { exact: true }).selectOption("portable");
+  if (!(await exportButton.isDisabled()))
+    throw Error("Portable typography requires re-verification");
+  await page.getByRole("button", { name: "Record instructor verification", exact: true }).click();
+  await page.waitForFunction(
+    () =>
+      ![...document.querySelectorAll("button")].find(
+        (b) => b.textContent === "Export reviewed PPTX",
+      )?.disabled,
+  );
+  await page.route("**/fonts/DejaVuSans-Bold.ttf", (route) =>
+    route.fulfill({ status: 404, body: "Missing test asset" }),
+  );
+  let missingFontDownloads = 0;
+  const countMissingFontDownloads = () => missingFontDownloads++;
+  page.on("download", countMissingFontDownloads);
+  await exportButton.click();
+  await page.getByText(/Portable fonts are unavailable/).waitFor();
+  if (missingFontDownloads) throw Error("Missing portable font must block download");
+  page.off("download", countMissingFontDownloads);
+  await page.unroute("**/fonts/DejaVuSans-Bold.ttf");
+  console.log("PASS named portable re-verification and unavailable-font download block");
   await page.getByLabel("Projector contrast", { exact: true }).selectOption("dark");
   if (!(await exportButton.isDisabled()))
     throw Error("Contrast changes must invalidate final layout verification");

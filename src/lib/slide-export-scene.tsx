@@ -71,6 +71,14 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
       ),
     );
     await document.fonts.ready;
+    if (deck.exportTypography === "portable") {
+      const faces = await Promise.all([
+        document.fonts.load('400 16px "JUW Sans"'),
+        document.fonts.load('700 16px "JUW Sans"'),
+      ]);
+      if (faces.some((loaded) => !loaded.length || loaded.some((f) => f.status !== "loaded")))
+        throw Error("Portable preview fonts could not be loaded. Reconnect and retry.");
+    }
     await Promise.all(
       [...host.querySelectorAll("img")].map((img) =>
         Promise.race([
@@ -118,7 +126,7 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
               ...b,
               kind: "text",
               text: node.textContent || "",
-              font: "Arial",
+              font: deck.exportTypography === "portable" ? "DejaVu Sans" : "Arial",
               size: parseFloat(style.fontSize) * scale,
               bold: Number(style.fontWeight) >= 600,
               color: color(style.fill) || "17344c",
@@ -196,7 +204,7 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
             ...box,
             kind: "text",
             text: "Original image unavailable",
-            font: "Arial",
+            font: deck.exportTypography === "portable" ? "DejaVu Sans" : "Arial",
             size: 14,
             bold: false,
             color: color(css.color) || "5C6B7A",
@@ -234,7 +242,12 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
                 ...bounds(line.rect),
                 kind: "text",
                 text: css.textTransform === "uppercase" ? line.text.toUpperCase() : line.text,
-                font: css.fontFamily.includes("Georgia") ? "Georgia" : "Arial",
+                font:
+                  deck.exportTypography === "portable"
+                    ? "DejaVu Sans"
+                    : css.fontFamily.includes("Georgia")
+                      ? "Georgia"
+                      : "Arial",
                 size: Number.parseFloat(css.fontSize),
                 bold: Number(css.fontWeight) >= 600,
                 color: color(css.color) || "1A2433",

@@ -273,3 +273,9 @@ html[data-theme="light"] {
   font-style: normal;
   font-display: swap;
 }
+
+/* Explicit portable typography: the same bundled face is measured and embedded. */
+.slide-stage[data-typography="portable"],
+.slide-stage[data-typography="portable"] * {
+  font-family: "JUW Sans", sans-serif;
+}

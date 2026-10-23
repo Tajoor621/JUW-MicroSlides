@@ -1,12 +1,17 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — portable PowerPoint typography (23 October 2026)
+
+- Add optional bundled DejaVu Sans preview and full regular/bold EOT embedding in editable PPTX and teaching packs. Preserve original typography by default.
+- Persist typography in backups and require fresh instructor layout verification after changes. Missing fonts block export.
+- Add binary/package tests and production browser coverage; actual Office/Google Slides/classroom rendering remains a separate qualification.
+
 ## V6.2.1 — topic recovery and coordinated themes (23 October 2026)
 
 - Label the initial saved example and retain visible, topic-specific failure/retry details instead of covering slides with a long error toast. Topic suggestions fill the form before generation.
 - Add independently retrieved PubMed abstract recovery, comparative-taxonomy search queries and bounded optional full-text retrieval. Preserve exact counts, source provenance, notice screening and human evidence review.
 - Enable introduction themes, coordinate all generated layouts with topic or explicit visual emphasis, provide deck-wide/per-slide theme scope and improve the visibility of topic ornaments. Preserve locked slides, archives and branding.
 - Add source identity/inline XML regressions and a production browser recovery test covering the screenshot's 23-slide failure, retry, draft export gate, theme scope and mobile width.
-
 
 - Restore V6.2.1/6.2.1 consistently across application, packages, Windows identity, exports and qualification scripts while retaining all structured lecture improvements.
 - Keep earlier V7-labelled validation records as historical evidence; use commit/date to identify the current revision.

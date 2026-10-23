@@ -24,6 +24,7 @@ jobs:
           workspaces: src-tauri -> target
           cache-on-failure: true
       - run: npm run test:version-lock
+      - run: node --test scripts/pptx-fonts.test.mjs
       - run: npm run typecheck
       - run: npm run test:scientific
       - run: npm run test:professional

@@ -118,6 +118,28 @@ export function ProfessionalWorkspace() {
             <option value="high-contrast">High contrast / accessibility</option>
           </select>
         </label>
+        <label className="block text-xs">
+          Lecture typography
+          <select
+            aria-label="Lecture typography"
+            className="m-2 min-h-11 rounded border bg-elevated p-2"
+            value={deck.exportTypography || "original"}
+            disabled={legacy}
+            onChange={(e) =>
+              useDeckStore
+                .getState()
+                .patchDeck({ exportTypography: e.target.value as "original" | "portable" })
+            }
+          >
+            <option value="original">Original — system fonts</option>
+            <option value="portable">Portable — embedded DejaVu Sans</option>
+          </select>
+          <span className="block text-muted">
+            Portable typography uses bundled fonts in the preview and embeds full regular/bold fonts
+            in PowerPoint. Check layout and record instructor verification after changing it. Office
+            and Google Slides rendering still need checking on the teaching device.
+          </span>
+        </label>
         <CourseBuilder />
         <details>
           <summary>Handouts & accessible exports</summary>

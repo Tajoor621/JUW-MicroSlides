@@ -112,6 +112,7 @@ export const deckSchema = z.object({
   ...lectureDeckFields,
   teachingVerification: teachingVerificationSchema.optional(),
   exportMode: z.enum(["light", "dark", "high-contrast"]).optional(),
+  exportTypography: z.enum(["original", "portable"]).optional(),
   sourceDocuments: z.array(sourceDocumentSchema).max(200).optional(),
   id: text,
   title: text,

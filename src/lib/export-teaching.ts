@@ -180,7 +180,7 @@ export async function exportTeachingPack(deck: Deck) {
   zip.file("fonts-LICENSE.txt", await license.text());
   zip.file(
     "Google-Slides-import.txt",
-    "In Google Slides, use File > Import slides and select slides.pptx. Check imported typography, diagrams and accessibility before teaching. This package does not publish to a Google account. PDF embeds DejaVu fonts; PPTX uses system Arial/Georgia and editable native schematic shapes. PowerPoint fonts are not embedded.\n",
+    `In Google Slides, use File > Import slides and select slides.pptx. Check imported typography, diagrams and accessibility before teaching. This package does not publish to a Google account. PDF embeds DejaVu fonts; PPTX retains editable text and native schematic shapes. ${deck.exportTypography === "portable" ? "Portable typography embeds full regular/bold DejaVu Sans fonts in the PPTX; compatible readers must support embedded EOT fonts." : "Original typography uses system Arial/Georgia without embedded PowerPoint fonts. Choose portable typography and re-verify the deck to embed fonts."}\n`,
   );
   return saveFile(
     `${name(deck)}-teaching-pack.zip`,
