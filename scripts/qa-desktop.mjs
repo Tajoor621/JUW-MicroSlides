@@ -58,7 +58,7 @@ async function start() {
         page.on("console", (message) => {
           if (message.type() === "error") startupErrors.push(message.text());
         });
-        await page.getByText(/Windows desktop · V7.0/).waitFor({ timeout: 15000 });
+        await page.getByText(/Windows desktop · V6.2.1/).waitFor({ timeout: 15000 });
         return page;
       }
     } catch (error) {

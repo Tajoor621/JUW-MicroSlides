@@ -157,7 +157,7 @@ try {
             throw Error("Accessible export lost protocol fields");
         }
         console.log(
-          "PASS V7 structured protocol PPTX, student handout PDF, single-page protocol card and accessible HTML downloads",
+          "PASS V6.2.1 structured protocol PPTX, student handout PDF, single-page protocol card and accessible HTML downloads",
         );
       }
       if (i === 3) {

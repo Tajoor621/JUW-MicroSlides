@@ -116,7 +116,7 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: join(output, "v7-mobile.png") });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
-  checks.push("V7 editor has no horizontal page overflow at 390px");
+  checks.push("V6.2.1 editor has no horizontal page overflow at 390px");
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Open generator", exact: true }).click();
   await page.getByLabel("Generation Mode", { exact: true }).selectOption("clinical-cases");

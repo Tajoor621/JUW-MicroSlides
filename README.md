@@ -1,6 +1,6 @@
-# JUW-MicroSlides V7.0
+# JUW-MicroSlides V6.2.1
 
-The owner explicitly authorized **V7.0** for the master lecture workflow specification. Saved V6.2.1 decks remain supported.
+The application is permanently locked to **V6.2.1**. All structured lecture improvements are delivered as commit-based revisions of this version. Existing decks remain supported.
 
 A local-first microbiology lecture editor with editable slides, citations, presentation mode, PowerPoint export, and printable slides.
 
@@ -12,11 +12,11 @@ The workflow `.github/workflows/pages.yml` checks types, lint, platform tests, r
 
 `npm run build` retains the original server/Vercel deployment. Server AI uses a server-side `XAI_API_KEY`; never place it in a VITE variable, committed file, or browser field. Provider availability/model names must be verified in your own provider account before enabling paid requests. The per-instance AI request quota is not a global billing cap; configure a provider spending limit before a public server deployment.
 
-## V7 lecture workflows
+## Structured lecture workflows
 
 Generate standard lectures, fixed-section pathogen profiles, laboratory methods, clinical case series, and multi-lecture curriculum modules. Contextual controls add Bloom-aligned objectives, optional assessment, focus depth and visual emphasis. Structured editors support protocols, cases, tables, charts, taxonomy, learning objectives, and clinical pearls.
 
-See [V7 workflow guide](docs/V7-LECTURE-WORKFLOWS.md) for offline source-note formatting, minimum slide counts, scientific review requirements, course building, accessible exports and complete JSON/Markdown recovery. Missing protocol timing, diagnostic evidence or taxonomy data remain explicit review blockers. Software checks do not certify scientific accuracy or replace qualified instructor review.
+See [lecture workflow guide](docs/LECTURE-WORKFLOWS.md) for offline source-note formatting, minimum slide counts, scientific review requirements, course building, accessible exports and complete JSON/Markdown recovery. Missing protocol timing, diagnostic evidence or taxonomy data remain explicit review blockers. Software checks do not certify scientific accuracy or replace qualified instructor review.
 
 ## Everyday use
 
@@ -43,7 +43,7 @@ Decks are stored in IndexedDB on this browser/origin. Existing data under `juw-m
 
 Offline launch becomes available after the service worker finishes its first successful online install. Bundled app assets and illustrations are precached. Literature/image searches require a connection. External images need successful embedding to be available offline. Browser storage can still be cleared or evicted: keep exported backups outside the browser. JSON backup schema version is 1; imports are validated before adding copies, with a 100 MB / 500-deck import ceiling.
 
-Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y outside text fields. Native undo remains available while editing text. History resets on reload. New service workers activate without waiting for old tabs to close. Online navigation checks the network before using the saved shell; offline navigation retains the cached app. The Pages app displays a commit-based build ID and a Check for updates / Load latest build control. Reloading through that control waits for queued deck saves. Updates change the build ID and cache hash while the application version remains V7.0.
+Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y outside text fields. Native undo remains available while editing text. History resets on reload. New service workers activate without waiting for old tabs to close. Online navigation checks the network before using the saved shell; offline navigation retains the cached app. The Pages app displays a commit-based build ID and a Check for updates / Load latest build control. Reloading through that control waits for queued deck saves. Updates change the build ID and cache hash while the application version remains V6.2.1.
 
 ## Optional local AI with Ollama
 
@@ -91,7 +91,7 @@ Optional local AI specialist review uses the configured Ollama model for the sel
 
 Run `npm run test:topics` for the topic/media/reviewer regression suite. `qa:pages` also checks that collecting/downloading media does not attach it, manually attached mismatched media is flagged, correction reports download, and removing a figure does not add a fallback.
 
-## Windows professional workspace (V7.0)
+## Windows professional workspace (V6.2.1)
 
 Use the Lecture workspace bar for whole-deck audit, reviewed export, portable projects, recovery revisions, storage information, slide locks and inspected replacements. Evidence → Claim evidence records passage-level support and explicit lecturer review. Changing statements invalidates prior review. Teaching exports require the current reviewed revision; draft work remains recoverable through JSON, Markdown and portable projects.
 
@@ -103,7 +103,7 @@ See [Windows implementation and qualification](docs/WINDOWS-QUALIFICATION.md) fo
 
 The [professional release backlog and acceptance metrics](docs/PROFESSIONAL-ROADMAP.md) define the remaining P0/P1/P2 work and the three lecturer workflows. CSL-JSON reference import/export preserves structured source metadata. Identical local-model requests can resume saved completed batches.
 
-## Scientific source and qualification extension (V7.0)
+## Scientific source and qualification extension (V6.2.1)
 
 Open full-text evidence, authoritative-source passages, correction/retraction checks, guideline currency declarations and optional local embedding screening are available in Review. See [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md) for the 200-topic live benchmark, actual Microsoft PowerPoint test and outstanding independent-review/hardware gates. Software test success is not scientific certification.
 
@@ -117,6 +117,6 @@ The reproducible development calibration and reviewer completeness checks are do
 
 The V6.2.1 release-gate update added explicit review for headings, notes and figures, blocks reviewed export on incomplete publication checks, and supports immediate local-model cancellation. The complete topic/count matrix and external semantic evaluation workflow are documented in [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md#enforced-export-and-qualification-workflow--21-october-2026). These are software capabilities; independent science review and physical release qualification remain pending.
 
-### V6.2.1 structured teaching and release gate (retained in V7.0)
+### V6.2.1 structured teaching and release gate
 
 Content authoring now includes editable scientific schematics, sourced quantitative observations, level-specific depth, pitfalls, takeaways and explicit final instructor verification. PPTX, PDF and teaching packs share a strict gate; unreviewed lectures remain recoverable as JSON/portable projects. Google Slides uses a PPTX import file. See [implementation, verification and remaining qualifications](docs/qualification/teaching-overhaul-2026-10-21.md) for the exact capability boundaries.

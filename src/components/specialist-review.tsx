@@ -126,7 +126,7 @@ export function SpecialistReview() {
   function download() {
     const report = {
       topic: deck!.topic,
-      version: "V7.0",
+      version: "V6.2.1",
       reviewedAt: new Date().toISOString(),
       scope: "Entire deck",
       limitations:

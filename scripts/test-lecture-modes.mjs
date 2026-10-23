@@ -290,7 +290,7 @@ try {
   );
   await assert.rejects(() => generateCourseModule({...input,moduleTopics:["x".repeat(501),"Second"]}), /500 characters/);
   console.log(
-    "PASS V7 mode allocation, offline source notes, objectives, assessment privacy, protocol gaps, review gates, Markdown recovery and course cycle rejection (synthetic software fixtures only)",
+    "PASS V6.2.1 mode allocation, offline source notes, objectives, assessment privacy, protocol gaps, review gates, Markdown recovery and course cycle rejection (synthetic software fixtures only)",
   );
 } finally {
   if (originalNavigator) Object.defineProperty(globalThis, "navigator", originalNavigator);

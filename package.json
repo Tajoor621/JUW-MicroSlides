@@ -45,7 +45,8 @@
     "test:audit": "node scripts/test-audit-regressions.mjs",
     "qa:reviewed-export": "node scripts/test-reviewed-export.mjs",
     "test:lecture": "node scripts/test-lecture-modes.mjs",
-    "qa:lecture": "node scripts/qa-lecture-modes.mjs"
+    "qa:lecture": "node scripts/qa-lecture-modes.mjs",
+    "test:version-lock": "node --test scripts/version-lock.test.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",
@@ -141,5 +142,5 @@
     "node": ">=24.0.0"
   },
   "packageManager": "npm@11.9.0",
-  "version": "7.0.0"
+  "version": "6.2.1"
 }

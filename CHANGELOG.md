@@ -1,3 +1,9 @@
+# V6.2.1 — locked structured lecture revision (2026-10-23)
+
+- Restore V6.2.1/6.2.1 consistently across application, packages, Windows identity, exports and qualification scripts while retaining all structured lecture improvements.
+- Keep earlier V7-labelled validation records as historical evidence; use commit/date to identify the current revision.
+- Add an automated version-lock check covering active identity surfaces and future drift.
+
 # V7.0 — structured microbiology lecture workflows (2026-10-23)
 
 - Update native Tokio to 1.54.1 for RUSTSEC-2026-0384, retaining the locked dependency graph and mandatory audit. Surface audit JSON in CI logs without ignoring failures.

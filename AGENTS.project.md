@@ -2,7 +2,7 @@
 
 ## Application version
 
-The owner's V7.0 master specification (23 October 2026) supersedes the previous V6.2.1 lock. Use **V7.0** in the UI and **7.0.0** in package/native metadata. Keep historical archives and qualification records intact. Cache and storage schema versions remain independent from the app label. Preserve all existing evidence review, media, generation, export and local-first capabilities.
+The owner's latest instruction (23 October 2026) restores the permanent **V6.2.1** lock. Use **V6.2.1** in the UI and **6.2.1** in package/native metadata for every feature and fix. The earlier V7 master specification defines feature scope, not an application version change. Identify revisions by commit and date. Keep historical archives and qualification records intact. Cache and storage schema versions remain independent from the app label. Preserve all existing evidence review, media, generation, export and local-first capabilities.
 
 ## Topic content and media policy
 
@@ -29,4 +29,4 @@ The owner's V7.0 master specification (23 October 2026) supersedes the previous 
 - Generation and editable/exported decks are limited to 1–50 slides. Never silently clamp, pad, repeat, or truncate to satisfy the count.
 - Preserve older 51–400-slide archives intact; changing the application cap is not permission to delete saved content.
 - Evidence statements require exact claim-to-passage relationships. Model screening, metadata matches and lecturer review are separate statuses. Editing a claim invalidates its previous review.
-- Desktop data uses transactional SQLite; portable projects preserve evidence and media with integrity checks. Visible version is V7.0.
+- Desktop data uses transactional SQLite; portable projects preserve evidence and media with integrity checks. Visible version is V6.2.1.

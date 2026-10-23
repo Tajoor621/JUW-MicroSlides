@@ -88,7 +88,7 @@ export async function packProject(deck: Deck): Promise<Uint8Array> {
     JSON.stringify({
       format: "juwslides",
       schemaVersion: 1,
-      appVersion: "V7.0",
+      appVersion: "V6.2.1",
       files,
       sourceCoverage:
         "Embedded claim passages and citations; external full texts are identified by their source links.",

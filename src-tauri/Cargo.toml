@@ -1,6 +1,6 @@
 [package]
 name = "juw-microslides"
-version = "7.0.0"
+version = "6.2.1"
 edition = "2021"
 
 [build-dependencies]

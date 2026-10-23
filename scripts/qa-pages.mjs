@@ -850,7 +850,7 @@ try {
         join(output, "powerpoint-baseline.json"),
         JSON.stringify(
           {
-            version: "V7.0",
+            version: "V6.2.1",
             slides: 50,
             width: 1280,
             height: 720,
