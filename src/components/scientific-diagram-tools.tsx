@@ -29,7 +29,6 @@ export function ScientificDiagramTools() {
                 s = state.slide();
               if (!s) return;
               state.patchSlide(state.selectedIndex, {
-                media: [],
                 mediaTags: ["schematic"],
                 evidenceFlags: [
                   ...new Set([...(s.evidenceFlags || []), "needs-verification" as const]),

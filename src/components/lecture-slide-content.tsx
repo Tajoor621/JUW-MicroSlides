@@ -30,7 +30,15 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
               <h3 className="text-lg font-semibold">
                 {i + 1}. {q.question}
               </h3>
-              {q.kind==="image"&&slide.media.find(m=>m.id===q.mediaId)&&<img src={slide.media.find(m=>m.id===q.mediaId)!.src} alt={slide.teaching?.altText||slide.media.find(m=>m.id===q.mediaId)!.title} className="mt-2 max-h-32 max-w-full object-contain"/>}
+              {q.kind === "image" && slide.media.find((m) => m.id === q.mediaId) && (
+                <img
+                  src={slide.media.find((m) => m.id === q.mediaId)!.src}
+                  alt={
+                    slide.teaching?.altText || slide.media.find((m) => m.id === q.mediaId)!.title
+                  }
+                  className="mt-2 max-h-32 max-w-full object-contain"
+                />
+              )}
               {q.options.length > 0 && (
                 <ol className="mt-1 grid grid-cols-2 gap-2 text-base">
                   {q.options.map((o, j) => (
@@ -47,6 +55,15 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
         <>
           <section className="space-y-3">
             <h3 className="text-lg font-semibold">Materials & procedure</h3>
+            {diagram && (
+              <div className="max-w-56">
+                <TeachingDiagram
+                  kind={diagram}
+                  label={slide.teaching?.diagramLabel}
+                  alt={slide.teaching?.altText}
+                />
+              </div>
+            )}
             {slide.protocol.materials.length > 0 && <p>{slide.protocol.materials.join(" · ")}</p>}
             <ol className="space-y-3">
               {slide.protocol.steps.map((s, i) => (
@@ -80,6 +97,13 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
         <>
           <section className="space-y-3">
             {field(`Case ${slide.caseData.caseNumber} — vignette`, slide.caseData.vignette)}
+            {slide.media[0] && (
+              <img
+                src={slide.media[0].src}
+                alt={slide.teaching?.altText || slide.media[0].title}
+                className="max-h-40 max-w-full object-contain"
+              />
+            )}
             {field("Differential diagnosis", slide.caseData.differential)}
             {field("Laboratory work-up", slide.caseData.workup)}
           </section>
