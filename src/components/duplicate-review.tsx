@@ -58,6 +58,8 @@ export function DuplicateReview() {
                 <Button
                   variant="secondary"
                   size="sm"
+                  className="min-h-11 whitespace-normal"
+                  aria-label={`Remove exact repeated point from slide ${pair.second + 1}`}
                   onClick={() => {
                     const state = useDeckStore.getState(),
                       live = state.deck();
@@ -77,7 +79,7 @@ export function DuplicateReview() {
                     });
                   }}
                 >
-                  Remove exact repeated point from slide {pair.second + 1}
+                  Remove exact repeat
                 </Button>
               )}
             </div>
