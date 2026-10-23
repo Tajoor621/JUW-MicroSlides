@@ -1,5 +1,11 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — extractive concept headings (23 October 2026)
+
+- Replace first-nine-word research headings with short, source-contiguous concept labels. Prefer unused phrases before numbered repeats; keep source body quotations and citations intact.
+- Preserve gene case, organism abbreviations and chemical notation; exclude standalone numerical findings from headings so units are not lost.
+- Keep generated headings under human evidence review and leave saved decks unchanged. This is a drafting heuristic, not scientific or grammatical certification.
+
 ## V6.2.1 — portable PowerPoint typography (23 October 2026)
 
 - Add optional bundled DejaVu Sans preview and full regular/bold EOT embedding in editable PPTX and teaching packs. Preserve original typography by default.

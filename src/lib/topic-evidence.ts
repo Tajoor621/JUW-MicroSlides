@@ -1,3 +1,4 @@
+import { sourceConceptHeading } from "./source-headings";
 import { fetchPubmedAbstracts } from "./pubmed-abstracts";
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { statementSimilarity, reconcileClaims } from "./deck-integrity";
@@ -281,18 +282,7 @@ function sourceSlides(
       const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");
       if (usedBodies.has(key)) continue;
       usedBodies.add(key);
-      let title = bullets[0]
-        .replace(/^(background|objective|methods?|results?|conclusions?)\s*:?\s*/i, "")
-        .split(/[;:,]/)[0]
-        .split(/\s+/)
-        .slice(0, 9)
-        .join(" ")
-        .replace(/[.!?]$/, "");
-      if (title.length < 10) title = sourceTitle.slice(0, 85);
-      const root = title;
-      let n = 2;
-      while (headings.has(title.toLowerCase())) title = `${root} (${n++})`;
-      headings.add(title.toLowerCase());
+      const title = sourceConceptHeading(bullets, topic, headings);
       const draft: Slide = {
         id: uid("research"),
         layout: "content",

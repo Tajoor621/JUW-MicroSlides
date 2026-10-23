@@ -285,6 +285,12 @@ try {
   assert.equal(broad.slides.length, 25);
   assert(broad.slides.slice(1).every((s) => s.media.length === 0));
   assert(broad.slides.some((s) => s.citations.length));
+  const sourced = broad.slides.filter((s) => s.citations.length);
+  assert(sourced.every((s) => s.title.length <= 75));
+  assert(sourced.every((s) => !/\b(is|was|were|have|has|that|during|using)$/.test(s.title)));
+  assert(sourced.every((s) => s.bullets.every((bullet) => s.notes.includes(bullet))));
+  assert(sourced.every((s) => s.claims.every((claim) => claim.status !== "lecturer-reviewed")));
+
   checks++;
   console.log(
     "PASS multi-query literature search fills supported 25-slide requests with citations",
