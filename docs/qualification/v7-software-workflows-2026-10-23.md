@@ -34,3 +34,9 @@ Independent microbiologist review, real patient/protocol interpretation, current
 PDF handouts embed fonts but are not certified PDF/UA. PPTX diagrams remain editable within the existing export vocabulary; PPTX font embedding and trusted installer signing are not introduced. Online sources and optional local models must actually be available; offline generation uses saved material. A successful literature search timestamp is not approval of guideline currency.
 
 See [V7 workflow guide](../V7-LECTURE-WORKFLOWS.md) for supported operation and review requirements. Historical V6.2.1 qualifications remain historical and do not certify V7.
+
+## Native audit follow-up
+
+GitHub's native audit found RUSTSEC-2026-0384 in the inherited Tokio 1.54.0 lock. The official [RustSec advisory](https://rustsec.org/advisories/RUSTSEC-2026-0384.html) identifies 1.54.1 as patched. The [official crates registry index](https://github.com/rust-lang/crates.io-index/blob/master/to/ki/tokio) supplies the 1.54.1 checksum and confirms the same dependency and feature metadata. Raise the manifest minimum to 1.54.1 and update only that locked package version/checksum; do not add ignores or relax auditing. Audit JSON is now printed to CI logs as well as retained in the artifact.
+
+The final case-phase privacy and native patch changes must be verified through GitHub CI because the local build environment became unavailable after the earlier software checks. Do not infer native audit/build success from the earlier npm or web-build results. Informational upstream native warnings remain visible in the audit report and require separate platform assessment.

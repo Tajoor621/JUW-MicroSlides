@@ -1,5 +1,7 @@
 # V7.0 — structured microbiology lecture workflows (2026-10-23)
 
+- Update native Tokio to 1.54.1 for RUSTSEC-2026-0384, retaining the locked dependency graph and mandatory audit. Surface audit JSON in CI logs without ignoring failures.
+
 - Add pathogen, laboratory, clinical-case and curriculum generation modes with contextual controls, level-mapped objectives, optional source-backed assessment, and exact-count preservation.
 - Add structured scientific layouts and editors, tagged media, local editable diagram templates, optional guideline search and cached NCBI taxonomy lookup.
 - Preserve human evidence review and invalidate prior reviews when new scientific fields change; keep assessment answer keys private in audience view.
