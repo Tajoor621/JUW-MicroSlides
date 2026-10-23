@@ -9,7 +9,7 @@ import { useDeckStore } from "@/lib/deck-store";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
-import { researchTheme, themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
+import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
 import { cn, mediaDisplaySrc } from "@/lib/utils";
 import { topicArtworkSvg } from "@/lib/topic-artwork";
@@ -64,8 +64,7 @@ export function SlideView({
   const department = deck?.department ?? JUW.department;
   const isTitle = slide.layout === "title";
   const artwork = topicArtworkSvg(deck?.topic ?? slide.title);
-  const titleTheme = researchTheme(deck?.topic ?? slide.title, deck?.discipline ?? "", "content");
-  const visualTheme = isTitle ? titleTheme : slide.theme;
+  const visualTheme = slide.theme;
   const baseTokens = themeOf(visualTheme);
   const tokens =
     deck?.exportMode === "dark"
@@ -115,6 +114,7 @@ export function SlideView({
           "slide-stage relative flex h-full w-full flex-col overflow-hidden rounded-sm",
         )}
         data-slide-stage
+        data-slide-theme={visualTheme}
         style={{
           ...themeVars(visualTheme),
           ...{
@@ -144,8 +144,8 @@ export function SlideView({
               className={cn(
                 "topic-artwork pointer-events-none absolute z-0 text-accent",
                 isTitle
-                  ? "right-[3%] top-[23%] w-[19%] opacity-[0.14]"
-                  : "right-[3%] top-[28%] w-[12%] opacity-[0.09]",
+                  ? "right-[3%] top-[23%] w-[20%] opacity-30"
+                  : "right-[3%] top-[28%] w-[12%] opacity-[0.14]",
               )}
               dangerouslySetInnerHTML={{ __html: artwork }}
             />

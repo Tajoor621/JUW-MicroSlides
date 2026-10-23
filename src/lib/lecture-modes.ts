@@ -1,3 +1,4 @@
+import { researchTheme } from "./slide-themes";
 import { caseContinuityProblem } from "./lecture-case-context";
 import { lookupTaxonomy } from "./taxonomy-source";
 import { populateLabelledFields, groundedModelFields } from "./lecture-extraction";
@@ -36,10 +37,12 @@ export async function generateCourseModule(
   if (
     topics.length < 2 ||
     topics.length > 12 ||
-    topics.some(topic => topic.length > 500) ||
+    topics.some((topic) => topic.length > 500) ||
     new Set(topics.map((t) => t.toLowerCase())).size !== topics.length
   )
-    throw Error("Enter 2–12 distinct curriculum lecture topics, up to 500 characters each, one per line.");
+    throw Error(
+      "Enter 2–12 distinct curriculum lecture topics, up to 500 characters each, one per line.",
+    );
   const courseId = uid("course"),
     decks: Deck[] = [];
   for (const [i, topic] of topics.entries()) {
@@ -305,17 +308,17 @@ export function applyStandardPedagogy(deck: Deck, input: GenerateInput): Deck {
     clinical: "clinical",
     epidemiology: "outbreak",
   } as const;
-  if (input.visualEmphasis)
-    made.slides = made.slides.map((s) => ({
-      ...s,
-      theme: s.layout === "title" ? "classic" : visualTheme[input.visualEmphasis!],
-    }));
+  const theme =
+    input.visualEmphasis && input.visualEmphasis !== "auto"
+      ? visualTheme[input.visualEmphasis]
+      : researchTheme(input.topic, input.discipline, "content");
+  made.slides = made.slides.map((s) => ({ ...s, theme }));
   made.lectureOptions = {
     generationMode: input.generationMode || "standard",
     includeObjectives: input.includeObjectives !== false,
     includeAssessment: !!input.includeAssessment,
     focusDepth: input.focusDepth || "standard",
-    visualEmphasis: input.visualEmphasis || "morphology",
+    visualEmphasis: input.visualEmphasis || "auto",
     clinicalCases: input.clinicalCases || 3,
     moduleTopics: input.moduleTopics?.map((s) => s.trim()).filter(Boolean),
   };
@@ -343,6 +346,7 @@ export function applyStandardPedagogy(deck: Deck, input: GenerateInput): Deck {
             notes: `${s.notes}\n\nCommon misconceptions\n${s.commonMisconceptions?.map((x) => `- ${x}`).join("\n") || ""}`,
           },
     );
+  made.slides = made.slides.map((s) => ({ ...s, theme }));
   return prepareTeachingDeck(reconcileDeck(made));
 }
 export async function generateModeDeck(

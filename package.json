@@ -46,7 +46,8 @@
     "qa:reviewed-export": "node scripts/test-reviewed-export.mjs",
     "test:lecture": "node scripts/test-lecture-modes.mjs",
     "qa:lecture": "node scripts/qa-lecture-modes.mjs",
-    "test:version-lock": "node --test scripts/version-lock.test.mjs"
+    "test:version-lock": "node --test scripts/version-lock.test.mjs",
+    "qa:topic-recovery": "node scripts/qa-topic-recovery.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",

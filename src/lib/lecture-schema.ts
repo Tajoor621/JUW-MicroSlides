@@ -59,7 +59,9 @@ export const lectureOptionsSchema = z.object({
   clinicalCases: z.number().int().min(3).max(8).optional(),
   moduleTopics: z.array(z.string().trim().min(1).max(500)).min(2).max(12).optional(),
   focusDepth: z.enum(["overview", "standard", "exhaustive"]).optional(),
-  visualEmphasis: z.enum(["morphology", "molecular", "clinical", "epidemiology"]).optional(),
+  visualEmphasis: z
+    .enum(["auto", "morphology", "molecular", "clinical", "epidemiology"])
+    .optional(),
 });
 export type LectureOptions = z.infer<typeof lectureOptionsSchema>;
 export const lectureSlideFields = {

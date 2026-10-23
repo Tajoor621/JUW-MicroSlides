@@ -14,6 +14,7 @@ try {
   const { researchTheme, themeOf } = await server.ssrLoadModule("/src/lib/slide-themes.ts");
   for (const [topic, expected] of [
     ["Bacterial genome architecture", "molecular"],
+    ["Bacterial chromosome segregation", "molecular"],
     ["Candida albicans infection", "mycology"],
     ["Malaria life cycle", "parasitology"],
     ["Enzyme immobilization", "culture"],
@@ -30,7 +31,7 @@ try {
     fileURLToPath(new URL("../src/lib/export-pptx.ts", import.meta.url)),
     "utf8",
   );
-  assert.match(slide, /const visualTheme = isTitle \? titleTheme : slide\.theme/);
+  assert.match(slide, /const visualTheme = slide\.theme/);
   assert.match(slide, /\.\.\.themeVars\(visualTheme\)/);
   assert.match(pptx, /Native SVG stays vector in PowerPoint/);
   assert.match(pptx, /slide\.addText\(item\.text/);

@@ -52,11 +52,13 @@ export function GenerateForm({
 }) {
   const generate = useDeckStore((s) => s.generate);
   const draft = useDeckStore((s) => s.generateDraft);
+  const failure = useDeckStore((s) => s.generationFailure);
+  const currentTopic = useDeckStore((s) => s.deck()?.topic);
   const patchDraft = useDeckStore((s) => s.patchGenerateDraft);
   const [busy, setBusy] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const [progress, setProgress] = useState("");
-  const [generationError, setGenerationError] = useState("");
+  const form = useRef<HTMLFormElement>(null);
   const [lockDiscipline, setLockDiscipline] = useState(lockDisciplineInitially);
   const [lockCourse, setLockCourse] = useState(false);
 
@@ -107,7 +109,7 @@ export function GenerateForm({
       includeAssessment: !!draftNow.includeAssessment,
       clinicalCases: draftNow.clinicalCases || 3,
       focusDepth: draftNow.focusDepth || "standard",
-      visualEmphasis: draftNow.visualEmphasis || "morphology",
+      visualEmphasis: draftNow.visualEmphasis || "auto",
     };
     patchDraft({
       topic,
@@ -123,7 +125,7 @@ export function GenerateForm({
     generationRunning = true;
     controller.current = new AbortController();
     setBusy(true);
-    setGenerationError("");
+    live.setGenerationFailure(null);
     setProgress("Building the topic outline…");
     try {
       await writeLocalRecord(
@@ -213,7 +215,6 @@ export function GenerateForm({
         local.slides[0] = {
           ...local.slides[0],
           layout: "title",
-          theme: "classic",
           title: topic,
           subtitle: local.slides[0].subtitle,
           bullets: [],
@@ -251,8 +252,9 @@ export function GenerateForm({
         : error instanceof Error
           ? error.message
           : "The requested deck could not be completed. Add source material and retry.";
-      setGenerationError(message);
-      toast.error(message, { duration: 12000 });
+      useDeckStore.getState().setGenerationFailure({ topic, count, message });
+      toast.error(`Could not create “${topic}”. See the generation details.`, { duration: 5000 });
+      queueMicrotask(() => form.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
     } finally {
       generationRunning = false;
       setBusy(false);
@@ -262,6 +264,7 @@ export function GenerateForm({
 
   return (
     <form
+      ref={form}
       className={cn("grid gap-3", compact && "gap-2")}
       onSubmit={(e) => {
         e.preventDefault();
@@ -269,12 +272,22 @@ export function GenerateForm({
       }}
     >
       <fieldset disabled={busy} className="contents">
-        <LectureGenerationOptions draft={draft} patch={patchDraft} />
-        {generationError && (
-          <p role="alert" className="rounded-sm border border-accent p-3 text-sm text-fg">
-            {generationError}
-          </p>
+        {failure && (
+          <section
+            role="alert"
+            className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
+          >
+            <p className="font-semibold">
+              Generation stopped: {failure.topic} · {failure.count} requested slides
+            </p>
+            <p>{failure.message}</p>
+            <p className="text-xs text-muted">
+              Still displaying “{currentTopic}”. Its content has not been replaced or renamed. Edit
+              the request or add source notes below, then choose Generate deck to retry.
+            </p>
+          </section>
         )}
+        <LectureGenerationOptions draft={draft} patch={patchDraft} />
         <div className={cn("grid gap-3", compact ? "sm:grid-cols-2" : "")}>
           <div className={cn("grid content-start gap-1.5", compact && "sm:col-span-2")}>
             <Label htmlFor={compact ? "gen-topic" : "topic"}>Topic</Label>
@@ -290,7 +303,7 @@ export function GenerateForm({
                 <button
                   key={chip}
                   type="button"
-                  onClick={() => void onGenerate(chip)}
+                  onClick={() => setTopic(chip)}
                   disabled={busy}
                   className={cn(
                     "h-7 rounded-sm border px-2 text-[11px]",
@@ -366,6 +379,10 @@ export function GenerateForm({
             </div>
           ) : null}
         </div>
+        <p className="text-xs text-muted">
+          Topic suggestions fill the form. Choose Generate deck to create a new lecture; the current
+          deck stays saved.
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {SLIDE_PRESETS.map((n) => (
             <button

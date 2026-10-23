@@ -10,7 +10,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { lectureMeta } from "./brand";
 import { generateLocalDeck, sampleDeck, withOfficialIntro } from "./generate-deck";
 
-import { researchTheme } from "./slide-themes";
+import { type SlideTheme, researchTheme } from "./slide-themes";
 import type {
   Citation,
   CitationStyle,
@@ -69,6 +69,9 @@ interface DeckState {
     snapshot: string,
     keepFigures: boolean,
   ) => void;
+  applyDeckTheme: (theme: SlideTheme) => void;
+  generationFailure: { topic: string; count: number; message: string } | null;
+  setGenerationFailure: (failure: DeckState["generationFailure"]) => void;
   patchDeck: (patch: DeckMetaPatch) => void;
   renameTopic: (title: string) => void;
   setLayout: (layout: Layout) => void;
@@ -107,7 +110,7 @@ const EMPTY_DRAFT: GenerateDraft = {
   includeObjectives: true,
   includeAssessment: false,
   focusDepth: "standard",
-  visualEmphasis: "morphology",
+  visualEmphasis: "auto",
   clinicalCases: 3,
 };
 
@@ -129,6 +132,23 @@ export const useDeckStore = create<DeckState>()(
       generatorOpen: true,
       generationMode: "manual",
       generateDraft: EMPTY_DRAFT,
+      generationFailure: null,
+      setGenerationFailure: (generationFailure) => set({ generationFailure }),
+      applyDeckTheme: (theme) => {
+        const d = get().deck();
+        if (!d) return;
+        if (d.slides.length > MAX_SLIDES || d.slides.some((s) => s.locked)) {
+          toast.error(
+            "Unlock every slide before applying a deck theme. Legacy archives stay unchanged.",
+          );
+          return;
+        }
+        const next = bump(
+          d,
+          d.slides.map((s) => ({ ...s, theme })),
+        );
+        set({ library: get().library.map((item) => (item.id === d.id ? next : item)) });
+      },
       hydrateSample: () => {
         const usable = get().library.filter((d) => d.slides.length > 0);
         if (usable.length > 0) return;
@@ -241,7 +261,7 @@ export const useDeckStore = create<DeckState>()(
           return;
         }
         const slides = d.slides.map((s, i) =>
-          i === 0 && s.layout === "title" ? { ...s, title, theme: "classic" as const } : s,
+          i === 0 && s.layout === "title" ? { ...s, title } : s,
         );
         const next = bump({ ...d, title, topic: title.trim() || d.topic }, slides);
         set({
