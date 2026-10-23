@@ -1,3 +1,4 @@
+import { sourceConceptHeading } from "./source-headings";
 import { fetchPubmedAbstracts } from "./pubmed-abstracts";
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { statementSimilarity, reconcileClaims } from "./deck-integrity";
@@ -121,8 +122,37 @@ const taxonGroups = [
 function topicTaxa(terms: string[]) {
   return taxonGroups.filter((group) => terms.some((term) => group.includes(term)));
 }
-function relevance(topic: string, body: string) {
-  const terms = termsFor(topic),
+const reproductionNumberTopic = /\breproduct(?:ion|ive)\s+(?:number|ratio)s?\b/i;
+const reproductionScopeWords = new Set([
+  "pathogen",
+  "pathogens",
+  "reproductive",
+  "reproduction",
+  "number",
+  "numbers",
+  "ratio",
+  "ratios",
+  "interpretation",
+]);
+function reproductionNumberContext(body: string) {
+  return (
+    (/\breproduct(?:ion|ive)\s+(?:number|ratio)s?\b/i.test(body) ||
+      /(?<![\p{L}\p{N}_])R(?:0|₀|t|ₜ)(?![\p{L}\p{N}_])|\bR\(t\)/u.test(body)) &&
+    /\b(?:epidem\w*|transmiss\w*|infect\w*|outbreak\w*|herd|incidence|susceptib\w*)\b/i.test(body)
+  );
+}
+function mentionsVariant(body: string, variant: string) {
+  const escaped = variant.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+  return new RegExp(`(?<![\\p{L}\\p{N}_])${escaped}(?:s)?(?![\\p{L}\\p{N}_])`, "iu").test(body);
+}
+export function sourceTopicRelevance(topic: string, body: string) {
+  // A reproduction number is an epidemiological concept. Shared words about
+  // reproduction, chromosome number or interpretation cannot establish this scope.
+  const reproduction = reproductionNumberTopic.test(topic);
+  if (reproduction && !reproductionNumberContext(body)) return 0;
+  const terms = termsFor(topic).filter(
+      (term) => !reproduction || !reproductionScopeWords.has(term),
+    ),
     lower = body.toLowerCase();
   if (
     /microb/i.test(topic) &&
@@ -140,6 +170,7 @@ function relevance(topic: string, body: string) {
   if (required.length === 1 && !required[0].test(body)) return 0;
   // A comparative lecture can use a source on one requested taxon. Require the
   // shared scientific concept too; unrelated taxon-only papers remain excluded.
+  if (!terms.length) return 1;
   const groups = topicTaxa(terms);
   if (groups.length > 1) {
     const anchors = terms.filter((term) => !groups.some((group) => group.includes(term)));
@@ -147,12 +178,12 @@ function relevance(topic: string, body: string) {
       return 0;
     if (anchors.length)
       return (
-        anchors.filter((term) => variants(term).some((v) => lower.includes(v.replace(/s$/, ""))))
-          .length / anchors.length
+        anchors.filter((term) => variants(term).some((v) => mentionsVariant(lower, v))).length /
+        anchors.length
       );
   }
   return (
-    terms.filter((term) => variants(term).some((v) => lower.includes(v.replace(/s$/, "")))).length /
+    terms.filter((term) => variants(term).some((v) => mentionsVariant(lower, v))).length /
     terms.length
   );
 }
@@ -194,6 +225,18 @@ export function researchQueries(topic: string) {
   return [
     ...new Set([
       `"${clean}"`,
+      reproductionNumberTopic.test(clean)
+        ? '("reproduction number" OR "reproductive number" OR "basic reproduction ratio" OR "effective reproduction number") AND (transmission OR epidemic OR infection OR outbreak)' +
+          terms
+            .filter((term) => !reproductionScopeWords.has(term))
+            .map(
+              (term) =>
+                ` AND (${variants(term)
+                  .map((v) => `"${v}"`)
+                  .join(" OR ")})`,
+            )
+            .join("")
+        : "",
       expanded,
       comparative,
       concepts.length ? `(${concepts.join(" OR ")})` : terms.join(" "),
@@ -217,12 +260,14 @@ function sourceSlides(
       const passage = p.fullBody || p.abstractText;
       if (!p.title || !passage) return [];
       const plainPassage = p.fullBody ? passage.replace(/\s+/g, " ").trim() : text(passage);
-      const score = relevance(topic, `${p.title} ${plainPassage}`);
+      const score = sourceTopicRelevance(topic, `${p.title} ${plainPassage}`);
       if (score < 0.6) return [];
       const parts = coherentSourcePassages(
         passage,
         Boolean(p.fullBody),
-        (body) => !p.fullBody || relevance(topic, body) >= 0.6,
+        (body) =>
+          (!p.fullBody && !reproductionNumberTopic.test(topic)) ||
+          sourceTopicRelevance(topic, body) >= 0.6,
       );
       if (!parts.length) return [];
       return [
@@ -281,18 +326,7 @@ function sourceSlides(
       const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");
       if (usedBodies.has(key)) continue;
       usedBodies.add(key);
-      let title = bullets[0]
-        .replace(/^(background|objective|methods?|results?|conclusions?)\s*:?\s*/i, "")
-        .split(/[;:,]/)[0]
-        .split(/\s+/)
-        .slice(0, 9)
-        .join(" ")
-        .replace(/[.!?]$/, "");
-      if (title.length < 10) title = sourceTitle.slice(0, 85);
-      const root = title;
-      let n = 2;
-      while (headings.has(title.toLowerCase())) title = `${root} (${n++})`;
-      headings.add(title.toLowerCase());
+      const title = sourceConceptHeading(bullets, topic, headings);
       const draft: Slide = {
         id: uid("research"),
         layout: "content",
@@ -331,7 +365,7 @@ function sourceSlides(
     }
     const strength = (slide: Slide) =>
       (preferOverview ? overviewScore(slide) : 0) +
-      relevance(topic, slide.bullets.join(" ")) +
+      sourceTopicRelevance(topic, slide.bullets.join(" ")) +
       (/result|showed|found|demonstrat|observed|measured/i.test(slide.bullets.join(" ")) ? 0.3 : 0);
     groups.push(slides.sort((a, b) => strength(b) - strength(a)));
   }
@@ -374,7 +408,7 @@ export async function enrichTopicEvidence(
         const parsed = sourceDocumentSchema.safeParse(raw);
         return parsed.success &&
           !guidanceNeedsReview(parsed.data) &&
-          relevance(input.topic, `${parsed.data.title} ${parsed.data.text}`) >= 0.6
+          sourceTopicRelevance(input.topic, `${parsed.data.title} ${parsed.data.text}`) >= 0.6
           ? [parsed.data]
           : [];
       });
@@ -433,7 +467,7 @@ export async function enrichTopicEvidence(
           p.isOpenAccess === "Y" &&
           !p.fullBody &&
           !fullTextAttempts.has(p.pmcid) &&
-          relevance(input.topic, `${p.title} ${p.abstractText}`) >= 0.6 &&
+          sourceTopicRelevance(input.topic, `${p.title} ${p.abstractText}`) >= 0.6 &&
           !europeNotices(p).length,
       )
       .slice(0, Math.max(0, 6 - fullTextAttempts.size));

@@ -25,7 +25,37 @@ try {
   const { searchMediaLibrary, publicMediaSearchLinks, downloadMediaFile } =
     await server.ssrLoadModule("/src/lib/media-library.ts");
   const { enrichTopicEvidence } = await server.ssrLoadModule("/src/lib/topic-evidence.ts");
-  const { researchQueries } = await server.ssrLoadModule("/src/lib/topic-evidence.ts");
+  const { researchQueries, sourceTopicRelevance } = await server.ssrLoadModule(
+    "/src/lib/topic-evidence.ts",
+  );
+  check("reproduction-number scope rejects fertility/genetics word overlap", () => {
+    const topic = "Pathogen reproductive number interpretation";
+    for (const body of [
+      "Identification of potential causal variants for premature ovarian failure. Reproductive performance and chromosome number interpretation were assessed with pathogenetic variants.",
+      "Pathogen detection in symptomatic pigs. Reproductive performance and bacterial culture interpretation were recorded.",
+      "RT PCR detected infection; chromosome number and human reproductive performance were interpreted.",
+    ])
+      assert.equal(sourceTopicRelevance(topic, body), 0);
+    for (const body of [
+      "The basic reproduction number was estimated from infection incidence.",
+      "We estimated R0 from outbreak transmission data.",
+      "Rt was estimated from epidemic incidence in this population.",
+      "R₀ was estimated from outbreak transmission data.",
+    ])
+      assert.equal(sourceTopicRelevance(topic, body), 1);
+    assert(
+      researchQueries(topic).some(
+        (q) => q.includes('"reproduction number"') && q.includes("transmission"),
+      ),
+    );
+    assert.equal(
+      sourceTopicRelevance(
+        "bacterial biofilm",
+        "Antibacterial medicines inhibit nonbiofilm structures.",
+      ),
+      0,
+    );
+  });
   const { parseBackup } = await server.ssrLoadModule("/src/lib/backup.ts");
   const input = {
     topic: "Bacterial genome architecture",
@@ -285,6 +315,12 @@ try {
   assert.equal(broad.slides.length, 25);
   assert(broad.slides.slice(1).every((s) => s.media.length === 0));
   assert(broad.slides.some((s) => s.citations.length));
+  const sourced = broad.slides.filter((s) => s.citations.length);
+  assert(sourced.every((s) => s.title.length <= 75));
+  assert(sourced.every((s) => !/\b(is|was|were|have|has|that|during|using)$/.test(s.title)));
+  assert(sourced.every((s) => s.bullets.every((bullet) => s.notes.includes(bullet))));
+  assert(sourced.every((s) => s.claims.every((claim) => claim.status !== "lecturer-reviewed")));
+
   checks++;
   console.log(
     "PASS multi-query literature search fills supported 25-slide requests with citations",
