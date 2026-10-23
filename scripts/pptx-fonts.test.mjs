@@ -58,7 +58,9 @@ test("editable PowerPoint has valid font parts, relationships, licence and Prese
     .addSlide()
     .addText("Editable α β η text", { x: 1, y: 1, w: 8, h: 1, fontFace: "DejaVu Sans" });
   const source = new Uint8Array(await pptx.write({ outputType: "arraybuffer" }));
-  const bytes = await embedPortableFonts(source, regular, bold, license);
+  // XML normalizes CRLF to LF, including on Windows checkouts.
+  const metadataLicense = license.replace(/\r?\n/g, "\r\n");
+  const bytes = await embedPortableFonts(source, regular, bold, metadataLicense);
   const zip = await JSZip.loadAsync(bytes);
   for (const entry of Object.values(zip.files).filter((x) => /\.xml$|\.rels$/.test(x.name)))
     assert.equal(XMLValidator.validate(await entry.async("string")), true, entry.name);
@@ -90,7 +92,7 @@ test("editable PowerPoint has valid font parts, relationships, licence and Prese
     "cp:coreProperties"
   ];
   assert.equal(typeof core["dc:description"], "string");
-  assert(core["dc:description"].includes(license));
+  assert(core["dc:description"].includes(license.replace(/\r\n?/g, "\n")));
   const slide = await zip.file("ppt/slides/slide1.xml").async("string");
   assert.match(slide, /Editable α β η text/);
   assert.match(slide, /<a:latin typeface="DejaVu Sans"/);
