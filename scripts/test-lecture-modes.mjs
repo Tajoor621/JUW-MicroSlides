@@ -173,6 +173,21 @@ try {
   const extracted = populateLabelledFields(caseSlide, caseText);
   assert.equal(extracted.caseData.vignette, "Synthetic vignette");
   assert.equal(extracted.caseData.questions.length, 2);
+  const { caseContinuityProblem } = await vite.ssrLoadModule("/src/lib/lecture-case-context.ts");
+  const otherCase = structuredClone(extracted);
+  otherCase.caseData.phase = "resolution";
+  otherCase.claims = [
+    {
+      ...otherCase.claims[0],
+      evidence: [
+        { ...otherCase.claims[0].evidence[0], sourceUrl: "https://example.org/different-patient" },
+      ],
+    },
+  ];
+  assert.match(caseContinuityProblem([extracted, otherCase], [false, false]), /no shared source/);
+  assert.match(caseContinuityProblem([extracted, otherCase], [true, false]), /mixes supplied/);
+  assert.equal(caseContinuityProblem([extracted, otherCase], [true, true]), "");
+  assert.equal(caseContinuityProblem([extracted, extracted], [false, false]), "");
   const invented = structuredClone(extracted);
   invented.caseData.questions = ["Invented scientific assumption?"];
   assert.deepEqual(

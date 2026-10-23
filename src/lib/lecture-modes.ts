@@ -1,3 +1,4 @@
+import { caseContinuityProblem } from "./lecture-case-context";
 import { lookupTaxonomy } from "./taxonomy-source";
 import { populateLabelledFields, groundedModelFields } from "./lecture-extraction";
 import type { Deck, GenerateInput, Slide, Layout } from "./types";
@@ -565,6 +566,18 @@ export async function generateModeDeck(
     }
   }
   await Promise.all(Array.from({ length: Math.min(3, sections.length) }, work));
+  if (input.generationMode === "clinical-cases") {
+    const problem = caseContinuityProblem(
+      result,
+      sections.map((section) => !!sectionNotes(input.notes, section.title)),
+    );
+    if (problem) throw Error(problem);
+    result.forEach(
+      (s) =>
+        (s.notes +=
+          "\nCase continuity: confirm the same patient or explicitly labelled teaching case across phases. A shared publication does not establish patient identity."),
+    );
+  }
   made.slides.push(...result);
   const takeaways = result.slice(0, 3).map((s) => s.bullets[0]);
   made.slides.push({

@@ -17,7 +17,7 @@ This record describes software checks, not scientific certification. Test-only p
 | TypeScript and ESLint | Pass; four pre-existing lint warnings |
 | Unit tests | 277 tests pass |
 | Research, topic, count, scientific, professional, audit, teaching, release and lecturer contracts | Pass |
-| V7 contracts | Pass: offline section allocation, invalid count rejection, protocol omissions and source timing, grounded extraction, taxonomy XML identity/entity rejection, review invalidation, assessment privacy, short-deck objectives, Markdown roundtrip, course cycles and restoration |
+| V7 contracts | Pass: offline section allocation, invalid count rejection, protocol omissions and source timing, grounded extraction, rejection of unrelated or mixed-source case phases, taxonomy XML identity/entity rejection, review invalidation, assessment privacy, short-deck objectives, Markdown roundtrip, course cycles and restoration |
 | Existing production browser suite | 44 checks pass; no uncaught errors |
 | V7 production browser suite | 7 checks pass; no uncaught errors; pathogen creation, protocol/table edits, blocked draft export, mobile width, three clinical case pairs and two-lecture curriculum backup |
 | Reviewed export suite | Pass: corrupt images blocked, editable PPTX schematics, embedded-font PDF, complete teaching pack, progressive reveal, final verification and invalidation, new handout/card/HTML downloads |
