@@ -46,6 +46,21 @@ try {
     "Removed duplicate wording is retained in notes",
   );
   assert.deepEqual(corrected.deck.slides[1].citations, second.citations);
+  const differentStudy = {
+    ...second,
+    citations: second.citations.map((c) => ({
+      ...c,
+      id: "different-citation",
+      doi: "10.0000/software-fixture-other-source",
+      pmid: undefined,
+      url: undefined,
+    })),
+  };
+  assert.equal(
+    improveDraft({ ...deck, slides: [raw, differentStudy] }).deck.slides[1].bullets.length,
+    2,
+    "Never deduplicate matching wording across different source identities",
+  );
   assert.equal(corrected.deck.slides[1].claims[0].status, "unreviewed");
   const single = { ...second, bullets: [repeat] };
   assert.equal(

@@ -67,19 +67,24 @@ export function improveDraft(deck: Deck) {
   const changes: { index: number; message: string }[] = [],
     seen = new Set<string>();
   const slides = deck.slides.map((slide, index) => {
+    // Identical wording from different studies is not automatically redundant.
+    const provenance = JSON.stringify(
+      slide.citations.map((c) => c.doi || c.pmid || c.url || c.id).sort(),
+    );
+    const key = (text: string) => JSON.stringify([text, provenance]);
     let remaining = slideStatements(slide).length;
     const removed: string[] = [];
     const keep = (text: string) => {
-      if (seen.has(text) && remaining > 1) {
+      if (seen.has(key(text)) && remaining > 1) {
         remaining--;
         removed.push(text);
         return false;
       }
-      seen.add(text);
+      seen.add(key(text));
       return true;
     };
     if (slide.locked) {
-      slideStatements(slide).forEach((s) => seen.add(s));
+      slideStatements(slide).forEach((s) => seen.add(key(s)));
       return slide;
     }
     let next = {

@@ -180,10 +180,9 @@ try {
   assert(await (await correctedDownload).path());
   assert.equal(
     await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
-    "A distinct synthetic observation in dataset 52 remains after explicit removal.",
+    repeated + "\nA distinct synthetic observation in dataset 52 remains after explicit removal.",
+    "Automatic cleanup must preserve identical wording when source identities differ",
   );
-  await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).blur();
-  await page.keyboard.press("Control+z");
   if (
     (await page
       .getByText("Reviewed release options", { exact: true })
