@@ -1,7 +1,8 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
-## V6.2.1 — extractive concept headings (23 October 2026)
+## V6.2.1 — topic scope and extractive concept headings (23 October 2026)
 
+- Require epidemiological reproduction-number context for that requested concept; reject fertility/genetics word overlap and use concept-specific query alternatives. Match generic topic terms at word boundaries.
 - Replace first-nine-word research headings with short, source-contiguous concept labels. Prefer unused phrases before numbered repeats; keep source body quotations and citations intact.
 - Preserve gene case, organism abbreviations and chemical notation; exclude standalone numerical findings from headings so units are not lost.
 - Keep generated headings under human evidence review and leave saved decks unchanged. This is a drafting heuristic, not scientific or grammatical certification.
