@@ -40,6 +40,7 @@ try {
       "The basic reproduction number was estimated from infection incidence.",
       "We estimated R0 from outbreak transmission data.",
       "Rt was estimated from epidemic incidence in this population.",
+      "R₀ was estimated from outbreak transmission data.",
     ])
       assert.equal(sourceTopicRelevance(topic, body), 1);
     assert(

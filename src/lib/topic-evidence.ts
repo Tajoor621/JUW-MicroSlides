@@ -123,10 +123,21 @@ function topicTaxa(terms: string[]) {
   return taxonGroups.filter((group) => terms.some((term) => group.includes(term)));
 }
 const reproductionNumberTopic = /\breproduct(?:ion|ive)\s+(?:number|ratio)s?\b/i;
+const reproductionScopeWords = new Set([
+  "pathogen",
+  "pathogens",
+  "reproductive",
+  "reproduction",
+  "number",
+  "numbers",
+  "ratio",
+  "ratios",
+  "interpretation",
+]);
 function reproductionNumberContext(body: string) {
   return (
     (/\breproduct(?:ion|ive)\s+(?:number|ratio)s?\b/i.test(body) ||
-      /\bR(?:0|₀|t|ₜ)\b|\bR\(t\)/.test(body)) &&
+      /(?<![\p{L}\p{N}_])R(?:0|₀|t|ₜ)(?![\p{L}\p{N}_])|\bR\(t\)/u.test(body)) &&
     /\b(?:epidem\w*|transmiss\w*|infect\w*|outbreak\w*|herd|incidence|susceptib\w*)\b/i.test(body)
   );
 }
@@ -137,8 +148,11 @@ function mentionsVariant(body: string, variant: string) {
 export function sourceTopicRelevance(topic: string, body: string) {
   // A reproduction number is an epidemiological concept. Shared words about
   // reproduction, chromosome number or interpretation cannot establish this scope.
-  if (reproductionNumberTopic.test(topic)) return reproductionNumberContext(body) ? 1 : 0;
-  const terms = termsFor(topic),
+  const reproduction = reproductionNumberTopic.test(topic);
+  if (reproduction && !reproductionNumberContext(body)) return 0;
+  const terms = termsFor(topic).filter(
+      (term) => !reproduction || !reproductionScopeWords.has(term),
+    ),
     lower = body.toLowerCase();
   if (
     /microb/i.test(topic) &&
@@ -156,6 +170,7 @@ export function sourceTopicRelevance(topic: string, body: string) {
   if (required.length === 1 && !required[0].test(body)) return 0;
   // A comparative lecture can use a source on one requested taxon. Require the
   // shared scientific concept too; unrelated taxon-only papers remain excluded.
+  if (!terms.length) return 1;
   const groups = topicTaxa(terms);
   if (groups.length > 1) {
     const anchors = terms.filter((term) => !groups.some((group) => group.includes(term)));
@@ -211,7 +226,16 @@ export function researchQueries(topic: string) {
     ...new Set([
       `"${clean}"`,
       reproductionNumberTopic.test(clean)
-        ? '("reproduction number" OR "reproductive number" OR "basic reproduction ratio" OR "effective reproduction number") AND (transmission OR epidemic OR infection OR outbreak)'
+        ? '("reproduction number" OR "reproductive number" OR "basic reproduction ratio" OR "effective reproduction number") AND (transmission OR epidemic OR infection OR outbreak)' +
+          terms
+            .filter((term) => !reproductionScopeWords.has(term))
+            .map(
+              (term) =>
+                ` AND (${variants(term)
+                  .map((v) => `"${v}"`)
+                  .join(" OR ")})`,
+            )
+            .join("")
         : "",
       expanded,
       comparative,
