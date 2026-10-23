@@ -67,7 +67,21 @@ try {
   assert(!classroomReady(deck));
   reviewFields();
   const { packProject, unpackProject } = await server.ssrLoadModule("/src/lib/project-format.ts");
+  const { teachingDeckSnapshot } = await server.ssrLoadModule("/src/lib/teaching-verification.ts");
+  const originalSnapshot = teachingDeckSnapshot(deck);
+  deck.exportTypography = "portable";
+  assert.notEqual(
+    teachingDeckSnapshot(deck),
+    originalSnapshot,
+    "Typography changes invalidate final verification",
+  );
+  assert.equal(
+    deckSchema.parse(deck).exportTypography,
+    "portable",
+    "JSON backups retain typography",
+  );
   const reopened = await unpackProject(await packProject(deck));
+  assert.equal(reopened.exportTypography, "portable", "Portable projects retain typography");
   assert(classroomReady(reopened), "Portable reopening retains valid current field reviews");
   const { generateAiDeck } = await server.ssrLoadModule("/src/lib/browser-services.ts");
   const cancelled = new AbortController();

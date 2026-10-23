@@ -121,6 +121,7 @@ export interface Deck {
   courseSeries?: import("zod").infer<typeof import("./lecture-schema").courseMembershipSchema>;
   teachingVerification?: { instructor: string; at: number; snapshot: string };
   exportMode?: "light" | "dark" | "high-contrast";
+  exportTypography?: "original" | "portable";
   sourceDocuments?: import("./source-documents").SourceDocument[];
   id: string;
   title: string;
@@ -147,6 +148,7 @@ export type DeckMetaPatch = Partial<
     Deck,
     | "teachingVerification"
     | "exportMode"
+    | "exportTypography"
     | "sourceDocuments"
     | "title"
     | "topic"

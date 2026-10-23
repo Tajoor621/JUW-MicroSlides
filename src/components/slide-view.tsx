@@ -115,6 +115,7 @@ export function SlideView({
         )}
         data-slide-stage
         data-slide-theme={visualTheme}
+        data-typography={deck?.exportTypography || "original"}
         style={{
           ...themeVars(visualTheme),
           ...{

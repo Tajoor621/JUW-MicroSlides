@@ -1,3 +1,4 @@
+import { embedPortableFonts, loadPortableFonts } from "./pptx-fonts";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
 import { preflightTeachingImages } from "./teaching-images";
@@ -48,7 +49,10 @@ export async function exportPptx(
   pptx.author = "JUW-MicroSlides";
   pptx.title = deck.title;
   pptx.subject = `${deck.discipline} · ${deck.topic}`;
-  pptx.theme = { headFontFace: "Georgia", bodyFontFace: "Arial" };
+  const portable = deck.exportTypography === "portable" ? await loadPortableFonts() : undefined;
+  pptx.theme = portable
+    ? { headFontFace: "DejaVu Sans", bodyFontFace: "DejaVu Sans" }
+    : { headFontFace: "Georgia", bodyFontFace: "Arial" };
   const images = new Map<string, string | null>();
   async function imageData(src: string, width: number, height: number, cover: boolean) {
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
@@ -252,13 +256,21 @@ export async function exportPptx(
     );
   }
   const name = `${ready ? "" : "draft-"}${slug(deck.title)}.pptx`;
-  if (isDesktop() || options.returnBytes) {
+  if (portable || isDesktop() || options.returnBytes) {
     const data = (await pptx.write({
       outputType: "arraybuffer",
       compression: true,
     })) as ArrayBuffer;
-    if (options.returnBytes) return new Uint8Array(data);
-    await saveFile(name, new Uint8Array(data), "pptx");
+    const bytes = portable
+      ? await embedPortableFonts(
+          new Uint8Array(data),
+          portable.regular,
+          portable.bold,
+          portable.license,
+        )
+      : new Uint8Array(data);
+    if (options.returnBytes) return bytes;
+    await saveFile(name, bytes, "pptx");
   } else await pptx.writeFile({ compression: true, fileName: name });
 }
 
