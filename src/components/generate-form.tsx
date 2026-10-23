@@ -244,8 +244,6 @@ export function GenerateForm({
       toast.success(
         `Created ${local.slides.length} slides. Review claims, references, and figure relevance before teaching.`,
       );
-      if (local.contentWarnings?.length)
-        toast.message(local.contentWarnings[0], { duration: 12000 });
     } catch (error) {
       const message = controller.current?.signal.aborted
         ? "Generation cancelled. Your previous deck and completed checkpoints are preserved."

@@ -583,7 +583,13 @@ export function EditorApp() {
       <SettingsDialog />
       <Presenter />
       {printing ? <PrintRoot /> : null}
-      <Toaster theme={theme === "dark" ? "dark" : "light"} position="bottom-right" />
+      <Toaster
+        theme={theme === "dark" ? "dark" : "light"}
+        position="bottom-right"
+        closeButton
+        visibleToasts={1}
+        duration={5000}
+      />
     </TooltipProvider>
   );
 }
