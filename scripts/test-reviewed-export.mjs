@@ -108,7 +108,7 @@ const browser = await chromium.launch({
 });
 try {
   for (let i = 0; i < fixtures.length; i++) {
-    const page = await browser.newPage({ acceptDownloads: true });
+    const page = await browser.newPage({ acceptDownloads: true, serviceWorkers: "block" });
     await page.goto(`http://127.0.0.1:${server.address().port}/JUW-MicroSlides/`);
     await page.getByRole("button", { name: "Library", exact: true }).click();
     await page.getByLabel("Restore backup", { exact: true }).setInputFiles({
@@ -254,7 +254,7 @@ try {
     }
     await page.close();
   }
-  const page = await browser.newPage({ acceptDownloads: true });
+  const page = await browser.newPage({ acceptDownloads: true, serviceWorkers: "block" });
   const unstamped = structuredClone(fixtures[3]);
   delete unstamped.teachingVerification;
   await page.goto(`http://127.0.0.1:${server.address().port}/JUW-MicroSlides/`);
@@ -293,14 +293,19 @@ try {
         (b) => b.textContent === "Export reviewed PPTX",
       )?.disabled,
   );
-  await page.route("**/fonts/DejaVuSans-Bold.ttf", (route) =>
-    route.fulfill({ status: 404, body: "Missing test asset" }),
-  );
+  // Fault injection must reach the network rather than the app's warm offline cache.
+  let missingFontRequests = 0;
+  await page.route("**/fonts/DejaVuSans-Bold.ttf", (route) => {
+    missingFontRequests++;
+    return route.fulfill({ status: 404, body: "Missing test asset" });
+  });
   let missingFontDownloads = 0;
   const countMissingFontDownloads = () => missingFontDownloads++;
   page.on("download", countMissingFontDownloads);
   await exportButton.click();
   await page.getByText(/Portable fonts are unavailable/).waitFor();
+  if (!missingFontRequests)
+    throw Error("Missing-font fault injection did not reach the font request");
   if (missingFontDownloads) throw Error("Missing portable font must block download");
   page.off("download", countMissingFontDownloads);
   await page.unroute("**/fonts/DejaVuSans-Bold.ttf");
