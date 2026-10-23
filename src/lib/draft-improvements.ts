@@ -7,18 +7,20 @@ export function completeSourcedTeaching(slide: Slide): Slide {
   let filled = false;
   const p = teachingSchema.parse(slide.teaching || {});
   const supported = (slide.claims || [])
-    .filter((c) =>
-      c.evidence.some(
-        (e) =>
-          e.quote.includes(c.text) &&
-          slide.citations.some(
-            (r) =>
-              r.id === e.citationId &&
-              !["retracted", "corrected", "concern", "notice"].includes(
-                r.publicationCheck?.status || "",
-              ),
-          ),
-      ),
+    .filter(
+      (c) =>
+        ["supported-excerpt", "lecturer-reviewed"].includes(c.status) &&
+        c.evidence.some(
+          (e) =>
+            e.quote.includes(c.text) &&
+            slide.citations.some(
+              (r) =>
+                r.id === e.citationId &&
+                !["retracted", "corrected", "concern", "notice"].includes(
+                  r.publicationCheck?.status || "",
+                ),
+            ),
+        ),
     )
     .map((c) => c.text)
     .filter((text) => text.length <= 3000);
@@ -34,12 +36,16 @@ export function completeSourcedTeaching(slide: Slide): Slide {
   };
   fill(
     "definition",
-    supported.find((s) => /\b(is|are|refers to|defined as|consists of)\b/i.test(s)),
+    supported.find((s) =>
+      /\b(refers to|defined as|consists of)\b|^(?:[\p{L}\p{N}-]+\s+){1,10}(?:is|are)\s+(?:a|an)\b/iu.test(
+        s,
+      ),
+    ),
   );
   fill(
     "mechanism",
     supported.find((s) =>
-      /\b(because|mediates?|through|cataly[sz]es?|binds?|inhibits?|regulates?)\b/i.test(s),
+      /\b(because|mediates?|cataly[sz]es?|binds?|inhibits?|regulates?)\b/i.test(s),
     ),
   );
   fill("takeaway", concise[0]);
