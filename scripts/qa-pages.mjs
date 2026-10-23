@@ -583,6 +583,8 @@ try {
     figure.source = "https://example.org/synthetic-fixture";
     parityDeck.slides = parityDeck.slides.map((slide, i) => ({
       ...slide,
+      evidenceFlags: [],
+      learningObjectives: undefined, // This fixture tests the original layouts, not objectives.
       layout: i === 0 ? "title" : slide.layout === "title" ? "content" : slide.layout,
       teaching: {
         ...structuredClone(base.slide.teaching),
@@ -848,7 +850,7 @@ try {
         join(output, "powerpoint-baseline.json"),
         JSON.stringify(
           {
-            version: "V6.2.1",
+            version: "V7.0",
             slides: 50,
             width: 1280,
             height: 720,

@@ -1,10 +1,10 @@
+import { restoredDeckCopies } from "@/lib/course-builder";
 import { readRecoverySave } from "@/lib/durable-storage";
 import { useState } from "react";
 import { embedMediaSources } from "@/lib/offline-media";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
 import { parseBackup } from "@/lib/backup";
-import { uid } from "@/lib/utils";
 import { Button } from "./ui/button";
 export function LibraryBackup() {
   const [busy, setBusy] = useState(false);
@@ -92,18 +92,14 @@ export function LibraryBackup() {
         <input
           aria-label="Restore backup"
           type="file"
-          accept=".json,application/json"
+          accept=".json,.md,application/json,text/markdown"
           className="mt-1 block w-full text-xs"
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
             try {
               if (file.size > 100000000) throw new Error("Backup exceeds 100 MB.");
-              const decks = parseBackup(await file.text()).map((d) => ({
-                ...d,
-                id: uid("restored"),
-                updatedAt: Date.now(),
-              }));
+              const decks = restoredDeckCopies(parseBackup(await file.text()));
               useDeckStore.setState((s) => ({
                 library: [...decks, ...s.library],
                 activeId: decks[0].id,

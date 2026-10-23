@@ -1,3 +1,5 @@
+import { LecturePanel } from "./lecture-panel";
+import { GuidelineCards } from "./guideline-cards";
 import { TeachingPanel } from "./teaching-panel";
 import { ClaimEvidenceEditor } from "./claim-evidence-editor";
 import { SpecialistReview } from "./specialist-review";
@@ -63,11 +65,17 @@ export function InspectorPanel() {
           {tab === "cite" && <CiteTab />}
           {tab === "evidence" && (
             <>
+              <GuidelineCards />
               <ClaimEvidenceEditor />
               <EvidenceTab />
             </>
           )}
-          {tab === "audit" && <SpecialistReview />}
+          {tab === "audit" && (
+            <>
+              <GuidelineCards />
+              <SpecialistReview />
+            </>
+          )}
           {tab === "copilot" && <CopilotTab />}
         </div>
       </ScrollArea>
@@ -89,6 +97,7 @@ function EditTab() {
       <p className="text-xs text-muted">
         Every field is live — you can also click the slide canvas and type.
       </p>
+      <LecturePanel />
       <TeachingPanel />
       <Field label="Layout">
         <select

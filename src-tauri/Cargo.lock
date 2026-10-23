@@ -1986,7 +1986,7 @@ dependencies = [
 
 [[package]]
 name = "juw-microslides"
-version = "6.2.1"
+version = "7.0.0"
 dependencies = [
  "reqwest 0.12.28",
  "rusqlite",

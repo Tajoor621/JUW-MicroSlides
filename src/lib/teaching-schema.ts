@@ -1,6 +1,6 @@
 import { z } from "zod";
 // Bump when scientific annotations or template geometry change, so old reviews become stale.
-export const TEACHING_DIAGRAM_REVISION = "2026-10-21.1";
+export const TEACHING_DIAGRAM_REVISION = "2026-10-23.1";
 export const DIAGRAMS = [
   "adsorption",
   "covalent",
@@ -11,6 +11,10 @@ export const DIAGRAMS = [
   "gram-wall",
   "fluorescence",
   "enzyme",
+  "viral-cycle",
+  "conjugation",
+  "one-health",
+  "biofilm-stages",
 ] as const;
 const text = z.string().max(3000);
 export const teachingSchema = z.object({

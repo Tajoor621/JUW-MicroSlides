@@ -27,6 +27,7 @@ jobs:
       - run: npm run test:scientific
       - run: npm run test:professional
       - run: npm run test:audit
+      - run: npm run test:lecture
       - run: npm run test:teaching
       - run: npm run test:release
       - run: npm run test:lecturer
@@ -56,7 +57,7 @@ jobs:
           $files = Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe
           $provenance = @{
             commit = '${{ github.sha }}'
-            appVersion = 'V6.2.1'
+            appVersion = 'V7.0'
             rust = (rustc --version)
             node = (node --version)
             npm = (npm --version)
@@ -75,6 +76,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: JUW-MicroSlides-V6.2.1-Windows
+          name: JUW-MicroSlides-V7.0-Windows
           path: src-tauri/target/release/bundle/nsis/*.exe
           if-no-files-found: error

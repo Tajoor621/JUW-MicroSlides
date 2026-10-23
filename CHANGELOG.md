@@ -1,3 +1,11 @@
+# V7.0 — structured microbiology lecture workflows (2026-10-23)
+
+- Add pathogen, laboratory, clinical-case and curriculum generation modes with contextual controls, level-mapped objectives, optional source-backed assessment, and exact-count preservation.
+- Add structured scientific layouts and editors, tagged media, local editable diagram templates, optional guideline search and cached NCBI taxonomy lookup.
+- Preserve human evidence review and invalidate prior reviews when new scientific fields change; keep assessment answer keys private in audience view.
+- Add teaching handout, single-page protocol card, high-contrast HTML, complete Markdown recovery and course prerequisites with cycle detection.
+- Add offline synthetic contracts and production browser regression coverage. Missing scientific facts stay blocked; independent microbiology, physical classroom and licensed presentation-app qualification remain separate.
+
 # V6.2.1 — update recovery and integration readiness (2026-10-21)
 
 - Fixed build discovery being blocked by an invalid or stalled service-worker registration. Published build metadata is checked independently; offline-cache maintenance is bounded and reports a recoverable status without deleting saved decks or caches.

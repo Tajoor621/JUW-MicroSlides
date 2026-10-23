@@ -1,7 +1,7 @@
 param([string]$InputDirectory = "qualification-results/powerpoint", [string]$OutputDirectory = "qualification-results/powerpoint/actual")
 $ErrorActionPreference = "Stop"
 New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
-$report = @{ engine="Microsoft PowerPoint COM"; status="not-tested"; checkedAt=[DateTime]::UtcNow.ToString("o"); version="V6.2.1"; reason=""; slides=@(); machine=$env:COMPUTERNAME; os=[Environment]::OSVersion.VersionString }
+$report = @{ engine="Microsoft PowerPoint COM"; status="not-tested"; checkedAt=[DateTime]::UtcNow.ToString("o"); version="V7.0"; reason=""; slides=@(); machine=$env:COMPUTERNAME; os=[Environment]::OSVersion.VersionString }
 $app=$null; $presentation=$null
 try {
   if (-not (Test-Path "$InputDirectory/juw-parity-1280.pptx")) { throw "Generate the 50-slide preview baseline and export first." }

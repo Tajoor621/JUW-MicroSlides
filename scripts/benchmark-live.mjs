@@ -129,7 +129,7 @@ try {
       `${output}/report.json`,
       JSON.stringify(
         {
-          appVersion: "V6.2.1",
+          appVersion: "V7.0",
           sourceFingerprint,
           workingTreeDirty,
           commit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),

@@ -33,7 +33,18 @@ export function assertCompleteDeck(deck: Deck, count: number) {
       .some(
         (s) =>
           !s.title.trim() ||
-          ![...s.bullets, ...s.leftBullets, ...s.rightBullets].some((b) => b.trim()),
+          ![
+            ...s.bullets,
+            ...s.leftBullets,
+            ...s.rightBullets,
+            s.keyTakeaway || "",
+            s.clinicalPearl || "",
+            ...(s.learningObjectives || []),
+            ...(s.assessment || []).map((q) => q.question),
+            ...(s.protocol?.steps || []).map((p) => p.action),
+            s.caseData?.vignette || "",
+            s.caseData?.results || "",
+          ].some((b) => b.trim()),
       )
   )
     throw new Error("A generated content slide is empty. Add source material and retry.");

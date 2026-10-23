@@ -1,3 +1,5 @@
+import { lectureSlideFields } from "./lecture-schema";
+import { LAYOUTS } from "./types";
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { localAiFetch } from "./local-ai-transport";
 import { z } from "zod";
@@ -97,8 +99,9 @@ async function chat(prompt: string, json = false, images: string[] = [], signal?
   return body.message.content as string;
 }
 const generatedSlide = z.object({
+  ...lectureSlideFields,
   teaching: teachingSchema.optional(),
-  layout: z.enum(["title", "content", "two-column", "full-image", "blank"]).default("content"),
+  layout: z.enum(LAYOUTS).default("content"),
   title: z.string().min(1).max(1000),
   subtitle: z.string().max(2000).default(""),
   bullets: z.array(z.string().max(3000)).max(12).default([]),
@@ -137,7 +140,7 @@ export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSi
     cached ||
     JSON.parse(
       await chat(
-        `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
+        `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
         true,
         [],
         signal,
@@ -175,7 +178,7 @@ export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSi
     if (!body || bodies.has(body))
       throw new Error("The model returned empty or repeated content. Retry with source notes.");
     bodies.add(body);
-    const layout = row.layout === "two-column" ? "two-column" : "content";
+    const layout = row.layout === "title" ? "content" : row.layout;
     slides.push({
       ...row,
       layout,
@@ -191,7 +194,7 @@ export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSi
     signal?.throwIfAborted();
     const batch = headings.slice(offset, offset + 8);
     const response = await chat(
-      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
+      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Use the requested generation mode and section headings when supplied in guidance. You may also supply learningObjectives, clinicalPearl, keyTakeaway, difficulty, sectionType, commonMisconceptions, protocol:{materials,steps:[{action,timing,sourceUrl}],interpretation,qc,biosafety,troubleshooting}, caseData:{caseNumber,vignette,differential,workup,results,diagnosis,management,questions,phase}, scientificTable:{caption,headers,rows}. Never invent missing protocol timings or clinical findings. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
       true,
       [],
       signal,

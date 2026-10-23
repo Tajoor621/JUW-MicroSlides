@@ -1,3 +1,5 @@
+import { lectureStructuredHtml } from "./lecture-transcript";
+import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
 import { preflightTeachingImages, decodeTeachingImage } from "./teaching-images";
 import { assertTeachingReady } from "./teaching-readiness";
@@ -12,7 +14,7 @@ function name(deck: Deck) {
   return deck.title.replace(/[^\p{L}\p{N}-]/gu, "-").slice(0, 80) || "lecture";
 }
 const fontCache = new Map<string, Promise<string>>();
-async function font(name: string) {
+export async function font(name: string) {
   if (!fontCache.has(name))
     fontCache.set(
       name,
@@ -151,7 +153,7 @@ export async function exportTeachingPack(deck: Deck) {
     deck.slides
       .map(
         (s, i) =>
-          `# ${i + 1}. ${s.title}\n\n${s.notes}\n\n${s.teaching ? JSON.stringify(s.teaching, null, 2) : ""}`,
+          `# ${i + 1}. ${s.title}\n\n${lectureSpeakerNotes(s)}\n\n${s.teaching ? JSON.stringify(s.teaching, null, 2) : ""}`,
       )
       .join("\n\n"),
   );
@@ -205,7 +207,7 @@ function accessibleTranscript(deck: Deck) {
                   "",
                 )}</dl><ol>${slide.teaching.steps.map((t) => `<li>${esc(t)}</li>`).join("")}</ol><table><caption>Comparison</caption><thead><tr><th>Criterion</th><th>Option A</th><th>Option B</th></tr></thead><tbody>${slide.teaching.comparison.map((r) => `<tr><th scope="row">${esc(r.criterion)}</th><td>${esc(r.left)}</td><td>${esc(r.right)}</td></tr>`).join("")}</tbody></table>${slide.teaching.quantitative.map((q) => `<p>${esc(q.metric)}: ${esc(q.value)} ${esc(q.units)}. ${esc(q.conditions)}. Source: ${esc(q.sourceUrl)}</p>`).join("")}`
             : ""
-        }<h3>Speaker notes</h3><p>${esc(slide.notes).replace(/\n/g, "<br>")}</p></section>`,
+        }${lectureStructuredHtml(slide)}<h3>Speaker notes</h3><p>${esc(slide.notes).replace(/\n/g, "<br>")}</p></section>`,
     )
     .join("")}<section><h2>Complete references</h2><ol>${teachingReferences(deck)
     .map((r) => `<li>${esc(r)}</li>`)

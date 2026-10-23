@@ -17,6 +17,10 @@ export function suggestedDiagram(title: string): Teaching["diagram"] | undefined
     [/entrap|encapsul/i, "entrapment"],
     [/cross.link/i, "cross-linking"],
     [/diffus|mass transfer/i, "diffusion"],
+    [/biofilm.*stag|biofilm.*process/i, "biofilm-stages"],
+    [/viral.*replic|virus.*cycle/i, "viral-cycle"],
+    [/conjugat/i, "conjugation"],
+    [/one.health|transmission.*network/i, "one-health"],
     [/biofilm/i, "biofilm"],
     [/gram|peptidoglycan|cell wall/i, "gram-wall"],
     [/fluorescen/i, "fluorescence"],
@@ -81,7 +85,25 @@ export function teachingFindings(deck: Deck) {
         add("A bibliography requires attached references.");
       return;
     }
-    if (!p.diagram && !s.media.some((m) => m.kind !== "video"))
+    if (s.layout === "learning-objectives") {
+      if (!s.learningObjectives?.length) add("Add explicit learning objectives for this audience.");
+      return;
+    }
+    if (s.layout === "assessment") {
+      if (!s.assessment?.length) add("Add assessment questions and instructor answers.");
+      if (!s.citations.some((c) => c.evidenceKind === "primary" && publicationCheckIsCurrent(c)))
+        add(
+          "Assessment claims require a checked primary reference and source-linked instructor review.",
+        );
+      return;
+    }
+    if (
+      !p.diagram &&
+      !s.media.some((m) => m.kind !== "video") &&
+      !s.scientificTable?.rows.length &&
+      !s.chart?.points.length &&
+      !s.taxonomy?.length
+    )
       add("Add a teaching visual or schematic; decorative branding does not count.");
     if (!s.citations.some((c) => c.evidenceKind === "primary" && publicationCheckIsCurrent(c)))
       add("Link at least one verified primary reference and classify its evidence type.");
@@ -167,6 +189,7 @@ export function teachingFindings(deck: Deck) {
       p.assumptions,
       p.discussion,
       ...bullets,
+      ...(s.learningObjectives || []),
       ...p.steps,
       ...p.quantitative.flatMap((q) => [q.metric, q.value, q.units, q.conditions]),
       ...p.comparison.flatMap((r) => [r.criterion, r.left, r.right]),

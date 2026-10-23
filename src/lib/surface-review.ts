@@ -1,3 +1,4 @@
+import { lectureSlideSchema } from "./lecture-schema";
 import { TEACHING_DIAGRAM_REVISION } from "./teaching-schema";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
@@ -29,6 +30,36 @@ export function surfaceItems(slide: Slide) {
     ...(["title", "subtitle", "notes"] as const).flatMap((field) =>
       slide[field].trim() ? [{ field, text: slide[field], media: false }] : [],
     ),
+    ...(["clinicalPearl", "keyTakeaway"] as const).flatMap((field) =>
+      slide[field]?.trim() ? [{ field, text: slide[field]!, media: false }] : [],
+    ),
+    ...(["learningObjectives", "commonMisconceptions"] as const).flatMap((field) =>
+      (slide[field] || []).map((text, i) => ({ field: `${field}.${i}`, text, media: false })),
+    ),
+    ...(["scientificTable", "caseData", "assessment", "chart", "taxonomy"] as const).flatMap(
+      (field) =>
+        slide[field] ? [{ field, text: JSON.stringify(slide[field]), media: false }] : [],
+    ),
+    ...(slide.protocol
+      ? [
+          ...Object.entries(slide.protocol)
+            .filter(
+              ([key, value]) =>
+                key !== "steps" &&
+                (Array.isArray(value) ? value.length : typeof value === "string" && value.trim()),
+            )
+            .map(([key, value]) => ({
+              field: `protocol.${key}`,
+              text: Array.isArray(value) ? value.join("; ") : String(value),
+              media: false,
+            })),
+          ...slide.protocol.steps.map((step, i) => ({
+            field: `protocol.steps.${i}`,
+            text: `${step.action} · ${step.timing} · ${step.sourceUrl}`,
+            media: false,
+          })),
+        ]
+      : []),
     ...Object.entries(slide.teaching || {})
       .filter(([k, v]) => typeof v === "string" && v.trim() && k !== "diagram")
       .map(([k, v]) => ({ field: `teaching.${k}`, text: String(v), media: false })),
@@ -132,6 +163,7 @@ export function surfaceSnapshot(deck: Deck, slide: Slide, field: string) {
         JSON.stringify(
           canonical({
             field,
+            lecture: lectureSlideSchema.parse(slide),
             teaching: slide.teaching,
             teachingTemplateRevision: slide.teaching?.diagram
               ? TEACHING_DIAGRAM_REVISION
@@ -194,7 +226,7 @@ export function surfaceReviewProblem(
   }
   if (review.verdict === "not-factual") {
     if (
-      /^teaching\.(definition|mechanism|advantage|limitation|pitfall|takeaway|discussion|equation|assumptions|quantitative|steps|comparison|diagram$|scaleBar)/.test(
+      /^(clinicalPearl|keyTakeaway|commonMisconceptions|scientificTable|protocol|caseData|assessment|chart|taxonomy)|^teaching\.(definition|mechanism|advantage|limitation|pitfall|takeaway|discussion|equation|assumptions|quantitative|steps|comparison|diagram$|scaleBar)/.test(
         field,
       )
     )
@@ -208,6 +240,25 @@ export function surfaceReviewProblem(
     !review.locator?.trim()
   )
     return "Factual content needs an exact supporting passage, HTTPS source and locator.";
+  if (field.startsWith("protocol.steps.")) {
+    const step = slide.protocol?.steps[Number(field.split(".").at(-1))];
+    if (step && step.sourceUrl !== review.sourceUrl)
+      return "Review this protocol step against its specified source URL.";
+    if (
+      step?.timing &&
+      !review.quote.replace(/\s+/g, " ").includes(step.timing.replace(/\s+/g, " "))
+    )
+      return "The protocol timing must occur verbatim in its supporting quotation.";
+  }
+  if (field === "chart" && slide.chart) {
+    if (slide.chart.sourceUrl !== review.sourceUrl)
+      return "Review chart data against their specified source URL.";
+    const tokens: string[] = review.quote.match(/[+-]?\d+(?:[.,]\d+)*(?:[eE][+-]?\d+)?/g) || [];
+    if (
+      slide.chart.points.some((p) => ![String(p.x), String(p.y)].every((n) => tokens.includes(n)))
+    )
+      return "Chart values must be traceable to the supporting quotation; document derived calculations separately.";
+  }
   const source = new URL(review.sourceUrl);
   let sourceId = "";
   if (["doi.org", "dx.doi.org", "pubmed.ncbi.nlm.nih.gov"].includes(source.hostname)) {

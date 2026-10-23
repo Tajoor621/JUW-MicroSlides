@@ -1,3 +1,4 @@
+import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
 import { preflightTeachingImages } from "./teaching-images";
 import { assertTeachingReady } from "./teaching-readiness";
@@ -191,7 +192,7 @@ export async function exportPptx(
       [
         `Integrity status: ${ready ? "Lecturer evidence gate clear; not independent certification" : "DRAFT"}. ${findings.length} screening findings.`,
         `Last verified by ${deck.teachingVerification!.instructor} on ${new Date(deck.teachingVerification!.at).toISOString().slice(0, 10)}. Lecturer self-attestation, not independent certification.`,
-        source.notes,
+        lectureSpeakerNotes(source),
         source.teaching
           ? "Teaching design and discussion:\n" + JSON.stringify(source.teaching, null, 2)
           : "",

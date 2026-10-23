@@ -42,7 +42,7 @@ export function AppUpdates() {
   if (isDesktop())
     return (
       <div className="border-b border-border px-3 py-1 text-xs text-muted">
-        Windows desktop · V6.2.1 · Build {APP_BUILD} · Local SQLite recovery
+        Windows desktop · V7.0 · Build {APP_BUILD} · Local SQLite recovery
       </div>
     );
   if (!APP_BUILD) return null;

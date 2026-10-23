@@ -26,7 +26,76 @@ export function TeachingDiagram({
       <text x="20" y="34" fontSize="15" fill="#17344c">
         {label || kind}
       </text>
-      {kind === "gram-wall" ? (
+      {["viral-cycle", "conjugation", "one-health", "biofilm-stages"].includes(kind) ? (
+        <>
+          {kind === "one-health" ? (
+            <>
+              <line x1="105" y1="84" x2="255" y2="84" stroke={color} />
+              <line x1="105" y1="84" x2="105" y2="150" stroke={color} />
+              <line x1="255" y1="84" x2="105" y2="150" stroke={color} />
+              <line x1="255" y1="84" x2="255" y2="150" stroke={color} />
+              {["Humans", "Animals", "Environment", "Shared exposure"].map((step, i) => (
+                <g key={step}>
+                  <rect
+                    x={25 + (i % 2) * 165}
+                    y={65 + Math.floor(i / 2) * 65}
+                    width="145"
+                    height="35"
+                    fill="#d7e5ef"
+                    stroke={color}
+                  />
+                  <text
+                    x={35 + (i % 2) * 165}
+                    y={87 + Math.floor(i / 2) * 65}
+                    fontSize="12"
+                    fill="#17344c"
+                  >
+                    {step}
+                  </text>
+                </g>
+              ))}
+            </>
+          ) : (
+            <>
+              {(kind === "viral-cycle"
+                ? [
+                    "Attachment",
+                    "Entry / uncoating",
+                    "Genome / protein synthesis",
+                    "Assembly / release",
+                  ]
+                : kind === "conjugation"
+                  ? ["Donor cell", "Cell contact", "DNA transfer", "Recipient cell"]
+                  : ["Attachment", "Microcolonies", "Maturation", "Dispersal"]
+              ).map((step, i) => (
+                <g key={step}>
+                  <rect
+                    x="30"
+                    y={48 + i * 32}
+                    width="300"
+                    height="24"
+                    fill="#d7e5ef"
+                    stroke={color}
+                  />
+                  <text x="40" y={65 + i * 32} fontSize="12" fill="#17344c">
+                    {i + 1}. {step}
+                  </text>
+                  {i < 3 && (
+                    <>
+                      <line x1="180" y1={72 + i * 32} x2="180" y2={80 + i * 32} stroke={color} />
+                      <line x1="176" y1={76 + i * 32} x2="180" y2={80 + i * 32} stroke={color} />
+                      <line x1="184" y1={76 + i * 32} x2="180" y2={80 + i * 32} stroke={color} />
+                    </>
+                  )}
+                </g>
+              ))}
+            </>
+          )}
+          <text x="25" y="187" fontSize="10">
+            Conceptual relationships; mechanism varies by system
+          </text>
+        </>
+      ) : kind === "gram-wall" ? (
         <>
           {[80, 100, 120, 140].map((y) => (
             <rect key={y} x="40" y={y} width="280" height="12" fill={color} />

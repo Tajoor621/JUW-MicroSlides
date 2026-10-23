@@ -82,6 +82,16 @@ export function TeachingContent({
         </figcaption>
       </figure>
       <div className="min-w-0 space-y-3">
+        {!!slide.learningObjectives?.length && (
+          <aside className="rounded border border-current p-2">
+            <strong className="text-sm">Learning objectives</strong>
+            <ul className="text-base">
+              {slide.learningObjectives.map((goal, i) => (
+                <li key={i}>{goal}</li>
+              ))}
+            </ul>
+          </aside>
+        )}
         {p.definition && (
           <p className="text-xl font-semibold">
             {p.definition}
@@ -114,7 +124,18 @@ export function TeachingContent({
         ) : slide.layout === "process-flow" ? (
           <ol className="space-y-2 text-xl">
             {p.steps.map((s, i) => (
-              <li key={i} style={{ visibility: i < reveal ? "visible" : "hidden" }}>
+              <li
+                key={i}
+                style={{
+                  visibility: (
+                    slide.revealSteps?.length
+                      ? !slide.revealSteps.includes(i) || slide.revealSteps.indexOf(i) < reveal
+                      : i < reveal
+                  )
+                    ? "visible"
+                    : "hidden",
+                }}
+              >
                 <strong>{i + 1}.</strong> {s}
                 <EvidenceBadge basis={basis} field={`teaching.steps.${i}`} />
               </li>
@@ -124,7 +145,18 @@ export function TeachingContent({
           <ul className="space-y-2 text-xl">
             {bulletRows.map((b, i) => {
               return (
-                <li key={i} style={{ visibility: i < reveal ? "visible" : "hidden" }}>
+                <li
+                  key={i}
+                  style={{
+                    visibility: (
+                      slide.revealSteps?.length
+                        ? !slide.revealSteps.includes(i) || slide.revealSteps.indexOf(i) < reveal
+                        : i < reveal
+                    )
+                      ? "visible"
+                      : "hidden",
+                  }}
+                >
                   • {b}
                   <EvidenceBadge basis={basis} field={`bullet.${i}`} />
                 </li>

@@ -66,7 +66,7 @@ export function summarizeMatrix(plan, reports, expectedCommit) {
   const missing = [...expected.keys()].filter((id) => !seen.has(id));
   times.sort((a, b) => a - b);
   return {
-    appVersion: "V6.2.1",
+    appVersion: "V7.0",
     status:
       missing.length || failures.length || reasons.length
         ? "failed-or-incomplete"

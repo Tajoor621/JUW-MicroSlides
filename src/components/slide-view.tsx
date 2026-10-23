@@ -1,3 +1,4 @@
+import { LectureSlideContent } from "./lecture-slide-content";
 import { slideEvidenceBasis } from "@/lib/evidence-basis";
 import { EvidenceBadge } from "./evidence-badge";
 import { teachingReady } from "@/lib/teaching-readiness";
@@ -77,7 +78,19 @@ export function SlideView({
           muted: "#C5D6E8",
           dark: true,
         }
-      : baseTokens;
+      : deck?.exportMode === "high-contrast"
+        ? {
+            ...baseTokens,
+            slide: "#FFFFFF",
+            ink: "#000000",
+            navy: "#000000",
+            band: "#FFFFFF",
+            muted: "#222222",
+            accent: "#000000",
+            frame: "#000000",
+            dark: false,
+          }
+        : baseTokens;
   const teaching = teachingOf(slide);
   const teachingLayout = !!slide.teaching;
 
@@ -233,6 +246,11 @@ export function SlideView({
                   placeholder="Slide title"
                   className="slide-content-heading font-serif font-semibold leading-snug text-navy"
                 />
+                {slide.difficulty && (
+                  <p className="text-xs uppercase tracking-wide text-ink-muted">
+                    {slide.difficulty} · {slide.sectionType || "other"}
+                  </p>
+                )}
                 {slide.subtitle && (
                   <EditableText
                     value={slide.subtitle}
@@ -262,6 +280,19 @@ export function SlideView({
                         </li>
                       ))}
                     </ol>
+                  ) : [
+                      "pathogen-card",
+                      "lab-protocol",
+                      "clinical-case",
+                      "differential-table",
+                      "comparison-matrix",
+                      "learning-objectives",
+                      "assessment",
+                      "key-takeaway",
+                      "growth-curve",
+                      "taxonomy-tree",
+                    ].includes(slide.layout) ? (
+                    <LectureSlideContent slide={slide} reveal={present ? revealCount : 999} />
                   ) : teachingLayout ? (
                     <TeachingContent
                       basis={basis}
@@ -350,11 +381,29 @@ export function SlideView({
                   </p>
                 )}
                 <p>
-                  <strong>Key takeaway:</strong> {teaching.takeaway || "Review required"}
+                  <strong>Key takeaway:</strong>{" "}
+                  {slide.keyTakeaway || teaching.takeaway || "Review required"}
                   <EvidenceBadge basis={basis} field="teaching.takeaway" />
                 </p>
               </div>
             )}
+            {slide.clinicalPearl &&
+              ![
+                "pathogen-card",
+                "lab-protocol",
+                "clinical-case",
+                "differential-table",
+                "comparison-matrix",
+                "learning-objectives",
+                "assessment",
+                "key-takeaway",
+                "growth-curve",
+                "taxonomy-tree",
+              ].includes(slide.layout) && (
+                <aside className="mx-8 rounded border-2 border-navy p-2 text-base text-ink">
+                  <strong>Clinical pearl:</strong> {slide.clinicalPearl}
+                </aside>
+              )}
             {slide.citations.length > 0 && slide.layout !== "title" && (
               <footer className="relative z-[1] border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted @min-[640px]:px-8">
                 {slide.citations
@@ -380,8 +429,11 @@ export function SlideView({
               </p>
             )}
             <div className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">
-              {deck?.courseCode} · {new Date(deck?.updatedAt || 0).toISOString().slice(0, 10)} · For
-              educational use only
+              {deck?.courseCode} ·{" "}
+              {deck?.updatedAt && deck.updatedAt > 86400000
+                ? new Date(deck.updatedAt).toISOString().slice(0, 10)
+                : "Undated draft"}{" "}
+              · For educational use only
             </div>
             {slide.layout !== "title" && (
               <span className="pointer-events-none absolute bottom-1.5 left-3 z-[1] font-mono text-[9px] tabular-nums text-ink-muted">

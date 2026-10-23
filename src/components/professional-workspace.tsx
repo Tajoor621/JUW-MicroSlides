@@ -1,3 +1,9 @@
+import { CourseBuilder } from "./course-builder";
+import {
+  exportMarkdownBackup,
+  exportLectureHandout,
+  exportAccessibleLecture,
+} from "@/lib/export-lecture";
 import { citationCslData } from "@/lib/csl-format";
 import { proposeReplacement } from "@/lib/local-ai";
 import { replacementSnapshot } from "@/lib/slide-replacement";
@@ -102,13 +108,50 @@ export function ProfessionalWorkspace() {
             className="rounded border bg-elevated p-2"
             value={deck.exportMode || "light"}
             onChange={(e) =>
-              useDeckStore.getState().patchDeck({ exportMode: e.target.value as "light" | "dark" })
+              useDeckStore
+                .getState()
+                .patchDeck({ exportMode: e.target.value as "light" | "dark" | "high-contrast" })
             }
           >
             <option value="light">Theme contrast</option>
             <option value="dark">Dark lecture theatre</option>
+            <option value="high-contrast">High contrast / accessibility</option>
           </select>
         </label>
+        <CourseBuilder />
+        <details>
+          <summary>Handouts & accessible exports</summary>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              disabled={busy || !classroomReady(deck)}
+              onClick={() => void perform(() => exportLectureHandout(deck))}
+            >
+              Student handout PDF
+            </Button>
+            <Button
+              size="sm"
+              disabled={busy || !classroomReady(deck)}
+              onClick={() => void perform(() => exportLectureHandout(deck, true))}
+            >
+              Lab protocol card PDF
+            </Button>
+            <Button
+              size="sm"
+              disabled={busy || !classroomReady(deck)}
+              onClick={() => void perform(() => exportAccessibleLecture(deck))}
+            >
+              High-contrast accessible HTML
+            </Button>
+            <Button
+              size="sm"
+              disabled={busy}
+              onClick={() => void perform(() => exportMarkdownBackup(deck))}
+            >
+              Markdown recovery backup
+            </Button>
+          </div>
+        </details>
         <details>
           <summary>Final instructor verification</summary>
           <p className="text-xs">

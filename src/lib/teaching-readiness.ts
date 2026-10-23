@@ -1,3 +1,4 @@
+import { lectureFindings } from "./lecture-readiness";
 import { teachingVerificationProblem } from "./teaching-verification";
 import { integrityAudit } from "./deck-integrity";
 import { teachingFindings } from "./teaching";
@@ -17,6 +18,7 @@ export function teachingContentFindings(deck: Deck) {
       .filter((f) => f.severity === "critical")
       .map((f) => ({ index: f.index, message: f.message })),
     ...teachingFindings(deck),
+    ...lectureFindings(deck),
   ];
 }
 export function teachingReleaseFindings(deck: Deck) {

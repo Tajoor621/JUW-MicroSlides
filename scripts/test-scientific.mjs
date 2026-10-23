@@ -524,7 +524,7 @@ try {
     "qualification-results/scientific-contract.json",
     JSON.stringify(
       {
-        appVersion: "V6.2.1",
+        appVersion: "V7.0",
         suite: "Deterministic software contracts, not scientific certification",
         checkedAt: new Date().toISOString(),
         results,

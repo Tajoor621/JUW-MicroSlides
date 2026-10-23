@@ -54,6 +54,24 @@ try {
   s.teaching.diagram = "adsorption";
   review();
   fixtures = [invalidPng, invalidSvg, valid, structuredClone(d)];
+  s.layout = "lab-protocol";
+  s.protocol = {
+    materials: ["Synthetic fixture material"],
+    steps: [
+      {
+        action: "Synthetic software action only",
+        timing: "controlled test condition",
+        sourceUrl: d.sourceDocuments[0].url,
+      },
+    ],
+    interpretation: "Synthetic fixture interpretation",
+    qc: "Synthetic quality-control text",
+    biosafety: "Synthetic PPE text; not laboratory advice",
+    troubleshooting: "Synthetic troubleshooting text",
+  };
+  review();
+  if (!teachingReady(d)) throw Error("Protocol fixture must clear the software gate");
+  fixtures.push(structuredClone(d));
 } finally {
   await vite.close();
 }
@@ -118,6 +136,30 @@ try {
       if (xml.includes("Original image unavailable"))
         throw Error("Valid fixture exported a placeholder");
       console.log("PASS valid reviewed image still exports a PowerPoint package");
+      if (i === 4) {
+        await page.locator("summary").filter({ hasText: "Handouts & accessible exports" }).click();
+        for (const [label, filename] of [
+          ["Student handout PDF", "v7-student-handout.pdf"],
+          ["Lab protocol card PDF", "v7-lab-protocol-card.pdf"],
+          ["High-contrast accessible HTML", "v7-accessible.html"],
+        ]) {
+          const event = page.waitForEvent("download");
+          await page.getByRole("button", { name: label, exact: true }).click();
+          const bytes = await readFile(await (await event).path());
+          await writeFile(join(output, filename), bytes);
+          if (filename.endsWith(".pdf") && !bytes.subarray(0, 5).equals(Buffer.from("%PDF-")))
+            throw Error("Expected actual PDF download");
+          if (
+            filename.endsWith(".html") &&
+            (!bytes.includes(Buffer.from("Synthetic software action only")) ||
+              !bytes.includes(Buffer.from("Synthetic quality-control text")))
+          )
+            throw Error("Accessible export lost protocol fields");
+        }
+        console.log(
+          "PASS V7 structured protocol PPTX, student handout PDF, single-page protocol card and accessible HTML downloads",
+        );
+      }
       if (i === 3) {
         if (!xml.includes('prst="ellipse"') || !xml.includes("Reversible surface interactions"))
           throw Error("Schematic primitives must remain editable shapes and text");

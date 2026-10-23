@@ -1,3 +1,5 @@
+import { lectureSlideFields, lectureSlideSchema, lectureOptionsSchema } from "./lecture-schema";
+import { LAYOUTS } from "./types";
 import { z } from "zod";
 import { teachingSchema } from "./teaching-schema";
 import { requirePaidAiAccess } from "./paid-ai-access.server";
@@ -19,13 +21,18 @@ const SLIDE_SCHEMA = `{
   "title": string,
   "slides": [
     {
-      "layout": "title" | "content" | "two-column" | "full-image" | "blank",
+      "layout": ${LAYOUTS.map((layout) => JSON.stringify(layout)).join(" | ")},
       "title": string,
       "subtitle": string,
       "bullets": string[],
       "leftBullets": string[],
       "rightBullets": string[],
       "notes": string,
+      "learningObjectives": string[], "clinicalPearl": string, "keyTakeaway": string,
+      "commonMisconceptions": string[],
+      "protocol": {"materials":string[],"steps":[{"action":string,"timing":string,"sourceUrl":string}],"interpretation":string,"qc":string,"biosafety":string,"troubleshooting":string},
+      "caseData": {"caseNumber":number,"phase":"presentation"|"resolution","vignette":string,"differential":string,"workup":string,"results":string,"diagnosis":string,"management":string,"questions":string[]},
+      "scientificTable": {"caption":string,"headers":string[],"rows":string[][]},
       "teaching": {"definition": string, "mechanism": string, "advantage": string, "limitation": string, "pitfall": string, "takeaway": string, "equation": string, "assumptions": string, "discussion": string}
     }
   ]
@@ -35,6 +42,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
   .validator((input: unknown) =>
     z
       .object({
+        ...lectureOptionsSchema.shape,
         topic: z.string().trim().min(1).max(500),
         discipline: z.string().max(200),
         count: z.number().int().min(1).max(MAX_SLIDES),
@@ -94,9 +102,11 @@ export const generateAiDeck = createServerFn({ method: "POST" })
 Topic: ${data.topic || data.discipline}
 Discipline: ${data.discipline}
 Level: ${data.level}
+Generation mode: ${data.generationMode || "standard"}
+Focus depth: ${data.focusDepth || "standard"}
 Instructor notes: ${data.notes || "none"}
 JSON schema: ${SLIDE_SCHEMA}
-First slide MUST be layout=title (official JUW intro: university crest, department seal, centred title). Include learning objectives, core content, a clinical or applied slide, take-homes, and a references slide with real classic papers (author, year, journal in bullets). Each content slide: 3–5 specific factual bullets. Use concise concept headings, without repeating the full topic name. Do not substitute generic teaching prompts or unrelated examples. Never invent references, numerical benchmarks or sources. Supply level-appropriate teaching fields: undergraduate definitions and tradeoffs; graduate/medical mechanisms; PhD equations, assumptions and critical discussion, including effectiveness factor and Thiele modulus only where applicable. Quantitative data require saved source passages and instructor verification after generation. Never imply immobilization always increases stability. Leave unsupported fields empty and mark notes as requiring evidence review. No media is attached automatically.`,
+${count === 1 ? "Write one substantive content slide, using the supplied source section and structured fields where requested." : "First slide MUST be layout=title (official JUW intro: university crest, department seal, centred title)."} Include learning objectives, core content, a clinical or applied slide, take-homes, and a references slide with real classic papers (author, year, journal in bullets). Each content slide: 3–5 specific factual bullets. Use concise concept headings, without repeating the full topic name. Do not substitute generic teaching prompts or unrelated examples. Never invent references, numerical benchmarks or sources. Supply level-appropriate teaching fields: undergraduate definitions and tradeoffs; graduate/medical mechanisms; PhD equations, assumptions and critical discussion, including effectiveness factor and Thiele modulus only where applicable. Quantitative data require saved source passages and instructor verification after generation. Never imply immobilization always increases stability. Never invent protocol timings, patient findings, diagnostic decisions or treatment. For structured source sections copy the supplied wording exactly; leave missing fields empty. Leave unsupported fields empty and mark notes as requiring evidence review. No media is attached automatically.`,
           },
         ],
       }),
@@ -285,7 +295,8 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
         slides: z
           .array(
             z.object({
-              layout: z.enum(["title", "content", "two-column", "full-image", "blank"]).optional(),
+              ...lectureSlideFields,
+              layout: z.enum(LAYOUTS).optional(),
               title: z.string().max(1000).optional(),
               subtitle: z.string().max(2000).optional(),
               bullets: z.array(z.string().max(3000)).max(20).optional(),
@@ -321,6 +332,7 @@ function parseDeckJson(raw: string, input: GenerateInput): Deck | null {
       if (seen.has(key)) continue;
       seen.add(key);
       slides.push({
+        ...lectureSlideSchema.parse(s),
         id: uid("s"),
         layout: s.layout ?? "content",
         theme: researchTheme(input.topic, input.discipline, s.layout ?? "content"),

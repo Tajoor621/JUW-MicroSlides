@@ -30,12 +30,16 @@ jobs:
       - run: npm run test:scientific
       - run: npm run test:professional
       - run: npm run test:audit
+      - run: npm run test:lecture
       - run: npm run test:teaching
       - run: npm run test:release
       - run: npm run test:lecturer
       - run: npm run build:pages
       - run: npx playwright install --with-deps chromium
       - run: npm run qa:pages
+        env:
+          JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
+      - run: npm run qa:lecture
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
       - run: npm run qa:reviewed-export

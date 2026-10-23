@@ -1,3 +1,7 @@
+import type {
+  LectureSlideFields as importLectureSlideFields,
+  LectureOptions as importLectureOptions,
+} from "./lecture-schema";
 import type { SlideTheme } from "./slide-themes";
 
 export const LAYOUTS = [
@@ -9,6 +13,16 @@ export const LAYOUTS = [
   "comparison",
   "process-flow",
   "bibliography",
+  "pathogen-card",
+  "lab-protocol",
+  "clinical-case",
+  "differential-table",
+  "comparison-matrix",
+  "learning-objectives",
+  "assessment",
+  "key-takeaway",
+  "growth-curve",
+  "taxonomy-tree",
 ] as const;
 
 export type Layout = (typeof LAYOUTS)[number];
@@ -30,6 +44,7 @@ export const MAX_SLIDES = 50;
 export type MediaKind = "micrograph" | "diagram" | "icon" | "photo" | "gif" | "chart" | "video";
 
 export interface MediaItem {
+  tags?: (typeof import("./lecture-schema").MEDIA_TAGS)[number][];
   id: string;
   kind: MediaKind;
   title: string;
@@ -81,7 +96,7 @@ export interface Claim {
   sourceSnapshot?: string;
 }
 
-export interface Slide {
+export interface Slide extends importLectureSlideFields {
   teaching?: import("./teaching").Teaching;
   id: string;
   layout: Layout;
@@ -101,8 +116,11 @@ export interface Slide {
 }
 
 export interface Deck {
+  lectureOptions?: import("./lecture-schema").LectureOptions;
+  lastLiteratureCheck?: number;
+  courseSeries?: import("zod").infer<typeof import("./lecture-schema").courseMembershipSchema>;
   teachingVerification?: { instructor: string; at: number; snapshot: string };
-  exportMode?: "light" | "dark";
+  exportMode?: "light" | "dark" | "high-contrast";
   sourceDocuments?: import("./source-documents").SourceDocument[];
   id: string;
   title: string;
@@ -138,10 +156,13 @@ export type DeckMetaPatch = Partial<
     | "courseCode"
     | "preparedBy"
     | "department"
+    | "lectureOptions"
+    | "lastLiteratureCheck"
+    | "courseSeries"
   >
 >;
 
-export interface GenerateInput {
+export interface GenerateInput extends importLectureOptions {
   topic: string;
   discipline: string;
   count: number;
@@ -154,7 +175,7 @@ export interface GenerateInput {
   department?: string;
 }
 
-export interface GenerateDraft {
+export interface GenerateDraft extends importLectureOptions {
   topic: string;
   discipline: string;
   count: number;
