@@ -116,7 +116,7 @@ export async function exportPptx(
   for (let i = 0; i < deck.slides.length; i++) {
     const source = deck.slides[i];
     const slide = pptx.addSlide();
-    const scene = await slideExportScene(deck, i);
+    const scene = await slideExportScene(deck, i, { draft: !options.classroom });
     const overflow = sceneOverflow(scene);
     if (options.classroom && overflow.length)
       throw new Error(

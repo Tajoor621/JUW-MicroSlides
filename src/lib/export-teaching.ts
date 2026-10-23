@@ -60,7 +60,7 @@ export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean
   });
   for (let index = 0; index < deck.slides.length; index++) {
     if (index) pdf.addPage([960, 540], "landscape");
-    const scene = await slideExportScene(deck, index);
+    const scene = await slideExportScene(deck, index, { draft: options.reviewed === false });
     if (options.reviewed !== false && sceneOverflow(scene).length)
       throw Error(`Slide ${index + 1} overflows. Reduce content before PDF export.`);
     for (const item of scene) {

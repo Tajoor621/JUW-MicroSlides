@@ -10,7 +10,7 @@ import { packProject } from "@/lib/project-format";
 import { saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -179,14 +179,23 @@ export function EditorApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [index, select]);
 
-  const [exportIssues, setExportIssues] = useState<ReturnType<
-    typeof teachingReleaseFindings
-  > | null>(null);
+  const [showReviewNotes, setShowReviewNotes] = useState(false);
+  const exportIssues = useMemo(
+    () => (showReviewNotes && deck ? teachingReleaseFindings(deck) : null),
+    [showReviewNotes, deck],
+  );
+  const setExportIssues = (issues: ReturnType<typeof teachingReleaseFindings> | null) =>
+    setShowReviewNotes(Boolean(issues?.length));
+  const [exportError, setExportError] = useState("");
   const exportAlert = useRef<HTMLElement>(null);
-  useEffect(() => setExportIssues(null), [deck?.id]);
   useEffect(() => {
-    if (exportIssues) exportAlert.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [exportIssues]);
+    setShowReviewNotes(false);
+    setExportError("");
+  }, [deck?.id]);
+  useEffect(() => {
+    if (showReviewNotes)
+      exportAlert.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [showReviewNotes]);
   const [reviewedAttempt, setReviewedAttempt] = useState(false);
   function outputDeck(reviewed: boolean) {
     if (!deck || reviewed || teachingReady(deck)) return deck;
@@ -206,6 +215,7 @@ export function EditorApp() {
     return !reviewed || !issues.length;
   }
   async function onPptx(reviewed = false) {
+    setExportError("");
     const candidate = outputDeck(reviewed);
     if (!candidate || !preflightExport(candidate, reviewed)) return;
     try {
@@ -216,18 +226,19 @@ export function EditorApp() {
           : "PowerPoint downloaded. Review status and source notes are included.",
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not write the PPTX file.");
+      setExportError(e instanceof Error ? e.message : "Could not write the PPTX file.");
     }
   }
   const [printing, setPrinting] = useState(false);
   async function onPdf(reviewed = false) {
+    setExportError("");
     const candidate = outputDeck(reviewed);
     if (!candidate || !preflightExport(candidate, reviewed)) return;
     setPrinting(true);
     try {
       await exportTeachingPdf(candidate, { reviewed });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "PDF export failed.");
+      setExportError(e instanceof Error ? e.message : "PDF export failed.");
     } finally {
       setPrinting(false);
     }
@@ -479,7 +490,12 @@ export function EditorApp() {
                   onRetry={() => useDeckStore.getState().setGeneratorOpen(true)}
                 />
               )}
-              {exportIssues && (
+              {exportError && (
+                <p role="alert" className="rounded border border-danger p-3 text-sm">
+                  Presentation could not be written: {exportError}
+                </p>
+              )}
+              {!!exportIssues?.length && (
                 <section
                   role="alert"
                   aria-label="Export readiness"

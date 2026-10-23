@@ -45,7 +45,11 @@ function color(value: string): string | undefined {
 /** Capture the same fixed composition used by preview/presentation/print.
  * Only artwork is an image. Text stays native, editable PowerPoint text.
  */
-export async function slideExportScene(deck: Deck, index: number): Promise<SceneItem[]> {
+export async function slideExportScene(
+  deck: Deck,
+  index: number,
+  options: { draft?: boolean } = {},
+): Promise<SceneItem[]> {
   const host = document.createElement("div");
   Object.assign(host.style, {
     position: "fixed",
@@ -91,6 +95,26 @@ export async function slideExportScene(deck: Deck, index: number): Promise<Scene
     const teaching = stage.querySelector<HTMLElement>(
       "[data-teaching-content],[data-lecture-content]",
     );
+    // Ordinary editable drafts can fit text; reviewed release keeps the original
+    // strict projector layout. Reflow complete text rather than clip or truncate it.
+    const overflows = () =>
+      teaching &&
+      (teaching.scrollHeight > teaching.clientHeight + 2 ||
+        [...teaching.children].some((c) => c.scrollHeight > c.clientHeight + 2));
+    if (options.draft && teaching && overflows()) {
+      for (let pass = 0; pass < 18 && overflows(); pass++) {
+        for (const el of [
+          teaching,
+          ...teaching.querySelectorAll<HTMLElement>("p,li,span,strong,td,th,figcaption,h3,h4"),
+        ]) {
+          const css = getComputedStyle(el);
+          const size = parseFloat(css.fontSize),
+            line = parseFloat(css.lineHeight);
+          el.style.fontSize = `${Math.max(10, size * 0.9)}px`;
+          if (Number.isFinite(line)) el.style.lineHeight = `${Math.max(12, line * 0.9)}px`;
+        }
+      }
+    }
     if (
       teaching &&
       (teaching.scrollHeight > teaching.clientHeight + 2 ||
