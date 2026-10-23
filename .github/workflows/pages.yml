@@ -36,7 +36,12 @@ jobs:
       - run: npm run test:release
       - run: npm run test:lecturer
       - run: npm run build:pages
-      - run: npx playwright install --with-deps chromium
+      - name: Use the hosted runner's installed Chrome
+        run: |
+          JUW_BROWSER_PATH="${CHROME_BIN:-$(command -v google-chrome)}"
+          test -x "$JUW_BROWSER_PATH"
+          "$JUW_BROWSER_PATH" --version
+          echo "JUW_CHROMIUM=$JUW_BROWSER_PATH" >> "$GITHUB_ENV"
       - run: npm run qa:pages
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
