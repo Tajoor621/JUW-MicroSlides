@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { sourceConceptHeading as heading } from "../src/lib/source-headings.ts";
 const topic = "Bacterial chromosome segregation";
+test("separates provider-glued section boundaries without damaging organism abbreviations", () => {
+  const source = "We estimate the effective reproduction number.ResultsThe incubation period was measured.";
+  const title = heading([source], "Transmission dynamics", new Set());
+  assert.equal(title, "effective reproduction number");
+  assert(source.includes(title));
+  assert.equal(heading(["ResultsThe incubation period was measured."], topic, new Set()), "incubation period");
+  assert.equal(heading(["S. aureus virulence factors were investigated."], topic, new Set()), "S. aureus virulence factors");
+});
 test("extracts source-contiguous concept labels instead of first-nine-word fragments", () => {
   for (const [source, expected] of [
     [

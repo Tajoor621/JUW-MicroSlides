@@ -29,7 +29,13 @@ export function sourceConceptHeading(sentences: string[], topic: string, used: S
       .replace(/^(?:background|objectives?|methods?|results?|conclusions?)\s*:\s*/i, "")
       .replace(/^(?:recent studies|this (?:study|review)|our (?:study|results|data))\s*/i, "");
     // Punctuation is a boundary too: don't join terms across different clauses.
-    for (const clause of clean.split(/[;:,!?()[\]{}=/]|(?<=[a-z\d])\.(?=\s|$)/)) {
+    for (const rawClause of clean.split(/[;:,!?()[\]{}=/]|(?<=[a-z\d])\.(?=\s|$|[A-Z])/)) {
+      // Provider abstracts can glue structured section labels to their text.
+      // Remove only the label prefix; the selected phrase remains a source span.
+      const clause = rawClause.replace(
+        /^(?:Background|Objectives?|Methods?|Results?|Conclusions?)(?=[A-Z])/,
+        "",
+      );
       let phrase: { word: string; start: number; end: number }[] = [];
       const collect = () => {
         if (!phrase.length) return;
