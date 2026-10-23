@@ -1230,6 +1230,7 @@ try {
   await cp.locator("#gen-topic").fill("Uncatalogued isolate ZXQ-517 secretion system");
   await cp.locator("#gen-count").fill("25");
   await cp.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await cp.getByText("Request and recovery details", { exact: true }).click();
   await cp
     .getByRole("alert")
     .filter({ hasText: /not complete yet/ })

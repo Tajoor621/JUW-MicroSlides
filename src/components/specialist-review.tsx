@@ -1,4 +1,5 @@
 import { EvidenceOverview } from "./evidence-overview";
+import { DuplicateReview } from "./duplicate-review";
 import { ScientificReviewWorkbench } from "./scientific-review-workbench";
 import { ScientificReviewReturns } from "./scientific-review-returns";
 import { downloadScientificReviewPack } from "@/lib/scientific-review-pack";
@@ -148,6 +149,7 @@ export function SpecialistReview() {
   }
   return (
     <div className="space-y-4">
+      <DuplicateReview />
       <section className="rounded border border-border bg-elevated p-3">
         <h3 className="font-serif text-base">Microbiology specialist review</h3>
         <p className="mt-2 text-xs leading-relaxed text-muted">

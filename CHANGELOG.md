@@ -1,5 +1,12 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — syllabus recovery and actionable export findings (23 October 2026)
+
+- Search sentence-separated syllabus sections independently, retain structural genome context, prefer directly focused sources and require section coverage when enough content slots exist. Exact counts and source/evidence review gates remain enforced.
+- Report the full requested count when objectives/assessment reserve internal slots. Keep long requests and recovery details expandable in a compact mobile alert.
+- Replace oversized toolbar export-error toasts with inline findings and direct slide-review actions. Show original/repeated points together; offer explicit removal only for an identical point when substantive content remains, preserving count, notes, references and Undo.
+- Keep scientific review pending. Lexical topic/coverage screening does not establish scientific accuracy, guideline currency or classroom readiness.
+
 ## V6.2.1 — topic scope and extractive concept headings (23 October 2026)
 
 - Require epidemiological reproduction-number context for that requested concept; reject fertility/genetics word overlap and use concept-specific query alternatives. Match generic topic terms at word boundaries.
