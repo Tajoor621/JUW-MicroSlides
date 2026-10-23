@@ -162,15 +162,20 @@ export async function embedPortableFonts(
 
 export async function loadPortableFonts() {
   const read = async (path: string) => {
-    const response = await fetch(`${import.meta.env.BASE_URL}fonts/${path}`);
-    if (!response.ok)
-      throw Error("Portable fonts are unavailable. Reconnect and retry; your deck is preserved.");
+    const response = await fetch(`${import.meta.env.BASE_URL}fonts/${path}`, {
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (!response.ok) throw Error("Font asset unavailable");
     return response;
   };
-  const [regular, bold, license] = await Promise.all([
-    read("DejaVuSans.ttf").then((r) => r.arrayBuffer()),
-    read("DejaVuSans-Bold.ttf").then((r) => r.arrayBuffer()),
-    read("LICENSE.txt").then((r) => r.text()),
-  ]);
-  return { regular: new Uint8Array(regular), bold: new Uint8Array(bold), license };
+  try {
+    const [regular, bold, license] = await Promise.all([
+      read("DejaVuSans.ttf").then((r) => r.arrayBuffer()),
+      read("DejaVuSans-Bold.ttf").then((r) => r.arrayBuffer()),
+      read("LICENSE.txt").then((r) => r.text()),
+    ]);
+    return { regular: new Uint8Array(regular), bold: new Uint8Array(bold), license };
+  } catch {
+    throw Error("Portable fonts are unavailable. Reconnect and retry; your deck is preserved.");
+  }
 }

@@ -155,6 +155,19 @@ try {
           join(output, "juw-portable-fonts.pptx"),
           await readFile(await download.path()),
         );
+        const portablePackEvent = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export teaching pack", exact: true }).click();
+        const portablePack = await JSZip.loadAsync(
+          await readFile(await (await portablePackEvent).path()),
+        );
+        const packedSlides = await JSZip.loadAsync(
+          await portablePack.file("slides.pptx").async("uint8array"),
+        );
+        if (
+          !packedSlides.file("ppt/fonts/juw-dejavu-bold.fntdata") ||
+          !portablePack.file("fonts-LICENSE.txt")
+        )
+          throw Error("Portable teaching packs must retain embedded fonts and licence");
         await page.getByLabel("Lecture typography", { exact: true }).selectOption("original");
         if (!(await button.isDisabled()))
           throw Error("Typography changes require fresh layout verification");
