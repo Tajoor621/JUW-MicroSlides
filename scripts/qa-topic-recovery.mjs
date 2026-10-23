@@ -73,18 +73,31 @@ try {
   await page.getByRole("button", { name: "MRSA virulence", exact: true }).click();
   assert.equal(requests, 0, "Topic chips must not start generation unexpectedly");
   assert.equal(await page.locator("#gen-topic").inputValue(), "MRSA virulence");
-  await page.locator("#gen-topic").fill("Uncatalogued isolate ZXQ secretion");
-  await page.locator("#gen-count").fill("23");
+  const syllabus =
+    "Genome architecture in bacteria, archaea and fungi. Differences between prokaryotic and eukaryotic microbial genomes. DNA packaging in microbes (nucleoid and chromatin). Organization of bacterial chromosome";
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("#gen-topic").fill(syllabus);
+  await page.locator("#gen-count").fill("24");
   await page.getByRole("button", { name: "Generate deck", exact: true }).click();
   const failure = page.getByRole("alert").filter({ hasText: "Generation stopped:" });
   await failure.waitFor({ timeout: 30000 });
-  assert.match(await failure.innerText(), /Uncatalogued isolate ZXQ secretion/);
+  assert.match(await failure.innerText(), /Genome architecture/);
+  assert.match(await failure.innerText(), /24 requested slides/);
+  assert(
+    (await failure.boundingBox()).height < 350,
+    "Long-topic recovery alert must leave mobile controls reachable",
+  );
+  await failure.getByText("Request and recovery details", { exact: true }).click();
+  assert.match(await failure.innerText(), /24-slide deck is not complete yet/);
+  assert(!/23-slide deck is not complete yet/.test(await failure.innerText()));
   assert.match(await failure.innerText(), /Still displaying “Enzyme Immobilization”/);
   assert.equal(await page.getByLabel("Slide layout", { exact: true }).inputValue(), "title");
   checks.push(
     "Unavailable sources keep the saved example and show the attempted topic in a persistent inline recovery alert",
   );
   available = true;
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator("#gen-count").fill("23");
   await page.locator("#gen-topic").fill(topic);
   await page.getByRole("button", { name: "Generate deck", exact: true }).click();
   await page
@@ -124,9 +137,43 @@ try {
   );
   await page.setViewportSize({ width: 390, height: 844 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  const blockers = page.getByRole("alert", { name: "Export readiness" });
+  assert((await blockers.boundingBox()).height < 350);
   await page.screenshot({ path: join(output, "topic-recovery-mobile.png") });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({ path: join(output, "topic-recovery-desktop.png") });
+  await page.getByRole("button", { name: "Dismiss export findings", exact: true }).click();
+  const repeated =
+    "Bacterial quorum signalling in dataset 51 is a deliberately repeated software fixture point.";
+  await page.getByRole("button", { name: /^03 content / }).click();
+  await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).fill(repeated);
+  await page.getByRole("button", { name: /^04 content / }).click();
+  await page
+    .getByRole("textbox", { name: "Bullets (one per line)", exact: true })
+    .fill(
+      repeated + "\nA distinct synthetic observation in dataset 52 remains after explicit removal.",
+    );
+  await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  await page.getByRole("button", { name: "Review slide 4", exact: true }).click();
+  await page.getByRole("region", { name: "Overlapping teaching points" }).waitFor();
+  await page
+    .getByRole("button", { name: "Remove exact repeated point from slide 4", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  assert.equal(
+    await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
+    "A distinct synthetic observation in dataset 52 remains after explicit removal.",
+  );
+  assert.match(await page.locator("body").innerText(), /Slide 4 of 23/);
+  await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).blur();
+  await page.keyboard.press("Control+z");
+  assert.match(
+    await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
+    /deliberately repeated/,
+  );
+  checks.push(
+    "Compact mobile failures preserve full details and requested count; export repair opens overlaps, removes only an explicitly chosen exact point, preserves count and supports Undo",
+  );
   assert.deepEqual(errors, []);
   await writeFile(
     join(output, "topic-recovery.json"),

@@ -28,6 +28,38 @@ try {
   const { researchQueries, sourceTopicRelevance } = await server.ssrLoadModule(
     "/src/lib/topic-evidence.ts",
   );
+  check(
+    "multi-section genome syllabus retrieves each requested scope without unrelated padding",
+    () => {
+      const topic =
+        "Genome architecture in bacteria, archaea and fungi. Differences between prokaryotic and eukaryotic microbial genomes. DNA packaging in microbes (nucleoid and chromatin). Organization of bacterial chromosome";
+      for (const passage of [
+        "Archaeal genome sequences describe microbial genome organization.",
+        "Prokaryotic and eukaryotic microbial genomes have distinct chromosome organization.",
+        "DNA packaging involves nucleoid organization and chromatin structure in microbes.",
+        "Bacterial chromosome organization was investigated in bacterial cells.",
+      ])
+        assert(sourceTopicRelevance(topic, passage) >= 0.6);
+      assert.equal(sourceTopicRelevance(topic, "Malaria infection causes fever in patients."), 0);
+      assert.equal(
+        sourceTopicRelevance(
+          topic,
+          "MicrobialScope is a genomic resource with rich annotations across bacteria, archaea, fungi, and viruses.",
+        ),
+        0,
+      );
+      assert.equal(
+        sourceTopicRelevance(
+          topic,
+          "Multi-kingdom cervical microbiome structure in health and dysbiosis. Bacterial, archaeal and fungal genomes were surveyed.",
+        ),
+        0,
+      );
+      const queries = researchQueries(topic);
+      assert(queries.some((q) => q.includes('"packaging"') && !q.includes('"differences"')));
+      assert(queries.some((q) => q.includes('"chromosome"') && !q.includes('"eukaryotic"')));
+    },
+  );
   check("reproduction-number scope rejects fertility/genetics word overlap", () => {
     const topic = "Pathogen reproductive number interpretation";
     for (const body of [

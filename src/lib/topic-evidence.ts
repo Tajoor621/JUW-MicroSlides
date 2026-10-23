@@ -46,6 +46,8 @@ const aliases = [
   ["malaria", "malarial", "plasmodium"],
   ["immobilization", "immobilisation", "immobilized", "immobilised"],
   ["genome", "genomic", "genomes"],
+  ["architecture", "organization", "organisation", "structure"],
+  ["packaging", "packing", "wrapping", "compaction"],
   ["antimicrobial", "antibiotic", "antibacterial"],
   ["microbiology", "microbial", "microorganism", "microorganisms"],
   ["qpcr", "quantitative pcr", "real-time pcr"],
@@ -104,9 +106,23 @@ const generic = new Set([
   "how",
   "can",
   "you",
+  "differences",
+  "difference",
+  "between",
+  "microbes",
 ]);
+/** Sentence-separated syllabus requests are alternative source scopes, not one AND query. */
+export function researchScopes(topic: string) {
+  const clean = topic.trim().replace(/^["“]+|["”]+$/g, "");
+  const clauses = clean
+    .split(/(?<=[a-z]{2}|\))[.!?]\s+|[;\n]+/i)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return clauses.length > 1 && clauses.length <= 8 ? clauses : [clean];
+}
 function termsFor(topic: string) {
   const terms = [...new Set(topicTerms(topic))].filter((t) => !generic.has(t) && !/^\d+$/.test(t));
+  if (/\barchitecture\b/i.test(topic)) terms.push("architecture");
   return terms.length ? terms : ["microbiology"];
 }
 function variants(term: string) {
@@ -145,7 +161,21 @@ function mentionsVariant(body: string, variant: string) {
   const escaped = variant.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
   return new RegExp(`(?<![\\p{L}\\p{N}_])${escaped}(?:s)?(?![\\p{L}\\p{N}_])`, "iu").test(body);
 }
-export function sourceTopicRelevance(topic: string, body: string) {
+export function sourceTopicRelevance(topic: string, body: string): number {
+  const scopes = researchScopes(topic);
+  if (scopes.length > 1)
+    return Math.max(...scopes.map((scope) => sourceTopicRelevance(scope, body)));
+  // Structural lectures must not be filled by generic genome-resource or
+  // microbiome surveys that merely share organism/genome words.
+  if (
+    /genome\s+architecture|chromosome\s+organi[sz]ation|organi[sz]ation\s+of\s+(?:the\s+)?(?:bacterial\s+)?chromosome|dna\s+packaging|prokaryotic.*eukaryotic.*genom/i.test(
+      topic,
+    ) &&
+    !/chromatin|nucleoid|histone|nucleosome|DNA\s+(?:packag|wrapp|supercoil|compact)|(?:genom\w*|chromosom\w*)\s+(?:architec|organi[sz]|structur|topolog|segreg|fold|packag)|(?:architec\w*|organi[sz]\w*|structur\w*)\s+(?:of\s+)?(?:the\s+)?(?:bacterial\s+|archaeal\s+|fungal\s+)?(?:genom|chromosom)/i.test(
+      body,
+    )
+  )
+    return 0;
   // A reproduction number is an epidemiological concept. Shared words about
   // reproduction, chromosome number or interpretation cannot establish this scope.
   const reproduction = reproductionNumberTopic.test(topic);
@@ -187,7 +217,10 @@ export function sourceTopicRelevance(topic: string, body: string) {
     terms.length
   );
 }
-export function researchQueries(topic: string) {
+export function researchQueries(topic: string): string[] {
+  const scopes = researchScopes(topic);
+  if (scopes.length > 1)
+    return [...new Set(scopes.flatMap((scope) => researchQueries(scope)))].slice(0, 24);
   const clean = topic
     .replace(/[^\p{L}\p{N}\s-]/gu, " ")
     .replace(/\s+/g, " ")
@@ -266,7 +299,9 @@ function sourceSlides(
         passage,
         Boolean(p.fullBody),
         (body) =>
-          (!p.fullBody && !reproductionNumberTopic.test(topic)) ||
+          (!p.fullBody &&
+            researchScopes(topic).length === 1 &&
+            !reproductionNumberTopic.test(topic)) ||
           sourceTopicRelevance(topic, body) >= 0.6,
       );
       if (!parts.length) return [];
@@ -371,25 +406,49 @@ function sourceSlides(
   }
   if (preferOverview)
     groups.sort((a, b) => (b[0] ? overviewScore(b[0]) : -10) - (a[0] ? overviewScore(a[0]) : -10));
+  const scopes = researchScopes(topic);
+  const focused = (group: Slide[]) =>
+    sourceTopicRelevance(topic, group[0]?.citations[0]?.title || "") >= 0.6;
+  // For syllabus requests, use distinct passages from directly focused studies
+  // before tangential papers that mention the concept in passing.
+  const tiers =
+    scopes.length > 1
+      ? [groups.filter(focused), groups.filter((group) => !focused(group))]
+      : [groups];
   // Round-robin across studies; compare each new statement once against accepted content.
   // Rechecking every historical pair for each candidate was cubic and blocked cancellation timers.
   const accepted: Slide[] = [],
     statements: string[] = [];
-  for (let part = 0; part < Math.max(0, ...groups.map((g) => g.length)); part++) {
-    for (const group of groups) {
-      const slide = group[part];
-      if (
-        !slide ||
-        slide.bullets.some((line, i) =>
-          [...statements, ...slide.bullets.slice(0, i)].some(
-            (previous) => statementSimilarity(previous, line) >= 0.86,
-          ),
-        )
+  const take = (slide: Slide | undefined) => {
+    if (
+      !slide ||
+      accepted.includes(slide) ||
+      slide.bullets.some((line, i) =>
+        [...statements, ...slide.bullets.slice(0, i)].some(
+          (previous) => statementSimilarity(previous, line) >= 0.86,
+        ),
       )
-        continue;
-      accepted.push(slide);
-      statements.push(...slide.bullets);
-      if (accepted.length >= limit) return accepted;
+    )
+      return false;
+    accepted.push(slide);
+    statements.push(...slide.bullets);
+    return true;
+  };
+  // Cover each requested syllabus clause before filling the remaining slots.
+  if (scopes.length > 1 && limit >= scopes.length)
+    for (const scope of scopes) {
+      if (accepted.some((s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6)) continue;
+      for (const slide of tiers.flat().flat())
+        if (sourceTopicRelevance(scope, slide.bullets.join(" ")) >= 0.6 && take(slide)) break;
+    }
+  for (const tier of tiers) {
+    for (let part = 0; part < Math.max(0, ...tier.map((g) => g.length)); part++) {
+      for (const group of tier) {
+        const slide = group[part];
+        if (accepted.length >= limit) return accepted;
+        if (!take(slide)) continue;
+        if (accepted.length >= limit) return accepted;
+      }
     }
   }
   return accepted;
@@ -510,8 +569,19 @@ export async function enrichTopicEvidence(
     target === 1,
   );
   let work = queries.map((query) => ({ query, cursor: "*" }));
+  const scopes = researchScopes(input.topic);
+  const missingScopes = () =>
+    scopes.length > 1 && needed >= scopes.length
+      ? scopes.filter(
+          (scope) =>
+            ![...core, ...evidence].some(
+              (s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6,
+            ),
+        )
+      : [];
+  const enough = () => evidence.length >= needed && missingScopes().length === 0;
   try {
-    for (let round = 0; round < 3 && work.length && evidence.length < needed; round++) {
+    for (let round = 0; round < 3 && work.length && !enough(); round++) {
       onProgress?.(
         `Research search ${round + 1}/3 · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
       );
@@ -586,7 +656,7 @@ export async function enrichTopicEvidence(
       );
       if (signal?.aborted) throw signal.reason;
     }
-    if (evidence.length < needed && !controller.signal.aborted) {
+    if (!enough() && !controller.signal.aborted) {
       onProgress?.("Trying PubMed abstracts through an independent research provider…");
       try {
         const fallback = await fetchPubmedAbstracts(
@@ -615,11 +685,11 @@ export async function enrichTopicEvidence(
         requestErrors.push(error instanceof Error ? error.message : "PubMed unavailable");
       }
     }
-    if (evidence.length < needed)
+    if (!enough())
       throw new DeckCompletionError(
         target,
         original.length + evidence.length,
-        `${successful ? `Research sources supplied too little relevant text for “${input.topic}”.` : `No research request succeeded (${requestErrors.at(-1) || "service unavailable"}). Reconnect and retry, or use attributed cached sources.`} ${requestErrors.length ? ` Last provider error: ${requestErrors.at(-1)}.` : ""} Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
+        `${successful ? "Research sources supplied too little relevant text." : `No research request succeeded (${requestErrors.at(-1) || "service unavailable"}). Reconnect and retry, or use attributed cached sources.`} ${missingScopes().length ? `Uncovered requested sections: ${missingScopes().join("; ")}.` : ""} ${requestErrors.length ? ` Last provider error: ${requestErrors.at(-1)}.` : ""} Add lecture notes/abstracts or configure a local AI model. Your existing deck has been kept.`,
       );
     const added = evidence.slice(0, needed);
     if (target === 1 && added[0]) added[0] = { ...added[0], title: input.topic };

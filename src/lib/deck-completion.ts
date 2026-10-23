@@ -6,13 +6,21 @@ export class DeckCompletionError extends Error {
   constructor(
     public readonly requested: number,
     public readonly available: number,
-    detail = "",
+    public readonly detail = "",
   ) {
     super(
       `The ${requested}-slide deck is not complete yet (${available} usable slides). ${detail || "Connect to research sources, paste more topic material, or configure a local AI model, then retry."}`,
     );
     this.name = "DeckCompletionError";
   }
+}
+/** Reserved objective/assessment slots must not leak as the user's requested count. */
+export function generationFailureMessage(error: unknown, total: number) {
+  if (error instanceof DeckCompletionError)
+    return new DeckCompletionError(total, error.available, error.detail).message;
+  return error instanceof Error
+    ? error.message
+    : "The requested deck could not be completed. Add source material and retry.";
 }
 export function requestedCount(value: number) {
   if (!Number.isInteger(value) || value < 1 || value > MAX_SLIDES)

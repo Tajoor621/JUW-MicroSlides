@@ -110,6 +110,16 @@ try {
     /not complete yet/,
   );
   assert.throws(() => assertCompleteDeck(generateLocalDeck(unknown), 25), /not complete yet/);
+  const { DeckCompletionError, generationFailureMessage } = await server.ssrLoadModule(
+    "/src/lib/deck-completion.ts",
+  );
+  const internalFailure = new DeckCompletionError(
+    23,
+    13,
+    "Research sources supplied too little relevant text.",
+  );
+  assert.match(generationFailureMessage(internalFailure, 24), /24-slide deck.*13 usable/);
+  assert(!generationFailureMessage(internalFailure, 24).includes("23-slide"));
   checks++;
   console.log("PASS missing evidence cannot be saved as a successful short deck");
   // A real provider outage must recover through independently retrieved abstracts.

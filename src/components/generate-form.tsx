@@ -1,4 +1,5 @@
 import { LectureGenerationOptions } from "./lecture-generation-options";
+import { GenerationFailure } from "./generation-failure";
 import {
   generateModeDeck,
   applyStandardPedagogy,
@@ -8,7 +9,11 @@ import {
 import { writeLocalRecord } from "@/lib/durable-storage";
 import { useRef } from "react";
 let generationRunning = false;
-import { assertCompleteDeck, requestedCount } from "@/lib/deck-completion";
+import {
+  assertCompleteDeck,
+  requestedCount,
+  generationFailureMessage,
+} from "@/lib/deck-completion";
 import { enrichTopicEvidence } from "@/lib/topic-evidence";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -247,9 +252,7 @@ export function GenerateForm({
     } catch (error) {
       const message = controller.current?.signal.aborted
         ? "Generation cancelled. Your previous deck and completed checkpoints are preserved."
-        : error instanceof Error
-          ? error.message
-          : "The requested deck could not be completed. Add source material and retry.";
+        : generationFailureMessage(error, count);
       useDeckStore.getState().setGenerationFailure({ topic, count, message });
       toast.error(`Could not create “${topic}”. See the generation details.`, { duration: 5000 });
       queueMicrotask(() => form.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
@@ -270,21 +273,7 @@ export function GenerateForm({
       }}
     >
       <fieldset disabled={busy} className="contents">
-        {failure && (
-          <section
-            role="alert"
-            className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
-          >
-            <p className="font-semibold">
-              Generation stopped: {failure.topic} · {failure.count} requested slides
-            </p>
-            <p>{failure.message}</p>
-            <p className="text-xs text-muted">
-              Still displaying “{currentTopic}”. Its content has not been replaced or renamed. Edit
-              the request or add source notes below, then choose Generate deck to retry.
-            </p>
-          </section>
-        )}
+        {failure && <GenerationFailure failure={failure} currentTopic={currentTopic} />}
         <LectureGenerationOptions draft={draft} patch={patchDraft} />
         <div className={cn("grid gap-3", compact ? "sm:grid-cols-2" : "")}>
           <div className={cn("grid content-start gap-1.5", compact && "sm:col-span-2")}>

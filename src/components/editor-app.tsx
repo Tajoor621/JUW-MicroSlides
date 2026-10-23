@@ -1,10 +1,12 @@
 import { exportTeachingPdf } from "@/lib/export-teaching";
+import { teachingReleaseFindings } from "@/lib/teaching-readiness";
+import { GenerationFailure } from "./generation-failure";
 import { ProfessionalWorkspace } from "./professional-workspace";
 import { packProject } from "@/lib/project-format";
 import { saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -173,8 +175,24 @@ export function EditorApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [index, select]);
 
+  const [exportIssues, setExportIssues] = useState<ReturnType<
+    typeof teachingReleaseFindings
+  > | null>(null);
+  const exportAlert = useRef<HTMLElement>(null);
+  useEffect(() => setExportIssues(null), [deck?.id, deck?.updatedAt]);
+  useEffect(() => {
+    if (exportIssues) exportAlert.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [exportIssues]);
+  function preflightExport() {
+    if (!deck) return false;
+    const issues = teachingReleaseFindings(deck);
+    if (!issues.length) return true;
+    setExportIssues(issues);
+    return false;
+  }
   async function onPptx() {
     if (!deck) return;
+    if (!preflightExport()) return;
     try {
       toast.message("Embedding figures into PowerPoint…");
       await exportPptx(deck);
@@ -188,6 +206,7 @@ export function EditorApp() {
 
   async function onPdf() {
     if (!deck) return;
+    if (!preflightExport()) return;
     setPrinting(true);
     try {
       await exportTeachingPdf(deck);
@@ -428,24 +447,72 @@ export function EditorApp() {
                 )}
               </div>
               {failure && !generatorOpen && (
+                <GenerationFailure
+                  failure={failure}
+                  currentTopic={deck?.topic}
+                  onRetry={() => useDeckStore.getState().setGeneratorOpen(true)}
+                />
+              )}
+              {exportIssues && (
                 <section
                   role="alert"
+                  aria-label="Export readiness"
+                  ref={exportAlert}
                   className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
                 >
                   <p className="font-semibold">
-                    Generation stopped: {failure.topic} · {failure.count} requested slides
+                    Teaching export blocked · {exportIssues.length} unresolved findings
                   </p>
-                  <p>{failure.message}</p>
                   <p className="text-xs text-muted">
-                    Still displaying “{deck?.topic}”. Its content has not been replaced or renamed.
+                    Repair the flagged content before teaching export. Recovery backups remain
+                    available.
                   </p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => useDeckStore.getState().setGeneratorOpen(true)}
-                  >
-                    Edit request and retry
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        select(exportIssues[0].index);
+                        useDeckStore.setState({ inspectorTab: "audit", inspectorOpen: true });
+                        setExportIssues(null);
+                      }}
+                    >
+                      Review slide {exportIssues[0].index + 1}
+                    </Button>
+                    <Button variant="ghost" onClick={() => setExportIssues(null)}>
+                      Dismiss export findings
+                    </Button>
+                  </div>
+                  <details>
+                    <summary className="min-h-11 cursor-pointer py-3 text-accent">
+                      Inspect export blockers
+                    </summary>
+                    <ol className="space-y-3">
+                      {exportIssues.slice(0, 50).map((issue, n) => (
+                        <li key={n} className="break-words border-t border-border py-2 text-xs">
+                          <p>
+                            Slide {issue.index + 1}: {issue.message}
+                          </p>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              select(issue.index);
+                              useDeckStore.setState({ inspectorTab: "audit", inspectorOpen: true });
+                              setExportIssues(null);
+                            }}
+                          >
+                            Open flagged slide {issue.index + 1}
+                          </Button>
+                        </li>
+                      ))}
+                    </ol>
+                    {exportIssues.length > 50 && (
+                      <p className="text-xs text-muted">
+                        Showing the first 50 findings. The Review panel contains the full report.
+                        All findings still block reviewed export.
+                      </p>
+                    )}
+                  </details>
                 </section>
               )}
               <GeneratePanel />
