@@ -205,6 +205,7 @@ export function EditorApp() {
     setPreparedPptx(null);
   }, [deck?.id]);
   async function onPptx() {
+    const startedEpoch = workspaceEpoch;
     if (pptxWriting.current) return;
     pptxWriting.current = true;
     setPptxBusy(true);
@@ -240,7 +241,8 @@ export function EditorApp() {
       }
       toast.message("PowerPoint file prepared. Use Download PowerPoint if it did not save.");
     } catch (e) {
-      setExportError(e instanceof Error ? e.message : "Could not write the PPTX file.");
+      if (useDeckStore.getState().workspaceEpoch === startedEpoch)
+        setExportError(e instanceof Error ? e.message : "Could not write the PPTX file.");
     } finally {
       pptxWriting.current = false;
       setPptxBusy(false);
@@ -262,6 +264,7 @@ export function EditorApp() {
   }, [deck?.id]);
   const [printing, setPrinting] = useState(false);
   async function onPdf() {
+    const startedEpoch = workspaceEpoch;
     setExportError("");
     const candidate = deck;
     if (!candidate) return;
@@ -286,7 +289,8 @@ export function EditorApp() {
       a.click();
       a.remove();
     } catch (e) {
-      setExportError(e instanceof Error ? e.message : "PDF export failed.");
+      if (useDeckStore.getState().workspaceEpoch === startedEpoch)
+        setExportError(e instanceof Error ? e.message : "PDF export failed.");
     } finally {
       setPrinting(false);
     }
