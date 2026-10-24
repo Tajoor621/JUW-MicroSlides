@@ -157,6 +157,10 @@ try {
   await page.screenshot({ path: join(output, "writing-notes-mobile.png") });
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  await page
+    .getByText("Fresh workspace. Saved decks remain in Library.", { exact: true })
+    .first()
+    .waitFor();
   assert.equal(await page.locator("#gen-topic").inputValue(), "");
   assert.equal(await page.locator("[data-slide-stage]").count(), 0);
   await page.reload();
@@ -178,6 +182,10 @@ try {
   await page.getByRole("button", { name: "Generate deck", exact: true }).click();
   await page.getByRole("button", { name: "Cancel generation", exact: true }).waitFor();
   await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  await page
+    .getByText("Fresh workspace. Saved decks remain in Library.", { exact: true })
+    .first()
+    .waitFor();
   await page.getByRole("button", { name: "Generate deck", exact: true }).waitFor();
   assert.equal(await page.locator("#gen-topic").inputValue(), "");
   assert.equal(await page.getByRole("alert").filter({ hasText: "Generation stopped:" }).count(), 0);

@@ -4,7 +4,7 @@ import { ProfessionalWorkspace } from "./professional-workspace";
 import { packProject } from "@/lib/project-format";
 import { isDesktop, saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
-import { storageHealth } from "@/lib/durable-storage";
+import { storageHealth, flushSavedDecks } from "@/lib/durable-storage";
 import { useEffect, useState, useRef } from "react";
 import {
   ChevronDown,
@@ -379,9 +379,18 @@ export function EditorApp() {
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Refresh workspace"
-                onClick={() => {
+                onClick={async () => {
                   useDeckStore.getState().refreshWorkspace();
-                  toast.message("Fresh workspace. Saved decks remain in Library.");
+                  try {
+                    await flushSavedDecks();
+                    toast.message("Fresh workspace. Saved decks remain in Library.");
+                  } catch (error) {
+                    toast.error(
+                      error instanceof Error
+                        ? error.message
+                        : "Fresh workspace could not be saved.",
+                    );
+                  }
                 }}
               >
                 <RotateCcw />

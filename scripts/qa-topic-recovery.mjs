@@ -144,6 +144,10 @@ try {
     "PubMed fallback generates exactly 23 slides and downloads native PPTX and PDF with no review gate",
   );
   await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  await page
+    .getByText("Fresh workspace. Saved decks remain in Library.", { exact: true })
+    .first()
+    .waitFor();
   assert.equal(await page.locator("#gen-topic").inputValue(), "");
   assert.equal(await page.locator("[data-slide-stage]").count(), 0);
   await page.reload();
