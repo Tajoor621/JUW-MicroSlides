@@ -11,6 +11,76 @@ const vite = await createServer({
 });
 try {
   const { deck, slide, review } = await teachingFixture(vite);
+  const { improveDraft, completeSourcedTeaching } = await vite.ssrLoadModule(
+    "/src/lib/draft-improvements.ts",
+  );
+  const { groupedReviewNotes } = await vite.ssrLoadModule("/src/lib/teaching-readiness.ts");
+  const raw = structuredClone(slide);
+  delete raw.teaching;
+  const filled = completeSourcedTeaching(raw);
+  if (filled.teaching?.takeaway)
+    assert(
+      raw.claims.some((c) => c.evidence.some((e) => e.quote.includes(filled.teaching.takeaway))),
+    );
+  assert.deepEqual(
+    filled.claims,
+    raw.claims,
+    "Field completion cannot invent review approvals or alter original evidence",
+  );
+  const repeat = raw.bullets[0];
+  const second = {
+    ...structuredClone(raw),
+    id: "duplicate-software-fixture",
+    bullets: [repeat, "A distinct software fixture statement remains for editing."],
+    leftBullets: [],
+    rightBullets: [],
+    claims: [],
+  };
+  const corrected = improveDraft({ ...deck, slides: [raw, second] });
+  assert.equal(corrected.deck.slides.length, 2);
+  assert.deepEqual(corrected.deck.slides[1].bullets, [
+    "A distinct software fixture statement remains for editing.",
+  ]);
+  assert(
+    corrected.deck.slides[1].notes.includes(repeat),
+    "Removed duplicate wording is retained in notes",
+  );
+  assert.deepEqual(corrected.deck.slides[1].citations, second.citations);
+  const differentStudy = {
+    ...second,
+    citations: second.citations.map((c) => ({
+      ...c,
+      id: "different-citation",
+      doi: "10.0000/software-fixture-other-source",
+      pmid: undefined,
+      url: undefined,
+    })),
+  };
+  assert.equal(
+    improveDraft({ ...deck, slides: [raw, differentStudy] }).deck.slides[1].bullets.length,
+    2,
+    "Never deduplicate matching wording across different source identities",
+  );
+  assert.equal(corrected.deck.slides[1].claims[0].status, "unreviewed");
+  const single = { ...second, bullets: [repeat] };
+  assert.equal(
+    improveDraft({ ...deck, slides: [raw, single] }).deck.slides[1].bullets.length,
+    1,
+    "Never empty a slide to hide repetition",
+  );
+  const unsupported = { ...raw, claims: [] };
+  assert.equal(
+    completeSourcedTeaching(unsupported),
+    unsupported,
+    "No unsupported scientific completion",
+  );
+  const grouped = groupedReviewNotes([
+    { index: 0, message: "title: Record a decision and a specific rationale for this field." },
+    { index: 0, message: "subtitle: Record a decision and a specific rationale for this field." },
+    { index: 1, message: "notes: Record a decision and a specific rationale for this field." },
+  ]);
+  assert.equal(grouped.length, 1);
+  assert.deepEqual(grouped[0].indices, [0, 1]);
   const {
     teachingFindings,
     citationMatchesUrl,

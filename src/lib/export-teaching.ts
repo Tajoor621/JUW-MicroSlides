@@ -2,7 +2,7 @@ import { lectureStructuredHtml } from "./lecture-transcript";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
 import { preflightTeachingImages, decodeTeachingImage } from "./teaching-images";
-import { assertTeachingReady } from "./teaching-readiness";
+import { assertTeachingReady, teachingReady } from "./teaching-readiness";
 import { slideExportScene, sceneOverflow } from "./slide-export-scene";
 import { exportPptx } from "./export-pptx";
 import { saveFile } from "./desktop";
@@ -36,8 +36,10 @@ export async function font(name: string) {
     );
   return fontCache.get(name)!;
 }
-export async function teachingPdfBytes(deck: Deck) {
-  assertTeachingReady(deck);
+export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean } = {}) {
+  if (options.reviewed !== false) assertTeachingReady(deck);
+  if (deck.slides.length < 1 || deck.slides.length > 50)
+    throw Error("PDF requires 1–50 slides. Historical archives are preserved.");
   await preflightTeachingImages(deck);
   const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
   const pdf = new jsPDF({
@@ -58,8 +60,8 @@ export async function teachingPdfBytes(deck: Deck) {
   });
   for (let index = 0; index < deck.slides.length; index++) {
     if (index) pdf.addPage([960, 540], "landscape");
-    const scene = await slideExportScene(deck, index);
-    if (sceneOverflow(scene).length)
+    const scene = await slideExportScene(deck, index, { draft: options.reviewed === false });
+    if (options.reviewed !== false && sceneOverflow(scene).length)
       throw Error(`Slide ${index + 1} overflows. Reduce content before PDF export.`);
     for (const item of scene) {
       const x = item.x * 0.75,
@@ -130,8 +132,12 @@ export async function teachingPdfBytes(deck: Deck) {
   }
   return new Uint8Array(pdf.output("arraybuffer"));
 }
-export async function exportTeachingPdf(deck: Deck) {
-  return saveFile(`${name(deck)}.pdf`, await teachingPdfBytes(deck), "pdf");
+export async function exportTeachingPdf(deck: Deck, options: { reviewed?: boolean } = {}) {
+  return saveFile(
+    `${teachingReady(deck) ? "" : "draft-"}${name(deck)}.pdf`,
+    await teachingPdfBytes(deck, options),
+    "pdf",
+  );
 }
 export async function exportTeachingPack(deck: Deck) {
   assertTeachingReady(deck);

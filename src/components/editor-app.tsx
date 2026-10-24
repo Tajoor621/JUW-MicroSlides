@@ -1,12 +1,16 @@
 import { exportTeachingPdf } from "@/lib/export-teaching";
-import { teachingReleaseFindings } from "@/lib/teaching-readiness";
+import {
+  teachingReleaseFindings,
+  groupedReviewNotes,
+  teachingReady,
+} from "@/lib/teaching-readiness";
 import { GenerationFailure } from "./generation-failure";
 import { ProfessionalWorkspace } from "./professional-workspace";
 import { packProject } from "@/lib/project-format";
 import { saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -175,43 +179,66 @@ export function EditorApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [index, select]);
 
-  const [exportIssues, setExportIssues] = useState<ReturnType<
-    typeof teachingReleaseFindings
-  > | null>(null);
+  const [showReviewNotes, setShowReviewNotes] = useState(false);
+  const exportIssues = useMemo(
+    () => (showReviewNotes && deck ? teachingReleaseFindings(deck) : null),
+    [showReviewNotes, deck],
+  );
+  const setExportIssues = (issues: ReturnType<typeof teachingReleaseFindings> | null) =>
+    setShowReviewNotes(Boolean(issues?.length));
+  const [exportError, setExportError] = useState("");
   const exportAlert = useRef<HTMLElement>(null);
-  useEffect(() => setExportIssues(null), [deck?.id, deck?.updatedAt]);
   useEffect(() => {
-    if (exportIssues) exportAlert.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [exportIssues]);
-  function preflightExport() {
-    if (!deck) return false;
-    const issues = teachingReleaseFindings(deck);
-    if (!issues.length) return true;
-    setExportIssues(issues);
-    return false;
+    setShowReviewNotes(false);
+    setExportError("");
+  }, [deck?.id]);
+  useEffect(() => {
+    if (showReviewNotes)
+      exportAlert.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [showReviewNotes]);
+  const [reviewedAttempt, setReviewedAttempt] = useState(false);
+  function outputDeck(reviewed: boolean) {
+    if (!deck || reviewed || teachingReady(deck)) return deck;
+    const changes = useDeckStore.getState().applySafeCorrections();
+    if (changes) {
+      toast.message(
+        `Applied ${changes} safe formatting/source-field corrections. Undo is available.`,
+      );
+      return useDeckStore.getState().deck();
+    }
+    return deck;
   }
-  async function onPptx() {
-    if (!deck) return;
-    if (!preflightExport()) return;
+  function preflightExport(candidate: NonNullable<typeof deck>, reviewed: boolean) {
+    const issues = teachingReleaseFindings(candidate);
+    setReviewedAttempt(reviewed);
+    setExportIssues(issues.length ? issues : null);
+    return !reviewed || !issues.length;
+  }
+  async function onPptx(reviewed = false) {
+    setExportError("");
+    const candidate = outputDeck(reviewed);
+    if (!candidate || !preflightExport(candidate, reviewed)) return;
     try {
-      toast.message("Embedding figures into PowerPoint…");
-      await exportPptx(deck);
-      toast.success("PowerPoint downloaded. Check layout and figure attribution before sharing.");
+      await exportPptx(candidate, { classroom: reviewed });
+      toast.success(
+        reviewed
+          ? "Reviewed PowerPoint downloaded."
+          : "PowerPoint downloaded. Review status and source notes are included.",
+      );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not write the PPTX file.");
+      setExportError(e instanceof Error ? e.message : "Could not write the PPTX file.");
     }
   }
-
   const [printing, setPrinting] = useState(false);
-
-  async function onPdf() {
-    if (!deck) return;
-    if (!preflightExport()) return;
+  async function onPdf(reviewed = false) {
+    setExportError("");
+    const candidate = outputDeck(reviewed);
+    if (!candidate || !preflightExport(candidate, reviewed)) return;
     setPrinting(true);
     try {
-      await exportTeachingPdf(deck);
+      await exportTeachingPdf(candidate, { reviewed });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "PDF export failed.");
+      setExportError(e instanceof Error ? e.message : "PDF export failed.");
     } finally {
       setPrinting(false);
     }
@@ -316,12 +343,22 @@ export function EditorApp() {
               </Button>
             </Tooltip>
             <Tooltip content="Export PPTX">
-              <Button variant="ghost" size="icon-sm" onClick={onPptx} aria-label="Export PPTX">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => void onPptx()}
+                aria-label="Export PPTX"
+              >
                 <Download />
               </Button>
             </Tooltip>
             <Tooltip content="Print / PDF">
-              <Button variant="ghost" size="icon-sm" onClick={onPdf} aria-label="Export PDF">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => void onPdf()}
+                aria-label="Export PDF"
+              >
                 <Printer />
               </Button>
             </Tooltip>
@@ -453,7 +490,12 @@ export function EditorApp() {
                   onRetry={() => useDeckStore.getState().setGeneratorOpen(true)}
                 />
               )}
-              {exportIssues && (
+              {exportError && (
+                <p role="alert" className="rounded border border-danger p-3 text-sm">
+                  Presentation could not be written: {exportError}
+                </p>
+              )}
+              {!!exportIssues?.length && (
                 <section
                   role="alert"
                   aria-label="Export readiness"
@@ -461,11 +503,14 @@ export function EditorApp() {
                   className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
                 >
                   <p className="font-semibold">
-                    Teaching export blocked · {exportIssues.length} unresolved findings
+                    {reviewedAttempt
+                      ? "Reviewed export needs review"
+                      : "Review notes — downloads available"}{" "}
+                    · {new Set(exportIssues.map((i) => i.index)).size} slides
                   </p>
                   <p className="text-xs text-muted">
-                    Repair the flagged content before teaching export. Recovery backups remain
-                    available.
+                    Downloads remain available. Review tasks are grouped; formal reviewed release
+                    stays separate.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -484,34 +529,41 @@ export function EditorApp() {
                   </div>
                   <details>
                     <summary className="min-h-11 cursor-pointer py-3 text-accent">
-                      Inspect export blockers
+                      Reviewed release options
+                    </summary>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="secondary" onClick={() => void onPptx(true)}>
+                        Export reviewed PPTX
+                      </Button>
+                      <Button variant="secondary" onClick={() => void onPdf(true)}>
+                        Export reviewed PDF
+                      </Button>
+                    </div>
+                  </details>
+                  <details>
+                    <summary className="min-h-11 cursor-pointer py-3 text-accent">
+                      Inspect grouped review notes
                     </summary>
                     <ol className="space-y-3">
-                      {exportIssues.slice(0, 50).map((issue, n) => (
+                      {groupedReviewNotes(exportIssues).map((group, n) => (
                         <li key={n} className="break-words border-t border-border py-2 text-xs">
                           <p>
-                            Slide {issue.index + 1}: {issue.message}
+                            {group.message} ({group.indices.length} slides)
                           </p>
                           <Button
                             variant="secondary"
                             size="sm"
                             onClick={() => {
-                              select(issue.index);
+                              select(group.indices[0]);
                               useDeckStore.setState({ inspectorTab: "audit", inspectorOpen: true });
                               setExportIssues(null);
                             }}
                           >
-                            Open flagged slide {issue.index + 1}
+                            Open flagged slide {group.indices[0] + 1}
                           </Button>
                         </li>
                       ))}
                     </ol>
-                    {exportIssues.length > 50 && (
-                      <p className="text-xs text-muted">
-                        Showing the first 50 findings. The Review panel contains the full report.
-                        All findings still block reviewed export.
-                      </p>
-                    )}
                   </details>
                 </section>
               )}

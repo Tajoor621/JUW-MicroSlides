@@ -127,14 +127,36 @@ try {
   );
   await page.getByRole("button", { name: /02 learning-objectives Learning objectives/ }).click();
   assert.equal(await page.locator("[data-slide-stage]").getAttribute("data-slide-theme"), "gram");
+  const draftDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  assert(await (await draftDownload).path());
+  const pdfDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export PDF", exact: true }).click();
+  const pdfBytes = await readFile(await (await pdfDownload).path());
+  assert.match(
+    pdfBytes.toString("latin1"),
+    /\/Count\s+23\b/,
+    "Ordinary PDF retains all 23 slides despite review tasks",
+  );
+  if (
+    (await page
+      .getByText("Reviewed release options", { exact: true })
+      .locator("..")
+      .getAttribute("open")) === null
+  )
+    await page.getByText("Reviewed release options", { exact: true }).click();
   await page
-    .getByText(/Teaching export blocked/)
+    .getByRole("alert", { name: "Export readiness" })
+    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
+    .click();
+  await page
+    .getByText(/Reviewed export needs review/)
     .first()
     .waitFor({ timeout: 10000 });
   checks.push(
-    "PubMed fallback generates exactly 23 topic-specific draft slides; deck themes include the introduction, per-slide override works, and draft export remains blocked",
+    "PubMed fallback generates exactly 23 slides; ordinary PPTX/PDF download while reviewed export remains gated",
   );
+  await page.getByText("Reviewed release options", { exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   const blockers = page.getByRole("alert", { name: "Export readiness" });
@@ -153,7 +175,25 @@ try {
     .fill(
       repeated + "\nA distinct synthetic observation in dataset 52 remains after explicit removal.",
     );
+  const correctedDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  assert(await (await correctedDownload).path());
+  assert.equal(
+    await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
+    repeated + "\nA distinct synthetic observation in dataset 52 remains after explicit removal.",
+    "Automatic cleanup must preserve identical wording when source identities differ",
+  );
+  if (
+    (await page
+      .getByText("Reviewed release options", { exact: true })
+      .locator("..")
+      .getAttribute("open")) === null
+  )
+    await page.getByText("Reviewed release options", { exact: true }).click();
+  await page
+    .getByRole("alert", { name: "Export readiness" })
+    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
+    .click();
   await page.getByRole("button", { name: "Review slide 4", exact: true }).click();
   await page.getByRole("region", { name: "Overlapping teaching points" }).waitFor();
   await page
