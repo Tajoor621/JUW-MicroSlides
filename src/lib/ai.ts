@@ -1,3 +1,4 @@
+import { assertGenerationBiosafety, BIOSAFETY_PROMPT } from "./biosafety";
 import { lectureSlideFields, lectureSlideSchema, lectureOptionsSchema } from "./lecture-schema";
 import { LAYOUTS } from "./types";
 import { z } from "zod";
@@ -57,6 +58,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }): Promise<AiOk | AiFail> => {
+    assertGenerationBiosafety(data);
     const fallback = generateLocalDeck(data);
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey || !(await requirePaidAiAccess())) {
@@ -93,8 +95,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
         messages: [
           {
             role: "system",
-            content:
-              "You write undergraduate/graduate microbiology lecture slides for Jinnah University for Women. Be accurate, specific, and exam-useful. No emoji. Return JSON only.",
+            content: `${BIOSAFETY_PROMPT}\nYou write undergraduate/graduate microbiology lecture slides for Jinnah University for Women. Be accurate, specific, and exam-useful. No emoji. Return JSON only.`,
           },
           {
             role: "user",

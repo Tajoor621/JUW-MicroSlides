@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { createServer } from "vite";
 import { fileURLToPath } from "node:url";
@@ -91,7 +92,16 @@ try {
   const { teachingReleaseFindings, teachingReady } = await vite.ssrLoadModule(
     "/src/lib/teaching-readiness.ts",
   );
-  const { deckSchema } = await vite.ssrLoadModule("/src/lib/backup.ts");
+  const { deckSchema, parseBackup } = await vite.ssrLoadModule("/src/lib/backup.ts");
+  const { slideReviewStatus } = await vite.ssrLoadModule("/src/lib/slide-review-status.ts");
+  const draftFixture = parseBackup(
+    await readFile(new URL("./fixtures/export-draft.json", import.meta.url), "utf8"),
+  )[0];
+  assert.equal(slideReviewStatus(draftFixture, draftFixture.slides[1]), "draft");
+  assert.equal(slideReviewStatus(deck, slide), "reviewed");
+  const changedSlide = { ...slide, title: "Changed title after review" };
+  assert.equal(slideReviewStatus(deck, changedSlide), "draft");
+
   assert.equal(quantitativeCandidate(deck).value, "80");
   assert.equal(quantitativeCandidate(deck).conditions, "");
   assert.deepEqual(teachingReleaseFindings(deck), [], "Synthetic fixture clears the software gate");

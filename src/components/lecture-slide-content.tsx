@@ -1,3 +1,4 @@
+import { ScientificText } from "./scientific-text";
 import type { Slide } from "@/lib/types";
 import { TeachingDiagram } from "./teaching-diagram";
 export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; reveal?: number }) {
@@ -6,7 +7,9 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
     value ? (
       <section className={box}>
         <h3 className="text-base font-semibold">{label}</h3>
-        <p className="mt-1 text-lg leading-snug">{value}</p>
+        <p className="mt-1 text-lg leading-snug">
+          <ScientificText text={value} />
+        </p>
       </section>
     ) : null;
   const table = slide.scientificTable;
@@ -18,7 +21,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
           {(slide.learningObjectives?.length ? slide.learningObjectives : slide.bullets).map(
             (s, i) => (
               <li key={i}>
-                {i + 1}. {s}
+                {i + 1}. <ScientificText text={s} />
               </li>
             ),
           )}
@@ -84,7 +87,12 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
                 </li>
               ))}
             </ol>
-            {!slide.protocol.steps.length && slide.bullets.map((s, i) => <p key={i}>{s}</p>)}
+            {!slide.protocol.steps.length &&
+              slide.bullets.map((s, i) => (
+                <p key={i}>
+                  <ScientificText text={s} />
+                </p>
+              ))}
           </section>
           <section className="space-y-3">
             {field("Interpretation", slide.protocol.interpretation)}
@@ -96,14 +104,18 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
       ) : slide.layout === "clinical-case" && slide.caseData ? (
         <>
           <section className="space-y-3">
-            {slide.caseData.phase === "presentation" ? <>
-              {field(`Case ${slide.caseData.caseNumber} — vignette`, slide.caseData.vignette)}
-              {field("Differential diagnosis", slide.caseData.differential)}
-              {field("Laboratory work-up", slide.caseData.workup)}
-            </> : <>
-              {field("Expected results", slide.caseData.results)}
-              {field("Final diagnosis", slide.caseData.diagnosis)}
-            </>}
+            {slide.caseData.phase === "presentation" ? (
+              <>
+                {field(`Case ${slide.caseData.caseNumber} — vignette`, slide.caseData.vignette)}
+                {field("Differential diagnosis", slide.caseData.differential)}
+                {field("Laboratory work-up", slide.caseData.workup)}
+              </>
+            ) : (
+              <>
+                {field("Expected results", slide.caseData.results)}
+                {field("Final diagnosis", slide.caseData.diagnosis)}
+              </>
+            )}
             {slide.media[0] && (
               <img
                 src={slide.media[0].src}
@@ -113,7 +125,8 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
             )}
           </section>
           <section className="space-y-3">
-            {slide.caseData.phase === "resolution" && field("Management & infection control", slide.caseData.management)}
+            {slide.caseData.phase === "resolution" &&
+              field("Management & infection control", slide.caseData.management)}
             {slide.caseData.questions.map((q, i) => (
               <p key={i} className="font-semibold">
                 Q: {q}

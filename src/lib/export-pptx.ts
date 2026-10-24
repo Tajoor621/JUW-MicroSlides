@@ -1,3 +1,4 @@
+import { scientificPreflight } from "./scientific-format";
 import { embedPortableFonts, loadPortableFonts } from "./pptx-fonts";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
@@ -155,6 +156,7 @@ export async function exportPptx(
           fontFace: item.font,
           fontSize: item.size * 0.75,
           bold: item.bold,
+          italic: item.italic,
           color: item.color,
           transparency,
           margin: 0,
@@ -200,6 +202,9 @@ export async function exportPptx(
           ? `Last verified by ${deck.teachingVerification.instructor} on ${new Date(deck.teachingVerification.at).toISOString().slice(0, 10)}. Lecturer self-attestation, not independent certification.`
           : "Draft — current deck has not cleared lecturer evidence review.",
         lectureSpeakerNotes(source),
+        scientificPreflight({ ...deck, slides: [source] })
+          .map((f) => f.message)
+          .join("\n"),
         source.teaching
           ? "Teaching design and discussion:\n" + JSON.stringify(source.teaching, null, 2)
           : "",
@@ -270,6 +275,8 @@ export async function exportPptx(
           portable.regular,
           portable.bold,
           portable.license,
+          portable.italic,
+          portable.boldItalic,
         )
       : new Uint8Array(data);
     if (options.returnBytes) return bytes;

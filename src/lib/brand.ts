@@ -1,5 +1,6 @@
 export const JUW = {
   name: "JUW-MicroSlides",
+  canonicalUrl: "https://tajoor621.github.io/JUW-MicroSlides/",
   version: "V6.2.1",
   crest: `${import.meta.env.BASE_URL}juw-crest-transparent.svg`,
   crestMark: `${import.meta.env.BASE_URL}juw-crest-transparent.svg`,

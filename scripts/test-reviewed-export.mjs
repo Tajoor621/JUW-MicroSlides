@@ -144,8 +144,19 @@ try {
         if (!(await page.locator('[data-typography="portable"]').count()))
           throw Error("Backup must restore portable preview typography");
         const fonts = Object.keys(zip.files).filter((p) => p.endsWith(".fntdata"));
-        if (fonts.length !== 2 || !xml.includes('typeface="DejaVu Sans"'))
-          throw Error("Portable PowerPoint must contain regular and bold fonts with editable text");
+        if (fonts.length !== 4 || !xml.includes('typeface="DejaVu Sans"'))
+          throw Error(
+            "Portable PowerPoint must contain regular, bold, italic and bold-italic fonts with editable text",
+          );
+        for (const style of ["regular", "bold", "italic", "bolditalic"]) {
+          const part = zip.file(`ppt/fonts/juw-dejavu-${style}.fntdata`);
+          if (!part) throw Error(`Portable font style missing: ${style}`);
+          const data = await part.async("nodebuffer");
+          if (Boolean(data[27]) !== style.includes("italic"))
+            throw Error(`Incorrect italic font style: ${style}`);
+          if (data.readUInt32LE(28) >= 600 !== style.startsWith("bold"))
+            throw Error(`Incorrect font weight: ${style}`);
+        }
         for (const path of fonts) {
           const data = await zip.file(path).async("nodebuffer");
           if (data.readUInt16LE(34) !== 0x504c || data.readUInt32LE(0) !== data.length)

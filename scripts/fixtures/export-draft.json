@@ -1,0 +1,51 @@
+{
+  "decks": [
+    {
+      "id": "export-draft-fixture",
+      "title": "Synthetic export regression fixture",
+      "topic": "Synthetic export fixture",
+      "discipline": "General Microbiology",
+      "level": "Undergraduate",
+      "citationStyle": "Vancouver",
+      "course": "Software QA",
+      "courseCode": "QA",
+      "preparedBy": "Software fixture",
+      "department": "Software testing",
+      "slides": [
+        {
+          "id": "fixture-title",
+          "layout": "title",
+          "theme": "molecular",
+          "title": "Synthetic export regression fixture",
+          "subtitle": "Software fixture \u2014 not scientific teaching content",
+          "bullets": [],
+          "leftBullets": [],
+          "rightBullets": [],
+          "notes": "Unreviewed software test data.",
+          "citations": [],
+          "media": []
+        },
+        {
+          "id": "fixture-body",
+          "layout": "content",
+          "theme": "molecular",
+          "title": "Nomenclature and unit typography",
+          "subtitle": "Synthetic typography examples only",
+          "bullets": [
+            "Escherichia coli and Candida albicans are typography test strings.",
+            "Synthetic label only: 10 uL, 2 mg/ml and 37\u00b0C. No protocol is prescribed."
+          ],
+          "leftBullets": [],
+          "rightBullets": [],
+          "notes": "Unreviewed software test data.",
+          "citations": [],
+          "media": []
+        }
+      ],
+      "mediaPool": [],
+      "updatedAt": 0
+    }
+  ],
+  "format": "juw-microslides",
+  "schemaVersion": 1
+}

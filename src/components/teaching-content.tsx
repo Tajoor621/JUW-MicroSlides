@@ -1,3 +1,4 @@
+import { ScientificText } from "./scientific-text";
 import { useEffect, useRef, useState } from "react";
 import type { Slide } from "@/lib/types";
 import { EvidenceBadge } from "./evidence-badge";
@@ -87,14 +88,16 @@ export function TeachingContent({
             <strong className="text-sm">Learning objectives</strong>
             <ul className="text-base">
               {slide.learningObjectives.map((goal, i) => (
-                <li key={i}>{goal}</li>
+                <li key={i}>
+                  <ScientificText text={goal} />
+                </li>
               ))}
             </ul>
           </aside>
         )}
         {p.definition && (
           <p className="text-xl font-semibold">
-            {p.definition}
+            <ScientificText text={p.definition} />
             <EvidenceBadge basis={basis} field="teaching.definition" />
           </p>
         )}
@@ -111,10 +114,14 @@ export function TeachingContent({
             <tbody>
               {p.comparison.map((r, i) => (
                 <tr key={i}>
-                  <th scope="row">{r.criterion}</th>
-                  <td>{r.left}</td>
+                  <th scope="row">
+                    <ScientificText text={r.criterion} />
+                  </th>
                   <td>
-                    {r.right}
+                    <ScientificText text={r.left} />
+                  </td>
+                  <td>
+                    <ScientificText text={r.right} />
                     <EvidenceBadge basis={basis} field={`teaching.comparison.${i}`} />
                   </td>
                 </tr>
@@ -136,7 +143,7 @@ export function TeachingContent({
                     : "hidden",
                 }}
               >
-                <strong>{i + 1}.</strong> {s}
+                <strong>{i + 1}.</strong> <ScientificText text={s} />
                 <EvidenceBadge basis={basis} field={`teaching.steps.${i}`} />
               </li>
             ))}
@@ -166,19 +173,19 @@ export function TeachingContent({
         )}
         {p.mechanism && (
           <p className="text-lg">
-            <strong>Mechanism:</strong> {p.mechanism}
+            <strong>Mechanism:</strong> <ScientificText text={p.mechanism} />
             <EvidenceBadge basis={basis} field="teaching.mechanism" />
           </p>
         )}
         {p.advantage && (
           <p className="border-l-4 border-emerald-600 pl-2 text-lg">
-            <strong>Advantages:</strong> {p.advantage}
+            <strong>Advantages:</strong> <ScientificText text={p.advantage} />
             <EvidenceBadge basis={basis} field="teaching.advantage" />
           </p>
         )}
         {p.limitation && (
           <p className="border-l-4 border-amber-600 pl-2 text-lg">
-            <strong>Limitations:</strong> {p.limitation}
+            <strong>Limitations:</strong> <ScientificText text={p.limitation} />
             <EvidenceBadge basis={basis} field="teaching.limitation" />
           </p>
         )}
@@ -205,7 +212,7 @@ export function TeachingContent({
         )}
         {p.discussion && (
           <p className="text-base">
-            <strong>Discussion:</strong> {p.discussion}
+            <strong>Discussion:</strong> <ScientificText text={p.discussion} />
           </p>
         )}
       </div>
