@@ -222,6 +222,18 @@ export async function exportPptx(
           : "Draft — current deck has not cleared lecturer evidence review.",
         ...exportWarnings,
         lectureSpeakerNotes(source),
+        "Full editable slide text (preserved independently of layout):\n" +
+          JSON.stringify(
+            {
+              title: source.title,
+              subtitle: source.subtitle,
+              bullets: source.bullets,
+              leftBullets: source.leftBullets,
+              rightBullets: source.rightBullets,
+            },
+            null,
+            2,
+          ),
         scientificPreflight({ ...deck, slides: [source] })
           .map((f) => f.message)
           .join("\n"),
