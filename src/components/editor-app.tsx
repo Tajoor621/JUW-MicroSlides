@@ -107,7 +107,14 @@ export function EditorApp() {
   const generationMode = useDeckStore((s) => s.generationMode);
   const failure = useDeckStore((s) => s.generationFailure);
   const generatorOpen = useDeckStore((s) => s.generatorOpen);
+  const draftTopic = useDeckStore((s) => s.generateDraft.topic);
   const [themeScope, setThemeScope] = useState("deck");
+  function openGenerator() {
+    const state = useDeckStore.getState();
+    state.setGeneratorOpen(true);
+    if (window.innerWidth < 1024) state.setGenerateOpen(true);
+    else requestAnimationFrame(() => document.getElementById("gen-topic")?.focus());
+  }
   function applyTheme(theme: (typeof SLIDE_THEMES)[number]) {
     if (themeScope === "deck") useDeckStore.getState().applyDeckTheme(theme);
     else useDeckStore.getState().patchSlide(index, { theme });
@@ -347,11 +354,23 @@ export function EditorApp() {
             {JUW.version}
           </span>
           <Input
-            value={deck?.slides[0]?.layout === "title" ? deck.slides[0].title : (deck?.title ?? "")}
+            value={
+              deck
+                ? deck.slides[0]?.layout === "title"
+                  ? deck.slides[0].title
+                  : deck.title
+                : draftTopic
+            }
             onChange={(e) => useDeckStore.getState().renameTopic(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                openGenerator();
+              }
+            }}
             className="hidden h-9 max-w-sm border-transparent bg-transparent font-serif text-sm md:block"
             aria-label="Lecture topic"
-            placeholder="Type a topic — title slide updates"
+            placeholder={deck ? "Edit the current lecture title" : "Enter a new lecture topic"}
           />
           <span
             className={`hidden rounded-full border px-2 py-0.5 text-[10px] tracking-wide sm:inline ${
@@ -364,16 +383,7 @@ export function EditorApp() {
           </span>
           <div className="ml-auto flex items-center gap-1">
             <Tooltip content="New deck">
-              <Button
-                variant="accent"
-                size="sm"
-                onClick={() => {
-                  const state = useDeckStore.getState();
-                  state.setGeneratorOpen(true);
-                  if (window.innerWidth < 1024) state.setGenerateOpen(true);
-                  else requestAnimationFrame(() => document.getElementById("gen-topic")?.focus());
-                }}
-              >
+              <Button variant="accent" size="sm" onClick={openGenerator}>
                 <Microscope className="size-3.5" />
                 Generate
               </Button>
@@ -416,6 +426,7 @@ export function EditorApp() {
                 size="icon-sm"
                 onClick={() => setPresenting(true)}
                 aria-label="Present"
+                disabled={!deck}
               >
                 <Play />
               </Button>
@@ -513,7 +524,13 @@ export function EditorApp() {
               ))}
             </div>
             <div className="flex gap-1 border-t border-border p-2">
-              <Button variant="secondary" size="sm" className="flex-1" onClick={addSlide}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1"
+                onClick={addSlide}
+                disabled={!deck}
+              >
                 <Plus className="size-3.5" />
                 Add
               </Button>
@@ -554,9 +571,15 @@ export function EditorApp() {
                 aria-label="Current deck"
               >
                 <strong>
-                  {deck?.id === "sample-enzyme-mic4511" ? "Example deck" : "Editing deck"}:
+                  {!deck
+                    ? "New lecture"
+                    : deck.id === "sample-enzyme-mic4511"
+                      ? "Example deck"
+                      : "Editing deck"}
+                  :
                 </strong>{" "}
-                {deck?.topic || "No deck open — enter a new topic below"}
+                {deck?.topic ||
+                  "No deck open — enter a topic, then choose Generate deck in the form"}
                 {deck?.id === "sample-enzyme-mic4511" && (
                   <p className="mt-1 text-xs text-muted">
                     This is a saved example, not your new generation. Enter a topic below and choose
@@ -735,7 +758,8 @@ export function EditorApp() {
                 <div className="flex flex-1 flex-col items-center justify-center rounded-md border border-dashed border-border text-center">
                   <p className="font-serif text-lg text-fg">No slides yet</p>
                   <p className="mt-1 max-w-sm text-sm text-muted">
-                    Generate a deck with the form above, or add a slide from the left rail.
+                    Enter your topic above or in the generation form, choose the slide count, then
+                    press Generate deck. Your slides will appear here.
                   </p>
                 </div>
               )}

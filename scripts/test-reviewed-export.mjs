@@ -190,6 +190,58 @@ try {
   assert.equal(await page.locator("#gen-topic").inputValue(), "");
   assert.equal(await page.getByRole("alert").filter({ hasText: "Generation stopped:" }).count(), 0);
   assert.equal(await page.locator("[data-slide-stage]").count(), 0);
+  // Reproduce the owner's Samsung desktop-width header path after Refresh.
+  await page.setViewportSize({ width: 1080, height: 900 });
+  const headerTopic = page.getByRole("textbox", { name: "Lecture topic", exact: true });
+  await headerTopic.pressSequentially("Bacterial genome architecture");
+  assert.equal(await headerTopic.inputValue(), "Bacterial genome architecture");
+  await headerTopic.press("Enter");
+  assert.equal(await page.locator("#gen-topic").inputValue(), "Bacterial genome architecture");
+  await page.getByLabel("Research approach", { exact: true }).selectOption("standard");
+  await page.locator("#gen-count").fill("6");
+  await page.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await page.getByRole("button", { name: "Open generator", exact: true }).waitFor();
+  await page.locator("[data-slide-stage]").waitFor({ state: "visible" });
+  assert.match(
+    await page.locator("[data-slide-stage]").innerText(),
+    /BACTERIAL GENOME ARCHITECTURE/i,
+  );
+  assert.match(await page.locator("main").innerText(), /Slide 1 of 6/);
+  const visibleDeck = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  const visibleZip = await JSZip.loadAsync(await readFile(await (await visibleDeck).path()));
+  assert.equal(
+    Object.keys(visibleZip.files).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n)).length,
+    6,
+  );
+  await page.reload();
+  await headerTopic.waitFor();
+  assert.equal(await headerTopic.inputValue(), "Bacterial genome architecture");
+  await page.locator("[data-slide-stage]").waitFor({ state: "visible" });
+  // The narrow-screen Generate modal must also display its completed deck after reset.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
+  const mobileGenerator = page.getByRole("dialog", {
+    name: "Generate a scientific deck",
+    exact: true,
+  });
+  await mobileGenerator.getByRole("textbox", { name: "Topic", exact: true }).fill("Gram staining");
+  await mobileGenerator.getByLabel("Research approach", { exact: true }).selectOption("standard");
+  await mobileGenerator.getByRole("spinbutton", { name: "Slides (1–50)", exact: true }).fill("6");
+  await mobileGenerator.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await mobileGenerator.waitFor({ state: "hidden" });
+  await page.locator("[data-slide-stage]").waitFor({ state: "visible" });
+  assert.match(await page.locator("[data-slide-stage]").innerText(), /GRAM STAINING/i);
+  assert.match(await page.locator("main").innerText(), /Slide 1 of 6/);
+  await page.getByRole("button", { name: "Slides", exact: true }).click();
+  const secondSlide = page.getByRole("button", { name: /^02 / });
+  await secondSlide.click();
+  assert.match(await page.locator("main").innerText(), /Slide 2 of 6/);
+  await page.screenshot({ path: join(output, "refresh-mobile-generated-slides.png") });
+  console.log(
+    "PASS header typing, shared request, six visible slides and PPTX after Refresh; narrow modal generation selects its new deck",
+  );
   assert.deepEqual(errors, []);
   await writeFile(
     join(output, "editable-export-notes.json"),
