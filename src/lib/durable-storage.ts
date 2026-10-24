@@ -25,12 +25,26 @@ export async function readRecoverySave() {
 }
 let connection: Promise<IDBDatabase> | undefined;
 function database() {
-  return (connection ??= openWorkspaceDatabase(() => {
-    connection = undefined;
-  }).catch((error) => {
-    connection = undefined;
-    throw error;
-  }));
+  return (connection ??= openWorkspaceDatabase(
+    () => {
+      connection = undefined;
+    },
+    () =>
+      warn(
+        "Storage upgrade waiting. Close older JUW-MicroSlides tabs to open your saved decks safely. Do not clear site data.",
+      ),
+  )
+    .then((db) => {
+      if (storageHealth.warning.startsWith("Storage upgrade waiting")) {
+        storageHealth.warning = "";
+        if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("juw-saved"));
+      }
+      return db;
+    })
+    .catch((error) => {
+      connection = undefined;
+      throw error;
+    }));
 }
 export async function readLocalRecord(key: string): Promise<string | null> {
   if (isDesktop()) return nativeCall<string | null>("state_get", { key });

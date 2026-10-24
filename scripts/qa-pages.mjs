@@ -123,8 +123,11 @@ try {
   );
   const migrationPage = await migrationContext.newPage();
   await migrationPage.goto(new URL("migration-seed.html", url).href);
+  const oldLibrary = JSON.parse(
+    await readFile(join(root, "scripts/fixtures/export-draft.json"), "utf8"),
+  ).decks;
   await migrationPage.evaluate(
-    () =>
+    (library) =>
       new Promise((resolve, reject) => {
         const request = indexedDB.open("juw-microslides", 1);
         request.onupgradeneeded = () => request.result.createObjectStore("state");
@@ -133,20 +136,40 @@ try {
           const db = request.result,
             tx = db.transaction("state", "readwrite"),
             store = tx.objectStore("state");
+          store.put(
+            JSON.stringify({
+              state: { library, activeId: library[0].id, selectedIndex: 0 },
+              version: 0,
+            }),
+            "juw-microslides-schema-1",
+          );
           store.put("original-recovery", "recovery-original");
           store.put('[{"id":"original-history"}]', "deck-revisions");
           store.put("unknown-value", "future-owner-key");
           tx.oncomplete = () => {
-            db.close();
+            window.__heldMigrationDatabase = db;
             resolve(true);
           };
           tx.onerror = () => reject(tx.error);
         };
       }),
+    oldLibrary,
   );
-  await migrationPage.goto(url);
-  await saved(migrationPage);
-  const migrated = await migrationPage.evaluate(
+  const upgradingPage = await migrationContext.newPage();
+  await upgradingPage.goto(url);
+  await upgradingPage.getByText(/Storage upgrade waiting/).waitFor();
+  assert.equal(
+    await upgradingPage.getByRole("button", { name: "Generate", exact: true }).count(),
+    0,
+    "Do not expose a fresh sample while an existing library is blocked",
+  );
+  await migrationPage.evaluate(() => window.__heldMigrationDatabase.close());
+  await saved(upgradingPage);
+  assert.equal(
+    await upgradingPage.getByRole("textbox", { name: "Lecture topic", exact: true }).inputValue(),
+    "Synthetic export fixture",
+  );
+  const migrated = await upgradingPage.evaluate(
     () =>
       new Promise((resolve, reject) => {
         const request = indexedDB.open("juw-microslides");
@@ -174,7 +197,7 @@ try {
   assert.equal(migrated["future-owner-key"], "unknown-value");
   await migrationContext.close();
   results.push(
-    "Real version-1 IndexedDB upgrades additively, retaining recovery, revision history and unknown keys",
+    "Blocked version-1 IndexedDB upgrade waits for the old tab, then retains the saved library, recovery, revision history and unknown keys",
   );
   const typographyContext = await browser.newContext({ acceptDownloads: true });
   const typographyPage = await typographyContext.newPage();

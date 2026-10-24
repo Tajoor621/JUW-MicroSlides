@@ -304,7 +304,7 @@ export function EditorApp() {
   if (!hydrated)
     return (
       <div role="status" className="p-6">
-        Opening your saved decks…
+        {storageHealth.warning || "Opening your saved decks…"}
       </div>
     );
   return (

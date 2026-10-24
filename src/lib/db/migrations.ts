@@ -13,23 +13,20 @@ export function migrateWorkspace(db: IDBDatabase, tx: IDBTransaction, oldVersion
     for (const migration of WORKSPACE_MIGRATIONS) tx.objectStore("schema-history").put(migration);
   }
 }
-export function openWorkspaceDatabase(onClosed: () => void = () => {}) {
+export function openWorkspaceDatabase(
+  onClosed: () => void = () => {},
+  onBlocked: () => void = () => {},
+) {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(WORKSPACE_DB_NAME, WORKSPACE_DB_VERSION);
-    let blocked = false;
     request.onupgradeneeded = (event) =>
       migrateWorkspace(request.result, request.transaction!, event.oldVersion);
-    request.onblocked = () => {
-      blocked = true;
-      reject(Error("Close older app tabs, then retry. Saved decks have not been deleted."));
-    };
+    // Do not reject into an empty-library fallback while an upgrade is pending.
+    // The request resumes when the older connection closes.
+    request.onblocked = () => onBlocked();
     request.onerror = () => reject(request.error);
     request.onsuccess = () => {
       const db = request.result;
-      if (blocked) {
-        db.close();
-        return;
-      }
       db.onversionchange = () => {
         db.close();
         onClosed();
