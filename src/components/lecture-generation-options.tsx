@@ -26,6 +26,22 @@ export function LectureGenerationOptions({
         </p>
       )}
       <label className="block text-xs">
+        Research approach
+        <select
+          aria-label="Research approach"
+          className={select}
+          value={draft.researchDepth || "thorough"}
+          onChange={(e) => patch({ researchDepth: e.target.value as "standard" | "thorough" })}
+        >
+          <option value="thorough">Thorough — source-first online research</option>
+          <option value="standard">Bundled / cached material, then research if needed</option>
+        </select>
+      </label>
+      <p className="text-xs text-muted">
+        Thorough research prioritizes subject coverage and open full text over speed. All scientific
+        drafts still require human judgement. Offline work uses supplied or bundled material.
+      </p>
+      <label className="block text-xs">
         Generation Mode
         <select
           className={select}

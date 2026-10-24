@@ -232,6 +232,7 @@ try {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(url);
   await saved(page);
+  await page.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await page.locator("#gen-topic").fill("Bacterial genome architecture");
   await page.locator("#gen-count").fill("12");
   await page.getByRole("button", { name: "Generate deck", exact: true }).click();
@@ -1277,6 +1278,7 @@ try {
   );
   await rp.goto(url);
   await saved(rp);
+  await rp.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await rp.locator("#gen-topic").fill("Bacterial genome architecture");
   await rp.locator("#gen-count").fill("12");
   await rp.getByRole("button", { name: "Generate deck", exact: true }).click();
@@ -1342,6 +1344,9 @@ try {
   const coverage = await browser.newContext({ acceptDownloads: true });
   const cp = await coverage.newPage();
   cp.on("pageerror", (e) => errors.push(e.message));
+  await coverage.route("https://eutils.ncbi.nlm.nih.gov/**", (route) =>
+    route.fulfill({ json: { esearchresult: { idlist: [] } } }),
+  );
   await coverage.route("https://www.ebi.ac.uk/europepmc/**", (route) => {
     const papers = Array.from({ length: 20 }, (_, i) => ({
       id: `fixture-${i}`,
@@ -1415,6 +1420,7 @@ try {
   pro.on("pageerror", (e) => errors.push(e.message));
   await pro.goto(url);
   await saved(pro);
+  await pro.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await pro.locator("#gen-topic").fill("Enzyme immobilization");
   await pro.locator("#gen-count").fill("1");
   await pro.getByRole("button", { name: "Generate deck", exact: true }).click();

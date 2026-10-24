@@ -156,7 +156,7 @@ export async function exportTeachingPack(deck: Deck) {
   assertTeachingReady(deck);
   const Zip = (await import("jszip")).default,
     zip = new Zip();
-  const pptx = await exportPptx(deck, { returnBytes: true });
+  const pptx = await exportPptx(deck, { classroom: true, returnBytes: true });
   if (!pptx) throw Error("PPTX generation failed.");
   for (const [i, slide] of deck.slides.entries())
     if (slide.teaching?.diagram) {

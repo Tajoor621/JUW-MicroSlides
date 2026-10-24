@@ -1,8 +1,22 @@
 /** Small, schematic vector ornament. It is decoration only, never a scientific figure. */
 export function topicArtKind(
   topic: string,
-): "genome" | "enzyme" | "fungal" | "parasite" | "virus" | "bacterium" {
+):
+  | "genome"
+  | "enzyme"
+  | "fungal"
+  | "parasite"
+  | "virus"
+  | "bacterium"
+  | "microscopy"
+  | "culture"
+  | "biofilm"
+  | "immunity" {
   const t = topic.toLowerCase();
+  if (/microscop|gram stain|fluorescen|acid.fast|staining/.test(t)) return "microscopy";
+  if (/culture|growth|agar|colony|incubat/.test(t)) return "culture";
+  if (/biofilm|quorum|adhesion/.test(t)) return "biofilm";
+  if (/immun|vaccin|antibod|antigen|complement/.test(t)) return "immunity";
   if (/malaria|plasmod|parasite|helminth|protozo/.test(t)) return "parasite";
   if (/fung|myco|yeast|mould|mold|candida|aspergill|cryptococc/.test(t)) return "fungal";
   if (/virus|viral|influenza|phage|coronavirus|sars/.test(t)) return "virus";
@@ -11,10 +25,33 @@ export function topicArtKind(
   return "bacterium";
 }
 
-export function topicArtworkSvg(topic: string): string {
-  const art = topicArtKind(topic);
+export function slideArtworkTopic(topic: string, heading: string) {
+  return /microscop|gram stain|fluorescen|acid.fast|staining|culture|growth|agar|colony|incubat|biofilm|quorum|adhesion|immun|vaccin|antibod|antigen|complement|malaria|plasmod|parasite|helminth|protozo|fung|myco|yeast|mould|mold|candida|aspergill|cryptococc|virus|viral|influenza|phage|coronavirus|sars|enzym|immobili[sz]|cataly|protein|ferment|genom|chromosom|nucleoid|\bdna\b|\brna\b|pcr|genetic|molecular/i.test(
+    heading,
+  )
+    ? heading
+    : topic;
+}
+export function topicArtworkSvg(topic: string, heading = ""): string {
+  const art = topicArtKind(slideArtworkTopic(topic, heading));
   const shell = (body: string) =>
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  if (art === "microscopy")
+    return shell(
+      '<path d="m100 30 45 25-40 68-45-25zM137 80c65 30 48 100-20 100H60M75 175v35m-35 0h145M85 145h70"/><circle cx="100" cy="147" r="12"/>',
+    );
+  if (art === "culture")
+    return shell(
+      '<ellipse cx="120" cy="135" rx="95" ry="65"/><ellipse cx="120" cy="120" rx="95" ry="65"/><circle cx="85" cy="105" r="13"/><circle cx="145" cy="140" r="20"/><circle cx="155" cy="90" r="9"/><circle cx="70" cy="140" r="7"/>',
+    );
+  if (art === "immunity")
+    return shell(
+      '<path d="m40 45 60 75v95h40v-95l60-75-30-20-50 60-50-60z"/><circle cx="120" cy="115" r="10"/>',
+    );
+  if (art === "biofilm")
+    return shell(
+      '<path d="M20 205h200M25 190c15-30 5-70 40-80 25-10 25-70 60-65 40 5 20 70 55 85 30 15 15 35 35 60z"/><rect x="60" y="145" width="40" height="20" rx="10"/><rect x="120" y="140" width="45" height="20" rx="10"/><circle cx="120" cy="90" r="11"/>',
+    );
   if (art === "genome")
     return shell(
       `<path d="M72 22c120 42-24 70 96 112S48 190 168 218M168 22C48 64 192 92 72 134s120 56 0 84"/><path d="M94 38h52M77 63h86M83 91h74M94 119h52M77 147h86M83 175h74M94 203h52" opacity=".65"/><circle cx="120" cy="120" r="108" opacity=".22"/>`,

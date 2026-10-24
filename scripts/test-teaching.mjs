@@ -92,12 +92,36 @@ try {
   const { teachingReleaseFindings, teachingReady } = await vite.ssrLoadModule(
     "/src/lib/teaching-readiness.ts",
   );
+  const { mergeResearchPaper } = await vite.ssrLoadModule("/src/lib/topic-evidence.ts");
+  const refreshed = mergeResearchPaper(
+    { title: "Synthetic prior record", fullBody: "Cached passage", isRetracted: "N" },
+    { title: "Synthetic current record", isRetracted: "Y" },
+  );
+  assert.equal(
+    refreshed.isRetracted,
+    "Y",
+    "Fresh retraction metadata cannot be hidden by cached sources",
+  );
+  assert.equal(refreshed.fullBody, "Cached passage");
+  assert.equal(
+    mergeResearchPaper(refreshed, { title: "Synthetic provider record", isRetracted: "N" })
+      .isRetracted,
+    "Y",
+    "A different provider cannot silently clear an adverse notice",
+  );
+  const { criticalFindings } = await vite.ssrLoadModule("/src/lib/critical-review.ts");
   const { deckSchema, parseBackup } = await vite.ssrLoadModule("/src/lib/backup.ts");
   const { slideReviewStatus } = await vite.ssrLoadModule("/src/lib/slide-review-status.ts");
   const draftFixture = parseBackup(
     await readFile(new URL("./fixtures/export-draft.json", import.meta.url), "utf8"),
   )[0];
   assert.equal(slideReviewStatus(draftFixture, draftFixture.slides[1]), "draft");
+  assert(
+    !criticalFindings(draftFixture).some((f) =>
+      /Missing claim-level support|Record a decision/.test(f.problem),
+    ),
+    "Pending attestations are not critical scientific findings",
+  );
   assert.equal(slideReviewStatus(deck, slide), "reviewed");
   const changedSlide = { ...slide, title: "Changed title after review" };
   assert.equal(slideReviewStatus(deck, changedSlide), "draft");
@@ -257,7 +281,7 @@ try {
   const blocked = structuredClone(deck);
   blocked.slides[0].teaching.altText = "";
   const { exportPptx } = await vite.ssrLoadModule("/src/lib/export-pptx.ts");
-  await assert.rejects(() => exportPptx(blocked), /Teaching export blocked/);
+  await assert.rejects(() => exportPptx(blocked, { classroom: true }), /Teaching export blocked/);
   const { teachingPdfBytes, exportTeachingPack } = await vite.ssrLoadModule(
     "/src/lib/export-teaching.ts",
   );

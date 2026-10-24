@@ -6,11 +6,11 @@ import { downloadScientificReviewPack } from "@/lib/scientific-review-pack";
 import { SourceLibrary } from "./source-library";
 import { semanticReview } from "@/lib/semantic-review";
 import { citationIdentifier, statusIsFresh } from "@/lib/publication-status";
-import { integrityAudit } from "@/lib/deck-integrity";
+import { criticalFindings } from "@/lib/critical-review";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
-import { reviewDeck, checkReferenceMetadata, type ReferenceCheck } from "@/lib/research-review";
+import { checkReferenceMetadata, type ReferenceCheck } from "@/lib/research-review";
 import { reviewLocalSlide } from "@/lib/local-ai";
 import { Button } from "./ui/button";
 export function SpecialistReview() {
@@ -36,32 +36,7 @@ export function SpecialistReview() {
     issues: { severity: string; quote: string; problem: string; suggestion: string }[];
     limitations: string;
   } | null>(null);
-  const all = useMemo(
-    () =>
-      deck
-        ? [
-            ...reviewDeck(deck),
-            ...integrityAudit(deck)
-              .filter(
-                (i) =>
-                  !i.message.includes("Record a decision and a specific rationale for this field."),
-              )
-              .map((i, n) => ({
-                id: `integrity-${n}`,
-                source: undefined,
-                slideId: i.slideId,
-                index: i.index,
-                severity: i.severity === "critical" ? ("high" as const) : ("medium" as const),
-                category: i.category,
-                quote: i.quote,
-                problem: i.message,
-                suggestion:
-                  "Inspect the supporting source in Claim evidence, then record an explicit lecturer review or replace the statement.",
-              })),
-          ]
-        : [],
-    [deck],
-  );
+  const all = useMemo(() => (deck ? criticalFindings(deck) : []), [deck]);
   const issues = scope === "slide" ? all.filter((i) => i.index === selected) : all;
   const signature = JSON.stringify([deck?.topic, slide]);
   const deckSignature = JSON.stringify(
@@ -177,9 +152,12 @@ export function SpecialistReview() {
           Apply safe corrections
         </Button>
       </section>
-      <DuplicateReview />
+      <details>
+        <summary className="min-h-11 cursor-pointer text-sm">Optional overlap comparison</summary>
+        <DuplicateReview />
+      </details>
       <section className="rounded border border-border bg-elevated p-3">
-        <h3 className="font-serif text-base">Microbiology specialist review</h3>
+        <h3 className="font-serif text-base">Critical findings</h3>
         <p className="mt-2 text-xs leading-relaxed text-muted">
           A structured screening of research content and attached media. Findings identify exact
           passages and suggested corrections. Rules and metadata cannot certify scientific accuracy
@@ -188,8 +166,8 @@ export function SpecialistReview() {
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           <span>{deck.slides.length} slides screened</span>
           <span>{media} attached figures</span>
-          <span className="text-danger">{high} high-priority flags</span>
-          <span>{all.length} total review items</span>
+          <span className="text-danger">{high} critical screening findings</span>
+          <span>Editable downloads remain available</span>
         </div>
       </section>
       <EvidenceOverview deck={deck} />
@@ -295,7 +273,8 @@ export function SpecialistReview() {
       </p>
       {issues.length === 0 ? (
         <p className="rounded border border-border p-3 text-sm">
-          No built-in flags were found in this scope. This is not a scientific approval.
+          No critical screening findings in this scope. Evidence coverage is available separately;
+          this is not scientific approval.
         </p>
       ) : (
         <ol className="space-y-3">
@@ -428,15 +407,17 @@ export function SpecialistReview() {
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-muted">{ai.limitations}</p>
-              {ai.issues.map((i, n) => (
-                <div key={n} className="rounded border border-border p-2 text-xs">
-                  <strong>
-                    {i.severity.toUpperCase()}: {i.problem}
-                  </strong>
-                  <blockquote className="my-2 text-muted">{i.quote}</blockquote>
-                  <p>Suggested correction: {i.suggestion}</p>
-                </div>
-              ))}
+              {ai.issues
+                .filter((i) => /^(high|critical)$/i.test(i.severity))
+                .map((i, n) => (
+                  <div key={n} className="rounded border border-border p-2 text-xs">
+                    <strong>
+                      {i.severity.toUpperCase()}: {i.problem}
+                    </strong>
+                    <blockquote className="my-2 text-muted">{i.quote}</blockquote>
+                    <p>Suggested correction: {i.suggestion}</p>
+                  </div>
+                ))}
             </div>
           ))}
       </section>

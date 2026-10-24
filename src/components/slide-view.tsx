@@ -64,7 +64,10 @@ export function SlideView({
   const preparedBy = deck?.preparedBy ?? JUW.preparedBy;
   const department = deck?.department ?? JUW.department;
   const isTitle = slide.layout === "title";
-  const artwork = topicArtworkSvg(deck?.topic ?? slide.title);
+  const artwork = topicArtworkSvg(
+    deck?.topic ?? slide.title,
+    slide.layout === "title" ? "" : slide.title,
+  );
   const visualTheme = slide.theme;
   const baseTokens = themeOf(visualTheme);
   const tokens =
@@ -147,7 +150,7 @@ export function SlideView({
                 "topic-artwork pointer-events-none absolute z-0 text-accent",
                 isTitle
                   ? "right-[3%] top-[23%] w-[20%] opacity-30"
-                  : "right-[3%] top-[28%] w-[12%] opacity-[0.14]",
+                  : "right-[3%] top-[28%] w-[16%] opacity-[0.22]",
               )}
               dangerouslySetInnerHTML={{ __html: artwork }}
             />

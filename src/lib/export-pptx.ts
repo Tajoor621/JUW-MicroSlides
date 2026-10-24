@@ -33,17 +33,19 @@ export async function exportPptx(
   options: { classroom?: boolean; returnBytes?: boolean } = {},
 ) {
   // Reviewed release remains strict; ordinary downloads explicitly use draft mode.
-  options = { ...options, classroom: options.classroom !== false };
+  options = { ...options, classroom: options.classroom === true };
   if (options.classroom) assertTeachingReady(deck);
   if (deck.slides.length < 1 || deck.slides.length > MAX_SLIDES)
     throw new Error(
       "PPTX requires 1–50 slides. Your legacy project is preserved; export a reduced copy.",
     );
   const findings = integrityAudit(deck);
-  const ready = teachingReady(deck);
+  let ready = teachingReady(deck);
+  let sceneDeck = deck;
+  const exportWarnings: string[] = [];
   if (options.classroom && !ready)
     throw new Error("Resolve critical evidence and repetition findings before reviewed export.");
-  await preflightTeachingImages(deck);
+  if (options.classroom) await preflightTeachingImages(deck);
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: "JUW_PREVIEW", width: 1280 / 96, height: 720 / 96 });
@@ -51,7 +53,19 @@ export async function exportPptx(
   pptx.author = "JUW-MicroSlides";
   pptx.title = deck.title;
   pptx.subject = `${deck.discipline} · ${deck.topic}`;
-  const portable = deck.exportTypography === "portable" ? await loadPortableFonts() : undefined;
+  let portable: Awaited<ReturnType<typeof loadPortableFonts>> | undefined;
+  if (deck.exportTypography === "portable") {
+    try {
+      portable = await loadPortableFonts();
+    } catch (error) {
+      if (options.classroom) throw error;
+      sceneDeck = { ...deck, exportTypography: "original" };
+      ready = false;
+      exportWarnings.push(
+        "Portable fonts were unavailable. This editable draft uses system fonts; inspect typography before presenting.",
+      );
+    }
+  }
   pptx.theme = portable
     ? { headFontFace: "DejaVu Sans", bodyFontFace: "DejaVu Sans" }
     : { headFontFace: "Georgia", bodyFontFace: "Arial" };
@@ -63,18 +77,23 @@ export async function exportPptx(
       // PptxGenJS expects a base64-encoded SVG payload; percent-encoded data
       // URIs may be silently omitted from the generated slide XML.
 
-      const comma = src.indexOf(",");
-      const raw = src.slice(comma + 1);
-      const svg = safeExportSvg(
-        src.slice(0, comma).includes(";base64")
-          ? new TextDecoder().decode(Uint8Array.from(atob(raw), (c) => c.charCodeAt(0)))
-          : decodeURIComponent(raw),
-      );
-      const bytes = new TextEncoder().encode(svg);
-      let binary = "";
-      for (let i = 0; i < bytes.length; i += 8192)
-        binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-      return `data:image/svg+xml;base64,${btoa(binary)}`;
+      try {
+        const comma = src.indexOf(",");
+        const raw = src.slice(comma + 1);
+        const svg = safeExportSvg(
+          src.slice(0, comma).includes(";base64")
+            ? new TextDecoder().decode(Uint8Array.from(atob(raw), (c) => c.charCodeAt(0)))
+            : decodeURIComponent(raw),
+        );
+        const bytes = new TextEncoder().encode(svg);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 8192)
+          binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        return `data:image/svg+xml;base64,${btoa(binary)}`;
+      } catch (error) {
+        if (options.classroom) throw error;
+        return null;
+      }
     }
     const key = `${src}:${width}:${height}:${cover}`;
     if (!images.has(key)) {
@@ -117,7 +136,7 @@ export async function exportPptx(
   for (let i = 0; i < deck.slides.length; i++) {
     const source = deck.slides[i];
     const slide = pptx.addSlide();
-    const scene = await slideExportScene(deck, i, { draft: !options.classroom });
+    const scene = await slideExportScene(sceneDeck, i, { draft: !options.classroom });
     const overflow = sceneOverflow(scene);
     if (options.classroom && overflow.length)
       throw new Error(
@@ -201,7 +220,20 @@ export async function exportPptx(
         ready && deck.teachingVerification
           ? `Last verified by ${deck.teachingVerification.instructor} on ${new Date(deck.teachingVerification.at).toISOString().slice(0, 10)}. Lecturer self-attestation, not independent certification.`
           : "Draft — current deck has not cleared lecturer evidence review.",
+        ...exportWarnings,
         lectureSpeakerNotes(source),
+        "Full editable slide text (preserved independently of layout):\n" +
+          JSON.stringify(
+            {
+              title: source.title,
+              subtitle: source.subtitle,
+              bullets: source.bullets,
+              leftBullets: source.leftBullets,
+              rightBullets: source.rightBullets,
+            },
+            null,
+            2,
+          ),
         scientificPreflight({ ...deck, slides: [source] })
           .map((f) => f.message)
           .join("\n"),
@@ -263,7 +295,7 @@ export async function exportPptx(
         .join("\n\n"),
     );
   }
-  const name = pptxFileName(deck);
+  const name = pptxFileName(sceneDeck);
   if (portable || isDesktop() || options.returnBytes) {
     const data = (await pptx.write({
       outputType: "arraybuffer",

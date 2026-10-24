@@ -128,6 +128,15 @@ try {
       await button.click();
       await page.getByText(/a required image could not be decoded/).waitFor();
       if (downloads) throw Error("Corrupt image produced a reviewed download");
+      const editable = page.waitForEvent("download");
+      await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+      const editableZip = await JSZip.loadAsync(await readFile(await (await editable).path()));
+      const editableXml = await editableZip.file("ppt/slides/slide1.xml").async("string");
+      if (!editableXml.includes("Original image unavailable"))
+        throw Error("Editable export must identify unavailable artwork explicitly");
+      console.log(
+        "PASS editable PPTX downloads despite invalid artwork while strict reviewed release rejects it",
+      );
       console.log(
         "PASS corrupt " + (i ? "SVG" : "PNG") + " blocks reviewed download and reports the problem",
       );

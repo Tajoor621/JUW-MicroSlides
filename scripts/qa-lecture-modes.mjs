@@ -188,6 +188,7 @@ try {
     .getByLabel("Curriculum lecture topics", { exact: true })
     .fill("Unfinished curriculum topic");
   await page.getByLabel("Generation Mode", { exact: true }).selectOption("standard");
+  await page.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await page.locator("#gen-topic").fill("Enzyme immobilization");
   await page.locator("#gen-count").fill("1");
   await page.getByRole("button", { name: "Generate deck", exact: true }).click();

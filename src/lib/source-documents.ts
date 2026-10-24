@@ -121,11 +121,15 @@ async function boundedText(response: Response) {
     await reader.cancel();
   }
 }
-export async function fetchOpenArticle(pmcid: string, signal?: AbortSignal): Promise<string> {
+export async function fetchOpenArticle(
+  pmcid: string,
+  signal?: AbortSignal,
+  timeoutMs = 9000,
+): Promise<string> {
   if (!/^PMC\d+$/.test(pmcid)) throw Error("Invalid PMCID.");
   const r = await fetch(`https://www.ebi.ac.uk/europepmc/webservices/rest/${pmcid}/fullTextXML`, {
     credentials: "omit",
-    signal: AbortSignal.any([AbortSignal.timeout(9000), ...(signal ? [signal] : [])]),
+    signal: AbortSignal.any([AbortSignal.timeout(timeoutMs), ...(signal ? [signal] : [])]),
   });
   if (!r.ok) throw Error(`Full text unavailable (${r.status}); retain abstract-only status.`);
   const declared = Number(r.headers.get("content-length") || 0);

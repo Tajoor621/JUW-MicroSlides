@@ -35,6 +35,30 @@ type Paper = {
   doi?: string;
   pmid?: string;
 };
+/** Refresh provider metadata while retaining cached full text and adverse notices. */
+export function mergeResearchPaper(prior: Paper | undefined, fresh: Paper): Paper {
+  if (!prior) return fresh;
+  const notices = [
+    ...(prior.commentCorrectionList?.commentCorrection || []),
+    ...(fresh.commentCorrectionList?.commentCorrection || []),
+  ];
+  return {
+    ...prior,
+    ...fresh,
+    fullBody: fresh.fullBody || prior.fullBody,
+    sourceDocument: fresh.sourceDocument || prior.sourceDocument,
+    isRetracted:
+      prior.isRetracted === "Y" || fresh.isRetracted === "Y"
+        ? "Y"
+        : fresh.isRetracted || prior.isRetracted,
+    pubTypeList: {
+      pubType: [
+        ...new Set([...(prior.pubTypeList?.pubType || []), ...(fresh.pubTypeList?.pubType || [])]),
+      ],
+    },
+    commentCorrectionList: { commentCorrection: notices },
+  };
+}
 const aliases = [
   ["bacteria", "bacterial", "bacterium", "bacteriology"],
   ["fungi", "fungal", "fungus", "mycology"],
@@ -488,11 +512,16 @@ export async function enrichTopicEvidence(
   const core = original.filter((s) => !closing.includes(s));
   const needed = target - core.length - closing.length;
   const queries = researchQueries(input.topic);
+  const thorough = input.researchDepth === "thorough";
+  const fullTextLimit = thorough ? 24 : 6;
   const controller = new AbortController();
   const abort = () => controller.abort(signal?.reason);
   if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
-  const timer = setTimeout(() => controller.abort(new Error("Research search timed out")), 120000);
+  const timer = setTimeout(
+    () => controller.abort(new Error("Research search timed out")),
+    thorough ? 480000 : 120000,
+  );
   const cacheKey = `research-passages-v3:${input.topic.toLowerCase().trim().slice(0, 240)}`;
   const papers = new Map<string, Paper>();
   try {
@@ -516,9 +545,10 @@ export async function enrichTopicEvidence(
   const requestErrors: string[] = [];
   const fullTextAttempts = new Set<string>();
   async function expandFullTexts(optional = false) {
-    const fullTextSignal = optional
-      ? AbortSignal.any([controller.signal, AbortSignal.timeout(4000)])
-      : controller.signal;
+    const fullTextSignal =
+      optional && !thorough
+        ? AbortSignal.any([controller.signal, AbortSignal.timeout(4000)])
+        : controller.signal;
     const candidates = [...papers.values()]
       .filter(
         (p) =>
@@ -529,13 +559,22 @@ export async function enrichTopicEvidence(
           sourceTopicRelevance(input.topic, `${p.title} ${p.abstractText}`) >= 0.6 &&
           !europeNotices(p).length,
       )
-      .slice(0, Math.max(0, 6 - fullTextAttempts.size));
+      .sort(
+        (a, b) =>
+          sourceTopicRelevance(input.topic, `${b.title} ${b.abstractText}`) -
+          sourceTopicRelevance(input.topic, `${a.title} ${a.abstractText}`),
+      )
+      .slice(0, Math.max(0, fullTextLimit - fullTextAttempts.size));
     for (let i = 0; i < candidates.length; i += 3) {
       const batch = candidates.slice(i, i + 3);
       const results = await Promise.allSettled(
         batch.map(async (p) => {
           fullTextAttempts.add(p.pmcid!);
-          const fullBody = await fetchOpenArticle(p.pmcid!, fullTextSignal);
+          const fullBody = await fetchOpenArticle(
+            p.pmcid!,
+            fullTextSignal,
+            thorough ? 30000 : 9000,
+          );
           return { p, fullBody };
         }),
       );
@@ -581,9 +620,13 @@ export async function enrichTopicEvidence(
       : [];
   const enough = () => evidence.length >= needed && missingScopes().length === 0;
   try {
-    for (let round = 0; round < 3 && work.length && !enough(); round++) {
+    for (
+      let round = 0;
+      round < (thorough ? 5 : 3) && work.length && (!enough() || (thorough && round < 2));
+      round++
+    ) {
       onProgress?.(
-        `Research search ${round + 1}/3 · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
+        `Research search ${round + 1}/${thorough ? 5 : 3} · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
       );
       const attempted = work;
       const responses = await Promise.allSettled(
@@ -591,7 +634,10 @@ export async function enrichTopicEvidence(
           const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&pageSize=100&cursorMark=${encodeURIComponent(cursor)}&query=${encodeURIComponent(`(${query}) AND HAS_ABSTRACT:y`)}`;
           const response = await fetch(url, {
             credentials: "omit",
-            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(18000)]),
+            signal: AbortSignal.any([
+              controller.signal,
+              AbortSignal.timeout(thorough ? 35000 : 18000),
+            ]),
           });
           if (!response.ok) throw new Error(`Research service returned ${response.status}`);
           const data = await response.json();
@@ -613,9 +659,13 @@ export async function enrichTopicEvidence(
               p.pmid ||
               `${p.source || ""}:${p.id || p.title || ""}`
             ).toLowerCase();
-            if (key && !papers.has(key)) papers.set(key, p);
+            if (key) papers.set(key, mergeResearchPaper(papers.get(key), p));
           }
-          if (result.value.cursor && result.value.papers.length)
+          if (
+            result.value.cursor &&
+            result.value.cursor !== attempted[position].cursor &&
+            result.value.papers.length
+          )
             work.push({ query: result.value.query, cursor: result.value.cursor });
         } else {
           const reason =
@@ -638,7 +688,7 @@ export async function enrichTopicEvidence(
         target === 1,
       );
       onProgress?.("Screening sources and retrieving available open full text…");
-      await expandFullTexts(evidence.length >= needed);
+      await expandFullTexts(!thorough && evidence.length >= needed);
       try {
         await writeLocalRecord(
           cacheKey,
@@ -656,18 +706,37 @@ export async function enrichTopicEvidence(
       );
       if (signal?.aborted) throw signal.reason;
     }
-    if (!enough() && !controller.signal.aborted) {
+    if ((!enough() || thorough) && !controller.signal.aborted) {
       onProgress?.("Trying PubMed abstracts through an independent research provider…");
       try {
-        const fallback = await fetchPubmedAbstracts(
-          queries.map((q) => `(${q})`).join(" OR "),
-          controller.signal,
-        );
-        successful++;
-        deck = { ...deck, lastLiteratureCheck: Date.now() };
+        const fallback: Awaited<ReturnType<typeof fetchPubmedAbstracts>> = [];
+        const independentQueries = thorough
+          ? researchScopes(input.topic)
+              .slice(0, 4)
+              .map((scope) =>
+                researchQueries(scope)
+                  .slice(0, 3)
+                  .map((q) => `(${q})`)
+                  .join(" OR "),
+              )
+          : [queries.map((q) => `(${q})`).join(" OR ")];
+        let independentSuccess = 0;
+        for (const [index, query] of independentQueries.entries()) {
+          if (index) await new Promise((resolve) => setTimeout(resolve, 400));
+          controller.signal.throwIfAborted();
+          try {
+            fallback.push(...(await fetchPubmedAbstracts(query, controller.signal)));
+            independentSuccess++;
+          } catch (error) {
+            signal?.throwIfAborted();
+            requestErrors.push(error instanceof Error ? error.message : "PubMed unavailable");
+          }
+        }
+        successful += independentSuccess;
+        if (independentSuccess) deck = { ...deck, lastLiteratureCheck: Date.now() };
         for (const p of fallback) {
           const key = (p.doi || p.pmid).toLowerCase();
-          if (!papers.has(key)) papers.set(key, p);
+          papers.set(key, mergeResearchPaper(papers.get(key), p));
         }
         evidence = sourceSlides(
           [...papers.values()],
@@ -716,7 +785,7 @@ export async function enrichTopicEvidence(
       ].slice(0, 30),
       requestedCount: target,
       contentWarnings: [
-        `${added.length} slides contain attributed source excerpts retrieved through ${successful} research searches. Open full-text retrieval is bounded to six articles per request. Metadata notices are screened; absence of a notice is not proof of validity. Cached evidence may be stale; run reference checks before teaching.`,
+        `${added.length} slides contain attributed source excerpts retrieved through ${successful} research searches. Open full-text retrieval is bounded to ${fullTextLimit} articles per request. Metadata notices are screened; absence of a notice is not proof of validity. Cached evidence may be stale; run reference checks before teaching.`,
       ],
       updatedAt: Date.now(),
     };
