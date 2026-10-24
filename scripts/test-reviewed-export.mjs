@@ -226,13 +226,13 @@ try {
     name: "Generate a scientific deck",
     exact: true,
   });
-  await mobileGenerator.getByRole("textbox", { name: "Topic", exact: true }).fill("Gram staining");
+  await mobileGenerator.getByRole("textbox", { name: "Topic", exact: true }).fill("Bacterial genome architecture");
   await mobileGenerator.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await mobileGenerator.getByRole("spinbutton", { name: "Slides (1–50)", exact: true }).fill("6");
   await mobileGenerator.getByRole("button", { name: "Generate deck", exact: true }).click();
   await mobileGenerator.waitFor({ state: "hidden" });
   await page.locator("[data-slide-stage]").waitFor({ state: "visible" });
-  assert.match(await page.locator("[data-slide-stage]").innerText(), /GRAM STAINING/i);
+  assert.match(await page.locator("[data-slide-stage]").innerText(), /BACTERIAL GENOME ARCHITECTURE/i);
   assert.match(await page.locator("main").innerText(), /Slide 1 of 6/);
   await page.getByRole("button", { name: "Slides", exact: true }).click();
   const secondSlide = page.getByRole("button", { name: /^02 / });
