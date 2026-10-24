@@ -167,7 +167,7 @@ try {
   await saved(upgradingPage);
   assert.equal(
     await upgradingPage.getByRole("textbox", { name: "Lecture topic", exact: true }).inputValue(),
-    "Synthetic export fixture",
+    oldLibrary[0].title,
   );
   const migrated = await upgradingPage.evaluate(
     () =>
