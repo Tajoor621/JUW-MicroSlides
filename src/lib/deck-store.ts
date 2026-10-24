@@ -27,9 +27,19 @@ import { improveDraft } from "./draft-improvements";
 
 // Decks are never silently evicted; users control deletion.
 
-type InspectorTab = "edit" | "media" | "cite" | "evidence" | "audit" | "copilot";
+type InspectorTab = "edit" | "media" | "cite" | "evidence" | "notes" | "copilot";
 
 interface DeckState {
+  workspaceEpoch: number;
+  writingNotes: {
+    topic: string;
+    body: string;
+    sources: string;
+    level: import("./types").Level;
+    mode: "manual" | "ai";
+  };
+  patchWritingNotes: (patch: Partial<DeckState["writingNotes"]>) => void;
+  refreshWorkspace: () => void;
   library: Deck[];
   activeId: string | null;
   selectedIndex: number;
@@ -119,6 +129,30 @@ const EMPTY_DRAFT: GenerateDraft = {
 export const useDeckStore = create<DeckState>()(
   persist(
     (set, get) => ({
+      workspaceEpoch: 0,
+      writingNotes: { topic: "", body: "", sources: "", level: "Undergraduate", mode: "manual" },
+      patchWritingNotes: (patch) => set({ writingNotes: { ...get().writingNotes, ...patch } }),
+      refreshWorkspace: () =>
+        set({
+          activeId: null,
+          selectedIndex: 0,
+          generateDraft: { ...EMPTY_DRAFT, course: "", courseCode: "" },
+          writingNotes: {
+            topic: "",
+            body: "",
+            sources: "",
+            level: "Undergraduate",
+            mode: "manual",
+          },
+          generationFailure: null,
+          workspaceEpoch: get().workspaceEpoch + 1,
+          presenting: false,
+          generateOpen: false,
+          generatorOpen: true,
+          inspectorTab: "edit",
+          inspectorOpen: false,
+          railOpen: false,
+        }),
       library: [STARTER],
       activeId: STARTER.id,
       selectedIndex: 0,
@@ -157,7 +191,10 @@ export const useDeckStore = create<DeckState>()(
         const deck = sampleDeck();
         set({ library: [deck], activeId: deck.id, selectedIndex: 0 });
       },
-      deck: () => get().library.find((d) => d.id === get().activeId) ?? get().library[0] ?? null,
+      deck: () =>
+        get().activeId === null
+          ? null
+          : (get().library.find((d) => d.id === get().activeId) ?? null),
       slide: () => {
         const d = get().deck();
         if (!d) return null;
@@ -431,6 +468,7 @@ export const useDeckStore = create<DeckState>()(
       partialize: (s) => ({
         library: s.library.filter((d) => d.slides.length > 0),
         activeId: s.activeId,
+        writingNotes: s.writingNotes,
         selectedIndex: s.selectedIndex,
         citationStyle: s.citationStyle,
         chromeTheme: s.chromeTheme,
@@ -446,13 +484,19 @@ export const useDeckStore = create<DeckState>()(
         const lib = pLib.length ? pLib : cLib;
         if (!lib.length) return current;
         const preferredId = pLib.length ? p.activeId : current.activeId;
-        const activeId = lib.some((d) => d.id === preferredId) ? preferredId! : lib[0].id;
+        const activeId =
+          preferredId === null
+            ? null
+            : lib.some((d) => d.id === preferredId)
+              ? preferredId!
+              : lib[0].id;
         return {
           ...current,
           ...p,
           library: lib,
           activeId,
           generateDraft: { ...current.generateDraft, ...(p.generateDraft ?? {}) },
+          writingNotes: { ...current.writingNotes, ...(p.writingNotes ?? {}) },
         };
       },
     },

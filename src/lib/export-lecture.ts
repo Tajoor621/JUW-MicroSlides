@@ -5,14 +5,13 @@ import {
 } from "./lecture-transcript";
 import { decodeTeachingImage } from "./teaching-images";
 import { font } from "./export-teaching";
-import { assertTeachingReady } from "./teaching-readiness";
 import { saveFile } from "./desktop";
 import { teachingReferences } from "./teaching-bibliography";
 import type { Deck } from "./types";
 const filename = (d: Deck) => d.title.replace(/[^\p{L}\p{N}-]/gu, "-").slice(0, 80) || "lecture";
 export function lectureMarkdown(deck: Deck) {
   return (
-    `# ${deck.title}\n\nDraft status: ${deck.teachingVerification ? "Instructor attestation recorded; validate its revision on import" : "Evidence review required"}\n\n` +
+    `# ${deck.title}\n\nDraft status: Check original sources before teaching\n\n` +
     deck.slides
       .map(
         (s, i) =>
@@ -26,7 +25,6 @@ export async function exportMarkdownBackup(deck: Deck) {
   return saveFile(`${filename(deck)}.md`, new TextEncoder().encode(lectureMarkdown(deck)), "md");
 }
 export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
-  assertTeachingReady(deck);
   const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   pdf.addFileToVFS("DejaVuSans.ttf", await font("DejaVuSans"));
@@ -55,14 +53,11 @@ export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
   }
   write(deck.title, 18, true);
   write(`${deck.courseCode} · For educational use only`, 10);
-  write(
-    `Last verified by ${deck.teachingVerification!.instructor} on ${new Date(deck.teachingVerification!.at).toISOString().slice(0, 10)}; lecturer self-attestation.`,
-    9,
-  );
+  write("Draft study material — check original sources before teaching.", 9);
   const slides = protocolOnly ? deck.slides.filter((s) => s.protocol) : deck.slides;
   if (protocolOnly && !slides.some((s) => s.protocol?.steps.length))
     throw Error(
-      "The protocol card requires reviewed procedural steps. Add the source-linked steps before printing.",
+      "The protocol card requires procedural steps. Add the source-linked steps before printing.",
     );
   if (protocolOnly && !slides.length) throw Error("This deck contains no structured lab protocol.");
   for (const s of slides) {
@@ -158,7 +153,6 @@ export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
   );
 }
 export async function exportAccessibleLecture(deck: Deck) {
-  assertTeachingReady(deck);
   const esc = escapeLectureHtml;
   const body = deck.slides
     .map(

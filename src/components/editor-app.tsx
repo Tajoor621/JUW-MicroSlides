@@ -1,18 +1,11 @@
-import { slideReviewStatus } from "@/lib/slide-review-status";
-import { scientificPreflight } from "@/lib/scientific-format";
 import { exportTeachingPdf } from "@/lib/export-teaching";
-import {
-  teachingReleaseFindings,
-  groupedReviewNotes,
-  teachingReady,
-} from "@/lib/teaching-readiness";
 import { GenerationFailure } from "./generation-failure";
 import { ProfessionalWorkspace } from "./professional-workspace";
 import { packProject } from "@/lib/project-format";
 import { isDesktop, saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -25,6 +18,7 @@ import {
   Play,
   Plus,
   Printer,
+  RotateCcw,
   Settings,
   Sun,
   Trash2,
@@ -87,6 +81,7 @@ export function EditorApp() {
       window.removeEventListener("juw-saved", saved);
     };
   }, []);
+  const workspaceEpoch = useDeckStore((s) => s.workspaceEpoch);
   const theme = useDeckStore((s) => s.chromeTheme);
   const deck = useDeckStore((s) => s.deck());
   const slide = useDeckStore((s) => s.slide());
@@ -185,16 +180,6 @@ export function EditorApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [index, select]);
 
-  const [showReviewNotes, setShowReviewNotes] = useState(false);
-  const exportIssues = useMemo(
-    () => (showReviewNotes && deck ? teachingReleaseFindings(deck) : null),
-    [showReviewNotes, deck],
-  );
-  const setExportIssues = (issues: ReturnType<typeof teachingReleaseFindings> | null) =>
-    setShowReviewNotes(Boolean(issues?.length));
-  const [scientificNotes, setScientificNotes] = useState<ReturnType<typeof scientificPreflight>>(
-    [],
-  );
   const [exportError, setExportError] = useState("");
   const [pptxBusy, setPptxBusy] = useState(false);
   const pptxWriting = useRef(false);
@@ -215,48 +200,22 @@ export function EditorApp() {
   useEffect(() => {
     if (exportError) exportErrorAlert.current?.scrollIntoView({ block: "nearest" });
   }, [exportError]);
-  const exportAlert = useRef<HTMLElement>(null);
   useEffect(() => {
-    setShowReviewNotes(false);
     setExportError("");
     setPreparedPptx(null);
-    setScientificNotes([]);
   }, [deck?.id]);
-  useEffect(() => {
-    if (showReviewNotes)
-      exportAlert.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [showReviewNotes]);
-  const [reviewedAttempt, setReviewedAttempt] = useState(false);
-  function outputDeck(reviewed: boolean) {
-    if (!deck || reviewed || teachingReady(deck)) return deck;
-    const changes = useDeckStore.getState().applySafeCorrections();
-    if (changes) {
-      toast.message(
-        `Applied ${changes} safe formatting/source-field corrections. Undo is available.`,
-      );
-      return useDeckStore.getState().deck();
-    }
-    return deck;
-  }
-  function preflightExport(candidate: NonNullable<typeof deck>, reviewed: boolean) {
-    const issues = teachingReleaseFindings(candidate);
-    setScientificNotes(scientificPreflight(candidate));
-    setReviewedAttempt(reviewed);
-    setExportIssues(issues.length ? issues : null);
-    return !reviewed || !issues.length;
-  }
-  async function onPptx(reviewed = false) {
+  async function onPptx() {
     if (pptxWriting.current) return;
     pptxWriting.current = true;
     setPptxBusy(true);
     setExportError("");
     try {
-      const candidate = outputDeck(reviewed);
-      if (!candidate || !preflightExport(candidate, reviewed)) return;
+      const candidate = deck;
+      if (!candidate) return;
       if (isDesktop()) {
-        await exportPptx(candidate, { classroom: reviewed });
+        await exportPptx(candidate, { classroom: false });
       } else {
-        const bytes = await exportPptx(candidate, { classroom: reviewed, returnBytes: true });
+        const bytes = await exportPptx(candidate, { classroom: false, returnBytes: true });
         if (!(bytes instanceof Uint8Array) || !bytes.length)
           throw Error("PowerPoint generation returned no file. Your deck is preserved.");
         // Keep the URL alive until replacement or unmount. Mobile browsers may
@@ -287,14 +246,45 @@ export function EditorApp() {
       setPptxBusy(false);
     }
   }
+  const [preparedPdf, setPreparedPdf] = useState<{
+    url: string;
+    name: string;
+    deckId: string;
+  } | null>(null);
+  useEffect(
+    () => () => {
+      if (preparedPdf) URL.revokeObjectURL(preparedPdf.url);
+    },
+    [preparedPdf],
+  );
+  useEffect(() => {
+    setPreparedPdf(null);
+  }, [deck?.id]);
   const [printing, setPrinting] = useState(false);
-  async function onPdf(reviewed = false) {
+  async function onPdf() {
     setExportError("");
-    const candidate = outputDeck(reviewed);
-    if (!candidate || !preflightExport(candidate, reviewed)) return;
+    const candidate = deck;
+    if (!candidate) return;
     setPrinting(true);
     try {
-      await exportTeachingPdf(candidate, { reviewed });
+      if (isDesktop()) {
+        await exportTeachingPdf(candidate, { reviewed: false });
+        return;
+      }
+      const bytes = await exportTeachingPdf(candidate, { reviewed: false, returnBytes: true });
+      if (!(bytes instanceof Uint8Array)) throw Error("PDF generation returned no file.");
+      if (useDeckStore.getState().deck()?.id !== candidate.id) return;
+      const url = URL.createObjectURL(
+        new Blob([new Uint8Array(bytes)], { type: "application/pdf" }),
+      );
+      const name = `${candidate.title.replace(/[^\p{L}\p{N}-]/gu, "-").slice(0, 80) || "lecture"}.pdf`;
+      setPreparedPdf({ url, name, deckId: candidate.id });
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.append(a);
+      a.click();
+      a.remove();
     } catch (e) {
       setExportError(e instanceof Error ? e.message : "PDF export failed.");
     } finally {
@@ -324,7 +314,7 @@ export function EditorApp() {
           · Verify scientific claims · Library → backup · Ctrl/Cmd+Z to undo
         </div>
         <AppUpdates />
-        <ProfessionalWorkspace onEditableExport={() => onPptx(false)} exportBusy={pptxBusy} />
+        <ProfessionalWorkspace onEditableExport={() => onPptx()} exportBusy={pptxBusy} />
         {deck?.requestedCount && deck.slides.length < deck.requestedCount ? (
           <p
             role="status"
@@ -380,6 +370,19 @@ export function EditorApp() {
                 Generate
               </Button>
             </Tooltip>
+            <Tooltip content="Refresh — empty workspace; saved decks stay in Library">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Refresh workspace"
+                onClick={() => {
+                  useDeckStore.getState().refreshWorkspace();
+                  toast.message("Fresh workspace. Saved decks remain in Library.");
+                }}
+              >
+                <RotateCcw />
+              </Button>
+            </Tooltip>
             <Tooltip content="Library">
               <Button
                 variant="ghost"
@@ -406,7 +409,7 @@ export function EditorApp() {
                 size="icon-sm"
                 onClick={() => void onPptx()}
                 aria-label="Export PPTX"
-                disabled={pptxBusy}
+                disabled={pptxBusy || !deck}
                 aria-busy={pptxBusy}
               >
                 <Download />
@@ -418,6 +421,7 @@ export function EditorApp() {
                 size="icon-sm"
                 onClick={() => void onPdf()}
                 aria-label="Export PDF"
+                disabled={printing || !deck}
               >
                 <Printer />
               </Button>
@@ -535,7 +539,7 @@ export function EditorApp() {
                 <strong>
                   {deck?.id === "sample-enzyme-mic4511" ? "Example deck" : "Editing deck"}:
                 </strong>{" "}
-                {deck?.topic}
+                {deck?.topic || "No deck open — enter a new topic below"}
                 {deck?.id === "sample-enzyme-mic4511" && (
                   <p className="mt-1 text-xs text-muted">
                     This is a saved example, not your new generation. Enter a topic below and choose
@@ -568,8 +572,8 @@ export function EditorApp() {
                 >
                   <p className="font-semibold">PowerPoint file ready</p>
                   <p className="text-xs text-muted">
-                    If no file appeared, tap Download PowerPoint. Review notes do not block this
-                    download. Your browser may offer Save to Files or Open in PowerPoint.
+                    If no file appeared, tap Download PowerPoint. Text remains editable and sharp at
+                    any zoom. Your browser may offer Save to Files or Open in PowerPoint.
                   </p>
                   {deck.updatedAt !== preparedPptx.updatedAt && (
                     <p className="text-xs">
@@ -584,97 +588,17 @@ export function EditorApp() {
                   </Button>
                 </section>
               )}
-              {!!scientificNotes.length && (
-                <details className="rounded border border-border p-3 text-sm">
-                  <summary className="min-h-11 cursor-pointer">
-                    Scientific presentation checks ({scientificNotes.length})
-                  </summary>
-                  <p className="text-xs text-muted">
-                    Advisory checks; downloads remain available. Use Evidence / PubMed for source
-                    verification.
-                  </p>
-                  <ul>
-                    {scientificNotes.map((f, i) => (
-                      <li key={i}>
-                        Slide {f.index + 1}: {f.message}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-              {!!exportIssues?.length && (
+              {preparedPdf && deck?.id === preparedPdf.deckId && (
                 <section
-                  role="alert"
-                  aria-label="Export readiness"
-                  ref={exportAlert}
+                  aria-label="PDF download"
                   className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
                 >
-                  <p className="font-semibold">
-                    {reviewedAttempt
-                      ? "Reviewed export needs review"
-                      : "Review notes — downloads available"}{" "}
-                    · {new Set(exportIssues.map((i) => i.index)).size} slides
-                  </p>
-                  <p className="text-xs text-muted">
-                    Downloads remain available. Review tasks are grouped; formal reviewed release
-                    stays separate.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="accent" disabled={pptxBusy} onClick={() => void onPptx()}>
-                      Export PPTX with review notes
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        select(exportIssues[0].index);
-                        useDeckStore.setState({ inspectorTab: "audit", inspectorOpen: true });
-                        setExportIssues(null);
-                      }}
-                    >
-                      Review slide {exportIssues[0].index + 1}
-                    </Button>
-                    <Button variant="ghost" onClick={() => setExportIssues(null)}>
-                      Dismiss export findings
-                    </Button>
-                  </div>
-                  <details>
-                    <summary className="min-h-11 cursor-pointer py-3 text-accent">
-                      Reviewed release options
-                    </summary>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="secondary" onClick={() => void onPptx(true)}>
-                        Export reviewed PPTX
-                      </Button>
-                      <Button variant="secondary" onClick={() => void onPdf(true)}>
-                        Export reviewed PDF
-                      </Button>
-                    </div>
-                  </details>
-                  <details>
-                    <summary className="min-h-11 cursor-pointer py-3 text-accent">
-                      Inspect grouped review notes
-                    </summary>
-                    <ol className="space-y-3">
-                      {groupedReviewNotes(exportIssues).map((group, n) => (
-                        <li key={n} className="break-words border-t border-border py-2 text-xs">
-                          <p>
-                            {group.message} ({group.indices.length} slides)
-                          </p>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              select(group.indices[0]);
-                              useDeckStore.setState({ inspectorTab: "audit", inspectorOpen: true });
-                              setExportIssues(null);
-                            }}
-                          >
-                            Open flagged slide {group.indices[0] + 1}
-                          </Button>
-                        </li>
-                      ))}
-                    </ol>
-                  </details>
+                  <p className="font-semibold">PDF file ready</p>
+                  <Button asChild variant="accent" size="lg">
+                    <a href={preparedPdf.url} download={preparedPdf.name}>
+                      Download PDF
+                    </a>
+                  </Button>
                 </section>
               )}
               <GeneratePanel />
@@ -762,11 +686,6 @@ export function EditorApp() {
                 <span className="ml-auto tabular-nums">
                   Slide {total ? index + 1 : 0} of {total}
                 </span>
-                {deck && slide && (
-                  <span className="ml-2" aria-label="Slide review status">
-                    Review: {slideReviewStatus(deck, slide)}
-                  </span>
-                )}
               </div>
               {slide && deck ? (
                 <div className="w-full shrink-0">
@@ -809,7 +728,7 @@ export function EditorApp() {
             </div>
           </main>
 
-          <InspectorPanel />
+          <InspectorPanel key={workspaceEpoch} />
         </div>
       </div>
       <GenerateDialog />

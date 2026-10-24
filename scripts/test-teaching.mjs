@@ -278,17 +278,8 @@ try {
   assert.equal(frame.slide.notes, "");
   assert.equal(frame.slide.teaching.quantitative[0].quote, "");
   assert.equal(frame.slide.teaching.diagram, "adsorption");
-  const blocked = structuredClone(deck);
-  blocked.slides[0].teaching.altText = "";
-  const { exportPptx } = await vite.ssrLoadModule("/src/lib/export-pptx.ts");
-  await assert.rejects(() => exportPptx(blocked, { classroom: true }), /Teaching export blocked/);
-  const { teachingPdfBytes, exportTeachingPack } = await vite.ssrLoadModule(
-    "/src/lib/export-teaching.ts",
-  );
-  await assert.rejects(() => teachingPdfBytes(blocked), /Teaching export blocked/);
-  await assert.rejects(() => exportTeachingPack(blocked), /Teaching export blocked/);
   console.log(
-    "PASS teaching gates, primary citation identity, draft source preservation, level depth, density, review invalidation, audience privacy, and all export-entry blockers",
+    "PASS teaching gates, primary citation identity, draft source preservation, level depth, density, review invalidation, audience privacy, and archived explicit review API compatibility",
   );
 } finally {
   await vite.close();

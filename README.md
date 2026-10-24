@@ -24,15 +24,13 @@ Generate standard lectures, fixed-section pathogen profiles, laboratory methods,
 
 See [lecture workflow guide](docs/LECTURE-WORKFLOWS.md) for offline source-note formatting, minimum slide counts, scientific review requirements, course building, accessible exports and complete JSON/Markdown recovery. Missing protocol timing, diagnostic evidence or taxonomy data remain explicit review blockers. Software checks do not certify scientific accuracy or replace qualified instructor review.
 
-## Research and editable exports
+## Research, Writing Notes and downloads
 
-The default online Knowledge workflow uses **Thorough — source-first online research**: it retrieves topic-specific passages rather than accepting a complete bundled outline as an evidence-backed lecture. Search permits up to five paginated rounds, independent PubMed queries for requested scopes, up to 24 eligible open full-text attempts, and an eight-minute overall budget. Cancel remains available. Provider failures, relevance filters, source notices and insufficient coverage are reported; a short or unsupported deck never replaces the saved lecture. Supplied notes and offline/bundled workflows remain available. Slower/more extensive retrieval does not certify scientific accuracy.
+Online Knowledge generation defaults to Thorough source-first Europe PMC/PubMed retrieval: up to five result rounds, independent queries, 24 eligible open full-text attempts and a cancellable eight-minute budget. Sources remain attributed draft summaries, not universal scientific certification. Insufficient relevant material is reported clearly; the app does not pad or fabricate a requested slide count.
 
-Ordinary editable PPTX downloads are advisory: incomplete review, unavailable artwork and layout overflow do not trigger the formal teaching-release gate. An unavailable image is labelled explicitly; original media provenance and full text remain in notes. Portable-font failure falls back to editable system fonts with a draft note. Fix layout warnings before presenting. **Reviewed** exports/Teaching Packs remain separate, explicitly requested workflows. The default export API is editable; strict callers must pass `classroom: true`.
+**Writing Notes** replaces the former Review tab. Enter its own topic and level, choose Knowledge research or configured AI/Ollama, then generate, edit and download Markdown notes. Supplied source material works offline. Notes save on this device independently of lecture decks. **Refresh workspace** clears the current topic, searches and notes, cancels stale work and opens an empty workspace; saved decks stay in Library. Export notes first if you want to retain them before Refresh.
 
-The Review tab defaults to critical screening findings (factual-error candidates, identifier/quotation mismatches, publication notices, empty content). Missing sign-offs and source coverage remain in Evidence, rather than inflating the critical count. Optional overlap comparison remains available. No automated screening certifies truth.
-
-Decorative SVG motifs use each slide's specific concept heading where recognized, falling back to the deck topic. They remain decorative and do not substitute for a source-reviewed scientific figure.
+PPTX, PDF, handouts and Teaching Packs have no review gate. Historical review/evidence records remain in saved projects; no automated process marks content scientifically verified. Missing images use an explicit placeholder. PowerPoint text stays native/editable and SVG stays vector, with higher-resolution PNG fallbacks (up to 4×, bounded to 4096×2304) for mobile viewers. Source photographs cannot gain detail beyond their original pixels. PDF uses vector text and bundled fonts; it is a reading/printing format, while PPTX is the fully editable slide format. Both toolbar exports retain a download link for a second mobile tap.
 
 ## Everyday use
 
@@ -46,7 +44,7 @@ Decorative SVG motifs use each slide's specific concept heading where recognized
 
 ## Evidence navigation and external scientific review
 
-In **Review → Open evidence overview**, filter statements without recorded passages, unreviewed statements, abstract-only evidence, figures or critical findings. Select a slide to open its evidence inspector; export the overview for a revision-specific record. Shared references retain adverse or unknown publication checks from every occurrence. These are coverage and metadata counts, not an accuracy score.
+**Evidence** retains the source library, guideline links and reference import. Saved historical claim-to-passage and review records remain in portable projects and JSON backups. These records do not block exports.
 
 To conduct an external review, download the scientific review pack and give its original `pack.json` to a qualified reviewer. In **Review → Complete an external review**, the reviewer opens that pack and records decisions, scientific rationale, checked HTTPS source links and redundant item IDs. Expand the reviewer declaration, then use **Check review completion** and **Export completed reviewer form**. A coordinator assesses two returned forms with the original pack using **Assess returned forms**. The workspace does not modify the lecturer's deck, authenticate a reviewer, certify scientific accuracy or change classroom-readiness gates.
 
@@ -86,7 +84,7 @@ Only a user-triggered AI generation or Copilot request sends content to that con
 - Topics are not restricted to bundled profiles. The generator accepts any microbiology topic, searches related source material, and builds distinct passages toward the requested 1–50 slides. Success requires the exact count. Offline generation has finite bundled coverage; when sources/model access cannot support the request, the app reports an actionable error and preserves the active deck instead of saving fewer slides or inventing content.
 - Elicit support imports exports; it is not an Elicit account connection. Ambiguous legacy author strings cannot be reconstructed reliably; structured BibTeX author data is retained.
 - External searches depend on upstream availability, CORS, and provider quotas. This release does not certify their current availability in every region.
-- PowerPoint exports the primary figure on each slide; additional manually attached media links and full citations remain in notes and the editable backup. No figure/reference pages are added beyond the editor’s slide count. Preview, presenter, print and PowerPoint use one fixed 1280×720 composition. Export measures the rendered text lines and image boxes instead of using a separate template. Text remains editable (Georgia headings, Arial body); artwork alone is embedded as transparent PNG. Fonts may still be substituted by a viewer if unavailable on the device. Re-export previously downloaded decks to apply export fixes.
+- PowerPoint exports the primary figure on each slide; additional manually attached media links and full citations remain in notes and the editable backup. No figure/reference pages are added beyond the editor’s slide count. Preview, presenter, print and PowerPoint use one fixed 1280×720 composition. Export measures the rendered text lines and image boxes instead of using a separate template. Text remains editable (Georgia headings, Arial body); SVG artwork stays vector, with a high-resolution PNG compatibility fallback. Fonts may still be substituted by a viewer if unavailable on the device. Re-export previously downloaded decks to apply export fixes.
 - Cross-device sync, multi-user collaboration, Android-native backup interchange, and an independently tested APK are not included. Use the browser backup format for browser-to-browser transfer.
 - A physical Samsung-device test and a real Ollama connection remain required before claiming those environments are certified. Browser emulation is not a physical-device test.
 
@@ -136,7 +134,7 @@ The V6.2.1 release-gate update added explicit review for headings, notes and fig
 
 ### V6.2.1 structured teaching and release gate
 
-Content authoring now includes editable scientific schematics, sourced quantitative observations, level-specific depth, pitfalls, takeaways and explicit final instructor verification. PPTX, PDF and teaching packs share a strict gate; unreviewed lectures remain recoverable as JSON/portable projects. Google Slides uses a PPTX import file. See [implementation, verification and remaining qualifications](docs/qualification/teaching-overhaul-2026-10-21.md) for the exact capability boundaries.
+Content authoring now includes editable scientific schematics, sourced quantitative observations, level-specific depth, pitfalls, takeaways and explicit final instructor verification. PPTX, PDF and Teaching Packs download without a review gate; JSON/portable projects retain complete source records. Google Slides uses a PPTX import file. See [implementation, verification and remaining qualifications](docs/qualification/teaching-overhaul-2026-10-21.md) for the exact capability boundaries.
 
 ## Scientific presentation and biosafety
 

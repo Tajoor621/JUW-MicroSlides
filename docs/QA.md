@@ -26,3 +26,11 @@ Run `npm run qa:pages`, `npm run qa:lecture`, `npm run qa:topic-recovery`, and `
 - Update through **Check for updates → Load latest build** and confirm the saved library survives.
 
 Do not claim scientific certification, accurate taxonomy for every organism, universal browser compatibility, or physical-device qualification from passing software tests.
+
+## Writing Notes / fresh workspace regression (24 October 2026)
+
+- Verify Review is absent and Writing Notes accepts a separate topic, source text and level. Generate notes, edit, download Markdown, reload and confirm persistence without slide edits.
+- Download draft PPTX and PDF with no citations or sign-offs. Test corrupt PNG/SVG: explicit missing-image placeholders, correct slide count, native text and no Review panel. Verify a second tap on each persistent download link.
+- Inspect native SVG plus its PNG fallback dimensions; verify selectable/editable text rather than whole-slide screenshots. Qualify actual Office/mobile rendering separately.
+- Refresh after generation failure and while research is pending. Check empty topic/search/note tabs, no stale result, reload retains empty state and all saved decks remain in Library.
+- Automated browser coverage: `npm run qa:reviewed-export` (legacy command name, now export/notes/reset suite) and `npm run qa:topic-recovery`. Archived review-module tests cover historical record compatibility only.

@@ -2,7 +2,7 @@
 
 ## Application version
 
-The owner's latest instruction (23 October 2026) restores the permanent **V6.2.1** lock. Use **V6.2.1** in the UI and **6.2.1** in package/native metadata for every feature and fix. The earlier V7 master specification defines feature scope, not an application version change. Identify revisions by commit and date. Keep historical archives and qualification records intact. Cache and storage schema versions remain independent from the app label. Preserve all existing evidence review, media, generation, export and local-first capabilities.
+The owner's latest instruction (23 October 2026) restores the permanent **V6.2.1** lock. Use **V6.2.1** in the UI and **6.2.1** in package/native metadata for every feature and fix. The earlier V7 master specification defines feature scope, not an application version change. Identify revisions by commit and date. Keep historical archives and qualification records intact. Cache and storage schema versions remain independent from the app label. The owner’s 24 October 2026 instruction removes the Review feature and all export review gates. Replace Review with independent Writing Notes, retain saved evidence/source records and all media, generation, editable PPTX, PDF and local-first capabilities. Refresh opens an empty workspace without deleting saved decks.
 
 ## Topic content and media policy
 

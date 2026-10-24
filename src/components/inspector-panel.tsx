@@ -1,8 +1,8 @@
+import { SourceLibrary } from "./source-library";
 import { LecturePanel } from "./lecture-panel";
 import { GuidelineCards } from "./guideline-cards";
 import { TeachingPanel } from "./teaching-panel";
-import { ClaimEvidenceEditor } from "./claim-evidence-editor";
-import { SpecialistReview } from "./specialist-review";
+import { WritingNotes } from "./writing-notes";
 import { TopicMediaPanel } from "./topic-media-panel";
 import { ContextHelp } from "./context-help";
 import { useState, useId, cloneElement, isValidElement, type ReactNode } from "react";
@@ -25,7 +25,7 @@ const TABS = [
   { id: "media", label: "Media" },
   { id: "cite", label: "PubMed" },
   { id: "evidence", label: "Evidence" },
-  { id: "audit", label: "Review" },
+  { id: "notes", label: "Writing Notes" },
   { id: "copilot", label: "Copilot" },
 ] as const;
 
@@ -65,17 +65,12 @@ export function InspectorPanel() {
           {tab === "cite" && <CiteTab />}
           {tab === "evidence" && (
             <>
+              <SourceLibrary />
               <GuidelineCards />
-              <ClaimEvidenceEditor />
               <EvidenceTab />
             </>
           )}
-          {tab === "audit" && (
-            <>
-              <GuidelineCards />
-              <SpecialistReview />
-            </>
-          )}
+          {tab === "notes" && <WritingNotes />}
           {tab === "copilot" && <CopilotTab />}
         </div>
       </ScrollArea>
@@ -257,7 +252,7 @@ function CiteTab() {
       <div className="space-y-2">
         <Label>Attached</Label>
         {slide.citations.length === 0 && (
-          <p className="text-xs text-muted">None yet — audit will flag this slide.</p>
+          <p className="text-xs text-muted">No references attached yet.</p>
         )}
         {slide.citations.map((c) => (
           <div key={c.id} className="rounded-sm border border-border p-2 text-xs">

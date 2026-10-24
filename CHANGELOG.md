@@ -1,3 +1,12 @@
+# Changelog
+
+## V6.2.1 — Writing Notes, fresh workspace and unrestricted exports (24 October 2026)
+
+- Replace the Review tab with independently generated, editable, locally saved topic notes and Markdown downloads. Keep source material and configured AI/Ollama workflows.
+- Remove active review panels, per-field sign-off UI and review gates from generation completion, PPTX, PDF, handouts and Teaching Packs. Historical source/evidence records remain readable; drafts are not certified.
+- Add Refresh workspace: cancel old requests, clear active topic/search/note tabs and keep saved decks in Library. Preserve the empty state after reload.
+- Keep PPTX text/vector artwork editable and increase SVG fallback resolution to up to 4×, bounded to 4096×2304 pixels. Avoid shrinking dense body text below 14px. PDF retains vector text and adds a persistent mobile download link; unavailable figures use explicit placeholders.
+
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
 ## V6.2.1 — advisory editable export and source-first research (24 October 2026)

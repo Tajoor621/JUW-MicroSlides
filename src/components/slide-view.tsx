@@ -2,12 +2,11 @@ import { ScientificText } from "./scientific-text";
 import { LectureSlideContent } from "./lecture-slide-content";
 import { slideEvidenceBasis } from "@/lib/evidence-basis";
 import { EvidenceBadge } from "./evidence-badge";
-import { teachingReady } from "@/lib/teaching-readiness";
 import { teachingReferences } from "@/lib/teaching-bibliography";
 import { TeachingContent } from "./teaching-content";
 import { teachingOf, methodSlide } from "@/lib/teaching";
 import { useDeckStore } from "@/lib/deck-store";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
 import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
@@ -53,10 +52,7 @@ export function SlideView({
     return () => observer.disconnect();
   }, []);
   const basis = evidenceBasis || slideEvidenceBasis(slide);
-  const draft = useMemo(
-    () => reviewRequired ?? (!deck?.slides.length || !teachingReady(deck)),
-    [deck, reviewRequired],
-  );
+  const draft = reviewRequired ?? true;
   const media = slide.layout === "title" ? undefined : slide.media[0];
   const canEdit = editable && !present;
   const course = deck?.course ?? JUW.course;
@@ -430,7 +426,7 @@ export function SlideView({
                 className="relative z-[1] border-t border-amber-600 px-8 text-xs font-semibold text-ink"
                 role="status"
               >
-                Draft — evidence review required
+                Draft — check original sources
               </p>
             )}
             <div className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">

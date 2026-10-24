@@ -49,7 +49,7 @@ export function TeachingContent({
             />
           ) : (
             <p className="rounded border border-border p-6 text-sm">
-              Visual required before teaching export
+              Add a topic figure or schematic
             </p>
           )}
           {p.labels.map((l, i) => (
@@ -79,7 +79,7 @@ export function TeachingContent({
               ? "Original conceptual schematic; not to scale."
               : image
                 ? `${image.title} · ${image.credit} · ${image.license}`
-                : "Visual required.")}
+                : "No figure attached.")}
         </figcaption>
       </figure>
       <div className="min-w-0 space-y-3">

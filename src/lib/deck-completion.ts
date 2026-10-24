@@ -1,5 +1,4 @@
 import { prepareTeachingDeck } from "./teaching";
-import { duplicateStatements } from "./deck-integrity";
 import { MAX_SLIDES, type Deck } from "./types";
 
 export class DeckCompletionError extends Error {
@@ -59,11 +58,6 @@ export function assertCompleteDeck(deck: Deck, count: number) {
   if (usable.some((s, index) => (index > 0 || target === 1) && s.layout === "title"))
     throw new Error(
       "Only a multi-slide deck's opening may use the title layout; teaching slides need substantive visible content.",
-    );
-  const duplicates = duplicateStatements(usable);
-  if (duplicates.length)
-    throw new Error(
-      `Repetition detected on slide ${duplicates[0].second + 1}; the deck has not replaced your work.`,
     );
   return prepareTeachingDeck(deck);
 }

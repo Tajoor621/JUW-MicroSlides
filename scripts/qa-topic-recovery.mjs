@@ -138,82 +138,26 @@ try {
     /\/Count\s+23\b/,
     "Ordinary PDF retains all 23 slides despite review tasks",
   );
-  if (
-    (await page
-      .getByText("Reviewed release options", { exact: true })
-      .locator("..")
-      .getAttribute("open")) === null
-  )
-    await page.getByText("Reviewed release options", { exact: true }).click();
-  await page
-    .getByRole("alert", { name: "Export readiness" })
-    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
-    .click();
-  await page
-    .getByText(/Reviewed export needs review/)
-    .first()
-    .waitFor({ timeout: 10000 });
+  assert.equal(await page.getByRole("button", { name: "Review", exact: true }).count(), 0);
+  assert.equal(await page.getByRole("alert", { name: "Export readiness" }).count(), 0);
   checks.push(
-    "PubMed fallback generates exactly 23 slides; ordinary PPTX/PDF download while reviewed export remains gated",
+    "PubMed fallback generates exactly 23 slides and downloads native PPTX and PDF with no review gate",
   );
-  await page.getByText("Reviewed release options", { exact: true }).click();
+  await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  assert.equal(await page.locator("#gen-topic").inputValue(), "");
+  assert.equal(await page.locator("[data-slide-stage]").count(), 0);
+  await page.reload();
+  await page.locator("#gen-topic").waitFor();
+  assert.equal(await page.locator("#gen-topic").inputValue(), "");
+  assert.equal(await page.locator("[data-slide-stage]").count(), 0);
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  assert((await page.getByRole("dialog").innerText()).includes(topic));
+  await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
-  const blockers = page.getByRole("alert", { name: "Export readiness" });
-  assert((await blockers.boundingBox()).height < 350);
   await page.screenshot({ path: join(output, "topic-recovery-mobile.png") });
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.screenshot({ path: join(output, "topic-recovery-desktop.png") });
-  await page.getByRole("button", { name: "Dismiss export findings", exact: true }).click();
-  const repeated =
-    "Bacterial quorum signalling in dataset 51 is a deliberately repeated software fixture point.";
-  await page.getByRole("button", { name: /^03 content / }).click();
-  await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).fill(repeated);
-  await page.getByRole("button", { name: /^04 content / }).click();
-  await page
-    .getByRole("textbox", { name: "Bullets (one per line)", exact: true })
-    .fill(
-      repeated + "\nA distinct synthetic observation in dataset 52 remains after explicit removal.",
-    );
-  const correctedDownload = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
-  assert(await (await correctedDownload).path());
-  assert.equal(
-    await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
-    repeated + "\nA distinct synthetic observation in dataset 52 remains after explicit removal.",
-    "Automatic cleanup must preserve identical wording when source identities differ",
-  );
-  if (
-    (await page
-      .getByText("Reviewed release options", { exact: true })
-      .locator("..")
-      .getAttribute("open")) === null
-  )
-    await page.getByText("Reviewed release options", { exact: true }).click();
-  await page
-    .getByRole("alert", { name: "Export readiness" })
-    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Review slide 4", exact: true }).click();
-  await page.getByText("Optional overlap comparison", { exact: true }).click();
-  await page.getByRole("region", { name: "Overlapping teaching points" }).waitFor();
-  await page
-    .getByRole("button", { name: "Remove exact repeated point from slide 4", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  assert.equal(
-    await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
-    "A distinct synthetic observation in dataset 52 remains after explicit removal.",
-  );
-  assert.match(await page.locator("body").innerText(), /Slide 4 of 23/);
-  await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).blur();
-  await page.keyboard.press("Control+z");
-  assert.match(
-    await page.getByRole("textbox", { name: "Bullets (one per line)", exact: true }).inputValue(),
-    /deliberately repeated/,
-  );
   checks.push(
-    "Compact mobile failures preserve full details and requested count; export repair opens overlaps, removes only an explicitly chosen exact point, preserves count and supports Undo",
+    "Refresh empties active workspace and request across reload without deleting saved decks",
   );
   assert.deepEqual(errors, []);
   await writeFile(

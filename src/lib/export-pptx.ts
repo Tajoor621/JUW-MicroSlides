@@ -2,10 +2,7 @@ import { scientificPreflight } from "./scientific-format";
 import { embedPortableFonts, loadPortableFonts } from "./pptx-fonts";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
-import { preflightTeachingImages } from "./teaching-images";
-import { assertTeachingReady, teachingReady } from "./teaching-readiness";
 import { MAX_SLIDES } from "./types";
-import { integrityAudit } from "./deck-integrity";
 import { isDesktop, saveFile } from "./desktop";
 import { formatCitation } from "./citations";
 import type { Deck } from "./types";
@@ -32,20 +29,13 @@ export async function exportPptx(
   deck: Deck,
   options: { classroom?: boolean; returnBytes?: boolean } = {},
 ) {
-  // Reviewed release remains strict; ordinary downloads explicitly use draft mode.
-  options = { ...options, classroom: options.classroom === true };
-  if (options.classroom) assertTeachingReady(deck);
+  // classroom is a legacy API option; downloads no longer apply review gates.
   if (deck.slides.length < 1 || deck.slides.length > MAX_SLIDES)
     throw new Error(
       "PPTX requires 1–50 slides. Your legacy project is preserved; export a reduced copy.",
     );
-  const findings = integrityAudit(deck);
-  let ready = teachingReady(deck);
   let sceneDeck = deck;
   const exportWarnings: string[] = [];
-  if (options.classroom && !ready)
-    throw new Error("Resolve critical evidence and repetition findings before reviewed export.");
-  if (options.classroom) await preflightTeachingImages(deck);
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: "JUW_PREVIEW", width: 1280 / 96, height: 720 / 96 });
@@ -57,10 +47,8 @@ export async function exportPptx(
   if (deck.exportTypography === "portable") {
     try {
       portable = await loadPortableFonts();
-    } catch (error) {
-      if (options.classroom) throw error;
+    } catch {
       sceneDeck = { ...deck, exportTypography: "original" };
-      ready = false;
       exportWarnings.push(
         "Portable fonts were unavailable. This editable draft uses system fonts; inspect typography before presenting.",
       );
@@ -73,7 +61,6 @@ export async function exportPptx(
   async function imageData(src: string, width: number, height: number, cover: boolean) {
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
     if (/^data:image\/svg\+xml[;,]/i.test(src)) {
-      if (options.classroom) await loadImage(src);
       // PptxGenJS expects a base64-encoded SVG payload; percent-encoded data
       // URIs may be silently omitted from the generated slide XML.
 
@@ -85,13 +72,24 @@ export async function exportPptx(
             ? new TextDecoder().decode(Uint8Array.from(atob(raw), (c) => c.charCodeAt(0)))
             : decodeURIComponent(raw),
         );
-        const bytes = new TextEncoder().encode(svg);
+        // Older/mobile viewers show the PNG fallback. Give that fallback 4x
+        // dimensions without flattening the SVG itself or any slide text.
+        const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+        const root = doc.documentElement;
+        if (!root.hasAttribute("viewBox")) {
+          const w = parseFloat(root.getAttribute("width") || "") || width;
+          const h = parseFloat(root.getAttribute("height") || "") || height;
+          root.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        }
+        const scale = Math.min(4, 4096 / width, 2304 / height);
+        root.setAttribute("width", String(Math.max(1, Math.round(width * scale))));
+        root.setAttribute("height", String(Math.max(1, Math.round(height * scale))));
+        const bytes = new TextEncoder().encode(new XMLSerializer().serializeToString(root));
         let binary = "";
         for (let i = 0; i < bytes.length; i += 8192)
           binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
         return `data:image/svg+xml;base64,${btoa(binary)}`;
-      } catch (error) {
-        if (options.classroom) throw error;
+      } catch {
         return null;
       }
     }
@@ -101,12 +99,12 @@ export async function exportPptx(
       try {
         const image = await loadImage(src);
         const canvas = document.createElement("canvas");
-        // Rasterize bitmap artwork only. Export at up to 3x, bounded by source pixels;
+        // Rasterize bitmap artwork only. Export at up to 4x, bounded by source pixels;
         // upscaling a small image cannot restore missing photographic detail.
         const resolution = Math.max(
           1,
           Math.min(
-            3,
+            4,
             4096 / width,
             2304 / height,
             image.naturalWidth / width,
@@ -136,12 +134,8 @@ export async function exportPptx(
   for (let i = 0; i < deck.slides.length; i++) {
     const source = deck.slides[i];
     const slide = pptx.addSlide();
-    const scene = await slideExportScene(sceneDeck, i, { draft: !options.classroom });
+    const scene = await slideExportScene(sceneDeck, i, { draft: true });
     const overflow = sceneOverflow(scene);
-    if (options.classroom && overflow.length)
-      throw new Error(
-        `Slide ${i + 1} contains overflowing text. Rephrase it before reviewed export.`,
-      );
     if (overflow.length)
       slide.addNotes(
         `Layout warning: ${overflow.length} text lines extend outside the slide. This draft requires layout correction.`,
@@ -187,10 +181,6 @@ export async function exportPptx(
       } else {
         const data = await imageData(item.src, item.w, item.h, item.cover);
         if (!data) {
-          if (options.classroom)
-            throw new Error(
-              `Slide ${i + 1}: a required image could not be decoded. Repair or remove it and review the slide again.`,
-            );
           slide.addText("Original image unavailable", {
             ...box,
             fontFace: "Arial",
@@ -203,23 +193,19 @@ export async function exportPptx(
         slide.addImage({ data, ...box, transparency, altText: item.alt || "Teaching figure" });
       }
     }
-    if (!ready)
-      slide.addText("DRAFT — evidence review required", {
-        x: 2,
-        y: 0.18,
-        w: 7,
-        h: 0.2,
-        fontFace: "Arial",
-        fontSize: 9,
-        color: "8A6A1A",
-        margin: 0,
-      });
+    slide.addText("DRAFT — check original sources", {
+      x: 2,
+      y: 0.18,
+      w: 7,
+      h: 0.2,
+      fontFace: "Arial",
+      fontSize: 9,
+      color: "8A6A1A",
+      margin: 0,
+    });
     slide.addNotes(
       [
-        `Integrity status: ${ready ? "Lecturer evidence gate clear; not independent certification" : "DRAFT"}. ${findings.length} screening findings.`,
-        ready && deck.teachingVerification
-          ? `Last verified by ${deck.teachingVerification.instructor} on ${new Date(deck.teachingVerification.at).toISOString().slice(0, 10)}. Lecturer self-attestation, not independent certification.`
-          : "Draft — current deck has not cleared lecturer evidence review.",
+        "Draft study material. Check original sources before teaching.",
         ...exportWarnings,
         lectureSpeakerNotes(source),
         "Full editable slide text (preserved independently of layout):\n" +
@@ -317,7 +303,7 @@ export async function exportPptx(
 }
 
 export function pptxFileName(deck: Deck) {
-  return `${teachingReady(deck) ? "" : "draft-"}${slug(deck.title)}.pptx`;
+  return `${slug(deck.title)}.pptx`;
 }
 
 function slug(s: string) {

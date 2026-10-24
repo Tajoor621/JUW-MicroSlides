@@ -288,7 +288,7 @@ try {
   );
   await sourcePage.goto(url);
   await saved(sourcePage);
-  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
+  await sourcePage.getByRole("button", { name: "Evidence", exact: true }).click();
   await sourcePage.getByText("Authoritative source library", { exact: true }).click();
   await sourcePage.getByLabel("Source document URL", { exact: true }).fill(publisherUrl);
   await sourcePage.getByRole("button", { name: "Read open HTML page", exact: true }).click();
@@ -320,7 +320,7 @@ try {
   await sourceContext.setOffline(true);
   await sourcePage.reload();
   await saved(sourcePage);
-  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
+  await sourcePage.getByRole("button", { name: "Evidence", exact: true }).click();
   await sourcePage.getByText("Authoritative source library", { exact: true }).click();
   await sourcePage
     .getByRole("link", { name: "Publisher source preservation fixture", exact: true })
@@ -336,229 +336,7 @@ try {
   assert.equal(sourceProject.sourceDocuments[0].acquisition, "publisher-html");
   assert.match(sourceProject.sourceDocuments[0].text, /attributed test passage/);
   assert.equal(sourceProject.sourceDocuments[0].license, "Software fixture, CC0");
-  await sourcePage.getByRole("button", { name: "Screen semantic overlap", exact: true }).click();
-  await sourcePage.getByText(/Choose an installed embedding model in Settings/).waitFor();
-  const reviewPackEvent = sourcePage.waitForEvent("download");
-  await sourcePage
-    .getByRole("button", { name: "Download independent review pack", exact: true })
-    .click();
-  const reviewPackDownload = await reviewPackEvent;
-  const reviewZip = await SourceZip.loadAsync(await readFile(await reviewPackDownload.path()));
-  const reviewPack = JSON.parse(await reviewZip.file("pack.json").async("string"));
-  const { digest, assessReviews } = await import("./scientific-evaluation.mjs");
-  const { packHash, ...reviewContent } = reviewPack;
-  assert.equal(packHash, digest(reviewContent));
-  assert(reviewPack.items.some((i) => i.field === "title"));
-  assert.equal(reviewPack.sourceSnapshotHashes[0].sha256, digest(sourceProject.sourceDocuments[0]));
-  const externalForms = await Promise.all(
-    ["reviewer-A", "reviewer-B"].map(async (id) =>
-      JSON.parse(await reviewZip.file(`${id}.json`).async("string")),
-    ),
-  );
-  assert.equal(assessReviews(reviewPack, externalForms).status, "incomplete");
-  assert(
-    externalForms.every(
-      (f) => f.reviewer.independent === false && f.decisions.every((d) => d.verdict === "pending"),
-    ),
-  );
-  results.push(
-    "Offline independent review ZIP preserves content hashes and separate blank reviewer forms without certifying science",
-  );
-  await sourcePage.getByRole("button", { name: "Open evidence overview", exact: true }).click();
-  const overview = sourcePage.getByRole("dialog", { name: "Lecture evidence overview" });
-  await overview.getByLabel("Evidence filter", { exact: true }).selectOption("missing");
-  assert((await overview.getByLabel("Slide evidence coverage").getByRole("button").count()) > 0);
-  const overviewFileEvent = sourcePage.waitForEvent("download");
-  await overview.getByRole("button", { name: "Download evidence overview", exact: true }).click();
-  const overviewReport = JSON.parse(await readFile(await (await overviewFileEvent).path(), "utf8"));
-  assert.equal(overviewReport.totals.slides, sourceProject.slides.length);
-  assert(overviewReport.totals.withoutPassages > 0);
-  assert.equal(overviewReport.totals.lecturerReviewed, 0);
-  await overview.screenshot({ path: join(output, "juw-evidence-overview.png") });
-  await overview.getByLabel("Slide evidence coverage").getByRole("button").first().click();
-  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
-  results.push(
-    "Live evidence overview filters missing passages, exports honest coverage and opens the corresponding slide evidence",
-  );
-  await sourcePage
-    .getByRole("button", { name: "Complete an external review", exact: true })
-    .click();
-  let reviewer = sourcePage.getByRole("dialog", { name: "Scientific reviewer workspace" });
-  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
-    name: "pack.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(reviewPack)),
-  });
-  await reviewer.getByLabel("Review item", { exact: true }).waitFor();
-  await sourcePage.keyboard.press("Alt+ArrowRight");
-  assert.equal(
-    await reviewer.getByLabel("Review item", { exact: true }).inputValue(),
-    reviewPack.items[1].id,
-  );
-  await sourcePage.keyboard.press("Alt+ArrowLeft");
-  await reviewer
-    .getByLabel("Scientific rationale", { exact: true })
-    .fill("Private draft rationale retained through offline restart. Software fixture only.");
-  const reviewerDraftEvent = sourcePage.waitForEvent("download");
-  await sourcePage.keyboard.press("Control+s");
-  const reviewerDraftDownload = await reviewerDraftEvent;
-  assert.equal(reviewerDraftDownload.suggestedFilename(), "reviewer-draft.json");
-  const reviewerDraft = JSON.parse(await readFile(await reviewerDraftDownload.path(), "utf8"));
-  assert.equal(reviewerDraft.packHash, reviewPack.packHash);
-  assert.match(reviewerDraft.decisions[0].rationale, /retained through offline/);
-  await reviewer
-    .getByRole("button", { name: "Export completed reviewer form", exact: true })
-    .click();
-  await reviewer.getByText(/Complete every decision, rationale, source link/).waitFor();
-  await reviewer.getByText(/Review draft saved on this device/).waitFor();
-  await sourcePage.reload();
-  await saved(sourcePage);
-  await sourcePage.getByRole("button", { name: "Review", exact: true }).click();
-  await sourcePage
-    .getByRole("button", { name: "Complete an external review", exact: true })
-    .click();
-  reviewer = sourcePage.getByRole("dialog", { name: "Scientific reviewer workspace" });
-  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
-    name: "pack.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(reviewPack)),
-  });
-  await reviewer.getByText("Restore my saved review draft", { exact: true }).click();
-  assert.equal(await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(), "");
-  await reviewer
-    .getByRole("button", { name: /^Restore / })
-    .first()
-    .click();
-  assert.match(
-    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
-    /retained through offline/,
-  );
-  await reviewer
-    .getByLabel("Resume my review file", { exact: true })
-    .setInputFiles(await reviewerDraftDownload.path());
-  assert.match(
-    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
-    /retained through offline/,
-  );
-  await reviewer.evaluate((el) => {
-    el.scrollTop = 0;
-  });
-  await sourcePage.screenshot({ path: join(output, "juw-reviewer-workspace.png") });
-  await sourcePage.setViewportSize({ width: 390, height: 844 });
-  assert.equal(await reviewer.evaluate((el) => el.scrollWidth > el.clientWidth + 2), false);
-  await sourcePage.screenshot({ path: join(output, "juw-reviewer-mobile.png") });
-  await sourcePage.setViewportSize({ width: 1280, height: 800 });
-  const completedFixture = structuredClone(externalForms[0]);
-  completedFixture.reviewer = {
-    id: "Guided fixture reviewer",
-    credentials: "Software fixture, not human qualification",
-    independent: true,
-    conflictDeclaration: "Synthetic test",
-  };
-  completedFixture.decisions.forEach((d) => {
-    d.verdict = "supported";
-    d.rationale = "Synthetic software fixture, not scientific review";
-    d.sourceUrls = ["https://example.org/fixture"];
-  });
-  await reviewer.getByLabel("Resume my review file", { exact: true }).setInputFiles({
-    name: "completed-fixture.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(completedFixture)),
-  });
-  await reviewer.getByRole("button", { name: "Check review completion", exact: true }).click();
-  await reviewer.getByText(/All decisions and declarations are complete/).waitFor();
-  const completedReviewEvent = sourcePage.waitForEvent("download");
-  await reviewer
-    .getByRole("button", { name: "Export completed reviewer form", exact: true })
-    .click();
-  const completedReview = JSON.parse(
-    await readFile(await (await completedReviewEvent).path(), "utf8"),
-  );
-  assert.equal(completedReview.decisions.length, reviewPack.items.length);
-  assert(Number.isFinite(Date.parse(completedReview.completedAt)));
-  assert.equal(completedReview.packHash, reviewPack.packHash);
-  await reviewer.getByRole("button", { name: "Remove saved draft copies", exact: true }).click();
-  await reviewer.getByText(/Saved draft copies removed for this pack/).waitFor();
-  assert.match(
-    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
-    /Synthetic software fixture/,
-  );
-  const tampered = structuredClone(reviewPack);
-  tampered.items[0].text += " changed";
-  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
-    name: "tampered.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(tampered)),
-  });
-  await reviewer.getByText(/Review pack hash mismatch/).waitFor();
-  await reviewer.getByLabel("Open scientific review pack", { exact: true }).setInputFiles({
-    name: "pack.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(reviewPack)),
-  });
-  await reviewer.getByLabel("Review item", { exact: true }).waitFor();
-  assert.equal(
-    await reviewer.getByText("Restore my saved review draft", { exact: true }).count(),
-    0,
-  );
-  await sourcePage.keyboard.press("F5");
-  assert(await reviewer.isVisible());
-  await reviewer.getByRole("button", { name: "Close", exact: true }).click();
-  await sourcePage.getByText(/Lecture workspace · Web companion/).click();
-  const unchangedEvent = sourcePage.waitForEvent("download");
-  await sourcePage.getByRole("button", { name: "Save portable project", exact: true }).click();
-  const unchangedZip = await SourceZip.loadAsync(
-    await readFile(await (await unchangedEvent).path()),
-  );
-  const unchangedDeck = JSON.parse(await unchangedZip.file("deck.json").async("string"));
-  assert.deepEqual(unchangedDeck.slides, sourceProject.slides);
-  assert.deepEqual(unchangedDeck.sourceDocuments, sourceProject.sourceDocuments);
-  results.push(
-    "Guided external review works offline, restores saved drafts, exports compatible forms, rejects tampering and never changes the lecturer deck",
-  );
-  await sourcePage.getByText("Assess returned reviewer forms", { exact: true }).click();
-  await sourcePage.getByLabel("Original review pack", { exact: true }).setInputFiles({
-    name: "pack.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(reviewPack)),
-  });
-  for (const [index, label] of ["Reviewer A form", "Reviewer B form"].entries()) {
-    const form = externalForms[index];
-    form.reviewer.credentials = "Software test fixture, not a human qualification";
-    form.reviewer.independent = true;
-    form.reviewer.conflictDeclaration = "Synthetic software fixture";
-    form.completedAt = new Date().toISOString();
-    form.decisions.forEach((d) => {
-      d.verdict = "supported";
-      d.rationale = "Software fixture, not a scientific assessment";
-      d.sourceUrls = ["https://example.org/fixture"];
-    });
-    await sourcePage.getByLabel(label, { exact: true }).setInputFiles({
-      name: `reviewer-${index}.json`,
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(form)),
-    });
-  }
-  await sourcePage.getByRole("button", { name: "Assess returned forms", exact: true }).click();
-  await sourcePage
-    .getByText("Two reviewer attestations complete — identity and independence unverified", {
-      exact: true,
-    })
-    .waitFor();
-  assert(
-    await sourcePage
-      .getByRole("button", { name: "Export reviewed PPTX", exact: true })
-      .isDisabled(),
-  );
-  const assessedDownload = sourcePage.waitForEvent("download");
-  await sourcePage.getByRole("button", { name: "Download assessment", exact: true }).click();
-  const assessed = JSON.parse(await readFile(await (await assessedDownload).path(), "utf8"));
-  assert.equal(assessed.scientificCertification, false);
-  assert.equal(assessed.independentlyVerified, false);
-  results.push(
-    "Offline returned-form assessment checks content hashes and preserves the scientific-review gate even with complete self-attestations",
-  );
-  await sourcePage.screenshot({ path: join(output, "juw-source-review-offline.png") });
+  results.push("Source library preserves attributed source text offline and in portable projects");
   await sourcePage.getByRole("button", { name: /^02/ }).click();
   await sourcePage.getByText("Review / apply a replacement slide", { exact: true }).click();
   await sourcePage
@@ -1105,28 +883,16 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   const directLink = page.getByRole("link", { name: "Download PowerPoint", exact: true });
   await directLink.waitFor();
-  assert.match(await directLink.getAttribute("download"), /^draft-.*\.pptx$/);
+  assert.match(await directLink.getAttribute("download"), /.*\.pptx$/);
   await page.waitForTimeout(300);
   const manualDownload = page.waitForEvent("download");
   await directLink.click();
   assert.deepEqual(await readFile(await (await manualDownload).path()), draftBytes);
   assert.equal(blockedDownloads, 2);
   await page.setViewportSize({ width: 1280, height: 800 });
-  if (
-    (await page
-      .getByText("Reviewed release options", { exact: true })
-      .locator("..")
-      .getAttribute("open")) === null
-  )
-    await page.getByText("Reviewed release options", { exact: true }).click();
-  await page
-    .getByRole("alert", { name: "Export readiness" })
-    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
-    .click();
-  await page.getByText(/Reviewed export needs review/).waitFor();
-  assert.equal(blockedDownloads, 2);
+  assert.equal(await page.getByRole("alert", { name: "Export readiness" }).count(), 0);
   results.push(
-    "Ordinary PPTX downloads retain draft status; persistent mobile download link saves identical bytes after automatic export; reviewed export still enforces evidence and recovery backups",
+    "Editable PowerPoint download works without review panels; persistent mobile link saves identical bytes",
   );
   await page.waitForFunction(async () => {
     const r = await navigator.serviceWorker.ready;
@@ -1305,31 +1071,7 @@ try {
   });
   await wrong.getByRole("button", { name: "Attach to selected slide", exact: true }).click();
   await saved(rp);
-  await rp.getByRole("button", { name: "Review", exact: true }).click();
-  await rp.getByText(/The figure metadata suggests malaria parasite/).waitFor({ state: "visible" });
-  results.push("Specialist reviewer flags an intentionally mismatched attached image");
-  await rp.getByRole("button", { name: "Edit", exact: true }).click();
-  await rp
-    .getByLabel("Bullets (one per line)", { exact: true })
-    .fill("Viruses have their own ribosomes.\nAll bacteria have a single circular chromosome.");
-  await saved(rp);
-  await rp.getByRole("button", { name: "Review", exact: true }).click();
-  await rp
-    .getByText("Viruses do not possess their own ribosomes.", { exact: false })
-    .waitFor({ state: "visible" });
-  const reportEvent = rp.waitForEvent("download");
-  await rp.getByRole("button", { name: "Download review report", exact: true }).click();
-  const reportFile = await reportEvent;
-  const report = JSON.parse(await readFile(await reportFile.path(), "utf8"));
-  assert(report.issues.some((i) => i.category === "Potential factual error"));
-  assert(report.issues.some((i) => i.category === "Media mismatch"));
-  results.push("Review report downloads exact passages and correction suggestions");
-  await rp.getByRole("button", { name: "Check references online", exact: true }).click();
-  await rp.getByText(/No attached bibliographic records/).waitFor({ state: "visible" });
-  results.push("Reference checking distinguishes absent sources from verified records");
-  await rp.getByRole("button", { name: "AI review selected slide", exact: true }).click();
-  await rp.getByText(/Local AI is not configured/).waitFor({ state: "visible" });
-  results.push("Specialist AI does not fabricate a report when no local model is configured");
+  assert.equal(await rp.getByRole("button", { name: "Review", exact: true }).count(), 0);
   await rp.getByRole("button", { name: "Media", exact: true }).click();
   while (await rp.getByRole("button", { name: "Remove image", exact: true }).count())
     await rp.getByRole("button", { name: "Remove image", exact: true }).first().click();
@@ -1378,21 +1120,8 @@ try {
   const researchDraft = cp.waitForEvent("download");
   await cp.getByRole("button", { name: "Export PPTX", exact: true }).click();
   assert.equal(slideCountInPptx(await readFile(await (await researchDraft).path())), 25);
-  if (
-    (await cp
-      .getByText("Reviewed release options", { exact: true })
-      .locator("..")
-      .getAttribute("open")) === null
-  )
-    await cp.getByText("Reviewed release options", { exact: true }).click();
-  await cp
-    .getByRole("alert", { name: "Export readiness" })
-    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
-    .click();
-  await cp.getByText(/Reviewed export needs review/).waitFor();
-  results.push(
-    "Cited research generation remains a draft until scientific teaching requirements are reviewed",
-  );
+  assert.equal(await cp.getByRole("alert", { name: "Export readiness" }).count(), 0);
+  results.push("Research deck downloads directly without review checks");
   await coverage.unroute("https://www.ebi.ac.uk/europepmc/**");
   await coverage.route("https://www.ebi.ac.uk/europepmc/**", (route) =>
     route.fulfill({
@@ -1429,9 +1158,6 @@ try {
   assert.match(await pro.locator("body").innerText(), /Slide 1 of 1/);
   assert((await pro.locator("[data-slide-stage]").innerText()).includes("Enzyme immobilization"));
   await pro.getByText(/Lecture workspace · Web companion/).click();
-  await pro.getByRole("button", { name: "Audit entire deck", exact: true }).click();
-  assert.match(await pro.getByLabel("Integrity audit results").innerText(), /critical findings/);
-  assert(await pro.getByRole("button", { name: "Export reviewed PPTX", exact: true }).isDisabled());
   const portableEvent = pro.waitForEvent("download");
   await pro.getByRole("button", { name: "Save portable project", exact: true }).click();
   const portable = await portableEvent;
@@ -1452,35 +1178,11 @@ try {
     /recovered/,
   );
   results.push(
-    "Substantive single-slide generation, blocked unreviewed export, portable project UI roundtrip, slide locking and version recovery work together",
+    "Substantive single-slide generation, editable export without review, portable project UI roundtrip, slide locking and version recovery work together",
   );
   // The restored revision may intentionally retain the slide's locked state.
   const recoveredLock = pro.getByRole("button", { name: "Unlock selected slide", exact: true });
   if (await recoveredLock.isVisible()) await recoveredLock.click();
-  await pro.getByRole("button", { name: "Evidence", exact: true }).click();
-  await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
-  await pro.getByLabel("Additional evidence decision", { exact: true }).selectOption("not-factual");
-  await pro
-    .getByLabel("Additional review rationale", { exact: true })
-    .fill("Topic heading only; this fixture decision does not approve scientific content.");
-  await pro.getByLabel("I checked the complete field", { exact: false }).check();
-  await pro.getByRole("button", { name: "Record field review", exact: true }).click();
-  await saved(pro);
-  await pro.getByText("Current lecturer decision recorded.", { exact: true }).waitFor();
-  await pro.screenshot({ path: join(output, "juw-surface-review.png") });
-  await pro.getByRole("button", { name: "Edit", exact: true }).click();
-  await pro
-    .getByRole("textbox", { name: "Title", exact: true })
-    .fill("Changed scientific heading fixture");
-  await pro.getByRole("button", { name: "Evidence", exact: true }).click();
-  await pro.getByLabel("Additional evidence field", { exact: true }).selectOption("title");
-  await pro
-    .getByText("Content or source context changed; review this field again.", { exact: true })
-    .waitFor();
-  assert(await pro.getByRole("button", { name: "Record field review", exact: true }).isDisabled());
-  results.push(
-    "Heading/notes/figure review controls record explicit decisions and invalidate them after an edit; old attestations cannot approve changed content",
-  );
   await professional.close();
   legacyWorkerFixture = true;
   const upgrade = await browser.newContext();

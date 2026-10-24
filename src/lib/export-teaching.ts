@@ -2,9 +2,8 @@ import { scientificPreflight } from "./scientific-format";
 import { lectureStructuredHtml } from "./lecture-transcript";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
-import { preflightTeachingImages, decodeTeachingImage } from "./teaching-images";
-import { assertTeachingReady, teachingReady } from "./teaching-readiness";
-import { slideExportScene, sceneOverflow } from "./slide-export-scene";
+import { decodeTeachingImage } from "./teaching-images";
+import { slideExportScene } from "./slide-export-scene";
 import { exportPptx } from "./export-pptx";
 import { saveFile } from "./desktop";
 import { teachingReferences } from "./teaching-bibliography";
@@ -37,12 +36,10 @@ export async function font(name: string) {
     );
   return fontCache.get(name)!;
 }
-export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean } = {}) {
-  if (options.reviewed !== false) assertTeachingReady(deck);
+export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolean } = {}) {
   if (deck.slides.length < 1 || deck.slides.length > 50)
     throw Error("PDF requires 1–50 slides. Historical archives are preserved.");
   const presentationNotes = scientificPreflight(deck);
-  await preflightTeachingImages(deck);
   const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
   const pdf = new jsPDF({
     orientation: "landscape",
@@ -70,9 +67,7 @@ export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean
   });
   for (let index = 0; index < deck.slides.length; index++) {
     if (index) pdf.addPage([960, 540], "landscape");
-    const scene = await slideExportScene(deck, index, { draft: options.reviewed === false });
-    if (options.reviewed !== false && sceneOverflow(scene).length)
-      throw Error(`Slide ${index + 1} overflows. Reduce content before PDF export.`);
+    const scene = await slideExportScene(deck, index, { draft: true });
     for (const item of scene) {
       const x = item.x * 0.75,
         y = item.y * 0.75,
@@ -101,62 +96,76 @@ export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean
           pdf.line(x, item.flipV ? y + h : y, x + w, item.flipV ? y : y + h);
         else if (item.shape === "ellipse") pdf.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, mode);
         else pdf.rect(x, y, w, h, mode);
-      } else if (item.src.startsWith("data:image/svg+xml")) {
-        const comma = item.src.indexOf(","),
-          data = item.src.slice(comma + 1);
-        const xml = item.src.slice(0, comma).includes(";base64")
-          ? atob(data)
-          : decodeURIComponent(data);
-        const doc = new DOMParser().parseFromString(safeExportSvg(xml), "image/svg+xml");
-        if (doc.querySelector("parsererror")) throw Error(`Slide ${index + 1}: invalid SVG.`);
-        for (const text of doc.querySelectorAll<SVGTextElement>("text,tspan"))
-          text.style.fontFamily = "Teaching";
-        await pdf.svg(doc.documentElement as unknown as SVGElement, { x, y, width: w, height: h });
       } else {
-        const image = await decodeTeachingImage(item.src, index);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.min(4096, image.naturalWidth);
-        canvas.height = Math.round((canvas.width * image.naturalHeight) / image.naturalWidth);
-        const ctx = canvas.getContext("2d");
-        if (!ctx) throw Error("Image rendering unavailable");
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        // Match the preview's contain/cover crop in the destination rectangle.
-        const fit = (item.cover ? Math.max : Math.min)(
-            w / image.naturalWidth,
-            h / image.naturalHeight,
-          ),
-          iw = image.naturalWidth * fit,
-          ih = image.naturalHeight * fit;
-        pdf.saveGraphicsState();
-        pdf.rect(x, y, w, h);
-        pdf.clip();
-        pdf.discardPath();
-        pdf.addImage(
-          canvas.toDataURL("image/png"),
-          "PNG",
-          x + (w - iw) / 2,
-          y + (h - ih) / 2,
-          iw,
-          ih,
-        );
-        pdf.restoreGraphicsState();
+        try {
+          if (item.src.startsWith("data:image/svg+xml")) {
+            const comma = item.src.indexOf(","),
+              data = item.src.slice(comma + 1);
+            const xml = item.src.slice(0, comma).includes(";base64")
+              ? atob(data)
+              : decodeURIComponent(data);
+            const doc = new DOMParser().parseFromString(safeExportSvg(xml), "image/svg+xml");
+            if (doc.querySelector("parsererror")) throw Error(`Slide ${index + 1}: invalid SVG.`);
+            for (const text of doc.querySelectorAll<SVGTextElement>("text,tspan"))
+              text.style.fontFamily = "Teaching";
+            await pdf.svg(doc.documentElement as unknown as SVGElement, {
+              x,
+              y,
+              width: w,
+              height: h,
+            });
+          } else {
+            const image = await decodeTeachingImage(item.src, index);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.min(4096, image.naturalWidth);
+            canvas.height = Math.round((canvas.width * image.naturalHeight) / image.naturalWidth);
+            const ctx = canvas.getContext("2d");
+            if (!ctx) throw Error("Image rendering unavailable");
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            // Match the preview's contain/cover crop in the destination rectangle.
+            const fit = (item.cover ? Math.max : Math.min)(
+                w / image.naturalWidth,
+                h / image.naturalHeight,
+              ),
+              iw = image.naturalWidth * fit,
+              ih = image.naturalHeight * fit;
+            pdf.saveGraphicsState();
+            pdf.rect(x, y, w, h);
+            pdf.clip();
+            pdf.discardPath();
+            pdf.addImage(
+              canvas.toDataURL("image/png"),
+              "PNG",
+              x + (w - iw) / 2,
+              y + (h - ih) / 2,
+              iw,
+              ih,
+            );
+            pdf.restoreGraphicsState();
+          }
+        } catch {
+          pdf.setFont("Teaching", "normal");
+          pdf.setFontSize(10);
+          pdf.setTextColor("#5C6B7A");
+          pdf.text("Original image unavailable", x, y + 12);
+        }
       }
     }
   }
   return new Uint8Array(pdf.output("arraybuffer"));
 }
-export async function exportTeachingPdf(deck: Deck, options: { reviewed?: boolean } = {}) {
-  return saveFile(
-    `${teachingReady(deck) ? "" : "draft-"}${name(deck)}.pdf`,
-    await teachingPdfBytes(deck, options),
-    "pdf",
-  );
+export async function exportTeachingPdf(
+  deck: Deck,
+  options: { reviewed?: boolean; returnBytes?: boolean } = {},
+) {
+  const bytes = await teachingPdfBytes(deck, options);
+  if (options.returnBytes) return bytes;
+  return saveFile(`${name(deck)}.pdf`, bytes, "pdf");
 }
 export async function exportTeachingPack(deck: Deck) {
-  assertTeachingReady(deck);
   const Zip = (await import("jszip")).default,
     zip = new Zip();
-  const pptx = await exportPptx(deck, { classroom: true, returnBytes: true });
+  const pptx = await exportPptx(deck, { returnBytes: true });
   if (!pptx) throw Error("PPTX generation failed.");
   for (const [i, slide] of deck.slides.entries())
     if (slide.teaching?.diagram) {
@@ -188,7 +197,7 @@ export async function exportTeachingPack(deck: Deck) {
         instructorVerification: deck.teachingVerification,
         reviewedContentUpdatedAt: new Date(deck.updatedAt).toISOString(),
         exportedAt: new Date().toISOString(),
-        review: "Lecturer evidence gate clear; not independent scientific certification",
+        review: "Draft; check original sources. No review gate is applied.",
       },
       null,
       2,

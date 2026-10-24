@@ -107,19 +107,9 @@ try {
   const ordinaryDeck = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
   assert(await (await ordinaryDeck).path());
-  if (
-    (await page
-      .getByText("Reviewed release options", { exact: true })
-      .locator("..")
-      .getAttribute("open")) === null
-  )
-    await page.getByText("Reviewed release options", { exact: true }).click();
-  await page
-    .getByRole("alert", { name: "Export readiness" })
-    .getByRole("button", { name: "Export reviewed PPTX", exact: true })
-    .click();
-  await page.getByText(/Reviewed export needs review/).waitFor();
-  checks.push("Structured draft downloads are available while reviewed release remains gated");
+  assert.equal(await page.getByRole("button", { name: "Review", exact: true }).count(), 0);
+  checks.push("Structured draft downloads remain editable with no review workflow");
+
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page
