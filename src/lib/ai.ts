@@ -18,7 +18,7 @@ type AiOk = { ok: true; deck: Deck };
 type AiAskOk = { ok: true; text: string };
 type AiFail = { ok: false; error: string; deck?: Deck };
 
-const SLIDE_SCHEMA = `${BIOSAFETY_PROMPT}\n{
+const SLIDE_SCHEMA = `{
   "title": string,
   "slides": [
     {
@@ -95,8 +95,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
         messages: [
           {
             role: "system",
-            content:
-              "You write undergraduate/graduate microbiology lecture slides for Jinnah University for Women. Be accurate, specific, and exam-useful. No emoji. Return JSON only.",
+            content: `${BIOSAFETY_PROMPT}\nYou write undergraduate/graduate microbiology lecture slides for Jinnah University for Women. Be accurate, specific, and exam-useful. No emoji. Return JSON only.`,
           },
           {
             role: "user",
