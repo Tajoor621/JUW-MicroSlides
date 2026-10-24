@@ -110,6 +110,7 @@ export function GenerateForm({
       preparedBy: draftNow.preparedBy || landing?.preparedBy || JUW.preparedBy,
       department: landing?.department || JUW.department,
       generationMode: draftNow.generationMode || "standard",
+      researchDepth: draftNow.researchDepth || "thorough",
       moduleTopics: draftNow.generationMode === "curriculum" ? draftNow.moduleTopics : undefined,
       includeObjectives: draftNow.includeObjectives !== false,
       includeAssessment: !!draftNow.includeAssessment,
@@ -202,6 +203,20 @@ export function GenerateForm({
             slides: local.slides[0]?.layout === "title" ? [local.slides[0]] : [],
             sourceDocuments: local.sourceDocuments,
           };
+        if (
+          input.researchDepth === "thorough" &&
+          input.mode === "manual" &&
+          navigator.onLine &&
+          !input.notes.trim()
+        ) {
+          local = {
+            ...local,
+            slides: local.slides.filter((s) => s.layout === "title").slice(0, 1),
+          };
+          setProgress(
+            "Source-first research: retrieving subject-specific evidence before composing the deck…",
+          );
+        }
         if (
           local.slides.length < sourceInput.count ||
           local.slides.some((s) => s.title === "Evidence required")

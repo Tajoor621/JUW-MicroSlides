@@ -317,6 +317,7 @@ export function applyStandardPedagogy(deck: Deck, input: GenerateInput): Deck {
   made.slides = made.slides.map((s) => ({ ...s, theme }));
   made.lectureOptions = {
     generationMode: input.generationMode || "standard",
+    researchDepth: input.researchDepth,
     includeObjectives: input.includeObjectives !== false,
     includeAssessment: !!input.includeAssessment,
     focusDepth: input.focusDepth || "standard",

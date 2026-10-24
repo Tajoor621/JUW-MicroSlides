@@ -63,3 +63,16 @@ test("high-containment protocol screening preserves non-operational education", 
     /withheld/,
   );
 });
+
+test("slide decor follows specific section concepts before the general deck topic", async () => {
+  const { slideArtworkTopic, topicArtKind } = await import("../src/lib/topic-artwork.ts");
+  assert.equal(topicArtKind(slideArtworkTopic("Bacterial genomes", "Gram staining")), "microscopy");
+  assert.equal(
+    topicArtKind(slideArtworkTopic("Bacterial genomes", "Culture and growth")),
+    "culture",
+  );
+  assert.equal(
+    topicArtKind(slideArtworkTopic("Bacterial genomes", "Learning objectives")),
+    "genome",
+  );
+});

@@ -1,5 +1,5 @@
 import type { Deck } from "./types";
-export const SCIENTIFIC_RENDER_REVISION = "2026-10-24.1";
+export const SCIENTIFIC_RENDER_REVISION = "2026-10-24.2";
 // Conservative typography hints, not a taxonomy resolver. Unknown names stay unchanged.
 const genera = new Set(
   "Escherichia Staphylococcus Streptococcus Bacillus Clostridium Clostridioides Mycobacterium Neisseria Salmonella Shigella Pseudomonas Klebsiella Vibrio Helicobacter Enterococcus Campylobacter Legionella Haemophilus Bordetella Treponema Borrelia Chlamydia Mycoplasma Corynebacterium Candida Aspergillus Cryptococcus Histoplasma Plasmodium Giardia Trypanosoma Leishmania Toxoplasma Saccharomyces Acinetobacter Yersinia Francisella Brucella Coxiella Burkholderia Listeria".split(

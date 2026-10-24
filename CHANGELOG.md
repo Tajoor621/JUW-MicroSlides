@@ -1,5 +1,12 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — advisory editable export and source-first research (24 October 2026)
+
+- Make editable PPTX the default API and remove strict image/layout gates from that path. Preserve unavailable-image labels, source notes, full content and system-font fallback. Explicit reviewed releases/Teaching Packs retain their checks.
+- Default online Knowledge generation to source-first retrieval with deeper pagination, per-scope PubMed supplementation, 24 eligible open full-text attempts and a longer bounded/cancellable budget. Keep exact counts, source relevance/notice screening, supplied-note/offline paths and explicit insufficient-evidence failures.
+- Restrict the main Review findings list to critical screening categories; move missing attestations/coverage out of the critical count and make overlap comparison optional.
+- Select more visible decorative motifs from each slide's concept heading within the existing deck theme. Decoration is not scientific evidence.
+
 ## V6.2.1 — consistency, migrations and scientific presentation (24 October 2026)
 
 - Establish the canonical identity/URL in entry metadata, manifest, footer and documentation. Keep the permanent V6.2.1 lock and existing deployment workflow.

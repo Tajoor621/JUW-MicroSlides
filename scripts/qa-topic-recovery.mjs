@@ -195,6 +195,7 @@ try {
     .getByRole("button", { name: "Export reviewed PPTX", exact: true })
     .click();
   await page.getByRole("button", { name: "Review slide 4", exact: true }).click();
+  await page.getByText("Optional overlap comparison", { exact: true }).click();
   await page.getByRole("region", { name: "Overlapping teaching points" }).waitFor();
   await page
     .getByRole("button", { name: "Remove exact repeated point from slide 4", exact: true })

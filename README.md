@@ -24,6 +24,16 @@ Generate standard lectures, fixed-section pathogen profiles, laboratory methods,
 
 See [lecture workflow guide](docs/LECTURE-WORKFLOWS.md) for offline source-note formatting, minimum slide counts, scientific review requirements, course building, accessible exports and complete JSON/Markdown recovery. Missing protocol timing, diagnostic evidence or taxonomy data remain explicit review blockers. Software checks do not certify scientific accuracy or replace qualified instructor review.
 
+## Research and editable exports
+
+The default online Knowledge workflow uses **Thorough — source-first online research**: it retrieves topic-specific passages rather than accepting a complete bundled outline as an evidence-backed lecture. Search permits up to five paginated rounds, independent PubMed queries for requested scopes, up to 24 eligible open full-text attempts, and an eight-minute overall budget. Cancel remains available. Provider failures, relevance filters, source notices and insufficient coverage are reported; a short or unsupported deck never replaces the saved lecture. Supplied notes and offline/bundled workflows remain available. Slower/more extensive retrieval does not certify scientific accuracy.
+
+Ordinary editable PPTX downloads are advisory: incomplete review, unavailable artwork and layout overflow do not trigger the formal teaching-release gate. An unavailable image is labelled explicitly; original media provenance and full text remain in notes. Portable-font failure falls back to editable system fonts with a draft note. Fix layout warnings before presenting. **Reviewed** exports/Teaching Packs remain separate, explicitly requested workflows. The default export API is editable; strict callers must pass `classroom: true`.
+
+The Review tab defaults to critical screening findings (factual-error candidates, identifier/quotation mismatches, publication notices, empty content). Missing sign-offs and source coverage remain in Evidence, rather than inflating the critical count. Optional overlap comparison remains available. No automated screening certifies truth.
+
+Decorative SVG motifs use each slide's specific concept heading where recognized, falling back to the deck topic. They remain decorative and do not substitute for a source-reviewed scientific figure.
+
 ## Everyday use
 
 1. Enter a topic, choose a count/level, and generate in Knowledge mode. This combines bundled topic material with topic-independent research retrieval; it is not a scientific fact-checking system.

@@ -31,7 +31,13 @@ import { isDesktop, saveFile, nativeCall } from "@/lib/desktop";
 import { exportPptx } from "@/lib/export-pptx";
 import { uid } from "@/lib/utils";
 import { Button } from "./ui/button";
-export function ProfessionalWorkspace() {
+export function ProfessionalWorkspace({
+  onEditableExport,
+  exportBusy,
+}: {
+  onEditableExport: () => Promise<void>;
+  exportBusy: boolean;
+}) {
   const deck = useDeckStore((s) => s.deck()),
     slide = useDeckStore((s) => s.slide()),
     index = useDeckStore((s) => s.selectedIndex);
@@ -199,7 +205,7 @@ export function ProfessionalWorkspace() {
                   verification = { instructor: instructor.trim(), at: Date.now(), snapshot };
                 await exportPptx(
                   { ...deck, teachingVerification: verification },
-                  { returnBytes: true },
+                  { classroom: true, returnBytes: true },
                 );
                 const live = useDeckStore.getState().deck();
                 if (!live || live.id !== deck.id || teachingDeckSnapshot(live) !== snapshot)
@@ -219,16 +225,28 @@ export function ProfessionalWorkspace() {
             )?.message || "Current instructor verification recorded."}
           </p>
         </details>
+        <p className="text-xs">
+          Editable PowerPoint downloads remain available with pending review. Reviewed release
+          validation is optional and separate.
+        </p>
         <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="accent"
+            disabled={busy || legacy || exportBusy}
+            onClick={() => void onEditableExport()}
+          >
+            Prepare editable PowerPoint
+          </Button>
           <Button size="sm" onClick={() => useDeckStore.getState().setGenerateOpen(true)}>
             First Deck setup
           </Button>
           <Button
             size="sm"
-            disabled={busy || legacy || !classroomReady(deck)}
+            disabled={busy || legacy}
             onClick={() =>
               void perform(async () => {
-                await exportPptx(deck);
+                await onEditableExport();
                 toast.message(
                   "Import the downloaded PPTX through Google Slides: File → Import slides. Inspect imported typography and accessibility before teaching.",
                 );

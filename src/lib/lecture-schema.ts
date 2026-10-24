@@ -53,6 +53,7 @@ export const SECTION_TYPES = [
 ] as const;
 const text = z.string().max(3000);
 export const lectureOptionsSchema = z.object({
+  researchDepth: z.enum(["standard", "thorough"]).optional(),
   generationMode: z.enum(GENERATION_MODES).optional(),
   includeObjectives: z.boolean().optional(),
   includeAssessment: z.boolean().optional(),

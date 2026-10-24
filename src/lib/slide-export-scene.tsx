@@ -117,6 +117,7 @@ export async function slideExportScene(
       }
     }
     if (
+      !options.draft &&
       teaching &&
       (teaching.scrollHeight > teaching.clientHeight + 2 ||
         [...teaching.children].some((c) => c.scrollHeight > c.clientHeight + 2))

@@ -142,6 +142,7 @@ try {
     localModel.closeAllConnections();
     await new Promise((r) => localModel.close(r));
   }
+  await page.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await page.locator("#gen-topic").fill("Bacterial genome architecture");
   await page.locator("#gen-count").fill("6");
   const generationStart = performance.now();

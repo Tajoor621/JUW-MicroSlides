@@ -324,7 +324,7 @@ export function EditorApp() {
           · Verify scientific claims · Library → backup · Ctrl/Cmd+Z to undo
         </div>
         <AppUpdates />
-        <ProfessionalWorkspace />
+        <ProfessionalWorkspace onEditableExport={() => onPptx(false)} exportBusy={pptxBusy} />
         {deck?.requestedCount && deck.slides.length < deck.requestedCount ? (
           <p
             role="status"
