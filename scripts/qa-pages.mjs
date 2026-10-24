@@ -210,19 +210,16 @@ try {
   await typographyPage.getByRole("button", { name: "Close", exact: true }).click();
   await typographyPage.getByRole("button", { name: /^02 content Nomenclature/ }).click();
   assert.equal(await typographyPage.locator("[data-slide-stage] em").count(), 2);
-  assert.match(
-    await typographyPage.getByLabel("Slide review status", { exact: true }).innerText(),
-    /draft/,
-  );
+  assert.equal(await typographyPage.getByLabel("Slide review status", { exact: true }).count(), 0);
   const typographyDownload = typographyPage.waitForEvent("download");
   await typographyPage.getByRole("button", { name: "Export PPTX", exact: true }).click();
   const typographyXml = pptxXmlFiles(await readFile(await (await typographyDownload).path()));
   assert.match(typographyXml["ppt/slides/slide2.xml"], /i="1"/);
   assert.match(typographyXml["ppt/slides/slide2.xml"], /Escherichia coli/);
-  assert.match(await typographyPage.locator("body").innerText(), /Scientific presentation checks/);
+  assert.equal(await typographyPage.getByRole("alert", { name: "Export readiness" }).count(), 0);
   await typographyContext.close();
   results.push(
-    "Draft fixture preserves species italics as native editable PPTX text, exposes advisory unit checks and starts unreviewed",
+    "Draft fixture preserves species italics as native editable PPTX text, without review panels",
   );
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },

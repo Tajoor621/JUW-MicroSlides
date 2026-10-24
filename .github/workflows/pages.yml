@@ -42,6 +42,9 @@ jobs:
           test -x "$JUW_BROWSER_PATH"
           "$JUW_BROWSER_PATH" --version
           echo "JUW_CHROMIUM=$JUW_BROWSER_PATH" >> "$GITHUB_ENV"
+      - run: npm run qa:reviewed-export
+        env:
+          JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
       - run: npm run qa:pages
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
@@ -49,9 +52,6 @@ jobs:
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
       - run: npm run qa:topic-recovery
-        env:
-          JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
-      - run: npm run qa:reviewed-export
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
       - uses: actions/upload-artifact@v4
