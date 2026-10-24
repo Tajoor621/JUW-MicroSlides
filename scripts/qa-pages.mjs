@@ -1430,6 +1430,7 @@ try {
     await failedPage.screenshot({ path: join(output, "juw-qa-failure.png") }).catch(() => {});
     console.error(
       JSON.stringify({
+        alerts: await failedPage.getByRole("alert").allTextContents(),
         dialogs: (await failedPage.getByRole("dialog").allTextContents()).map((t) =>
           t.slice(0, 1600),
         ),
