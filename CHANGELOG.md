@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — saved slide visibility after reload (24 October 2026)
+
+- Retain the Generate panel state across reloads so a completed deck stays in view. Older saved decks open with the form collapsed; Refresh still opens an empty topic form.
+- Check that the restored slide intersects the workspace viewport, alongside exact-count editable PPTX and topic-entry regressions.
+
 ## V6.2.1 — topic entry after Refresh (24 October 2026)
 
 - Bind the top topic input to the new-deck draft when no deck is open, so typing after Refresh stays visible and reaches the shared generator. Enter opens that generator. Existing deck title editing is retained.

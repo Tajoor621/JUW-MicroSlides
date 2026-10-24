@@ -218,6 +218,17 @@ try {
   await headerTopic.waitFor();
   assert.equal(await headerTopic.inputValue(), "Bacterial genome architecture");
   await page.locator("[data-slide-stage]").waitFor({ state: "visible" });
+  await page.getByRole("button", { name: "Open generator", exact: true }).waitFor();
+  assert.equal(await page.locator("#gen-topic").count(), 0);
+  assert.equal(
+    await page.locator("[data-slide-stage]").evaluate((el) => {
+      const slide = el.getBoundingClientRect();
+      const main = el.closest("main").getBoundingClientRect();
+      return slide.top < main.bottom && slide.bottom > main.top;
+    }),
+    true,
+    "Reload must show the saved slide in the workspace viewport",
+  );
   // The narrow-screen Generate modal must also display its completed deck after reset.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();

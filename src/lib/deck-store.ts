@@ -474,6 +474,7 @@ export const useDeckStore = create<DeckState>()(
         chromeTheme: s.chromeTheme,
         generationMode: s.generationMode,
         generateDraft: s.generateDraft,
+        generatorOpen: s.generatorOpen,
       }),
       merge: (persisted, current) => {
         const p = (persisted || {}) as Partial<DeckState>;
@@ -495,6 +496,10 @@ export const useDeckStore = create<DeckState>()(
           ...p,
           library: lib,
           activeId,
+          // Older saves did not retain this panel. Keep completed decks in view;
+          // empty workspaces and the starter example still invite generation.
+          generatorOpen:
+            p.generatorOpen ?? (!activeId || activeId === "sample-enzyme-mic4511"),
           generateDraft: { ...current.generateDraft, ...(p.generateDraft ?? {}) },
           writingNotes: { ...current.writingNotes, ...(p.writingNotes ?? {}) },
         };
