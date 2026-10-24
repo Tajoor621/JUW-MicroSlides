@@ -8,7 +8,6 @@ import {
   mergeCitationCandidates,
   teachingResearchContext,
   teachingOf,
-  teachingFindings,
   lectureMinutes,
   quantitativeCandidate,
   type Teaching,
@@ -70,7 +69,6 @@ export function TeachingPanel() {
       />
     </label>
   );
-  const issues = teachingFindings(deck).filter((f) => f.index === index);
   return (
     <details className="teaching-panel rounded border border-border p-3" open>
       <summary className="cursor-pointer font-semibold">Teaching design · {deck.level}</summary>
@@ -462,11 +460,6 @@ export function TeachingPanel() {
           </Button>
         </fieldset>
       </div>
-      <ul className="mt-2 space-y-1 text-xs" aria-label="Teaching readiness findings">
-        {issues.map((f, i) => (
-          <li key={i}>Review required: {f.message}</li>
-        ))}
-      </ul>
     </details>
   );
 }

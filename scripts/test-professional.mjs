@@ -17,6 +17,32 @@ try {
     "/src/lib/deck-integrity.ts",
   );
   const { packProject, unpackProject } = await server.ssrLoadModule("/src/lib/project-format.ts");
+  const { generateWritingNotes } = await server.ssrLoadModule("/src/lib/writing-notes.ts");
+  const body = await generateWritingNotes(
+    {
+      topic: "Synthetic notes fixture",
+      sources: Array.from(
+        { length: 6 },
+        (_, i) =>
+          `## Synthetic concept ${i + 1}\nSoftware fixture ${["amber", "birch", "cobalt", "delta", "elm", "fern"][i]} distinguishes study-note section ${i + 1}. This supplied material tests note generation without making a scientific claim.`,
+      ).join("\n\n"),
+      level: "Undergraduate",
+      mode: "manual",
+    },
+    new AbortController().signal,
+    () => {},
+  );
+  assert.match(body, /Synthetic notes fixture/);
+  assert.match(body, /Software fixture/);
+  await assert.rejects(
+    () =>
+      generateWritingNotes(
+        { topic: "", sources: "", level: "Undergraduate", mode: "manual" },
+        new AbortController().signal,
+        () => {},
+      ),
+    /Enter a notes topic/,
+  );
   const input = {
     topic: "Enzyme immobilization",
     discipline: "Industrial & Biotechnology Microbiology",
@@ -55,7 +81,11 @@ try {
   const copy = structuredClone(d);
   copy.slides[2].bullets = [copy.slides[1].bullets[0]];
   assert(duplicateStatements(copy.slides).length);
-  assert.throws(() => assertCompleteDeck(copy, 12), /Repetition/);
+  assert.equal(
+    assertCompleteDeck(copy, 12).slides.length,
+    12,
+    "Similarity screening no longer blocks generation",
+  );
   assert(integrityAudit(d).some((i) => i.category === "Evidence"));
   const c = d.slides[1].claims[0];
   c.status = "lecturer-reviewed";
@@ -85,7 +115,7 @@ try {
   const damaged = await zip.generateAsync({ type: "uint8array" });
   await assert.rejects(() => unpackProject(damaged), /mismatch/);
   console.log(
-    "PASS 1–50 boundaries, substantive single slide, no automatic filler, duplicate blocking, claim invalidation, portable project roundtrip and corruption rejection",
+    "PASS 1–50 boundaries, substantive single slide, no automatic filler, similarity no longer blocks generation, claim invalidation, portable project roundtrip and corruption rejection",
   );
 } finally {
   await server.close();

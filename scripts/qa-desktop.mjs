@@ -6,15 +6,12 @@ import { join, resolve } from "node:path";
 import assert from "node:assert/strict";
 import { cpus, totalmem, release } from "node:os";
 import { execFileSync as runGit } from "node:child_process";
-import { isNativeTransportUrl } from "./native-network-policy.mjs";
-import { makeScientificReviewPack } from "../src/lib/scientific-review-pack.ts";
 const output = process.env.JUW_QA_OUTPUT || "desktop-qa";
 await mkdir(output, { recursive: true });
 const exe = resolve("src-tauri/target/release/juw-microslides.exe");
 let processHandle, browser, activePage;
 const startedAt = new Date().toISOString();
 const timings = {};
-const remoteReviewRequests = [];
 const environment = {
   commit: runGit("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
   platform: process.platform,
@@ -204,100 +201,31 @@ try {
       });
       return JSON.parse(raw).state.library;
     });
-  const beforeReview = await librarySnapshot(page);
-  const pack = await makeScientificReviewPack({
-    topic: "Native review recovery — software fixture",
-    slides: [
-      {
-        title: "Draft recovery fixture",
-        notes: "Software check, not a scientific review.",
-        bullets: ["Fixture statement for persistence only."],
-        citations: [],
-        claims: [],
-        media: [],
-      },
-    ],
-    sourceDocuments: [],
-  });
-  const draftKey = `scientific-review-draft:${pack.packHash}`;
-  const packFile = {
-    name: "native-review-pack.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(pack)),
-  };
-  async function openReview(target) {
-    await target.route(/^https?:\/\//, async (route) => {
-      const url = new URL(route.request().url());
-      if (isNativeTransportUrl(url.href)) return route.continue();
-      remoteReviewRequests.push(url.origin + url.pathname);
-      return route.abort("internetdisconnected");
-    });
-    await target.getByRole("button", { name: "Review", exact: true }).click();
-    await target.getByRole("button", { name: "Complete an external review", exact: true }).click();
-    const dialog = target.getByRole("dialog", { name: "Scientific reviewer workspace" });
-    await dialog.getByLabel("Open scientific review pack", { exact: true }).setInputFiles(packFile);
-    await dialog.getByLabel("Review item", { exact: true }).waitFor();
-    return dialog;
-  }
-  const reviewStart = performance.now();
-  let reviewer = await openReview(page);
-  await page.keyboard.press("Alt+ArrowRight");
-  assert.equal(
-    await reviewer.getByLabel("Review item", { exact: true }).inputValue(),
-    pack.items[1].id,
-  );
-  await page.keyboard.press("Alt+ArrowLeft");
-  const rationale = "Native SQLite draft survives forced termination. Synthetic fixture only.";
-  await reviewer.getByLabel("Scientific rationale", { exact: true }).fill(rationale);
-  await reviewer.getByText(/Review draft saved on this device/).waitFor();
-  const readDraft = (target) =>
-    target.evaluate(async (key) => {
-      return JSON.parse(await window.__TAURI_INTERNALS__.invoke("state_get", { key }));
-    }, draftKey);
-  const firstDraft = await readDraft(page);
-  assert.equal(firstDraft[0].form.decisions[0].rationale, rationale);
-  assert.equal(firstDraft[0].form.decisions[0].verdict, "pending");
-  await reviewer.getByRole("button", { name: "Check review completion", exact: true }).click();
-  await reviewer.getByText(/completion issues\. No completed form is exported/).waitFor();
-  await page.screenshot({ path: join(output, "windows-review-before-crash.png") });
+  const beforeNotes = await librarySnapshot(page);
+  await page.getByRole("button", { name: "Writing Notes", exact: true }).click();
+  await page.getByLabel("Notes topic", { exact: true }).fill("Native notes persistence fixture");
+  await page
+    .getByLabel("Editable notes", { exact: true })
+    .fill("SQLite notes persist independently from lecture decks.");
+  await page
+    .getByText(/Saved on this device/)
+    .first()
+    .waitFor();
+  await page.waitForTimeout(1000);
   stop();
   await new Promise((r) => setTimeout(r, 1500));
   page = await start();
-  reviewer = await openReview(page);
-  assert.equal(await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(), "");
-  await reviewer.getByText("Restore my saved review draft", { exact: true }).click();
-  await reviewer
-    .getByRole("button", { name: /^Restore / })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Writing Notes", exact: true }).click();
   assert.equal(
-    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
-    rationale,
+    await page.getByLabel("Editable notes", { exact: true }).inputValue(),
+    "SQLite notes persist independently from lecture decks.",
   );
-  assert.equal(await reviewer.getByLabel("Decision", { exact: true }).inputValue(), "pending");
   assert.deepEqual(
     await librarySnapshot(page),
-    beforeReview,
-    "External review must not mutate any lecture",
+    beforeNotes,
+    "Writing Notes must not change the deck",
   );
-  await page.screenshot({ path: join(output, "windows-review-recovered.png") });
-  await page.keyboard.press("F5");
-  assert(await reviewer.isVisible(), "F5 inside review must not reload the app or present");
-  await reviewer.getByRole("button", { name: "Remove saved draft copies", exact: true }).click();
-  await reviewer.getByText(/Saved draft copies removed for this pack/).waitFor();
-  assert.equal(await readDraft(page), null);
-  assert.equal(
-    await reviewer.getByLabel("Scientific rationale", { exact: true }).inputValue(),
-    rationale,
-  );
-  assert.deepEqual(
-    remoteReviewRequests,
-    [],
-    "Review of local pack must not require remote resources",
-  );
-  await reviewer.getByRole("button", { name: "Close", exact: true }).click();
-  timings.nativeReviewerCrashRecoveryMs = Math.round(performance.now() - reviewStart);
-  await page.unroute(/^https?:\/\//);
+  await page.screenshot({ path: join(output, "windows-notes-recovered.png") });
   await page.getByRole("textbox", { name: "Lecture topic", exact: true }).press("F5");
   await page.getByRole("button", { name: "Open audience display", exact: true }).click();
   const deadline = Date.now() + 15000;
@@ -356,20 +284,14 @@ try {
           "Exact six-slide generation",
           "Second launch preserves a single workspace writer",
           "SQLite persistence survives forced termination",
-          "Scientific review pack opens without renderer remote requests",
-          "Native reviewer keyboard navigation and pending completion checks",
-          "Reviewer draft is saved through native SQLite",
-          "Review draft survives forced termination and requires explicit restoration",
-          "External review leaves every lecture unchanged",
-          "F5 is isolated inside the reviewer dialog",
-          "Local reviewer checkpoint deletion preserves the open form",
+          "Writing Notes survive forced termination through native SQLite without changing lecture content",
           "F5 presents while an editor field has focus",
           "Separate audience window renders",
           "Audience storage access denied",
         ],
         limitations: [
           "Synthetic local fixtures, not independent scientific review or model performance qualification",
-          "Remote renderer URLs are blocked during review; loopback Rust transport uses a synthetic fixture. OS airplane mode, physical LAN reachability and real-model inference remain untested",
+          "Local note persistence is exercised; loopback Rust transport uses a synthetic fixture. OS airplane mode, physical LAN reachability and real-model inference remain untested",
           "Generation timing is one bundled six-slide fixture on hosted CI, not P95 time-to-reviewed-deck",
           "Physical projectors, mixed DPI and installer UX require real-device review",
         ],

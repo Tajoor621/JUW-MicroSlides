@@ -15,8 +15,15 @@ export function GenerationFailure({
       <p className="line-clamp-2 break-words" title={failure.topic}>
         {failure.topic}
       </p>
+      <p className="text-xs">
+        {/not complete yet|too little|insufficient/i.test(failure.message)
+          ? "More distinct, relevant source material is needed for this slide count. Add lecture notes, choose fewer slides, or try another topic."
+          : failure.message.slice(0, 180)}
+      </p>
       <p className="text-xs text-muted">
-        Still displaying “{currentTopic}”. Your saved deck has not been replaced or renamed.
+        {currentTopic
+          ? `Still displaying “${currentTopic}”. Your saved deck has not been replaced or renamed.`
+          : "No deck is open. Your request is saved below for retry."}
       </p>
       <details className="text-xs">
         <summary className="min-h-11 cursor-pointer py-3 text-accent">

@@ -10,15 +10,8 @@ import { replacementSnapshot } from "@/lib/slide-replacement";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
-import { teachingDeckSnapshot } from "@/lib/teaching-verification";
-import {
-  teachingContentFindings,
-  teachingReleaseFindings,
-  teachingReady as classroomReady,
-} from "@/lib/teaching-readiness";
-import { teachingFindings, lectureMinutes } from "@/lib/teaching";
+import { lectureMinutes } from "@/lib/teaching";
 import { exportTeachingPack, exportTeachingPdf } from "@/lib/export-teaching";
-import { integrityAudit } from "@/lib/deck-integrity";
 import {
   flushSavedDecks,
   listDeckRevisions,
@@ -28,7 +21,6 @@ import {
 } from "@/lib/durable-storage";
 import { packProject, unpackProject } from "@/lib/project-format";
 import { isDesktop, saveFile, nativeCall } from "@/lib/desktop";
-import { exportPptx } from "@/lib/export-pptx";
 import { uid } from "@/lib/utils";
 import { Button } from "./ui/button";
 export function ProfessionalWorkspace({
@@ -41,10 +33,7 @@ export function ProfessionalWorkspace({
   const deck = useDeckStore((s) => s.deck()),
     slide = useDeckStore((s) => s.slide()),
     index = useDeckStore((s) => s.selectedIndex);
-  const [instructor, setInstructor] = useState("");
-  const [findings, setFindings] = useState<ReturnType<typeof integrityAudit> | null>(null),
-    [auditedAt, setAuditedAt] = useState(""),
-    [revisions, setRevisions] = useState<DeckRevision[]>([]),
+  const [revisions, setRevisions] = useState<DeckRevision[]>([]),
     [usage, setUsage] = useState(""),
     [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -93,8 +82,7 @@ export function ProfessionalWorkspace({
     <details className="max-h-[45dvh] shrink-0 overflow-auto border-b border-border bg-surface px-3 py-2 text-sm">
       <summary className="cursor-pointer">
         Lecture workspace · {isDesktop() ? "Windows desktop" : "Web companion"} ·{" "}
-        {deck.slides.length}/50 slides ·{" "}
-        {classroomReady(deck) ? "Evidence gate clear" : "Draft — evidence review required"}
+        {deck.slides.length}/50 slides · Draft lecture
       </summary>
       <div className="mt-3 space-y-3">
         {legacy && (
@@ -142,8 +130,8 @@ export function ProfessionalWorkspace({
           </select>
           <span className="block text-muted">
             Portable typography uses bundled fonts in the preview and embeds full regular/bold fonts
-            in PowerPoint. Check layout and record instructor verification after changing it. Office
-            and Google Slides rendering still need checking on the teaching device.
+            in PowerPoint. Text and shapes stay editable. Office and Google Slides rendering still
+            need checking on the teaching device.
           </span>
         </label>
         <CourseBuilder />
@@ -152,21 +140,21 @@ export function ProfessionalWorkspace({
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
               size="sm"
-              disabled={busy || !classroomReady(deck)}
+              disabled={busy || legacy}
               onClick={() => void perform(() => exportLectureHandout(deck))}
             >
               Student handout PDF
             </Button>
             <Button
               size="sm"
-              disabled={busy || !classroomReady(deck)}
+              disabled={busy || legacy}
               onClick={() => void perform(() => exportLectureHandout(deck, true))}
             >
               Lab protocol card PDF
             </Button>
             <Button
               size="sm"
-              disabled={busy || !classroomReady(deck)}
+              disabled={busy || legacy}
               onClick={() => void perform(() => exportAccessibleLecture(deck))}
             >
               High-contrast accessible HTML
@@ -180,55 +168,6 @@ export function ProfessionalWorkspace({
             </Button>
           </div>
         </details>
-        <details>
-          <summary>Final instructor verification</summary>
-          <p className="text-xs">
-            This records a named local instructor attestation, not authenticated identity or
-            independent scientific certification. Any deck edit invalidates it.
-          </p>
-          <label className="block text-xs">
-            Verifying instructor name
-            <input
-              aria-label="Verifying instructor name"
-              className="m-2 rounded border bg-elevated p-2"
-              maxLength={100}
-              value={instructor}
-              onChange={(e) => setInstructor(e.target.value)}
-            />
-          </label>
-          <Button
-            size="sm"
-            disabled={busy || !instructor.trim() || teachingContentFindings(deck).length > 0}
-            onClick={() =>
-              void perform(async () => {
-                const snapshot = teachingDeckSnapshot(deck),
-                  verification = { instructor: instructor.trim(), at: Date.now(), snapshot };
-                await exportPptx(
-                  { ...deck, teachingVerification: verification },
-                  { classroom: true, returnBytes: true },
-                );
-                const live = useDeckStore.getState().deck();
-                if (!live || live.id !== deck.id || teachingDeckSnapshot(live) !== snapshot)
-                  throw Error(
-                    "The deck changed during verification. Your newer work is preserved; review it again.",
-                  );
-                useDeckStore.getState().patchDeck({ teachingVerification: verification });
-                toast.success("Instructor verification recorded after image and layout preflight.");
-              })
-            }
-          >
-            Record instructor verification
-          </Button>
-          <p className="text-xs">
-            {teachingReleaseFindings(deck).find((f) =>
-              /instructor verification|named instructor/.test(f.message),
-            )?.message || "Current instructor verification recorded."}
-          </p>
-        </details>
-        <p className="text-xs">
-          Editable PowerPoint downloads remain available with pending review. Reviewed release
-          validation is optional and separate.
-        </p>
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
@@ -257,43 +196,17 @@ export function ProfessionalWorkspace({
           </Button>
           <Button
             size="sm"
-            disabled={busy || legacy || !classroomReady(deck)}
+            disabled={busy || legacy}
             onClick={() => void perform(() => exportTeachingPack(deck))}
           >
             Export teaching pack
           </Button>
           <Button
             size="sm"
-            disabled={busy || legacy || !classroomReady(deck)}
+            disabled={busy || legacy}
             onClick={() => void perform(() => exportTeachingPdf(deck))}
           >
-            Export reviewed PDF
-          </Button>
-          <Button
-            size="sm"
-            disabled={busy}
-            onClick={() => {
-              setFindings([
-                ...integrityAudit(deck),
-                ...teachingFindings(deck).map((f) => ({
-                  ...f,
-                  slideId: deck.slides[f.index].id,
-                  severity: "critical" as const,
-                  category: "teaching" as const,
-                  quote: "",
-                })),
-              ]);
-              setAuditedAt(deck.revisionId || String(deck.updatedAt));
-            }}
-          >
-            Audit entire deck
-          </Button>
-          <Button
-            size="sm"
-            disabled={busy || legacy || !classroomReady(deck)}
-            onClick={() => void perform(() => exportPptx(deck, { classroom: true }))}
-          >
-            Export reviewed PPTX
+            Export PDF
           </Button>
           <Button
             size="sm"
@@ -440,11 +353,10 @@ export function ProfessionalWorkspace({
           </Button>
         </div>
         <p className="text-xs text-muted">
-          The evidence gate covers bullet statements, headings, figures and speaker notes. Review
-          every factual field in Evidence. Regeneration: select a slide, use the replacement editor
-          below, inspect the complete proposal, then apply. Evidence review becomes stale for
-          changed claims. Ctrl+N: new lecture · Ctrl+S: project · Ctrl+O: project library · F5:
-          present · Escape: exit.
+          References and source passages remain available in Evidence. Regeneration: select a slide,
+          use the replacement editor below, inspect the complete proposal, then apply. Source
+          records stay with the content they support. Ctrl+N: new lecture · Ctrl+S: project ·
+          Ctrl+O: project library · F5: present · Escape: exit.
         </p>
         {slide && !legacy && <ReplacementEditor key={slide.id} />}
         {usage && <p className="text-xs">{usage}</p>}
@@ -470,31 +382,6 @@ export function ProfessionalWorkspace({
             </Button>
           </div>
         ))}
-        {findings && (
-          <div aria-label="Integrity audit results">
-            <p>
-              {auditedAt !== (deck.revisionId || String(deck.updatedAt))
-                ? "Audit stale — rerun after edits."
-                : `${findings.filter((f) => f.severity === "critical").length} critical findings; ${findings.filter((f) => f.severity === "warning").length} warnings. Screening is not independent scientific certification.`}
-            </p>
-            {findings.slice(0, 100).map((f, i) => (
-              <button
-                key={i}
-                className="my-1 block w-full rounded border border-border p-2 text-left text-xs"
-                onClick={() => {
-                  useDeckStore.getState().select(f.index);
-                  useDeckStore.getState().setTab("evidence");
-                  if (!useDeckStore.getState().inspectorOpen)
-                    useDeckStore.getState().toggleInspector();
-                }}
-              >
-                Slide {f.index + 1} · {f.category} · {f.severity}: {f.quote}
-                <br />
-                {f.message}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </details>
   );
@@ -533,7 +420,7 @@ function ReplacementEditor() {
       <summary className="cursor-pointer text-xs">Review / apply a replacement slide</summary>
       <p className="text-xs">
         Draft a replacement or write your own title and teaching points. Inspect each point before
-        Apply. Current work is kept until Apply; changed content requires fresh evidence review.
+        Apply. Current work is kept until Apply; check the sources for changed content.
       </p>
       <Button
         size="sm"

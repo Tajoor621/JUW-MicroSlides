@@ -5,8 +5,8 @@ const help = {
   cite: "Search PubMed or OpenAlex online, then attach a reference to the selected slide. Open and read the source to check that it supports the slide. A search hit is not a fact check.",
   evidence:
     "Paste an exported reference list. Review imported authors, year, title, and DOI before attaching. Elicit support imports exports; it does not connect to your account.",
-  audit:
-    "Review screens the entire deck or selected slide for topic drift, repeated wording, common contradictions and media metadata concerns. Each flag includes its quoted passage and a suggested correction. Check references online to compare DOI/PMID metadata. Optional Ollama review can inspect image pixels only with a configured vision model. These checks are not scientific certification.",
+  notes:
+    "Enter any microbiology topic to generate source-attributed study notes. Edit the result and download Markdown. Notes save on this device independently from the slide deck. Supplied material works offline; research needs connectivity, and AI needs a configured model.",
   copilot:
     "For AI on Pages, configure your own Ollama server and installed model in Settings, then select AI mode. Cloud AI requires a server deployment. Always review generated claims. Never put private API keys into a public website.",
 };

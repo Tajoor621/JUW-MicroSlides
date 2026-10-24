@@ -4,7 +4,7 @@ import { DISCIPLINES } from "@/lib/knowledge";
 import { LEVELS, MAX_SLIDES } from "@/lib/types";
 import { Button } from "./ui/button";
 import { GenerateForm } from "./generate-form";
-const names = ["Topic", "Discipline", "Level", "Slide count", "Evidence check"];
+const names = ["Topic", "Discipline", "Level", "Slide count", "Generate"];
 export function FirstDeckWizard() {
   const [step, setStep] = useState(0),
     draft = useDeckStore((s) => s.generateDraft),
@@ -88,10 +88,9 @@ export function FirstDeckWizard() {
       {step === 4 && (
         <>
           <p className="rounded border border-amber-600 p-3 text-sm">
-            Generation creates a draft. Before teaching export, review each claim, teaching figure
-            and numerical observation against saved source passages; verify primary references and
-            publication status. Missing evidence keeps export blocked. Recovery backups remain
-            available.
+            Generation creates editable draft slides. PPTX and PDF downloads are available without a
+            review gate. Use saved sources and references to check claims before teaching;
+            insufficient source material is reported during generation.
           </p>
           <GenerateForm lockDisciplineInitially />
         </>

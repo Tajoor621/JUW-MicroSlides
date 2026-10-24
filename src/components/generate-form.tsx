@@ -16,7 +16,7 @@ import {
   generationFailureMessage,
 } from "@/lib/deck-completion";
 import { enrichTopicEvidence } from "@/lib/topic-evidence";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { JUW } from "@/lib/brand";
 import { useDeckStore } from "@/lib/deck-store";
@@ -56,6 +56,7 @@ export function GenerateForm({
   compact?: boolean;
   lockDisciplineInitially?: boolean;
 }) {
+  const epoch = useDeckStore((s) => s.workspaceEpoch);
   const generate = useDeckStore((s) => s.generate);
   const draft = useDeckStore((s) => s.generateDraft);
   const failure = useDeckStore((s) => s.generationFailure);
@@ -63,6 +64,7 @@ export function GenerateForm({
   const patchDraft = useDeckStore((s) => s.patchGenerateDraft);
   const [busy, setBusy] = useState(false);
   const controller = useRef<AbortController | null>(null);
+  useEffect(() => () => controller.current?.abort(), [epoch]);
   const [progress, setProgress] = useState("");
   const form = useRef<HTMLFormElement>(null);
   const [lockDiscipline, setLockDiscipline] = useState(lockDisciplineInitially);
@@ -249,6 +251,7 @@ export function GenerateForm({
         throw new Error(
           "Generation cancelled. Your previous deck is preserved; the request is saved for retry.",
         );
+      if (useDeckStore.getState().workspaceEpoch !== epoch) return;
       local.generationSource ??= "knowledge";
       local = assertGeneratedBiosafety(assertCompleteDeck(local, input.count));
       if (series) {
@@ -267,6 +270,7 @@ export function GenerateForm({
         `Created ${local.slides.length} slides. Review claims, references, and figure relevance before teaching.`,
       );
     } catch (error) {
+      if (useDeckStore.getState().workspaceEpoch !== epoch) return;
       const message = controller.current?.signal.aborted
         ? "Generation cancelled. Your previous deck and completed checkpoints are preserved."
         : generationFailureMessage(error, count);

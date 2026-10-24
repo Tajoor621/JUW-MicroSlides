@@ -111,8 +111,8 @@ export async function slideExportScene(
           const css = getComputedStyle(el);
           const size = parseFloat(css.fontSize),
             line = parseFloat(css.lineHeight);
-          el.style.fontSize = `${Math.max(10, size * 0.9)}px`;
-          if (Number.isFinite(line)) el.style.lineHeight = `${Math.max(12, line * 0.9)}px`;
+          el.style.fontSize = `${Math.max(14, size * 0.9)}px`;
+          if (Number.isFinite(line)) el.style.lineHeight = `${Math.max(17, line * 0.9)}px`;
         }
       }
     }
