@@ -35,6 +35,30 @@ type Paper = {
   doi?: string;
   pmid?: string;
 };
+/** Refresh provider metadata while retaining cached full text and adverse notices. */
+export function mergeResearchPaper(prior: Paper | undefined, fresh: Paper): Paper {
+  if (!prior) return fresh;
+  const notices = [
+    ...(prior.commentCorrectionList?.commentCorrection || []),
+    ...(fresh.commentCorrectionList?.commentCorrection || []),
+  ];
+  return {
+    ...prior,
+    ...fresh,
+    fullBody: fresh.fullBody || prior.fullBody,
+    sourceDocument: fresh.sourceDocument || prior.sourceDocument,
+    isRetracted:
+      prior.isRetracted === "Y" || fresh.isRetracted === "Y"
+        ? "Y"
+        : fresh.isRetracted || prior.isRetracted,
+    pubTypeList: {
+      pubType: [
+        ...new Set([...(prior.pubTypeList?.pubType || []), ...(fresh.pubTypeList?.pubType || [])]),
+      ],
+    },
+    commentCorrectionList: { commentCorrection: notices },
+  };
+}
 const aliases = [
   ["bacteria", "bacterial", "bacterium", "bacteriology"],
   ["fungi", "fungal", "fungus", "mycology"],
@@ -635,7 +659,7 @@ export async function enrichTopicEvidence(
               p.pmid ||
               `${p.source || ""}:${p.id || p.title || ""}`
             ).toLowerCase();
-            if (key && !papers.has(key)) papers.set(key, p);
+            if (key) papers.set(key, mergeResearchPaper(papers.get(key), p));
           }
           if (
             result.value.cursor &&
@@ -712,7 +736,7 @@ export async function enrichTopicEvidence(
         if (independentSuccess) deck = { ...deck, lastLiteratureCheck: Date.now() };
         for (const p of fallback) {
           const key = (p.doi || p.pmid).toLowerCase();
-          if (!papers.has(key)) papers.set(key, p);
+          papers.set(key, mergeResearchPaper(papers.get(key), p));
         }
         evidence = sourceSlides(
           [...papers.values()],

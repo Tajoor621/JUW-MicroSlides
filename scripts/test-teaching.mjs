@@ -92,6 +92,23 @@ try {
   const { teachingReleaseFindings, teachingReady } = await vite.ssrLoadModule(
     "/src/lib/teaching-readiness.ts",
   );
+  const { mergeResearchPaper } = await vite.ssrLoadModule("/src/lib/topic-evidence.ts");
+  const refreshed = mergeResearchPaper(
+    { title: "Synthetic prior record", fullBody: "Cached passage", isRetracted: "N" },
+    { title: "Synthetic current record", isRetracted: "Y" },
+  );
+  assert.equal(
+    refreshed.isRetracted,
+    "Y",
+    "Fresh retraction metadata cannot be hidden by cached sources",
+  );
+  assert.equal(refreshed.fullBody, "Cached passage");
+  assert.equal(
+    mergeResearchPaper(refreshed, { title: "Synthetic provider record", isRetracted: "N" })
+      .isRetracted,
+    "Y",
+    "A different provider cannot silently clear an adverse notice",
+  );
   const { criticalFindings } = await vite.ssrLoadModule("/src/lib/critical-review.ts");
   const { deckSchema, parseBackup } = await vite.ssrLoadModule("/src/lib/backup.ts");
   const { slideReviewStatus } = await vite.ssrLoadModule("/src/lib/slide-review-status.ts");
