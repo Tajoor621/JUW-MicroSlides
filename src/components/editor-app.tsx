@@ -1,3 +1,5 @@
+import { slideReviewStatus } from "@/lib/slide-review-status";
+import { scientificPreflight } from "@/lib/scientific-format";
 import { exportTeachingPdf } from "@/lib/export-teaching";
 import {
   teachingReleaseFindings,
@@ -186,6 +188,9 @@ export function EditorApp() {
   );
   const setExportIssues = (issues: ReturnType<typeof teachingReleaseFindings> | null) =>
     setShowReviewNotes(Boolean(issues?.length));
+  const [scientificNotes, setScientificNotes] = useState<ReturnType<typeof scientificPreflight>>(
+    [],
+  );
   const [exportError, setExportError] = useState("");
   const [pptxBusy, setPptxBusy] = useState(false);
   const pptxWriting = useRef(false);
@@ -211,6 +216,7 @@ export function EditorApp() {
     setShowReviewNotes(false);
     setExportError("");
     setPreparedPptx(null);
+    setScientificNotes([]);
   }, [deck?.id]);
   useEffect(() => {
     if (showReviewNotes)
@@ -230,6 +236,7 @@ export function EditorApp() {
   }
   function preflightExport(candidate: NonNullable<typeof deck>, reviewed: boolean) {
     const issues = teachingReleaseFindings(candidate);
+    setScientificNotes(scientificPreflight(candidate));
     setReviewedAttempt(reviewed);
     setExportIssues(issues.length ? issues : null);
     return !reviewed || !issues.length;
@@ -302,7 +309,7 @@ export function EditorApp() {
     );
   return (
     <TooltipProvider>
-      <div className="flex h-[100dvh] flex-col overflow-hidden bg-bg text-fg">
+      <div data-juw-editor className="flex h-[100dvh] flex-col overflow-hidden bg-bg text-fg">
         <div role="status" className="shrink-0 border-b border-border px-3 py-1 text-xs text-muted">
           {online ? "Online" : "Offline"} · {saveStatus} ·{" "}
           {deck?.generationSource === "local-ai"
@@ -573,6 +580,24 @@ export function EditorApp() {
                   </Button>
                 </section>
               )}
+              {!!scientificNotes.length && (
+                <details className="rounded border border-border p-3 text-sm">
+                  <summary className="min-h-11 cursor-pointer">
+                    Scientific presentation checks ({scientificNotes.length})
+                  </summary>
+                  <p className="text-xs text-muted">
+                    Advisory checks; downloads remain available. Use Evidence / PubMed for source
+                    verification.
+                  </p>
+                  <ul>
+                    {scientificNotes.map((f, i) => (
+                      <li key={i}>
+                        Slide {f.index + 1}: {f.message}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               {!!exportIssues?.length && (
                 <section
                   role="alert"
@@ -732,6 +757,11 @@ export function EditorApp() {
                 </div>
                 <span className="ml-auto tabular-nums">
                   Slide {total ? index + 1 : 0} of {total}
+                  {deck && slide && (
+                    <span className="ml-2" aria-label="Slide review status">
+                      Review: {slideReviewStatus(deck, slide)}
+                    </span>
+                  )}
                 </span>
               </div>
               {slide && deck ? (

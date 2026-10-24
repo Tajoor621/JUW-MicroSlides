@@ -1,3 +1,4 @@
+import { scientificPreflight } from "./scientific-format";
 import { lectureStructuredHtml } from "./lecture-transcript";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
@@ -40,6 +41,7 @@ export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean
   if (options.reviewed !== false) assertTeachingReady(deck);
   if (deck.slides.length < 1 || deck.slides.length > 50)
     throw Error("PDF requires 1–50 slides. Historical archives are preserved.");
+  const presentationNotes = scientificPreflight(deck);
   await preflightTeachingImages(deck);
   const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
   const pdf = new jsPDF({
@@ -53,10 +55,18 @@ export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean
   pdf.addFont("DejaVuSans.ttf", "Teaching", "normal");
   pdf.addFileToVFS("DejaVuSans-Bold.ttf", await font("DejaVuSans-Bold"));
   pdf.addFont("DejaVuSans-Bold.ttf", "Teaching", "bold");
+  for (const [file, style] of [
+    ["DejaVuSans-Oblique", "italic"],
+    ["DejaVuSans-BoldOblique", "bolditalic"],
+  ]) {
+    pdf.addFileToVFS(`${file}.ttf`, await font(file));
+    pdf.addFont(`${file}.ttf`, "Teaching", style);
+  }
   pdf.setProperties({
     title: deck.title,
     author: deck.preparedBy,
     subject: `${JUW.version} · ${deck.courseCode}`,
+    keywords: presentationNotes.map((n) => `Slide ${n.index + 1}: ${n.message}`).join("; "),
   });
   for (let index = 0; index < deck.slides.length; index++) {
     if (index) pdf.addPage([960, 540], "landscape");
@@ -75,7 +85,10 @@ export async function teachingPdfBytes(deck: Deck, options: { reviewed?: boolean
         }),
       );
       if (item.kind === "text") {
-        pdf.setFont("Teaching", item.bold ? "bold" : "normal");
+        pdf.setFont(
+          "Teaching",
+          item.italic ? (item.bold ? "bolditalic" : "italic") : item.bold ? "bold" : "normal",
+        );
         pdf.setFontSize(item.size * 0.75);
         pdf.setTextColor(`#${item.color}`);
         pdf.text(item.text, x, y + h * 0.8);

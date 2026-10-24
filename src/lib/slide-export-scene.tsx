@@ -23,6 +23,7 @@ export type SceneItem =
       font: string;
       size: number;
       bold: boolean;
+      italic?: boolean;
       color: string;
       opacity: number;
     })
@@ -274,6 +275,7 @@ export async function slideExportScene(
                       : "Arial",
                 size: Number.parseFloat(css.fontSize),
                 bold: Number(css.fontWeight) >= 600,
+                italic: css.fontStyle === "italic" || css.fontStyle === "oblique",
                 color: color(css.color) || "1A2433",
                 opacity,
               });

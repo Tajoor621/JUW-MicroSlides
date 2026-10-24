@@ -1,3 +1,4 @@
+import { ScientificText } from "./scientific-text";
 import { LectureSlideContent } from "./lecture-slide-content";
 import { slideEvidenceBasis } from "@/lib/evidence-basis";
 import { EvidenceBadge } from "./evidence-badge";
@@ -434,7 +435,7 @@ export function SlideView({
               {deck?.updatedAt && deck.updatedAt > 86400000
                 ? new Date(deck.updatedAt).toISOString().slice(0, 10)
                 : "Undated draft"}{" "}
-              · For educational use only
+              · {JUW.name} {JUW.version} · For educational use only
             </div>
             {slide.layout !== "title" && (
               <span className="pointer-events-none absolute bottom-1.5 left-3 z-[1] font-mono text-[9px] tabular-nums text-ink-muted">
@@ -691,7 +692,11 @@ function EditableText({
 }) {
   if (disabled) {
     if (!value && !placeholder) return null;
-    return <p className={className}>{value}</p>;
+    return (
+      <p className={className}>
+        <ScientificText text={value} />
+      </p>
+    );
   }
   return (
     <p
@@ -706,7 +711,7 @@ function EditableText({
         className,
       )}
     >
-      {value}
+      <ScientificText text={value} />
     </p>
   );
 }
@@ -749,10 +754,12 @@ function BulletList({
                 }}
                 className="w-full bg-transparent outline-none hover:bg-navy/5 focus:ring-2 focus:ring-accent/30"
               >
-                {item}
+                <ScientificText text={item} />
               </span>
             ) : (
-              <span>{item}</span>
+              <span>
+                <ScientificText text={item} />
+              </span>
             )}
           </li>
         );

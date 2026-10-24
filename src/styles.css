@@ -279,3 +279,50 @@ html[data-theme="light"] {
 .slide-stage[data-typography="portable"] * {
   font-family: "JUW Sans", sans-serif;
 }
+
+/* App controls only: never enlarge exported slide typography or alter print geometry. */
+@media (max-width: 639px) and (hover: none) {
+  [data-juw-editor] {
+    height: 100vh;
+    height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  [data-juw-editor] button:not([data-slide-stage] button),
+  [data-juw-editor] summary,
+  [data-juw-editor] select,
+  [data-juw-editor] a[download] {
+    min-height: 44px;
+  }
+  [data-juw-editor] header {
+    overflow-x: auto;
+  }
+  [data-juw-editor] header button {
+    min-width: 44px;
+  }
+  [data-juw-editor] input,
+  [data-juw-editor] textarea,
+  [data-juw-editor] select {
+    font-size: 16px;
+    scroll-margin-block: 5rem;
+  }
+  [data-juw-editor] main,
+  [data-juw-editor] aside {
+    scroll-padding-bottom: 5rem;
+    overscroll-behavior: contain;
+  }
+}
+
+@font-face {
+  font-family: "JUW Sans";
+  src: url("/fonts/DejaVuSans-Oblique.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JUW Sans";
+  src: url("/fonts/DejaVuSans-BoldOblique.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}

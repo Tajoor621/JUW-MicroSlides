@@ -114,6 +114,93 @@ function pptxXmlFiles(buffer) {
 }
 
 try {
+  const migrationContext = await browser.newContext();
+  await migrationContext.route("**/migration-seed.html", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Storage fixture</title>",
+    }),
+  );
+  const migrationPage = await migrationContext.newPage();
+  await migrationPage.goto(new URL("migration-seed.html", url).href);
+  await migrationPage.evaluate(
+    () =>
+      new Promise((resolve, reject) => {
+        const request = indexedDB.open("juw-microslides", 1);
+        request.onupgradeneeded = () => request.result.createObjectStore("state");
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result,
+            tx = db.transaction("state", "readwrite"),
+            store = tx.objectStore("state");
+          store.put("original-recovery", "recovery-original");
+          store.put('[{"id":"original-history"}]', "deck-revisions");
+          store.put("unknown-value", "future-owner-key");
+          tx.oncomplete = () => {
+            db.close();
+            resolve(true);
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+  await migrationPage.goto(url);
+  await saved(migrationPage);
+  const migrated = await migrationPage.evaluate(
+    () =>
+      new Promise((resolve, reject) => {
+        const request = indexedDB.open("juw-microslides");
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result,
+            tx = db.transaction(["state", "schema-history"]),
+            store = tx.objectStore("state"),
+            result = { version: db.version, stores: [...db.objectStoreNames] };
+          for (const key of ["recovery-original", "deck-revisions", "future-owner-key"]) {
+            const r = store.get(key);
+            r.onsuccess = () => (result[key] = r.result);
+          }
+          tx.oncomplete = () => {
+            db.close();
+            resolve(result);
+          };
+        };
+      }),
+  );
+  assert.equal(migrated.version, 2);
+  assert(migrated.stores.includes("schema-history"));
+  assert.equal(migrated["recovery-original"], "original-recovery");
+  assert.equal(migrated["deck-revisions"], '[{"id":"original-history"}]');
+  assert.equal(migrated["future-owner-key"], "unknown-value");
+  await migrationContext.close();
+  results.push(
+    "Real version-1 IndexedDB upgrades additively, retaining recovery, revision history and unknown keys",
+  );
+  const typographyContext = await browser.newContext({ acceptDownloads: true });
+  const typographyPage = await typographyContext.newPage();
+  await typographyPage.goto(url);
+  await saved(typographyPage);
+  await typographyPage.getByRole("button", { name: "Library", exact: true }).click();
+  await typographyPage
+    .getByLabel("Restore backup", { exact: true })
+    .setInputFiles(join(root, "scripts/fixtures/export-draft.json"));
+  await typographyPage.getByRole("button", { name: "Close", exact: true }).click();
+  await typographyPage.getByRole("button", { name: /^02 content Nomenclature/ }).click();
+  assert.equal(await typographyPage.locator("[data-slide-stage] em").count(), 2);
+  assert.match(
+    await typographyPage.getByLabel("Slide review status", { exact: true }).innerText(),
+    /draft/,
+  );
+  const typographyDownload = typographyPage.waitForEvent("download");
+  await typographyPage.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  const typographyXml = pptxXmlFiles(await readFile(await (await typographyDownload).path()));
+  assert.match(typographyXml["ppt/slides/slide2.xml"], /i="1"/);
+  assert.match(typographyXml["ppt/slides/slide2.xml"], /Escherichia coli/);
+  assert.match(await typographyPage.locator("body").innerText(), /Scientific presentation checks/);
+  await typographyContext.close();
+  results.push(
+    "Draft fixture preserves species italics as native editable PPTX text, exposes advisory unit checks and starts unreviewed",
+  );
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     acceptDownloads: true,
@@ -923,7 +1010,7 @@ try {
   await saved(recoveryPage);
   await recoveryPage.evaluate(async () => {
     const db = await new Promise((resolve, reject) => {
-      const request = indexedDB.open("juw-microslides", 1);
+      const request = indexedDB.open("juw-microslides");
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
@@ -1026,6 +1113,24 @@ try {
     await saved(page);
   }
   await context.setOffline(true);
+  assert(
+    await page.evaluate(async () => {
+      const assets = [
+        "juw-dept-seal.svg?v=offline-check",
+        "fonts/DejaVuSans-Oblique.ttf?offline=1",
+        "fonts/DejaVuSans-BoldOblique.ttf?offline=1",
+      ];
+      return (
+        await Promise.all(
+          assets.map(async (p) => {
+            const r = await fetch(p);
+            return r.ok && (await r.arrayBuffer()).byteLength > 100;
+          }),
+        )
+      ).every(Boolean);
+    }),
+    "Offline cache must serve query-string artwork and italic fonts",
+  );
   await page.reload();
   await saved(page);
   assert.match(await page.locator("body").innerText(), /Bacterial genome architecture/);

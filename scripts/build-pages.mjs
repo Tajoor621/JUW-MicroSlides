@@ -74,7 +74,10 @@ self.addEventListener("fetch", event => {
         return (await cache.match(new URL("index.html", BASE).href)) || Response.error();
       }
     }
-    const cached = await cache.match(event.request) || await caches.match(event.request);
+    // Branding uses cache-busting query strings. Match only static artwork/fonts
+    // without their query, never API responses, documents or JavaScript chunks.
+    const staticAsset = /\\.(?:svg|png|jpe?g|webp|ttf|woff2?)$/i.test(path);
+    const cached = await cache.match(event.request, { ignoreSearch: staticAsset }) || await caches.match(event.request, { ignoreSearch: staticAsset });
     return cached || fetch(event.request);
   })());
 });`,

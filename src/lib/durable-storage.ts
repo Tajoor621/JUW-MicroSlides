@@ -1,3 +1,4 @@
+import { openWorkspaceDatabase } from "./db/migrations";
 import { isDesktop, nativeCall } from "./desktop";
 import { deckSchema } from "./backup";
 import type { StateStorage } from "zustand/middleware";
@@ -24,12 +25,11 @@ export async function readRecoverySave() {
 }
 let connection: Promise<IDBDatabase> | undefined;
 function database() {
-  return (connection ??= new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open("juw-microslides", 1);
-    request.onupgradeneeded = () => request.result.createObjectStore("state");
-    request.onsuccess = () => resolve(request.result);
-    request.onblocked = () => reject(new Error("Close other tabs to finish the storage update."));
-    request.onerror = () => reject(request.error);
+  return (connection ??= openWorkspaceDatabase(() => {
+    connection = undefined;
+  }).catch((error) => {
+    connection = undefined;
+    throw error;
   }));
 }
 export async function readLocalRecord(key: string): Promise<string | null> {

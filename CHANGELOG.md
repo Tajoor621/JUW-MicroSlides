@@ -1,5 +1,15 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — consistency, migrations and scientific presentation (24 October 2026)
+
+- Establish the canonical identity/URL in entry metadata, manifest, footer and documentation. Keep the permanent V6.2.1 lock and existing deployment workflow.
+- Extract IndexedDB's existing version-1 schema into an additive version-2 migration registry; preserve all state, recovery, history and unknown keys, and close connections on version changes.
+- Derive per-slide draft/reviewed status from current human evidence decisions. Keep ordinary export warnings and bypass with draft labels; never trust imported approval strings.
+- Add conservative binomial italics and preserve native editable text styling in PPTX/PDF, with bundled italic font faces. Check unit typography and DOI syntax before export without changing quoted claims or claiming verification.
+- Fix offline cache matching for static artwork/font query strings. Scope phone touch/safe-area/keyboard improvements to application controls, not slide geometry.
+- Screen high-containment protocol requests before generation and add model guidance/output checks. Retain ordinary teaching modes and saved decks; screening does not replace institutional risk assessment.
+- Add a synthetic draft export fixture, migration/format regression coverage, QA checklist, phone contributor guide, and explicit institutional-mark/third-party permissions documentation.
+
 ## V6.2.1 — persistent PowerPoint downloads (24 October 2026)
 
 - Prepare a PowerPoint file in memory and retain a visible Download PowerPoint link, with the correct MIME type, rather than relying on the library's 100ms temporary download link. A fresh tap can save the prepared file when mobile browsers suppress asynchronous automatic downloads.

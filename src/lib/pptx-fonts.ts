@@ -101,10 +101,23 @@ export async function embedPortableFonts(
   regular: Uint8Array,
   bold: Uint8Array,
   license: string,
+  italic?: Uint8Array,
+  boldItalic?: Uint8Array,
 ) {
   const fonts = [eotFont(regular), eotFont(bold)];
   if (fonts.some((f) => f.family !== "DejaVu Sans" || f.italic) || fonts[0].bold || !fonts[1].bold)
     throw Error("Portable font identities do not match the bundled regular/bold family.");
+  if (Boolean(italic) !== Boolean(boldItalic)) throw Error("Both italic font faces are required.");
+  if (italic && boldItalic) {
+    const extra = [eotFont(italic), eotFont(boldItalic)];
+    if (
+      extra.some((f) => f.family !== "DejaVu Sans" || !f.italic) ||
+      extra[0].bold ||
+      !extra[1].bold
+    )
+      throw Error("Portable italic font identities do not match.");
+    fonts.push(...extra);
+  }
   if (!license.includes("Bitstream") || !license.includes("Permission"))
     throw Error("Bundled font licence is missing.");
   const zip = await JSZip.loadAsync(pptx);
@@ -124,13 +137,16 @@ export async function embedPortableFonts(
     (_all, attrs: string) =>
       `<p:presentation${attrs.replace(/\s(?:embedTrueTypeFonts|saveSubsetFonts)="[^"]*"/g, "")} embedTrueTypeFonts="1" saveSubsetFonts="0">`,
   );
-  const fontList =
-    '<p:embeddedFontLst><p:embeddedFont><p:font typeface="DejaVu Sans"/><p:regular r:id="rIdJuwFontRegular"/><p:bold r:id="rIdJuwFontBold"/></p:embeddedFont></p:embeddedFontLst>';
+  const fontList = `<p:embeddedFontLst><p:embeddedFont><p:font typeface="DejaVu Sans"/><p:regular r:id="rIdJuwFontRegular"/><p:bold r:id="rIdJuwFontBold"/>${italic ? '<p:italic r:id="rIdJuwFontItalic"/><p:boldItalic r:id="rIdJuwFontBoldItalic"/>' : ""}</p:embeddedFont></p:embeddedFontLst>`;
   // PresentationML child order places fonts before defaultTextStyle.
   if (!presentation.includes("<p:defaultTextStyle>"))
     throw Error("Unsupported PowerPoint presentation structure.");
   presentation = presentation.replace("<p:defaultTextStyle>", fontList + "<p:defaultTextStyle>");
-  for (const [i, suffix] of ["Regular", "Bold"].entries()) {
+  for (const [i, suffix] of [
+    "Regular",
+    "Bold",
+    ...(italic ? ["Italic", "BoldItalic"] : []),
+  ].entries()) {
     const path = `fonts/juw-dejavu-${suffix.toLowerCase()}.fntdata`;
     zip.file(`ppt/${path}`, fonts[i].bytes);
     relationships = relationships.replace(
@@ -144,7 +160,7 @@ export async function embedPortableFonts(
       '<Default Extension="fntdata" ContentType="application/x-fontdata"/></Types>',
     );
   const attribution = escapeXml(
-    `Portable fonts: DejaVu Sans, regular and bold; full editable fonts, uncompressed EOT.\n${license}`,
+    `Portable fonts: DejaVu Sans, regular and bold, plus italic faces when present; full editable fonts, uncompressed EOT.\n${license}`,
   );
   core = core.replace(/<dc:description\s*\/>/, "<dc:description></dc:description>");
   core = core.includes("</dc:description>")
@@ -169,12 +185,20 @@ export async function loadPortableFonts() {
     return response;
   };
   try {
-    const [regular, bold, license] = await Promise.all([
+    const [regular, bold, italic, boldItalic, license] = await Promise.all([
       read("DejaVuSans.ttf").then((r) => r.arrayBuffer()),
       read("DejaVuSans-Bold.ttf").then((r) => r.arrayBuffer()),
+      read("DejaVuSans-Oblique.ttf").then((r) => r.arrayBuffer()),
+      read("DejaVuSans-BoldOblique.ttf").then((r) => r.arrayBuffer()),
       read("LICENSE.txt").then((r) => r.text()),
     ]);
-    return { regular: new Uint8Array(regular), bold: new Uint8Array(bold), license };
+    return {
+      regular: new Uint8Array(regular),
+      bold: new Uint8Array(bold),
+      italic: new Uint8Array(italic),
+      boldItalic: new Uint8Array(boldItalic),
+      license,
+    };
   } catch {
     throw Error("Portable fonts are unavailable. Reconnect and retry; your deck is preserved.");
   }

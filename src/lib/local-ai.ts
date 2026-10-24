@@ -1,3 +1,4 @@
+import { assertGenerationBiosafety, BIOSAFETY_PROMPT } from "./biosafety";
 import { lectureSlideFields } from "./lecture-schema";
 import { LAYOUTS } from "./types";
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
@@ -63,6 +64,7 @@ export async function probeLocalAi(
   };
 }
 async function chat(prompt: string, json = false, images: string[] = [], signal?: AbortSignal) {
+  prompt = `${BIOSAFETY_PROMPT}\n${prompt}`;
   signal?.throwIfAborted();
   const config = localAiConfig();
   if (!config)
@@ -110,6 +112,7 @@ const generatedSlide = z.object({
   notes: z.string().max(10000).default(""),
 });
 export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSignal) {
+  assertGenerationBiosafety(input);
   signal?.throwIfAborted();
   const count = requestedCount(input.count);
   const deck = generateLocalDeck({ ...input, count });

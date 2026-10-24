@@ -1,3 +1,4 @@
+import { assertGenerationBiosafety, assertGeneratedBiosafety } from "@/lib/biosafety";
 import { LectureGenerationOptions } from "./lecture-generation-options";
 import { GenerationFailure } from "./generation-failure";
 import {
@@ -133,6 +134,7 @@ export function GenerateForm({
     live.setGenerationFailure(null);
     setProgress("Building the topic outline…");
     try {
+      assertGenerationBiosafety(input);
       await writeLocalRecord(
         "generation-job",
         JSON.stringify({ input, startedAt: Date.now(), phase: "Drafting" }),
@@ -233,7 +235,7 @@ export function GenerateForm({
           "Generation cancelled. Your previous deck is preserved; the request is saved for retry.",
         );
       local.generationSource ??= "knowledge";
-      local = assertCompleteDeck(local, input.count);
+      local = assertGeneratedBiosafety(assertCompleteDeck(local, input.count));
       if (series) {
         const complete = series;
         useDeckStore.setState((state) => ({

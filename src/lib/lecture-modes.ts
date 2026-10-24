@@ -1,3 +1,4 @@
+import { assertGenerationBiosafety, assertGeneratedBiosafety } from "./biosafety";
 import { researchTheme } from "./slide-themes";
 import { caseContinuityProblem } from "./lecture-case-context";
 import { lookupTaxonomy } from "./taxonomy-source";
@@ -53,6 +54,7 @@ export async function generateCourseModule(
       input.count > 2
         ? (input.includeObjectives === false ? 0 : 1) + (input.includeAssessment ? 2 : 0)
         : 0;
+    assertGenerationBiosafety(lectureInput);
     const sourceInput = { ...lectureInput, count: input.count - reserve };
     let deck = writer ? await writer(sourceInput) : generateLocalDeck(sourceInput);
     if (
@@ -73,7 +75,7 @@ export async function generateCourseModule(
       prerequisites: decks.length ? [decks.at(-1)!.id] : [],
     };
     deck = assertCompleteDeck(deck, input.count);
-    decks.push(deck);
+    decks.push(assertGeneratedBiosafety(deck));
   }
   return decks;
 }
@@ -355,6 +357,7 @@ export async function generateModeDeck(
   progress?: (s: string) => void,
   writer?: (i: GenerateInput) => Promise<Deck>,
 ): Promise<Deck> {
+  assertGenerationBiosafety(input);
   const minimum = modeMinimum(input);
   if (input.count < minimum)
     throw Error(
@@ -597,5 +600,5 @@ export async function generateModeDeck(
     bullets: ["Full source list; confirm every record and claim before teaching."],
   });
 
-  return applyStandardPedagogy(made, input);
+  return assertGeneratedBiosafety(applyStandardPedagogy(made, input));
 }

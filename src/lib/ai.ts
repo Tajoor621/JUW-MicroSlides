@@ -1,3 +1,4 @@
+import { assertGenerationBiosafety, BIOSAFETY_PROMPT } from "./biosafety";
 import { lectureSlideFields, lectureSlideSchema, lectureOptionsSchema } from "./lecture-schema";
 import { LAYOUTS } from "./types";
 import { z } from "zod";
@@ -17,7 +18,7 @@ type AiOk = { ok: true; deck: Deck };
 type AiAskOk = { ok: true; text: string };
 type AiFail = { ok: false; error: string; deck?: Deck };
 
-const SLIDE_SCHEMA = `{
+const SLIDE_SCHEMA = `${BIOSAFETY_PROMPT}\n{
   "title": string,
   "slides": [
     {
@@ -57,6 +58,7 @@ export const generateAiDeck = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }): Promise<AiOk | AiFail> => {
+    assertGenerationBiosafety(data);
     const fallback = generateLocalDeck(data);
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey || !(await requirePaidAiAccess())) {

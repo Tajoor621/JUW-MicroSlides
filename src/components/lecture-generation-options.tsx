@@ -19,6 +19,12 @@ export function LectureGenerationOptions({
       className="space-y-3 rounded border border-border p-3"
       aria-label="Lecture generation options"
     >
+      {mode === "laboratory" && (
+        <p className="text-xs text-muted">
+          Teaching templates are not approved operating procedures. High-containment procedural
+          requests are withheld; practical work requires a local institutional risk assessment.
+        </p>
+      )}
       <label className="block text-xs">
         Generation Mode
         <select

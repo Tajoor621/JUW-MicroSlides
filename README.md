@@ -4,6 +4,12 @@ The application is permanently locked to **V6.2.1**. All structured lecture impr
 
 A local-first microbiology lecture editor with editable slides, citations, presentation mode, PowerPoint export, and printable slides.
 
+## Canonical identity
+
+Name: **JUW-MicroSlides**. Canonical live app: **https://tajoor621.github.io/JUW-MicroSlides/**. “MicroSlides” in older shortcuts is an abbreviation of this same app, not a second deployment. The static entry source is `pages.html`; the Pages build writes `dist-pages/index.html`. The manifest, footer and application metadata use the canonical name and permanent V6.2.1 lock.
+
+See [QA checklist](docs/QA.md), [phone contributor guide](docs/CONTRIBUTING-PHONE.md), [storage migrations](docs/STORAGE-MIGRATIONS.md), and [permissions and attribution](docs/PERMISSIONS.md). Institutional logo permission is not established by inclusion in this repository.
+
 ## Public deployment
 
 The GitHub Pages build is a separate static entry point; it does not upload or execute TanStack server functions. Use Node.js 24 and npm 11.9.0. Run `npm ci` and `npm run build:pages`. Output is `dist-pages/`, with the application base `/JUW-MicroSlides/`.
@@ -25,7 +31,8 @@ See [lecture workflow guide](docs/LECTURE-WORKFLOWS.md) for offline source-note 
 3. Search Commons images and PubMed/OpenAlex references while online. Review source relevance and each asset's reuse licence.
 4. Open Library to download an editable JSON backup. Restore adds copies, preserving existing decks. Use Current deck backup to split a large library.
 5. Save external images offline while connected, then export a new backup. Failed CORS/unsupported/oversized images remain external links and are reported. A download does not imply all remote images are embedded.
-6. PowerPoint preserves the editor’s exact slide count. Full references and additional-image provenance are retained in speaker notes; extra pages are not appended. Verify layout and attribution before distribution. Print/PDF uses the browser print dialog.
+6. Ordinary PPTX/PDF exports remain available with review notes pending and retain draft labels. Use **Export PPTX → Download PowerPoint** after preparation. Formal reviewed exports and teaching packs retain all evidence requirements. Slide review status is derived from current human claim/surface decisions; editing invalidates previous attestations.
+7. PowerPoint preserves the editor’s exact slide count. Full references and additional-image provenance are retained in speaker notes; extra pages are not appended. Verify layout and attribution before distribution. PDF exports a file; browser printing is also available.
 
 ## Evidence navigation and external scientific review
 
@@ -39,9 +46,9 @@ When replacing an individual teaching slide, inspect the proposal before applyin
 
 ## Storage, offline operation and recovery
 
-Decks are stored in IndexedDB on this browser/origin. Existing data under `juw-microslides-v661-intro-logo` is copied during migration and the old copy is retained. Fresh samples no longer override older saved libraries. Invalid saved data is archived intact; Library → Download previous raw save retrieves it for repair instead of silently discarding it. There is no silent 24-deck eviction.
+Decks are stored in IndexedDB on this browser/origin. Browser schema version 2 adds an additive migration history store to the existing version-1 database without rewriting deck records. The schema version is independent of V6.2.1. Existing data under `juw-microslides-v661-intro-logo` is copied during migration and the old copy is retained. Fresh samples no longer override older saved libraries. Invalid saved data is archived intact; Library → Download previous raw save retrieves it for repair instead of silently discarding it. There is no silent 24-deck eviction.
 
-Offline launch becomes available after the service worker finishes its first successful online install. Bundled app assets and illustrations are precached. Literature/image searches require a connection. External images need successful embedding to be available offline. Browser storage can still be cleared or evicted: keep exported backups outside the browser. JSON backup schema version is 1; imports are validated before adding copies, with a 100 MB / 500-deck import ceiling.
+Offline launch becomes available after the service worker finishes its first successful online install. Bundled app assets, illustrations and all four DejaVu Sans font faces are precached. Static artwork/font requests with query strings use the corresponding cached asset offline. Literature/image searches require a connection. External images need successful embedding to be available offline. Browser storage can still be cleared or evicted: keep exported backups outside the browser. JSON backup schema version is 1; imports are validated before adding copies, with a 100 MB / 500-deck import ceiling.
 
 Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y outside text fields. Native undo remains available while editing text. History resets on reload. New service workers activate without waiting for old tabs to close. Online navigation checks the network before using the saved shell; offline navigation retains the cached app. The Pages app displays a commit-based build ID and a Check for updates / Load latest build control. Reloading through that control waits for queued deck saves. Updates change the build ID and cache hash while the application version remains V6.2.1.
 
@@ -120,3 +127,9 @@ The V6.2.1 release-gate update added explicit review for headings, notes and fig
 ### V6.2.1 structured teaching and release gate
 
 Content authoring now includes editable scientific schematics, sourced quantitative observations, level-specific depth, pitfalls, takeaways and explicit final instructor verification. PPTX, PDF and teaching packs share a strict gate; unreviewed lectures remain recoverable as JSON/portable projects. Google Slides uses a PPTX import file. See [implementation, verification and remaining qualifications](docs/qualification/teaching-overhaul-2026-10-21.md) for the exact capability boundaries.
+
+## Scientific presentation and biosafety
+
+A conservative list of genus names enables binomial italics in headings, teaching text and bullet rendering without changing stored source wording. Unknown names and ambiguous abbreviations remain unchanged; this is not taxonomy verification. Unit typography checks propose house style without converting concentrations or altering quotations. DOI syntax checks are offline advisories; use the existing Evidence publication checks to retrieve metadata and examine corrections/retractions. Metadata validity does not prove claim support.
+
+High-containment procedural request screening runs before generation/retrieval and is also included in model instructions. Flagged structured protocol output is rejected before replacing the saved deck; non-operational lectures remain available. Matching is deliberately limited and cannot determine a safe containment level or detect every agent or wording. Institutional risk assessment and approved SOPs remain necessary. Guidance: [CDC/NIH BMBL](https://www.cdc.gov/labs/bmbl/index.html), [WHO Laboratory Biosafety Manual](https://www.who.int/publications/i/item/9789240011311).

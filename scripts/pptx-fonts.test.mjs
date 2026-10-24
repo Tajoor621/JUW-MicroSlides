@@ -104,3 +104,31 @@ test("editable PowerPoint has valid font parts, relationships, licence and Prese
   await assert.rejects(embedPortableFonts(source, bold, regular, license), /identities/);
   await assert.rejects(embedPortableFonts(source, regular, bold, ""), /licence/);
 });
+
+test("portable typography embeds actual italic faces without changing the two-face legacy API", async () => {
+  const italic = new Uint8Array(
+    await readFile(new URL("../public/fonts/DejaVuSans-Oblique.ttf", import.meta.url)),
+  );
+  const boldItalic = new Uint8Array(
+    await readFile(new URL("../public/fonts/DejaVuSans-BoldOblique.ttf", import.meta.url)),
+  );
+  assert.equal(eotFont(italic).italic, true);
+  assert.equal(eotFont(boldItalic).bold, true);
+  const pptx = new PptxGenJS();
+  pptx
+    .addSlide()
+    .addText("Escherichia coli", { x: 1, y: 1, w: 8, h: 1, fontFace: "DejaVu Sans", italic: true });
+  const bytes = new Uint8Array(await pptx.write({ outputType: "arraybuffer" }));
+  const zip = await JSZip.loadAsync(
+    await embedPortableFonts(bytes, regular, bold, license, italic, boldItalic),
+  );
+  assert.match(
+    await zip.file("ppt/presentation.xml").async("string"),
+    /<p:italic r:id="rIdJuwFontItalic"/,
+  );
+  assert.equal(Object.keys(zip.files).filter((p) => p.endsWith(".fntdata")).length, 4);
+  await assert.rejects(
+    embedPortableFonts(bytes, regular, bold, license, regular, bold),
+    /italic font identities/,
+  );
+});
