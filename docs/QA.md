@@ -16,6 +16,7 @@ Run `npm run qa:pages`, `npm run qa:lecture`, `npm run qa:topic-recovery`, and `
 - Generate an exact requested count in 1–50. Try a new topic; never accept the saved example as the new result.
 - Import the draft fixture. Confirm species italics, ordinary text, unchanged numeric values, pending review status and unit/DOI notes. A syntactically valid DOI is not a verified source.
 - Export draft PPTX with review notes pending. After preparation, tap **Download PowerPoint**. Confirm a nonempty `.pptx`, exact slide count, editable text/diagrams, citations and draft labels in PowerPoint. Repeat on Samsung Internet and iOS Safari; browser emulation does not qualify physical devices.
+- After a scientific rendering revision, confirm formal instructor layout verification needs renewal; retain existing claim reviews and permit draft downloads.
 - Confirm the prepared link remains usable after a delay. Edit the deck and confirm the stale-file note; export again for current content.
 - Attempt formal reviewed export without current instructor verification: it must remain gated. Review status must revert after edits; importing a `reviewed` string must never bypass evidence snapshots.
 - On first online visit wait for installation, then go offline and reload. Check university artwork (including query-string URLs), all four bundled font faces, stored slides, PDF/PPTX, and project backups. Search and external media may require connectivity.

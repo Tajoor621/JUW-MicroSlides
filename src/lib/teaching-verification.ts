@@ -1,3 +1,4 @@
+import { SCIENTIFIC_RENDER_REVISION } from "./scientific-format";
 import { TEACHING_DIAGRAM_REVISION } from "./teaching-schema";
 import { z } from "zod";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -33,6 +34,7 @@ export function teachingDeckSnapshot(deck: Deck) {
         JSON.stringify(
           canonical({
             ...content,
+            scientificRenderRevision: SCIENTIFIC_RENDER_REVISION,
             teachingTemplateRevision: deck.slides.some((s) => s.teaching?.diagram)
               ? TEACHING_DIAGRAM_REVISION
               : undefined,

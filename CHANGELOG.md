@@ -4,6 +4,7 @@
 
 - Establish the canonical identity/URL in entry metadata, manifest, footer and documentation. Keep the permanent V6.2.1 lock and existing deployment workflow.
 - Extract IndexedDB's existing version-1 schema into an additive version-2 migration registry; preserve all state, recovery, history and unknown keys, and close connections on version changes.
+- Bind formal instructor verification to the scientific rendering revision; typography updates require renewed layout attestation while preserving scientific review records and ordinary downloads.
 - Derive per-slide draft/reviewed status from current human evidence decisions. Keep ordinary export warnings and bypass with draft labels; never trust imported approval strings.
 - Add conservative binomial italics and preserve native editable text styling in PPTX/PDF, with bundled italic font faces. Check unit typography and DOI syntax before export without changing quoted claims or claiming verification.
 - Fix offline cache matching for static artwork/font query strings. Scope phone touch/safe-area/keyboard improvements to application controls, not slide geometry.
