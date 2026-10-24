@@ -68,6 +68,10 @@ export function EditorApp() {
     if (useDeckStore.persist.hasHydrated()) setHydrated(true);
     const failure = (event: Event) => {
       const message = (event as CustomEvent<string>).detail;
+      if (message.startsWith("Storage upgrade waiting")) {
+        setSaveStatus(message);
+        return;
+      }
       setSaveStatus("Save failed — download backup");
       toast.error(message, { duration: Infinity });
     };
