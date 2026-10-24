@@ -258,7 +258,7 @@ export async function exportPptx(
         .join("\n\n"),
     );
   }
-  const name = `${ready ? "" : "draft-"}${slug(deck.title)}.pptx`;
+  const name = pptxFileName(deck);
   if (portable || isDesktop() || options.returnBytes) {
     const data = (await pptx.write({
       outputType: "arraybuffer",
@@ -275,6 +275,10 @@ export async function exportPptx(
     if (options.returnBytes) return bytes;
     await saveFile(name, bytes, "pptx");
   } else await pptx.writeFile({ compression: true, fileName: name });
+}
+
+export function pptxFileName(deck: Deck) {
+  return `${teachingReady(deck) ? "" : "draft-"}${slug(deck.title)}.pptx`;
 }
 
 function slug(s: string) {

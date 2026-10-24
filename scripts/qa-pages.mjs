@@ -989,6 +989,18 @@ try {
   const draftBytes = await readFile(await (await draftDownload).path());
   assert(slideCountInPptx(draftBytes) >= 1 && slideCountInPptx(draftBytes) <= 50);
   assert.equal(blockedDownloads, 1);
+  // A fresh user-gesture download must remain usable after the automatic attempt,
+  // including on a narrow mobile viewport and beyond PptxGenJS's old 100ms cleanup.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const directLink = page.getByRole("link", { name: "Download PowerPoint", exact: true });
+  await directLink.waitFor();
+  assert.match(await directLink.getAttribute("download"), /^draft-.*\.pptx$/);
+  await page.waitForTimeout(300);
+  const manualDownload = page.waitForEvent("download");
+  await directLink.click();
+  assert.deepEqual(await readFile(await (await manualDownload).path()), draftBytes);
+  assert.equal(blockedDownloads, 2);
+  await page.setViewportSize({ width: 1280, height: 800 });
   if (
     (await page
       .getByText("Reviewed release options", { exact: true })
@@ -1001,9 +1013,9 @@ try {
     .getByRole("button", { name: "Export reviewed PPTX", exact: true })
     .click();
   await page.getByText(/Reviewed export needs review/).waitFor();
-  assert.equal(blockedDownloads, 1);
+  assert.equal(blockedDownloads, 2);
   results.push(
-    "Ordinary PPTX downloads retain draft status; reviewed export still enforces evidence and recovery backups",
+    "Ordinary PPTX downloads retain draft status; persistent mobile download link saves identical bytes after automatic export; reviewed export still enforces evidence and recovery backups",
   );
   await page.waitForFunction(async () => {
     const r = await navigator.serviceWorker.ready;

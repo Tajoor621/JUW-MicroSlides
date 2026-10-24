@@ -1,5 +1,11 @@
 # V6.2.1 — locked structured lecture revision (2026-10-23)
 
+## V6.2.1 — persistent PowerPoint downloads (24 October 2026)
+
+- Prepare a PowerPoint file in memory and retain a visible Download PowerPoint link, with the correct MIME type, rather than relying on the library's 100ms temporary download link. A fresh tap can save the prepared file when mobile browsers suppress asynchronous automatic downloads.
+- Show preparation progress, prevent overlapping exports, surface technical failures, and distinguish a prepared file from a confirmed browser download. Ordinary export with review notes remains available; reviewed releases retain evidence gates.
+- Preserve exact slide counts, editable vector/text export, draft status, citations and V6.2.1. Indicate when a prepared file predates the latest edit.
+
 ## V6.2.1 — available downloads and automatic draft cleanup (23 October 2026)
 
 - Ordinary toolbar PPTX/PDF downloads no longer require clearing instructor sign-offs. Keep draft labels, provenance and exact slide count. Reviewed exports and Teaching Packs retain all evidence/instructor gates; unavailable assets and invalid counts still fail explicitly.

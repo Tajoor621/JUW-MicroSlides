@@ -7,7 +7,7 @@ import {
 import { GenerationFailure } from "./generation-failure";
 import { ProfessionalWorkspace } from "./professional-workspace";
 import { packProject } from "@/lib/project-format";
-import { saveFile } from "@/lib/desktop";
+import { isDesktop, saveFile } from "@/lib/desktop";
 import { AppUpdates } from "./app-updates";
 import { storageHealth } from "@/lib/durable-storage";
 import { useEffect, useState, useRef, useMemo } from "react";
@@ -30,7 +30,7 @@ import {
 import { toast, Toaster } from "sonner";
 import { JUW } from "@/lib/brand";
 import { useDeckStore } from "@/lib/deck-store";
-import { exportPptx } from "@/lib/export-pptx";
+import { exportPptx, pptxFileName } from "@/lib/export-pptx";
 import { CITATION_STYLES, LAYOUTS, type CitationStyle, type Layout } from "@/lib/types";
 import { researchTheme, SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
 import { GenerateDialog } from "./generate-dialog";
@@ -187,10 +187,30 @@ export function EditorApp() {
   const setExportIssues = (issues: ReturnType<typeof teachingReleaseFindings> | null) =>
     setShowReviewNotes(Boolean(issues?.length));
   const [exportError, setExportError] = useState("");
+  const [pptxBusy, setPptxBusy] = useState(false);
+  const pptxWriting = useRef(false);
+  const [preparedPptx, setPreparedPptx] = useState<{
+    url: string;
+    name: string;
+    deckId: string;
+    updatedAt: number;
+  } | null>(null);
+  const pptxDownload = useRef<HTMLElement>(null);
+  const exportErrorAlert = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (preparedPptx) pptxDownload.current?.scrollIntoView({ block: "nearest" });
+    return () => {
+      if (preparedPptx) URL.revokeObjectURL(preparedPptx.url);
+    };
+  }, [preparedPptx]);
+  useEffect(() => {
+    if (exportError) exportErrorAlert.current?.scrollIntoView({ block: "nearest" });
+  }, [exportError]);
   const exportAlert = useRef<HTMLElement>(null);
   useEffect(() => {
     setShowReviewNotes(false);
     setExportError("");
+    setPreparedPptx(null);
   }, [deck?.id]);
   useEffect(() => {
     if (showReviewNotes)
@@ -215,18 +235,45 @@ export function EditorApp() {
     return !reviewed || !issues.length;
   }
   async function onPptx(reviewed = false) {
+    if (pptxWriting.current) return;
+    pptxWriting.current = true;
+    setPptxBusy(true);
     setExportError("");
-    const candidate = outputDeck(reviewed);
-    if (!candidate || !preflightExport(candidate, reviewed)) return;
     try {
-      await exportPptx(candidate, { classroom: reviewed });
-      toast.success(
-        reviewed
-          ? "Reviewed PowerPoint downloaded."
-          : "PowerPoint downloaded. Review status and source notes are included.",
-      );
+      const candidate = outputDeck(reviewed);
+      if (!candidate || !preflightExport(candidate, reviewed)) return;
+      if (isDesktop()) {
+        await exportPptx(candidate, { classroom: reviewed });
+      } else {
+        const bytes = await exportPptx(candidate, { classroom: reviewed, returnBytes: true });
+        if (!(bytes instanceof Uint8Array) || !bytes.length)
+          throw Error("PowerPoint generation returned no file. Your deck is preserved.");
+        // Keep the URL alive until replacement or unmount. Mobile browsers may
+        // require a fresh user tap after asynchronous generation has completed.
+        const url = URL.createObjectURL(
+          new Blob([new Uint8Array(bytes)], {
+            type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          }),
+        );
+        const name = pptxFileName(candidate);
+        if (useDeckStore.getState().deck()?.id !== candidate.id) {
+          URL.revokeObjectURL(url);
+          throw Error("The active deck changed. Export the deck you want again.");
+        }
+        setPreparedPptx({ url, name, deckId: candidate.id, updatedAt: candidate.updatedAt });
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.append(link);
+        link.click();
+        link.remove();
+      }
+      toast.message("PowerPoint file prepared. Use Download PowerPoint if it did not save.");
     } catch (e) {
       setExportError(e instanceof Error ? e.message : "Could not write the PPTX file.");
+    } finally {
+      pptxWriting.current = false;
+      setPptxBusy(false);
     }
   }
   const [printing, setPrinting] = useState(false);
@@ -348,6 +395,8 @@ export function EditorApp() {
                 size="icon-sm"
                 onClick={() => void onPptx()}
                 aria-label="Export PPTX"
+                disabled={pptxBusy}
+                aria-busy={pptxBusy}
               >
                 <Download />
               </Button>
@@ -491,9 +540,38 @@ export function EditorApp() {
                 />
               )}
               {exportError && (
-                <p role="alert" className="rounded border border-danger p-3 text-sm">
+                <p
+                  ref={exportErrorAlert}
+                  role="alert"
+                  className="rounded border border-danger p-3 text-sm"
+                >
                   Presentation could not be written: {exportError}
                 </p>
+              )}
+              {pptxBusy && <p role="status">Preparing PowerPoint… Keep this page open.</p>}
+              {preparedPptx && deck && preparedPptx.deckId === deck.id && (
+                <section
+                  ref={pptxDownload}
+                  aria-label="PowerPoint download"
+                  className="space-y-2 rounded border border-accent bg-surface p-3 text-sm"
+                >
+                  <p className="font-semibold">PowerPoint file ready</p>
+                  <p className="text-xs text-muted">
+                    If no file appeared, tap Download PowerPoint. Review notes do not block this
+                    download. Your browser may offer Save to Files or Open in PowerPoint.
+                  </p>
+                  {deck.updatedAt !== preparedPptx.updatedAt && (
+                    <p className="text-xs">
+                      This file was prepared before your latest edit. Choose Export PPTX again for
+                      an updated file.
+                    </p>
+                  )}
+                  <Button asChild variant="accent" size="lg">
+                    <a href={preparedPptx.url} download={preparedPptx.name}>
+                      Download PowerPoint
+                    </a>
+                  </Button>
+                </section>
               )}
               {!!exportIssues?.length && (
                 <section
@@ -513,6 +591,9 @@ export function EditorApp() {
                     stays separate.
                   </p>
                   <div className="flex flex-wrap gap-2">
+                    <Button variant="accent" disabled={pptxBusy} onClick={() => void onPptx()}>
+                      Export PPTX with review notes
+                    </Button>
                     <Button
                       variant="secondary"
                       onClick={() => {
