@@ -74,6 +74,10 @@ export function EditorApp() {
     window.addEventListener("juw-storage", failure);
     window.addEventListener("juw-saving", saving);
     window.addEventListener("juw-saved", saved);
+    // A blocked IndexedDB upgrade can report between first render and effect
+    // subscription. Read its current state after subscribing so the warning
+    // cannot disappear while hydration is still waiting for another tab.
+    if (storageHealth.warning) setSaveStatus(storageHealth.warning);
     return () => {
       off();
       window.removeEventListener("juw-storage", failure);
