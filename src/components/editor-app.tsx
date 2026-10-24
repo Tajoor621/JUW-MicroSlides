@@ -761,12 +761,12 @@ export function EditorApp() {
                 </div>
                 <span className="ml-auto tabular-nums">
                   Slide {total ? index + 1 : 0} of {total}
-                  {deck && slide && (
-                    <span className="ml-2" aria-label="Slide review status">
-                      Review: {slideReviewStatus(deck, slide)}
-                    </span>
-                  )}
                 </span>
+                {deck && slide && (
+                  <span className="ml-2" aria-label="Slide review status">
+                    Review: {slideReviewStatus(deck, slide)}
+                  </span>
+                )}
               </div>
               {slide && deck ? (
                 <div className="w-full shrink-0">
