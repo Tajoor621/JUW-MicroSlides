@@ -1,5 +1,11 @@
 # Changelog
 
+## V6.2.1 — topic entry after Refresh (24 October 2026)
+
+- Bind the top topic input to the new-deck draft when no deck is open, so typing after Refresh stays visible and reaches the shared generator. Enter opens that generator. Existing deck title editing is retained.
+- Clarify the empty workspace instructions and disable slide-dependent Add/Present actions until a deck exists.
+- Exercise the Samsung desktop-width header path and narrow-screen generation modal after reset; verify visible selectable slides, persisted active deck and exact-count editable PPTX.
+
 ## V6.2.1 — Writing Notes, fresh workspace and unrestricted exports (24 October 2026)
 
 - Replace the Review tab with independently generated, editable, locally saved topic notes and Markdown downloads. Keep source material and configured AI/Ollama workflows.
