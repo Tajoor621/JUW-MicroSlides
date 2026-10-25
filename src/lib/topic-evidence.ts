@@ -518,7 +518,14 @@ function sourceSlides(
         accepted.some((s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6)
       )
         continue;
-      for (const slide of tiers.flat().flat())
+      const candidates = tiers.flat().flat();
+      if (dnaTransferSectionTitle(scope))
+        candidates.sort(
+          (a, b) =>
+            sourceTopicRelevance(scope, b.citations[0]?.title || "") -
+            sourceTopicRelevance(scope, a.citations[0]?.title || ""),
+        );
+      for (const slide of candidates)
         if (sourceTopicRelevance(scope, slide.bullets.join(" ")) >= 0.6 && take(slide)) {
           const sectionTitle = dnaTransferSectionTitle(scope);
           if (sectionTitle) {
