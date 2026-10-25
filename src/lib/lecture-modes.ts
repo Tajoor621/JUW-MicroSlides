@@ -1,3 +1,4 @@
+import { dnaTransferClarification } from "./dna-transfer-topic";
 import { assertGenerationBiosafety, assertGeneratedBiosafety } from "./biosafety";
 import { researchTheme } from "./slide-themes";
 import { caseContinuityProblem } from "./lecture-case-context";
@@ -304,6 +305,11 @@ export function assessmentSlides(deck: Deck): Slide[] {
 }
 export function applyStandardPedagogy(deck: Deck, input: GenerateInput): Deck {
   const made = structuredClone(deck);
+  const clarification = dnaTransferClarification(input.topic);
+  if (clarification) {
+    made.contentWarnings = [...new Set([...(made.contentWarnings || []), clarification])];
+    if (made.slides[0]) made.slides[0].notes += `\n\n${clarification}`;
+  }
   const visualTheme = {
     morphology: "gram",
     molecular: "molecular",

@@ -25,9 +25,56 @@ try {
   const { searchMediaLibrary, publicMediaSearchLinks, downloadMediaFile } =
     await server.ssrLoadModule("/src/lib/media-library.ts");
   const { enrichTopicEvidence } = await server.ssrLoadModule("/src/lib/topic-evidence.ts");
-  const { researchQueries, sourceTopicRelevance } = await server.ssrLoadModule(
+  const { researchQueries, researchScopes, sourceTopicRelevance } = await server.ssrLoadModule(
     "/src/lib/topic-evidence.ts",
   );
+  const competenceTopic =
+    "Transduction process:\nNatural competence in bacteria (eg Bacillus, streptococcus).\nArtificial competence (calcium chloride method, electroporation)\nUptake and integration of foreign DNA, Laboratory applications in cloning and genetic engineering";
+  check("competence syllabus searches every mechanism with correct bacterial context", () => {
+    const scopes = researchScopes(competenceTopic);
+    assert.equal(scopes.length, 8);
+    const queries = researchQueries(competenceTopic);
+    assert(queries.length <= 32);
+    assert(queries.slice(0, 8).every((q) => q.includes(" AND ")));
+    for (const keyword of [
+      "Bacillus",
+      "Streptococcus",
+      "calcium chloride",
+      "electroporation",
+      "DNA uptake",
+      "homologous recombination",
+      "cloning",
+      "transduction",
+    ])
+      assert(
+        queries.slice(0, 8).some((q) => q.includes(keyword)),
+        keyword,
+      );
+    const examples = [
+      "Bacteriophage-mediated transduction transfers bacterial DNA between cells.",
+      "Bacillus subtilis develops natural competence for uptake of extracellular DNA.",
+      "Streptococcus pneumoniae competence supports genetic transformation with extracellular DNA.",
+      "Calcium chloride treatment is used for chemical transformation of Escherichia coli with DNA.",
+      "Electroporation introduces DNA into bacterial cells for transformation.",
+      "Bacterial transformation includes uptake of extracellular DNA across the envelope.",
+      "Homologous recombination integrates donor DNA during bacterial transformation.",
+      "Plasmid transformation of Escherichia coli supports molecular cloning.",
+    ];
+    for (const [i, scope] of scopes.entries())
+      assert(sourceTopicRelevance(scope, examples[i]) >= 0.6, scope);
+    for (const unrelated of [
+      "Calcium signal transduction in human neurons controls cellular competence.",
+      "Electroporation delivers plasmid DNA into human cancer cells for genetic engineering.",
+      "Artificial intelligence measures laboratory competence in medical students.",
+      "Bacillus causes food spoilage in laboratory cultures.",
+    ])
+      assert.equal(sourceTopicRelevance(competenceTopic, unrelated), 0);
+    assert(
+      researchScopes(competenceTopic + "; Malaria vaccine epidemiology").includes(
+        "Malaria vaccine epidemiology",
+      ),
+    );
+  });
   check(
     "multi-section genome syllabus retrieves each requested scope without unrelated padding",
     () => {
@@ -356,6 +403,65 @@ try {
   checks++;
   console.log(
     "PASS multi-query literature search fills supported 25-slide requests with citations",
+  );
+  // Synthetic software fixtures, not scientific sources or usable publication identifiers.
+  const facets = [
+    "Bacteriophage-mediated transduction transfers bacterial DNA between cells",
+    "Bacillus subtilis natural competence supports transformation with extracellular DNA",
+    "Streptococcus pneumoniae natural competence permits DNA transformation",
+    "Calcium chloride chemical transformation introduces DNA into Escherichia coli",
+    "Bacterial electroporation delivers DNA for transformation",
+    "Bacterial transformation requires uptake and transport of extracellular DNA",
+    "Homologous recombination integrates foreign DNA during bacterial transformation",
+    "Plasmid transformation in Escherichia coli supports cloning and genetic engineering",
+  ];
+  let omitChemical = false;
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        resultList: {
+          result: facets.flatMap((text, i) =>
+            omitChemical && i === 3
+              ? []
+              : [
+                  {
+                    id: `fixture-${i}`,
+                    source: "QA",
+                    title: `Synthetic mechanism fixture ${i}`,
+                    abstractText: `${text} in the defined experimental model. ${text} and its limitations were evaluated using a separate comparison.`,
+                    authorString: "Software fixture",
+                    pubYear: "2025",
+                  },
+                ],
+          ),
+        },
+      }),
+      { headers: { "content-type": "application/json" } },
+    );
+  const facetInput = { ...input, topic: competenceTopic, count: 9 };
+  const facetBase = generateLocalDeck(facetInput);
+  const completeFacets = await enrichTopicEvidence(facetBase, facetInput);
+  assert.equal(completeFacets.slides.length, 9);
+  assert.equal(
+    completeFacets.slides.filter((s) => s.notes.startsWith("Requested section:")).length,
+    8,
+  );
+  for (const scope of researchScopes(competenceTopic))
+    assert(
+      completeFacets.slides.some((s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6),
+      scope,
+    );
+  assert(completeFacets.contentWarnings.some((w) => w.startsWith("Terminology note:")));
+  assert(!completeFacets.contentWarnings.some((w) => /^Requested \d+ slides;/.test(w)));
+  assert(completeFacets.slides.some((s) => s.title === "Chemical competence: calcium chloride"));
+  omitChemical = true;
+  await assert.rejects(
+    () => enrichTopicEvidence(facetBase, facetInput),
+    /Uncovered requested sections:.*calcium chloride/,
+  );
+  checks++;
+  console.log(
+    "PASS complete competence coverage, terminology note and missing-mechanism failure without fabricated slides",
   );
   console.log(`${checks} topic, media and specialist review checks passed.`);
 } finally {

@@ -1,5 +1,12 @@
 # Changelog
 
+## V6.2.1 — competence syllabus and broader research queries (25 October 2026)
+
+- Decompose bacterial competence/DNA-transfer requests into mechanism-specific searches: phage transduction, natural competence in the named genera, chemical competence, electroporation, DNA uptake, recombination and cloning applications. Preserve independent syllabus clauses.
+- Give each scope a search before variant queries, add bounded concept-pair searches for long prose and include up to eight scopes in independent PubMed retrieval. Require bacterial mechanism context to exclude mammalian transfection and calcium signalling.
+- Use concise mechanism headings for the first supporting slide in each DNA-transfer section; retain exact attributed source excerpts and human-review draft status. Explain mixed transformation/transduction terminology without changing the requested title or blocking export.
+- Test exact count, all requested mechanisms, exclusion of unrelated sources, missing-mechanism failure and existing 1–50 generation behavior. A live 24-slide research check covered all eight mechanisms in 82 seconds; this checks retrieval/coverage, not independent scientific certification.
+
 ## V6.2.1 — saved slide visibility after reload (24 October 2026)
 
 - Retain the Generate panel state across reloads so a completed deck stays in view. Older saved decks open with the form collapsed; Refresh still opens an empty topic form.
