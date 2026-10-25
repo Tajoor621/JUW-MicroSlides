@@ -98,6 +98,9 @@ const ORGANISMS: Array<{ re: RegExp; kind: TopicKind; discipline: string; settin
 
 export function inferFocus(topic: string, discipline?: string): TopicFocus {
   const text = topic.trim();
+  // The named genera are examples in a mechanism-led lecture, not a pathogen profile.
+  if (/^(?:transduction|transformation|natural competence|artificial competence|bacterial (?:transformation|transduction)|electroporation)\b/i.test(text))
+    return { topic: text, kind: "process", discipline: "Microbial Genetics & Molecular Biology", setting: "molecular" };
   for (const rule of ORGANISMS) {
     if (rule.re.test(text)) {
       return {

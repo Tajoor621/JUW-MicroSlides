@@ -30,6 +30,11 @@ try {
   );
   const competenceTopic =
     "Transduction process:\nNatural competence in bacteria (eg Bacillus, streptococcus).\nArtificial competence (calcium chloride method, electroporation)\nUptake and integration of foreign DNA, Laboratory applications in cloning and genetic engineering";
+  const { inferFocus } = await server.ssrLoadModule("/src/lib/topic-engine.ts");
+  check("mechanism-led requests keep genetics discipline despite organism examples", () => {
+    assert.equal(inferFocus(competenceTopic).discipline, "Microbial Genetics & Molecular Biology");
+    assert.equal(inferFocus("Bacillus anthracis virulence").kind, "bacterium");
+  });
   check("competence syllabus searches every mechanism with correct bacterial context", () => {
     const scopes = researchScopes(competenceTopic);
     assert.equal(scopes.length, 8);
@@ -416,24 +421,40 @@ try {
     "Plasmid transformation in Escherichia coli supports cloning and genetic engineering",
   ];
   let omitChemical = false;
+  // A broad review can mention the example genus without being its best teaching source.
+  const broadMention = {
+    id: "broad-review-fixture",
+    source: "QA",
+    title: "Synthetic broad transformation overview",
+    abstractText:
+      "Natural competence in Bacillus and Streptococcus supports transformation with DNA in several species. Streptococcus pneumoniae transformation has a long history in bacterial genetics.",
+    authorString: "Software fixture",
+    pubYear: "2025",
+  };
   globalThis.fetch = async () =>
     new Response(
       JSON.stringify({
         resultList: {
-          result: facets.flatMap((text, i) =>
-            omitChemical && i === 3
-              ? []
-              : [
-                  {
-                    id: `fixture-${i}`,
-                    source: "QA",
-                    title: `Synthetic mechanism fixture ${i}`,
-                    abstractText: `${text} in the defined experimental model. ${text} and its limitations were evaluated using a separate comparison.`,
-                    authorString: "Software fixture",
-                    pubYear: "2025",
-                  },
-                ],
-          ),
+          result: [
+            broadMention,
+            ...facets.flatMap((text, i) =>
+              omitChemical && i === 3
+                ? []
+                : [
+                    {
+                      id: `fixture-${i}`,
+                      source: "QA",
+                      title:
+                        i === 1
+                          ? "Bacillus subtilis natural competence and transformation"
+                          : `Synthetic mechanism fixture ${i}`,
+                      abstractText: `${text} in the defined experimental model. ${text} and its limitations were evaluated using a separate comparison.`,
+                      authorString: "Software fixture",
+                      pubYear: "2025",
+                    },
+                  ],
+            ),
+          ],
         },
       }),
       { headers: { "content-type": "application/json" } },
@@ -442,6 +463,11 @@ try {
   const facetBase = generateLocalDeck(facetInput);
   const completeFacets = await enrichTopicEvidence(facetBase, facetInput);
   assert.equal(completeFacets.slides.length, 9);
+  assert.equal(
+    completeFacets.slides.find((s) => s.title === "Natural competence in Bacillus").citations[0]
+      .title,
+    "Bacillus subtilis natural competence and transformation",
+  );
   assert.equal(
     completeFacets.slides.filter((s) => s.notes.startsWith("Requested section:")).length,
     8,

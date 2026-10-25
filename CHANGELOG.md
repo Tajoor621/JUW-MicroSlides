@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — organism-focused mechanism sections (25 October 2026)
+
+- Prefer sources focused on the named organism/mechanism for each dedicated DNA-transfer section, rather than a broad paper that only mentions the genus. Keep mechanism-led lectures in Microbial Genetics even when organism examples appear.
+- Add a broad-review-versus-focused-source regression and preserve organism-profile classification for pathogen requests.
+
 ## V6.2.1 — competence syllabus and broader research queries (25 October 2026)
 
 - Decompose bacterial competence/DNA-transfer requests into mechanism-specific searches: phage transduction, natural competence in the named genera, chemical competence, electroporation, DNA uptake, recombination and cloning applications. Preserve independent syllabus clauses.
