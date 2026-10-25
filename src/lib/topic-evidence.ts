@@ -1,3 +1,10 @@
+import {
+  dnaTransferScopes,
+  dnaTransferRelevance,
+  dnaTransferClarification,
+  dnaTransferQueries,
+  dnaTransferSectionTitle,
+} from "./dna-transfer-topic";
 import { sourceConceptHeading } from "./source-headings";
 import { fetchPubmedAbstracts } from "./pubmed-abstracts";
 import { readLocalRecord, writeLocalRecord } from "./durable-storage";
@@ -76,6 +83,13 @@ const aliases = [
   ["microbiology", "microbial", "microorganism", "microorganisms"],
   ["qpcr", "quantitative pcr", "real-time pcr"],
   ["biofilm", "biofilms"],
+  ["competence", "competent", "competency"],
+  ["transformation", "transformable", "transformed"],
+  ["transduction", "transducing"],
+  ["integration", "integrate", "integrated"],
+  ["cloning", "clone", "cloned"],
+  ["uptake", "transport", "internalization"],
+  ["chemical", "chemically"],
   ["stain", "staining", "stains"],
   [
     "mrsa",
@@ -85,6 +99,12 @@ const aliases = [
   ["nitrogen fixation", "diazotroph", "diazotrophy"],
 ];
 const generic = new Set([
+  "process",
+  "application",
+  "applications",
+  "laboratory",
+  "method",
+  "methods",
   "mechanism",
   "mechanisms",
   "role",
@@ -138,11 +158,22 @@ const generic = new Set([
 /** Sentence-separated syllabus requests are alternative source scopes, not one AND query. */
 export function researchScopes(topic: string) {
   const clean = topic.trim().replace(/^["“]+|["”]+$/g, "");
+  const dnaScopes = dnaTransferScopes(clean);
   const clauses = clean
     .split(/(?<=[a-z]{2}|\))[.!?]\s+|[;\n]+/i)
     .map((s) => s.trim())
     .filter(Boolean);
-  return clauses.length > 1 && clauses.length <= 8 ? clauses : [clean];
+  if (dnaScopes && dnaScopes.length > 1) {
+    // Preserve independent non-DNA syllabus clauses instead of silently dropping them.
+    const other = clauses.filter(
+      (clause) =>
+        !/transduc|transform|competen|electroporat|calcium chloride|DNA|cloning|genetic engineering/i.test(
+          clause,
+        ),
+    );
+    return [...dnaScopes, ...other];
+  }
+  return clauses.length > 1 && clauses.length <= 16 ? clauses : [clean];
 }
 function termsFor(topic: string) {
   const terms = [...new Set(topicTerms(topic))].filter((t) => !generic.has(t) && !/^\d+$/.test(t));
@@ -189,6 +220,8 @@ export function sourceTopicRelevance(topic: string, body: string): number {
   const scopes = researchScopes(topic);
   if (scopes.length > 1)
     return Math.max(...scopes.map((scope) => sourceTopicRelevance(scope, body)));
+  const dnaScore = dnaTransferRelevance(topic, body);
+  if (dnaScore !== undefined) return dnaScore;
   // Structural lectures must not be filled by generic genome-resource or
   // microbiome surveys that merely share organism/genome words.
   if (
@@ -244,7 +277,13 @@ export function sourceTopicRelevance(topic: string, body: string): number {
 export function researchQueries(topic: string): string[] {
   const scopes = researchScopes(topic);
   if (scopes.length > 1)
-    return [...new Set(scopes.flatMap((scope) => researchQueries(scope)))].slice(0, 24);
+    return [
+      ...new Set([
+        // Give every requested scope a query before spending slots on variants.
+        ...scopes.map((scope) => researchQueries(scope)[0]),
+        ...scopes.flatMap((scope) => researchQueries(scope).slice(1)),
+      ]),
+    ].slice(0, 32);
   const clean = topic
     .replace(/[^\p{L}\p{N}\s-]/gu, " ")
     .replace(/\s+/g, " ")
@@ -281,6 +320,7 @@ export function researchQueries(topic: string): string[] {
       : "";
   return [
     ...new Set([
+      ...dnaTransferQueries(clean),
       `"${clean}"`,
       reproductionNumberTopic.test(clean)
         ? '("reproduction number" OR "reproductive number" OR "basic reproduction ratio" OR "effective reproduction number") AND (transmission OR epidemic OR infection OR outbreak)' +
@@ -297,6 +337,18 @@ export function researchQueries(topic: string): string[] {
       expanded,
       comparative,
       concepts.length ? `(${concepts.join(" OR ")})` : terms.join(" "),
+      // Syllabus prose is not a publication title. Search smaller concept pairs
+      // with a shared anchor, while retaining strict passage relevance screening.
+      ...(terms.length > 4
+        ? terms.slice(1).map(
+            (term) =>
+              `(${variants(terms[0])
+                .map((v) => `"${v}"`)
+                .join(" OR ")}) AND (${variants(term)
+                .map((v) => `"${v}"`)
+                .join(" OR ")})`,
+          )
+        : []),
     ]),
   ].filter(Boolean);
 }
@@ -461,9 +513,20 @@ function sourceSlides(
   // Cover each requested syllabus clause before filling the remaining slots.
   if (scopes.length > 1 && limit >= scopes.length)
     for (const scope of scopes) {
-      if (accepted.some((s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6)) continue;
+      if (
+        !dnaTransferSectionTitle(scope) &&
+        accepted.some((s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6)
+      )
+        continue;
       for (const slide of tiers.flat().flat())
-        if (sourceTopicRelevance(scope, slide.bullets.join(" ")) >= 0.6 && take(slide)) break;
+        if (sourceTopicRelevance(scope, slide.bullets.join(" ")) >= 0.6 && take(slide)) {
+          const sectionTitle = dnaTransferSectionTitle(scope);
+          if (sectionTitle) {
+            slide.title = sectionTitle;
+            slide.notes = `Requested section: ${scope}\n\n${slide.notes}`;
+          }
+          break;
+        }
     }
   for (const tier of tiers) {
     for (let part = 0; part < Math.max(0, ...tier.map((g) => g.length)); part++) {
@@ -613,8 +676,10 @@ export async function enrichTopicEvidence(
     scopes.length > 1 && needed >= scopes.length
       ? scopes.filter(
           (scope) =>
-            ![...core, ...evidence].some(
-              (s) => sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6,
+            ![...core, ...evidence].some((s) =>
+              dnaTransferSectionTitle(scope)
+                ? s.notes.startsWith(`Requested section: ${scope}\n`)
+                : sourceTopicRelevance(scope, s.bullets.join(" ")) >= 0.6,
             ),
         )
       : [];
@@ -712,7 +777,7 @@ export async function enrichTopicEvidence(
         const fallback: Awaited<ReturnType<typeof fetchPubmedAbstracts>> = [];
         const independentQueries = thorough
           ? researchScopes(input.topic)
-              .slice(0, 4)
+              .slice(0, 8)
               .map((scope) =>
                 researchQueries(scope)
                   .slice(0, 3)
@@ -785,6 +850,10 @@ export async function enrichTopicEvidence(
       ].slice(0, 30),
       requestedCount: target,
       contentWarnings: [
+        ...(deck.contentWarnings || []).filter(
+          (warning) => !/^Requested \d+ slides;/.test(warning),
+        ),
+        ...[dnaTransferClarification(input.topic)].filter((note): note is string => Boolean(note)),
         `${added.length} slides contain attributed source excerpts retrieved through ${successful} research searches. Open full-text retrieval is bounded to ${fullTextLimit} articles per request. Metadata notices are screened; absence of a notice is not proof of validity. Cached evidence may be stale; run reference checks before teaching.`,
       ],
       updatedAt: Date.now(),
