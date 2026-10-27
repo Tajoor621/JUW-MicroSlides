@@ -8,7 +8,7 @@ const help = {
   notes:
     "Enter any microbiology topic to generate source-attributed study notes. Edit the result and download Markdown. Notes save on this device independently from the slide deck. Supplied material works offline; research needs connectivity, and AI needs a configured model.",
   copilot:
-    "For AI on Pages, configure your own Ollama server and installed model in Settings, then select AI mode. Cloud AI requires a server deployment. Always review generated claims. Never put private API keys into a public website.",
+    "For AI on Pages, configure your own Ollama server and installed model in Settings, then select AI mode. Paid cloud AI is not part of the supported product. Always review generated claims. Never put private API keys into a public website.",
 };
 export function ContextHelp({ tab }: { tab: keyof typeof help }) {
   return (

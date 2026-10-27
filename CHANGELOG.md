@@ -1,5 +1,12 @@
 # Changelog
 
+## V6.2.1 — supported lecturer runtime and draft disclosure (27 October 2026)
+
+- Declare the static Pages app the supported lecturer product; archive the hosted server/sign-in/Postgres/paid-AI/platform implementation in `archive/server-platform-6702c13`. Keep browser IndexedDB saves and optional desktop SQLite.
+- Replace contradictory README/agent instructions and document required, optional and environment-dependent scripts. Remove platform tooling/assets, test sign-in domains, sandbox startup assumptions and tracked test exports; rename package and mislabeled JPEG. Keep licensed offline/export fonts.
+- Stamp every PPTX/PDF slide/page with “Unverified AI-assisted draft” without adding export gates. Keep readable presenter notes/references/media credits; preserve full source passages in project backups instead of dumping article paragraphs and internal JSON into PowerPoint speaker notes.
+- Split media data from media selection, query planning from retrieval, and export state/networking from editor UI. Add blocking Gitleaks, retain blocking npm audit, pin CI actions and add Dependabot.
+
 ## V6.2.1 — organism-focused mechanism sections (25 October 2026)
 
 - Prefer sources focused on the named organism/mechanism for each dedicated DNA-transfer section, rather than a broad paper that only mentions the genus. Keep mechanism-led lectures in Microbial Genetics even when organism examples appear.

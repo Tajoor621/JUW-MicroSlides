@@ -7,7 +7,7 @@ import { TopicMediaPanel } from "./topic-media-panel";
 import { ContextHelp } from "./context-help";
 import { useState, useId, cloneElement, isValidElement, type ReactNode } from "react";
 import { toast } from "sonner";
-import { askCopilot, searchOpenAlex, searchPubmed } from "@/lib/ai";
+import { askCopilot, searchOpenAlex, searchPubmed } from "@/lib/browser-services";
 import { formatCitation } from "@/lib/citations";
 import { useDeckStore } from "@/lib/deck-store";
 import { parseEvidencePaste } from "@/lib/elicit";

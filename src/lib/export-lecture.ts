@@ -1,3 +1,4 @@
+import { DRAFT_STAMP } from "./brand";
 import {
   escapeLectureHtml,
   lectureStructuredHtml,
@@ -145,6 +146,12 @@ export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
   if (!protocolOnly) {
     write("References", 14, true);
     teachingReferences(deck).forEach((r) => write(r, 9));
+  }
+  for (let page = 1; page <= pdf.getNumberOfPages(); page++) {
+    pdf.setPage(page);
+    pdf.setFont("Teaching", "bold");
+    pdf.setFontSize(9);
+    pdf.text(DRAFT_STAMP, margin, pdf.internal.pageSize.getHeight() - 16);
   }
   return saveFile(
     `${filename(deck)}-${protocolOnly ? "protocol-card" : "student-handout"}.pdf`,

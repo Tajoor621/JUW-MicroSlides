@@ -18,12 +18,7 @@ export default defineConfig({
   base: "/JUW-MicroSlides/",
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: [
-      { find: "@/lib/ai", replacement: path("./src/lib/browser-services.ts") },
-      { find: "@/lib/media-search", replacement: path("./src/lib/browser-media.ts") },
-      { find: "./media-search", replacement: path("./src/lib/browser-media.ts") },
-      { find: "@", replacement: path("./src") },
-    ],
+    alias: [{ find: "@", replacement: path("./src") }],
   },
   build: { outDir: "dist-pages", rolldownOptions: { input: "pages.html" } },
 });

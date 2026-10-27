@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDeckStore } from "@/lib/deck-store";
-import { searchPubmed } from "@/lib/ai";
+import { searchPubmed } from "@/lib/browser-services";
 import { mergeCitationCandidates } from "@/lib/teaching";
 import type { Citation } from "@/lib/types";
 import { Button } from "./ui/button";

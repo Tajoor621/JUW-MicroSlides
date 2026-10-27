@@ -23,7 +23,7 @@ import { useDeckStore } from "@/lib/deck-store";
 import { generateLocalDeck, dedicatedLecture } from "@/lib/generate-deck";
 import { DISCIPLINES, suggestDiscipline } from "@/lib/knowledge";
 
-import { generateAiDeck } from "@/lib/ai";
+import { generateAiDeck } from "@/lib/browser-services";
 
 import { inferFocus } from "@/lib/topic-engine";
 import { SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";

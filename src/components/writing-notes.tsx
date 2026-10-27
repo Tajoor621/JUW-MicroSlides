@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDeckStore } from "@/lib/deck-store";
 import { generateWritingNotes } from "@/lib/writing-notes";
-import { generateAiDeck } from "@/lib/ai";
+import { generateAiDeck } from "@/lib/browser-services";
 import { LEVELS, type Level } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";

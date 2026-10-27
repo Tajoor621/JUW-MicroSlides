@@ -13,3 +13,9 @@ src-tauri/gen/
 src-tauri/icons/
 
 qualification-results/
+
+# Generated qualification files belong in CI artifacts, not source control.
+screenshots/*
+!screenshots/.gitkeep
+.cache/
+gitleaks-report.*

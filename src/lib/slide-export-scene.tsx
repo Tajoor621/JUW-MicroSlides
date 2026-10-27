@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { SlideView } from "@/components/slide-view";
+import { DRAFT_STAMP } from "./brand";
 import type { Deck } from "./types";
 
 export const SLIDE_SIZE = { width: 1280, height: 720, pixelsPerInch: 96 };
@@ -284,6 +285,20 @@ export async function slideExportScene(
       }
     }
     visit(stage);
+    if (!items.some((item) => item.kind === "text" && item.text.includes(DRAFT_STAMP)))
+      items.push({
+        kind: "text",
+        text: DRAFT_STAMP,
+        x: 32,
+        y: 675,
+        w: 700,
+        h: 20,
+        font: "Arial",
+        size: 14,
+        bold: true,
+        color: "1A2433",
+        opacity: 1,
+      });
     return items;
   } finally {
     root.unmount();

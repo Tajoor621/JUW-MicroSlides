@@ -1,4 +1,3 @@
-import { scientificPreflight } from "./scientific-format";
 import { embedPortableFonts, loadPortableFonts } from "./pptx-fonts";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
@@ -193,7 +192,7 @@ export async function exportPptx(
         slide.addImage({ data, ...box, transparency, altText: item.alt || "Teaching figure" });
       }
     }
-    slide.addText("DRAFT — check original sources", {
+    slide.addText("Unverified AI-assisted draft", {
       x: 2,
       y: 0.18,
       w: 7,
@@ -208,59 +207,6 @@ export async function exportPptx(
         "Draft study material. Check original sources before teaching.",
         ...exportWarnings,
         lectureSpeakerNotes(source),
-        "Full editable slide text (preserved independently of layout):\n" +
-          JSON.stringify(
-            {
-              title: source.title,
-              subtitle: source.subtitle,
-              bullets: source.bullets,
-              leftBullets: source.leftBullets,
-              rightBullets: source.rightBullets,
-            },
-            null,
-            2,
-          ),
-        scientificPreflight({ ...deck, slides: [source] })
-          .map((f) => f.message)
-          .join("\n"),
-        source.teaching
-          ? "Teaching design and discussion:\n" + JSON.stringify(source.teaching, null, 2)
-          : "",
-        source.surfaceReviews?.length
-          ? "Lecturer decisions for headings, notes and figures (not independent certification):\n" +
-            source.surfaceReviews
-              .map(
-                (r) =>
-                  `${r.field}: ${r.verdict} · ${r.rationale}\n${r.sourceUrl || "Nonfactual label"} · ${r.locator || ""}\n${r.quote || ""}`,
-              )
-              .join("\n\n")
-          : "",
-        source.claims?.length
-          ? "Claim evidence trail:\n" +
-            source.claims
-              .map(
-                (c) =>
-                  `${c.text} [${c.classification}; ${c.status}]\n${c.evidence.map((e) => `${e.sourceUrl} · ${e.locator} · ${e.access} · checked ${new Date(e.checkedAt).toISOString()}\n${e.quote}`).join("\n")}`,
-              )
-              .join("\n\n")
-          : "",
-        source.citations.some((c) => c.publicationCheck)
-          ? "Publication-status checks (provider metadata, not scientific certification):\n" +
-            source.citations
-              .filter((c) => c.publicationCheck)
-              .map(
-                (c) =>
-                  `${c.title}: ${c.publicationCheck!.status}; checked ${new Date(c.publicationCheck!.checkedAt).toISOString()}; ${c.publicationCheck!.providers.join(", ")}; complete=${c.publicationCheck!.complete}\n${c.publicationCheck!.notices.map((n) => `${n.type}: ${n.url}`).join("\n")}`,
-              )
-              .join("\n")
-          : "",
-        deck.sourceDocuments
-          ?.filter((d) => source.claims?.some((c) => c.evidence.some((e) => e.sourceUrl === d.url)))
-          .map(
-            (d) =>
-              `Source document: ${d.title} · ${d.publisher} · ${d.url}\n${d.locator} · ${d.license} · version ${d.publishedDate || "unspecified"} · jurisdiction ${d.jurisdiction || "unspecified"} · retrieved ${new Date(d.retrievedAt).toISOString()} · ${d.acquisition}`,
-          )
-          .join("\n"),
         source.citations.length
           ? "Full slide references:\n" +
             source.citations
