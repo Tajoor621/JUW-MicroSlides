@@ -7,7 +7,7 @@ import { TeachingContent } from "./teaching-content";
 import { teachingOf, methodSlide } from "@/lib/teaching";
 import { useDeckStore } from "@/lib/deck-store";
 import { useEffect, useRef, useState } from "react";
-import { JUW } from "@/lib/brand";
+import { DRAFT_STAMP, JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
 import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
@@ -426,7 +426,7 @@ export function SlideView({
                 className="relative z-[1] border-t border-amber-600 px-8 text-xs font-semibold text-ink"
                 role="status"
               >
-                Draft — check original sources
+                {DRAFT_STAMP}
               </p>
             )}
             <div className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">

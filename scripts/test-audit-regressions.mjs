@@ -156,19 +156,6 @@ try {
     await readProjectAsset(new Response(new Uint8Array([1, 2, 3])), 3),
     new Uint8Array([1, 2, 3]),
   );
-  const { requirePaidAiAccess } = await server.ssrLoadModule("/src/lib/paid-ai-access.server.ts");
-  const previous = process.env.JUW_ENABLE_PAID_CLOUD_AI;
-  delete process.env.JUW_ENABLE_PAID_CLOUD_AI;
-  try {
-    assert.equal(
-      await requirePaidAiAccess(),
-      false,
-      "A present owner key cannot implicitly enable paid requests",
-    );
-  } finally {
-    if (previous === undefined) delete process.env.JUW_ENABLE_PAID_CLOUD_AI;
-    else process.env.JUW_ENABLE_PAID_CLOUD_AI = previous;
-  }
   const { probeLocalAi } = await server.ssrLoadModule("/src/lib/local-ai.ts");
   const { searchMediaLibrary } = await server.ssrLoadModule("/src/lib/media-library.ts");
   const originalFetch = globalThis.fetch;
@@ -222,7 +209,7 @@ try {
     globalThis.fetch = originalFetch;
   }
   console.log(
-    "PASS audit regressions: source context, claim provenance, publication summaries, shared-media packing, bounded streams and paid-AI opt-in",
+    "PASS audit regressions: source context, claim provenance, publication summaries, shared-media packing, bounded streams and local-only AI transport",
   );
 } finally {
   await server.close();

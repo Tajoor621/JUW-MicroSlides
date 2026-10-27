@@ -2,11 +2,9 @@ import { isDesktop } from "./lib/desktop";
 import { AudienceView } from "./components/desktop-presenter";
 import { createRoot } from "react-dom/client";
 import { EditorApp } from "./components/editor-app";
-import { PreviewHostBridge } from "./components/preview-host-bridge";
 import "./styles.css";
 createRoot(document.getElementById("root")!).render(
   <>
-    <PreviewHostBridge />
     {new URLSearchParams(location.search).has("audience") ? <AudienceView /> : <EditorApp />}
   </>,
 );

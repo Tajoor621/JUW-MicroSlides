@@ -1,143 +1,55 @@
 # JUW-MicroSlides V6.2.1
 
-The application is permanently locked to **V6.2.1**. All structured lecture improvements are delivered as commit-based revisions of this version. Existing decks remain supported.
+JUW-MicroSlides is a local-first microbiology lecture editor. **The supported lecturer product is the client-only GitHub Pages app:** https://tajoor621.github.io/JUW-MicroSlides/. The application remains permanently locked to V6.2.1; commits identify revisions.
 
-A local-first microbiology lecture editor with editable slides, citations, presentation mode, PowerPoint export, and printable slides.
+## Supported runtime and cost
 
-## Canonical identity
+The Pages app needs no account, hosted backend, API key, Postgres service or paid AI subscription. Knowledge mode queries public literature services directly when online. Provider availability, rate limits and browser CORS rules apply. AI mode uses an explicitly configured local Ollama installation. There are no paid cloud AI calls in this branch.
 
-Name: **JUW-MicroSlides**. Canonical live app: **https://tajoor621.github.io/JUW-MicroSlides/**. “MicroSlides” in older shortcuts is an abbreviation of this same app, not a second deployment. The static entry source is `pages.html`; the Pages build writes `dist-pages/index.html`. The manifest, footer and application metadata use the canonical name and permanent V6.2.1 lock.
+Browser decks, notes, cached sources and recovery records stay in IndexedDB on this device. Export a JSON or portable-project backup before clearing browser data or moving devices. A static website cannot use the desktop app's native SQLite file. Existing browser saves remain supported; no storage migration to a different database is performed by this cleanup.
 
-See [QA checklist](docs/QA.md), [phone contributor guide](docs/CONTRIBUTING-PHONE.md), [storage migrations](docs/STORAGE-MIGRATIONS.md), and [permissions and attribution](docs/PERMISSIONS.md). Institutional logo permission is not established by inclusion in this repository.
+The optional Windows Tauri companion uses **local transactional SQLite as its sole database**, with the same lecture UI and optional Ollama. It requires no database server or sign-in. The former hosted server, authentication, Postgres and paid-AI implementation is preserved only in [archive/server-platform-6702c13](https://github.com/Tajoor621/JUW-MicroSlides/tree/archive/server-platform-6702c13). That archive is not the supported lecturer product and is not deployed from this branch. The old platform sign-in domains are not JUW production services; no gate, test-domain or platform sign-in dependency remains in the supported app.
 
-## Public deployment
+Public GitHub Pages hosting and public-repository CI can run without a hosting subscription. Internet access, computer hardware, electricity and local-model execution remain the user's responsibility. Public evidence APIs do not guarantee unlimited access or permanent availability.
 
-The GitHub Pages build is a separate static entry point; it does not upload or execute TanStack server functions. Use Node.js 24 and npm 11.9.0. Run `npm ci` and `npm run build:pages`. Output is `dist-pages/`, with the application base `/JUW-MicroSlides/`.
+## Lecturer workflow
 
-The workflow `.github/workflows/pages.yml` checks types, lint, platform tests, research/data protection checks, and desktop/mobile browser workflows before deploying. In repository **Settings → Pages → Build and deployment**, choose **GitHub Actions**. Repository administration settings are not embedded in the source code. If Actions cannot publish because Pages is disabled, enable this setting and rerun the workflow.
+1. Choose **Generate**, enter a microbiology topic, level and exact total slide count (1–50). Select Standard Lecture, Pathogen Profile, Laboratory Method, Clinical Case Series or Curriculum Module. Learning objectives and optional assessments count toward the requested total.
+2. **Thorough research** retrieves topic-specific abstracts and available open full text through Europe PMC and PubMed. Bundled/cached mode uses available local material first. Source shortages produce an explicit failure while preserving the existing deck; the app does not substitute unrelated material or silently save a shorter deck. Offline generation requires supplied/cached material or a configured local model.
+3. Edit slide text directly or in **Edit**. Select layouts, theme, notes, difficulty and teaching fields. Themes and decorative motifs are visual aids, not scientific evidence. Media is never automatically attached to replace a removed figure.
+4. Use **PubMed** for reference discovery and **Evidence** for saved source passages, reference metadata and publication-status records. A valid DOI, a matching quotation or a successful metadata lookup is not independent confirmation of scientific correctness. Verify study context and applicable clinical guidance before teaching.
+5. In **Media**, collect related assets separately, inspect the original caption and reuse licence, then attach selected images explicitly. Commons and Openverse are provider searches. X, Facebook, Instagram, Pinterest and other shortcuts open public search/source pages; they are not authenticated scraping integrations. Direct downloads are limited to 25 MB and require provider/browser permission. Videos are downloadable collection items, not embedded PowerPoint video objects. Export includes the primary figure; additional provenance and references remain available in notes/backups.
+6. **Writing Notes** has its own topic and level. Generate using research or configured Ollama, edit the text and download Markdown. Notes are stored independently of decks. Export notes before **Refresh workspace** if you want to keep them: Refresh clears the current topic, searches and notes, cancels stale requests and opens a blank workspace. Saved decks remain in **Library**.
+7. Use **Present**, **Export PPTX**, **Export PDF**, handouts or Teaching Pack from the lecture workspace. PPTX retains native editable text and vector diagrams where supported. PDF is for reading/printing. After export preparation, use the persistent **Download PowerPoint** or PDF link if the mobile browser suppresses the automatic download.
 
-`npm run build` retains the original server/Vercel deployment. Server AI uses a server-side `XAI_API_KEY`; never place it in a VITE variable, committed file, or browser field. Provider availability/model names must be verified in your own provider account before enabling paid requests. The per-instance AI request quota is not a global billing cap; configure a provider spending limit before a public server deployment.
+## Draft status and exports
 
-## Structured lecture workflows
+**There is no Review tab and no export review gate.** All exported PPTX slides and PDF pages carry **“Unverified AI-assisted draft”**, including imported decks with old verification metadata. Export does not certify claims, citations, assessments or institutional approval. The draft label is a disclosure, not an export restriction.
 
-Generate standard lectures, fixed-section pathogen profiles, laboratory methods, clinical case series, and multi-lecture curriculum modules. Contextual controls add Bloom-aligned objectives, optional assessment, focus depth and visual emphasis. Structured editors support protocols, cases, tables, charts, taxonomy, learning objectives, and clinical pearls.
+Historical review/source records remain readable in project data for compatibility. Older qualification reports and archived review modules do not describe currently available lecturer menus. Writing Notes does not perform independent scientific review. Assessment questions and teaching fields are drafts that require faculty judgement; empty fields are not evidence that a topic was covered.
 
-See [lecture workflow guide](docs/LECTURE-WORKFLOWS.md) for offline source-note formatting, minimum slide counts, scientific review requirements, course building, accessible exports and complete JSON/Markdown recovery. Missing protocol timing, diagnostic evidence or taxonomy data remain explicit review blockers. Software checks do not certify scientific accuracy or replace qualified instructor review.
+The editor exports exactly its slide count. Full references and source provenance are retained without adding hidden figure/reference slides. Keep the editable JSON/portable project for the complete evidence records and recovery history. PPTX speaker notes retain presenter notes, answer keys, references and media credits; raw source paragraphs and internal JSON records are not dumped into the teaching notes. SVG fallback images use up to 4× raster resolution, bounded to 4096×2304 pixels; original photographs cannot gain detail beyond their source. Bundled DejaVu font files are intentional offline/export assets, with their licence in `public/fonts/LICENSE.txt`. Do not delete them as if they were test exports. Original typography may depend on fonts installed in the recipient's viewer.
 
-## Research, Writing Notes and downloads
+## Build and verification
 
-Online Knowledge generation defaults to Thorough source-first Europe PMC/PubMed retrieval: up to five result rounds, independent queries, 24 eligible open full-text attempts and a cancellable eight-minute budget. Sources remain attributed draft summaries, not universal scientific certification. Insufficient relevant material is reported clearly; the app does not pad or fabricate a requested slide count.
+Use Node.js 24 and npm 11.9.0. From a checkout:
 
-**Writing Notes** replaces the former Review tab. Enter its own topic and level, choose Knowledge research or configured AI/Ollama, then generate, edit and download Markdown notes. Supplied source material works offline. Notes save on this device independently of lecture decks. **Refresh workspace** clears the current topic, searches and notes, cancels stale work and opens an empty workspace; saved decks stay in Library. Export notes first if you want to retain them before Refresh.
+```sh
+npm ci
+npm run dev
+npm run typecheck
+npm run lint
+npm test
+npm audit --audit-level=high
+npm run build
+```
 
-PPTX, PDF, handouts and Teaching Packs have no review gate. Historical review/evidence records remain in saved projects; no automated process marks content scientifically verified. Missing images use an explicit placeholder. PowerPoint text stays native/editable and SVG stays vector, with higher-resolution PNG fallbacks (up to 4×, bounded to 4096×2304) for mobile viewers. Source photographs cannot gain detail beyond their original pixels. PDF uses vector text and bundled fonts; it is a reading/printing format, while PPTX is the fully editable slide format. Both toolbar exports retain a download link for a second mobile tap.
+`npm run dev` serves the same static application used in production. `npm run build` and `npm run build:pages` produce `dist-pages/`; the Pages base is `/JUW-MicroSlides/`. In repository Settings → Pages, select GitHub Actions as the build source. The deployment workflow verifies source/tests and browser behavior before publishing. No sandbox-specific startup script is needed.
 
-## Everyday use
+See [script reference](docs/SCRIPTS.md) for required, optional and environment-dependent commands; [QA checklist](docs/QA.md) for manual checks; [phone contributor guide](docs/CONTRIBUTING-PHONE.md) for mobile-only edits; and [storage migrations](docs/STORAGE-MIGRATIONS.md) for compatibility rules. Generated PPTX/PDF files and screenshots belong in CI artifacts, not tracked source. Windows installers are optional unsigned test builds, not a signed institutional release.
 
-1. Enter a topic, choose a count/level, and generate in Knowledge mode. This combines bundled topic material with topic-independent research retrieval; it is not a scientific fact-checking system.
-2. Edit slides and speaker notes. Open Help in each inspector tab for task instructions and limitations.
-3. Search Commons images and PubMed/OpenAlex references while online. Review source relevance and each asset's reuse licence.
-4. Open Library to download an editable JSON backup. Restore adds copies, preserving existing decks. Use Current deck backup to split a large library.
-5. Save external images offline while connected, then export a new backup. Failed CORS/unsupported/oversized images remain external links and are reported. A download does not imply all remote images are embedded.
-6. Ordinary PPTX/PDF exports remain available with review notes pending and retain draft labels. Use **Export PPTX → Download PowerPoint** after preparation. Formal reviewed exports and teaching packs retain all evidence requirements. Slide review status is derived from current human claim/surface decisions; editing invalidates previous attestations.
-7. PowerPoint preserves the editor’s exact slide count. Full references and additional-image provenance are retained in speaker notes; extra pages are not appended. Verify layout and attribution before distribution. PDF exports a file; browser printing is also available.
+## Qualification and permissions
 
-## Evidence navigation and external scientific review
+Software checks distinguish successful generation, source traceability and independent scientific review. Passing fixtures does not prove accuracy across all microbiology topics. Actual Microsoft PowerPoint rendering, representative classroom hardware, accessibility and independent scientific qualification have separate requirements in [scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md), [Windows qualification](docs/WINDOWS-QUALIFICATION.md) and the [classroom matrix](benchmarks/classroom-qualification.json). Historical reports retain their date and commit; do not treat them as a current release certificate or instructions for removed Review menus.
 
-**Evidence** retains the source library, guideline links and reference import. Saved historical claim-to-passage and review records remain in portable projects and JSON backups. These records do not block exports.
-
-To conduct an external review, download the scientific review pack and give its original `pack.json` to a qualified reviewer. In **Review → Complete an external review**, the reviewer opens that pack and records decisions, scientific rationale, checked HTTPS source links and redundant item IDs. Expand the reviewer declaration, then use **Check review completion** and **Export completed reviewer form**. A coordinator assesses two returned forms with the original pack using **Assess returned forms**. The workspace does not modify the lecturer's deck, authenticate a reviewer, certify scientific accuracy or change classroom-readiness gates.
-
-Review drafts save locally with three checkpoints. Reopen the matching pack and explicitly choose **Restore my saved review draft**, or resume an exported draft file. **Remove saved draft copies** deletes local recovery copies for that pack; later edits start saving again. Use separate devices/profiles for independent reviewers. Original packs and draft files are limited to 8 MB. Embedded raster previews can work offline; source links require available connectivity unless separately saved. `Alt+Left/Right` moves between review items and `Ctrl/Cmd+S` downloads the reviewer draft while its dialog is open.
-
-When replacing an individual teaching slide, inspect the proposal before applying it. Changes to the original slide invalidate an older proposal. Existing figures return to Media by default; explicitly confirm their suitability to retain them. Old claim/reference attachments are cleared and new claims require evidence review. The operation preserves the deck's slide count and other slides.
-
-## Storage, offline operation and recovery
-
-Decks are stored in IndexedDB on this browser/origin. Browser schema version 2 adds an additive migration history store to the existing version-1 database without rewriting deck records. The schema version is independent of V6.2.1. Existing data under `juw-microslides-v661-intro-logo` is copied during migration and the old copy is retained. Fresh samples no longer override older saved libraries. Invalid saved data is archived intact; Library → Download previous raw save retrieves it for repair instead of silently discarding it. There is no silent 24-deck eviction.
-
-Offline launch becomes available after the service worker finishes its first successful online install. Bundled app assets, illustrations and all four DejaVu Sans font faces are precached. Static artwork/font requests with query strings use the corresponding cached asset offline. Literature/image searches require a connection. External images need successful embedding to be available offline. Browser storage can still be cleared or evicted: keep exported backups outside the browser. JSON backup schema version is 1; imports are validated before adding copies, with a 100 MB / 500-deck import ceiling.
-
-Undo/redo retains up to 20 library snapshots in memory. Use Library buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y outside text fields. Native undo remains available while editing text. History resets on reload. New service workers activate without waiting for old tabs to close. Online navigation checks the network before using the saved shell; offline navigation retains the cached app. The Pages app displays a commit-based build ID and a Check for updates / Load latest build control. Reloading through that control waits for queued deck saves. Updates change the build ID and cache hash while the application version remains V6.2.1.
-
-## Optional local AI with Ollama
-
-Settings accepts an explicitly configured local computer/private LAN server address and installed model name. Start and configure Ollama yourself, install the chosen model, and permit the exact website origin in its CORS settings if required. Network/browser security rules may prevent HTTPS-to-local HTTP connections. On a phone, localhost refers to the phone, not your computer; use the computer's LAN address. The app does not run or install a model on a phone.
-
-Only a user-triggered AI generation or Copilot request sends content to that configured local server. Local AI plans the requested deck and writes batches of up to eight content slides, validating every batch and the final count (1–50). If unavailable or invalid, research generation attempts to complete the full deck. A short result is not saved as a successful deck. No paid cloud API key is requested by the static site.
-
-## Validation
-
-- `npm run typecheck`
-- `npm run lint`
-- `npm test`
-- `npm run test:research`
-- `npm run build:pages`
-- `npx playwright install chromium` then `npm run qa:pages`
-- `npm run build` for the retained server target
-
-`qa:pages` serves the built subdirectory in-process, checks desktop/mobile generation, >24 saved decks, backup/restore, undo/redo, reload persistence, PPTX download, and offline reopening. `JUW_QA_OUTPUT` sets its screenshot/report directory; `JUW_CHROMIUM` optionally selects an existing Chromium executable. Tests use Playwright when the optional agent-browser daemon is unavailable in restricted environments.
-
-## Known limits and remaining work
-
-- Scientific correctness, up-to-date clinical recommendations, and claim-to-source support require human review. Metadata lookup is not evidence verification.
-- Topics are not restricted to bundled profiles. The generator accepts any microbiology topic, searches related source material, and builds distinct passages toward the requested 1–50 slides. Success requires the exact count. Offline generation has finite bundled coverage; when sources/model access cannot support the request, the app reports an actionable error and preserves the active deck instead of saving fewer slides or inventing content.
-- Elicit support imports exports; it is not an Elicit account connection. Ambiguous legacy author strings cannot be reconstructed reliably; structured BibTeX author data is retained.
-- External searches depend on upstream availability, CORS, and provider quotas. This release does not certify their current availability in every region.
-- PowerPoint exports the primary figure on each slide; additional manually attached media links and full citations remain in notes and the editable backup. No figure/reference pages are added beyond the editor’s slide count. Preview, presenter, print and PowerPoint use one fixed 1280×720 composition. Export measures the rendered text lines and image boxes instead of using a separate template. Text remains editable (Georgia headings, Arial body); SVG artwork stays vector, with a high-resolution PNG compatibility fallback. Fonts may still be substituted by a viewer if unavailable on the device. Re-export previously downloaded decks to apply export fixes.
-- Cross-device sync, multi-user collaboration, Android-native backup interchange, and an independently tested APK are not included. Use the browser backup format for browser-to-browser transfer.
-- A physical Samsung-device test and a real Ollama connection remain required before claiming those environments are certified. Browser emulation is not a physical-device test.
-
-## Third-party content and licences
-
-Bundled CSL styles retain their licence declarations; see `src/lib/csl/README.md`. Reference parsing/formatting uses Citation.js, CSL/citeproc, and Papa Parse. External images retain provider metadata and must be checked individually. No new blanket licence is granted for university marks, third-party scientific images, or the existing repository. Grok platform branding/preview integration remains preserved.
-
-## Topic-focused generation, separate media, and specialist review
-
-The introduction uses the exact research topic and its scope. Concept headings are concise rather than repeatedly appending the topic. Generic filler, guessed universal course codes, and automatic scientific-image placement have been removed. Substantive instructor notes are labelled as user-provided evidence. When the bundled topic outline is shorter than the requested deck, the app searches Europe PMC using complementary topic/synonym queries and up to three cursor pages per query, deduplicates and ranks results, then builds distinct cited passages from longer abstracts. If the sources cannot complete the requested count, generation reports an error and preserves the existing deck. The toolbar and form use the same validated generation flow. Abstract summaries require review in the original paper. Slide text remains editable vector text in PowerPoint; preview typography scales with the slide canvas, and topic-specific schematic ornaments decorate the opening and content slides. New decks use one topic/discipline palette rather than rotating through unrelated subject themes; palette labels are kept in editor controls, and slides identify the deck discipline. Untouched shipped samples are refreshed; edited saved decks remain preserved. Generate a new deck to use the new content builder.
-
-**Media** searches public Wikimedia Commons images/videos and Openverse images, with visible provider results/errors, pagination, a persistent per-deck collection, and separate downloads. No search result is inserted into a slide automatically. Select an image and choose Attach to selected slide. Removing a figure leaves the slide without a replacement. Up to four manually selected images may be attached; choose the primary preview explicitly. Video files are downloadable but are not embedded in slides or PowerPoint. Direct in-app downloads are limited to 25 MB and require host/CORS permission; otherwise use Original source. Bundled illustrations are optional schematic aids and are not experimental images.
-
-Public-search shortcuts cover X/Twitter, Facebook, Instagram, Pinterest, CDC PHIL, Europe PMC and general web images. They open search/source pages; the app does not scrape gated posts, bypass sign-in, or claim exhaustive access to social media. Save source links for later; direct image/video URLs with recognized extensions are saved to the collection only. Provider thumbnails, original URLs, creator and licence metadata are retained in editable backups.
-
-**Review** replaces the old citation-percentage-only Audit tab. Built-in checks identify exact passages and suggest corrections for repeated headings, duplicate bodies, generator prompts, selected microbiology misconceptions, topic drift and attached-figure metadata issues. DOI/PMID checking uses Crossref/Europe PMC to compare bibliographic metadata for up to 30 records. A matching identifier is not proof of claim support, study quality or retraction status. Rules are screening checks, not comprehensive scientific verification.
-
-Optional local AI specialist review uses the configured Ollama model for the selected slide. Text-only mode receives slide text and media metadata. The explicit image-inspection option requires a vision-capable model and readable PNG/JPEG/WebP files (four images / 8 MB total). Browser CORS and model capability can limit inspection. Suggestions are labelled unverified and are never applied automatically; stale reviews are identified after edits. Download the review report as JSON for manual correction and source checking. The app never invents a successful AI report when no model is configured.
-
-Run `npm run test:topics` for the topic/media/reviewer regression suite. `qa:pages` also checks that collecting/downloading media does not attach it, manually attached mismatched media is flagged, correction reports download, and removing a figure does not add a fallback.
-
-## Windows professional workspace (V6.2.1)
-
-Use the Lecture workspace bar for whole-deck audit, reviewed export, portable projects, recovery revisions, storage information, slide locks and inspected replacements. Evidence → Claim evidence records passage-level support and explicit lecturer review. Changing statements invalidates prior review. Teaching exports require the current reviewed revision; draft work remains recoverable through JSON, Markdown and portable projects.
-
-New decks are limited to exactly 1–50 slides, with no automatic agenda/conclusion/reading padding. Legacy oversized backups are preserved for recovery. Offline reuse requires available topic material or downloaded research; the app does not claim to know every topic offline.
-
-For Windows, `npm run desktop:build` builds the Tauri installer; GitHub Actions also builds and smoke-tests the native app. The installer includes WebView2's offline installer. Inference models are separately configured in Settings. Installers are unsigned test builds, not a signed production release.
-
-See [Windows implementation and qualification](docs/WINDOWS-QUALIFICATION.md) for implemented functionality, exact validation scope and remaining scientific, export, hardware and release gates. A successful CI run is not a 10/10 scientific-quality certification.
-
-The [professional release backlog and acceptance metrics](docs/PROFESSIONAL-ROADMAP.md) define the remaining P0/P1/P2 work and the three lecturer workflows. CSL-JSON reference import/export preserves structured source metadata. Identical local-model requests can resume saved completed batches.
-
-## Scientific source and qualification extension (V6.2.1)
-
-Open full-text evidence, authoritative-source passages, correction/retraction checks, guideline currency declarations and optional local embedding screening are available in Review. See [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md) for the 200-topic live benchmark, actual Microsoft PowerPoint test and outstanding independent-review/hardware gates. Software test success is not scientific certification.
-
-### Independent scientific review handoff
-
-In **Review → Independent scientific review**, choose **Download independent review pack**. This works offline and uses the Windows save dialog in the desktop app. The ZIP contains hashed slide text, private notes, claim passages, figure links, instructions and separate blank forms for two external reviewers. Share it deliberately. It does not contain a scientific pass or authenticated reviewer identities.
-
-The reproducible development calibration and reviewer completeness checks are documented in [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md). [The prepared review cohort](docs/qualification/review-handoff-2026-10-20.json) covers 20 archived decks and 1,310 review items; independent human decisions and installed-model calibration remain pending.
-
-**Review → Assess returned reviewer forms** loads the original pack and both external reviewer forms, checks them against the current deck and evidence, and downloads an assessment offline. Complete self-attestations remain explicitly unverified and do not unlock reviewed export. The [real local MiniLM evaluation](docs/qualification/semantic-minilm-2026-10-20.json) failed to qualify the default threshold; review the measured limitations before relying on semantic screening.
-
-The V6.2.1 release-gate update added explicit review for headings, notes and figures, blocks reviewed export on incomplete publication checks, and supports immediate local-model cancellation. The complete topic/count matrix and external semantic evaluation workflow are documented in [Scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md#enforced-export-and-qualification-workflow--21-october-2026). These are software capabilities; independent science review and physical release qualification remain pending.
-
-### V6.2.1 structured teaching and release gate
-
-Content authoring now includes editable scientific schematics, sourced quantitative observations, level-specific depth, pitfalls, takeaways and explicit final instructor verification. PPTX, PDF and Teaching Packs download without a review gate; JSON/portable projects retain complete source records. Google Slides uses a PPTX import file. See [implementation, verification and remaining qualifications](docs/qualification/teaching-overhaul-2026-10-21.md) for the exact capability boundaries.
-
-## Scientific presentation and biosafety
-
-A conservative list of genus names enables binomial italics in headings, teaching text and bullet rendering without changing stored source wording. Unknown names and ambiguous abbreviations remain unchanged; this is not taxonomy verification. Unit typography checks propose house style without converting concentrations or altering quotations. DOI syntax checks are offline advisories; use the existing Evidence publication checks to retrieve metadata and examine corrections/retractions. Metadata validity does not prove claim support.
-
-High-containment procedural request screening runs before generation/retrieval and is also included in model instructions. Flagged structured protocol output is rejected before replacing the saved deck; non-operational lectures remain available. Matching is deliberately limited and cannot determine a safe containment level or detect every agent or wording. Institutional risk assessment and approved SOPs remain necessary. Guidance: [CDC/NIH BMBL](https://www.cdc.gov/labs/bmbl/index.html), [WHO Laboratory Biosafety Manual](https://www.who.int/publications/i/item/9789240011311).
+University marks remain owner-supplied artwork. Inclusion does not establish institutional endorsement or third-party redistribution permission. See [permissions and attribution](docs/PERMISSIONS.md). Article/figure licences and third-party exclusions must be checked individually. The app does not grant blanket reuse rights or authenticate lecturer/reviewer identities.

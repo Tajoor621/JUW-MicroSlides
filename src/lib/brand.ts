@@ -1,3 +1,4 @@
+export const DRAFT_STAMP = "Unverified AI-assisted draft";
 export const JUW = {
   name: "JUW-MicroSlides",
   canonicalUrl: "https://tajoor621.github.io/JUW-MicroSlides/",

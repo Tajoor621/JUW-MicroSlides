@@ -2,7 +2,7 @@ import { generateLocalAiDeck, localCopilot } from "./local-ai";
 import type { Citation, GenerateInput } from "./types";
 import { generateLocalDeck } from "./generate-deck";
 const unavailable =
-  "Cloud AI is not configured on this static site. Use Knowledge mode; no API key is sent from this browser.";
+  "AI mode requires a configured local Ollama model. Knowledge mode uses public research sources.";
 export async function generateAiDeck({
   data,
   signal,

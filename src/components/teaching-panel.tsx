@@ -13,7 +13,7 @@ import {
   type Teaching,
 } from "@/lib/teaching";
 import { Button } from "./ui/button";
-import { searchPubmed } from "@/lib/ai";
+import { searchPubmed } from "@/lib/browser-services";
 import { toast } from "sonner";
 export function TeachingPanel() {
   const deck = useDeckStore((s) => s.deck()),

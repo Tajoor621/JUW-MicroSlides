@@ -77,11 +77,18 @@ try {
     const zip = await JSZip.loadAsync(bytes);
     const slides = Object.keys(zip.files).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n));
     assert.equal(slides.length, 2);
+    for (const path of slides)
+      assert.match(
+        await zip.file(path).async("string"),
+        /Unverified AI-assisted draft/,
+        "Every exported slide is visibly unverified",
+      );
     const text = (await Promise.all(slides.map((n) => zip.file(n).async("string")))).join("\n");
     assert.match(text, /<a:t>/);
-    assert.match(
+    assert.doesNotMatch(
       await zip.file("ppt/notesSlides/notesSlide2.xml").async("string"),
-      /Full editable slide text/,
+      /Full editable slide text|Claim evidence trail|Source paragraph context/,
+      "Speaker notes stay readable; full provenance remains in project backups",
     );
     if (i < 2) assert.match(text, /Original image unavailable/);
     else {
@@ -237,13 +244,18 @@ try {
     name: "Generate a scientific deck",
     exact: true,
   });
-  await mobileGenerator.getByRole("textbox", { name: "Topic", exact: true }).fill("Bacterial genome architecture");
+  await mobileGenerator
+    .getByRole("textbox", { name: "Topic", exact: true })
+    .fill("Bacterial genome architecture");
   await mobileGenerator.getByLabel("Research approach", { exact: true }).selectOption("standard");
   await mobileGenerator.getByRole("spinbutton", { name: "Slides (1–50)", exact: true }).fill("6");
   await mobileGenerator.getByRole("button", { name: "Generate deck", exact: true }).click();
   await mobileGenerator.waitFor({ state: "hidden" });
   await page.locator("[data-slide-stage]").waitFor({ state: "visible" });
-  assert.match(await page.locator("[data-slide-stage]").innerText(), /BACTERIAL GENOME ARCHITECTURE/i);
+  assert.match(
+    await page.locator("[data-slide-stage]").innerText(),
+    /BACTERIAL GENOME ARCHITECTURE/i,
+  );
   assert.match(await page.locator("main").innerText(), /Slide 1 of 6/);
   await page.getByRole("button", { name: "Slides", exact: true }).click();
   const secondSlide = page.getByRole("button", { name: /^02 / });

@@ -27,7 +27,7 @@ await writeFile(
   JSON.stringify({ buildId, version: `V${packageVersion}` }),
 );
 const assets = (await files(root)).filter(
-  (p) => !p.startsWith("__grok/") && p !== "sw.js" && p !== "build-info.json",
+  (p) => p !== "sw.js" && p !== "build-info.json",
 );
 const hash = (await import("node:crypto")).createHash("sha256");
 for (const asset of assets) hash.update(await readFile(join(root, asset)));
