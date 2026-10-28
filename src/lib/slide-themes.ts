@@ -185,7 +185,12 @@ export function researchTheme(topic: string, discipline: string, layout: string)
   if (/outbreak|epidem|one health|transmission/.test(subject)) return "outbreak";
   if (/virus|viral|virolog|influenza|phage|sars/.test(subject)) return "molecular";
   if (/enzyme|biotech|industrial|food|dairy|ferment/.test(subject)) return "culture";
-  if (/genom|chromosom|nucleoid|plasmid|genetic|dna|rna|pcr|molecular/.test(subject)) return "molecular";
+  if (
+    /genom|chromosom|nucleoid|plasmid|genetic|dna|rna|pcr|molecular|conjugation|competence|transformation/.test(
+      subject,
+    )
+  )
+    return "molecular";
   if (/fung|myco|candida|yeast/.test(subject)) return "mycology";
   if (/parasit|malaria|plasmod/.test(subject)) return "parasitology";
   if (/alga|phycolog/.test(subject)) return "phycology";

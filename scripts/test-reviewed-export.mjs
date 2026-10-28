@@ -265,6 +265,50 @@ try {
   console.log(
     "PASS header typing, shared request, six visible slides and PPTX after Refresh; narrow modal generation selects its new deck",
   );
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  await page.locator("#gen-topic").fill("Bacterial conjugation");
+  await page.getByLabel("Research approach", { exact: true }).selectOption("standard");
+  await page.locator("#gen-count").fill("18");
+  await page.getByLabel("Include Assessment Questions", { exact: true }).check();
+  await page.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await page.getByRole("button", { name: "Open generator", exact: true }).waitFor();
+  assert.match(await page.locator("main").innerText(), /Slide 1 of 18/);
+  await page.getByRole("button", { name: /origin of transfer is a DNA address/ }).click();
+  const stage = page.locator("[data-slide-stage]");
+  assert.match(await stage.innerText(), /Relaxase is recruited/);
+  for (const img of await stage.locator("img").all())
+    assert(
+      await img.evaluate((el) => el.complete && el.naturalWidth > 0),
+      "Branding asset decodes",
+    );
+  await page.screenshot({ path: join(output, "conjugation-mechanism.png") });
+  const conjugationDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  const conjugationBytes = await readFile(await (await conjugationDownload).path());
+  await writeFile(join(output, "conjugation-18.pptx"), conjugationBytes);
+  const conjugationZip = await JSZip.loadAsync(conjugationBytes);
+  const conjugationParts = Object.keys(conjugationZip.files).filter((n) =>
+    /^ppt\/slides\/slide\d+\.xml$/.test(n),
+  );
+  assert.equal(conjugationParts.length, 18);
+  const conjugationText = (
+    await Promise.all(conjugationParts.map((n) => conjugationZip.file(n).async("string")))
+  ).join("\n");
+  assert.match(conjugationText, /Relaxase is recruited/);
+  assert.match(conjugationText, /oriT/);
+  assert.doesNotMatch(
+    conjugationText,
+    /Which teaching section|Since multiple ground experiments|Original image unavailable/,
+  );
+  const conjugationPdfDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export PDF", exact: true }).click();
+  const conjugationPdf = await readFile(await (await conjugationPdfDownload).path());
+  await writeFile(join(output, "conjugation-18.pdf"), conjugationPdf);
+  assert.match(conjugationPdf.toString("latin1"), /\/Count\s+18\b/);
+  console.log(
+    "PASS source-linked 18-slide conjugation sequence, distinct editable diagram steps, mechanism questions and PPTX/PDF downloads",
+  );
   assert.deepEqual(errors, []);
   await writeFile(
     join(output, "editable-export-notes.json"),

@@ -20,6 +20,7 @@ export interface TopicFocus {
 }
 
 const RULES: Array<{ re: RegExp; kind: TopicKind; discipline: string; setting?: TopicFocus["setting"] }> = [
+  { re: /\b(conjugation|transduction|transformation|horizontal gene transfer|natural competence|electroporation)\b/i, kind: "process", discipline: "Microbial Genetics & Molecular Biology", setting: "molecular" },
   { re: /\b(enzyme|immobil|bioreactor|downstream|biotech|kinetics)\b/i, kind: "process", discipline: "Industrial & Biotechnology Microbiology", setting: "industrial" },
   { re: /\b(ferment|starter culture|yoghurt|yogurt|cheese|wine|beer|silage)\b/i, kind: "process", discipline: "Food & Dairy Microbiology", setting: "food" },
   { re: /\b(food|dairy|spoilage|haccp|pasteuri[sz]ation|canning)\b/i, kind: "process", discipline: "Food & Dairy Microbiology", setting: "food" },

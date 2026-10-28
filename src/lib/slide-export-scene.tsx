@@ -73,6 +73,7 @@ export async function slideExportScene(
           index={index}
           total={deck.slides.length}
           citationStyle={deck.citationStyle}
+          exportCapture
         />,
       ),
     );
@@ -97,12 +98,15 @@ export async function slideExportScene(
     const teaching = stage.querySelector<HTMLElement>(
       "[data-teaching-content],[data-lecture-content]",
     );
-    // Ordinary editable drafts can fit text; reviewed release keeps the original
-    // strict projector layout. Reflow complete text rather than clip or truncate it.
+    // Fit the complete composition. Capture uses a fixed scale, never the
+    // preview's asynchronously measured ResizeObserver transform.
     const overflows = () =>
       teaching &&
       (teaching.scrollHeight > teaching.clientHeight + 2 ||
-        [...teaching.children].some((c) => c.scrollHeight > c.clientHeight + 2));
+        teaching.scrollWidth > teaching.clientWidth + 2 ||
+        [...teaching.querySelectorAll<HTMLElement>("*")].some(
+          (c) => c.scrollHeight > c.clientHeight + 2 || c.scrollWidth > c.clientWidth + 2,
+        ));
     if (options.draft && teaching && overflows()) {
       for (let pass = 0; pass < 18 && overflows(); pass++) {
         for (const el of [

@@ -1,5 +1,12 @@
 # Changelog
 
+## V6.2.1 — conjugation teaching core and export geometry (28 October 2026)
+
+- Compose the general conjugation lecture from 14 source-linked lessons covering DNA processing, transport and recipient inheritance, with concise titles, explanatory fields, misconceptions, readable notes and distinct editable diagram steps. Keep specialised topics and supplied material on the general research path; longer requests still need additional evidence.
+- Replace title-matching conjugation quizzes with mechanism/application questions and instructor explanations. Generic evidence questions test limits of inference instead of matching section titles. Keep all claims as drafts and every export ungated and stamped.
+- Classify DNA-transfer mechanisms as Microbial Genetics. In Thorough mode, attempt live notice checks for teaching-core references without claiming scientific verification or discarding the teaching structure.
+- Capture exports at a fixed composition scale, measure PDF text with its embedded face, fit font metrics to captured line bounds and isolate SVG graphics state from subsequent assets. Extend browser QA to generate and download the actual 18-slide conjugation deck; inspect rendered files before claiming visual qualification.
+
 ## V6.2.1 — supported lecturer runtime and draft disclosure (27 October 2026)
 
 - Declare the static Pages app the supported lecturer product; archive the hosted server/sign-in/Postgres/paid-AI/platform implementation in `archive/server-platform-6702c13`. Keep browser IndexedDB saves and optional desktop SQLite.

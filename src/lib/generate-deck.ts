@@ -8,6 +8,7 @@ import { profileFor, topicOverlap, type TopicSection } from "./topic-content";
 import { researchTheme } from "./slide-themes";
 import { type Deck, type GenerateInput, type Slide } from "./types";
 import { uid } from "./utils";
+import { conjugationCore } from "./conjugation-curriculum";
 function makeSlide(
   title: string,
   bullets: string[] = [],
@@ -201,5 +202,5 @@ export function sampleDeck(): Deck {
 }
 
 export function generateLocalDeck(input: GenerateInput): Deck {
-  return prepareTeachingDeck(generateLocalDeckBase(input));
+  return prepareTeachingDeck(conjugationCore(generateLocalDeckBase(input), input));
 }

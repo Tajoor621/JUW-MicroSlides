@@ -227,6 +227,11 @@ html[data-theme="light"] {
 [data-slide-stage] p {
   text-wrap: wrap;
 }
+[data-teaching-content],
+[data-lecture-content] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 [data-slide-stage] .slide-bullets {
   font-size: 24px;
 }
