@@ -235,8 +235,8 @@ const LESSONS: Lesson[] = [
     steps: [
       "One strand is selected",
       "T-strand is exported",
-      "Donor replaces DNA",
-      "Recipient receives ssDNA",
+      "Donor synthesis during transfer",
+      "Recipient converts incoming DNA",
     ],
     refs: [0, 1],
     notes:
@@ -468,12 +468,12 @@ export function conjugationQuestions(deck: Deck): Slide["assessment"] | undefine
     );
   return [
     question(
-      "A plasmid replicates in its host, but its oriT is disrupted. Which defect is most directly predicted?",
+      "A plasmid replicates normally but has a disrupted oriT. Which step fails first?",
       [
-        "Failure of transfer-origin recognition and DNA processing",
-        "Loss of plasmid replication despite an intact replication origin",
-        "A primary defect in recipient double-strand conversion",
-        "A primary defect in expression after stable establishment",
+        "Transfer-origin recognition and DNA processing",
+        "Initiation at the replication origin",
+        "Recipient double-strand conversion",
+        "Expression after stable establishment",
       ],
       0,
       "oriT serves conjugative processing; it is distinct from the replication origin. The prediction assumes other functions remain intact.",
@@ -481,12 +481,12 @@ export function conjugationQuestions(deck: Deck): Slide["assessment"] | undefine
     ),
     have(7)
       ? question(
-          "Incoming F-plasmid single-stranded DNA is detected before a later plasmid protein appears. Which explanation best fits this order?",
+          "Incoming F ssDNA appears before a later plasmid protein. What best explains the delay?",
           [
-            "All plasmid promoters must be active on incoming single-stranded DNA",
-            "Later expression proves that the plasmid never entered as single-stranded DNA",
-            "DNA conversion and regulated gene expression follow entry",
-            "DNA-entry microscopy directly measures stable plasmid inheritance",
+            "All promoters function on incoming ssDNA",
+            "Later expression excludes ssDNA transfer",
+            "DNA conversion changes gene expression",
+            "DNA entry itself proves stable inheritance",
           ],
           2,
           "The F-system study separates ssDNA entry, dsDNA conversion and successive gene-expression programmes. Entry alone does not establish simultaneous expression.",
@@ -506,12 +506,12 @@ export function conjugationQuestions(deck: Deck): Slide["assessment"] | undefine
         ),
     have(8)
       ? question(
-          "An oriT-bearing plasmid lacks its own complete transfer machinery. Under which condition could conjugative movement still occur?",
+          "An oriT-bearing plasmid lacks complete transfer machinery. What could enable movement?",
           [
-            "oriT alone encodes a complete secretion system",
-            "A compatible helper supplies the required functions in trans",
-            "A replication origin can replace a missing transfer apparatus",
-            "Recipient gene expression substitutes for every missing donor transfer function",
+            "oriT alone encodes a secretion system",
+            "A compatible helper supplies transfer functions",
+            "Replication substitutes for a transfer apparatus",
+            "Recipient expression replaces donor functions",
           ],
           1,
           "Helper-dependent mobility requires compatible recognition and transfer functions; the presence of an arbitrary helper is insufficient.",

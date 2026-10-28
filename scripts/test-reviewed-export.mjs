@@ -327,6 +327,19 @@ try {
   assertPdfImageClips(conjugationPdf);
   await writeFile(join(output, "conjugation-18.pdf"), conjugationPdf);
   assert.match(conjugationPdf.toString("latin1"), /\/Count\s+18\b/);
+  await page
+    .getByRole("button", { name: /17 assessment Apply the conjugation mechanism/i })
+    .click();
+  assert(
+    await page
+      .locator("[data-lecture-content]")
+      .evaluate(
+        (el) =>
+          el.getBoundingClientRect().bottom <= el.parentElement.getBoundingClientRect().bottom + 2,
+      ),
+    "All three MCQs fit above the reference/footer region in the shared composition",
+  );
+  await page.screenshot({ path: join(output, "conjugation-assessment.png") });
   console.log(
     "PASS source-linked 18-slide conjugation sequence, distinct editable diagram steps, mechanism questions and PPTX/PDF downloads",
   );

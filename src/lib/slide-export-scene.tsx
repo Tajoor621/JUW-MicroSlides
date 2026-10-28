@@ -102,7 +102,9 @@ export async function slideExportScene(
     // preview's asynchronously measured ResizeObserver transform.
     const overflows = () =>
       teaching &&
-      (teaching.scrollHeight > teaching.clientHeight + 2 ||
+      (teaching.getBoundingClientRect().bottom >
+        teaching.parentElement!.getBoundingClientRect().bottom + 2 ||
+        teaching.scrollHeight > teaching.clientHeight + 2 ||
         teaching.scrollWidth > teaching.clientWidth + 2 ||
         [...teaching.querySelectorAll<HTMLElement>("*")].some(
           (c) => c.scrollHeight > c.clientHeight + 2 || c.scrollWidth > c.clientWidth + 2,
