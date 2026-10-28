@@ -1,6 +1,6 @@
 import { z } from "zod";
 // Bump when scientific annotations or template geometry change, so old reviews become stale.
-export const TEACHING_DIAGRAM_REVISION = "2026-10-23.1";
+export const TEACHING_DIAGRAM_REVISION = "2026-10-28.1";
 export const DIAGRAMS = [
   "adsorption",
   "covalent",

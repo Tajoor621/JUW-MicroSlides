@@ -143,7 +143,9 @@ export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolea
               iw = image.naturalWidth * fit,
               ih = image.naturalHeight * fit;
             pdf.saveGraphicsState();
-            pdf.rect(x, y, w, h);
+            // null preserves the rectangle path until clip consumes it. The
+            // default "S" strokes/clears it first, producing an empty image clip.
+            pdf.rect(x, y, w, h, null);
             pdf.clip();
             pdf.discardPath();
             pdf.addImage(
