@@ -70,6 +70,11 @@ test("conjugation teaching sequence, draft provenance, assessments and backup su
     const mcqs = deck.slides.find((s) => s.layout === "assessment").assessment;
     assert.equal(mcqs.length, 3);
     for (const q of mcqs) {
+      assert(q.question.length <= 120, "Questions remain concise enough for a shared slide");
+      assert(
+        q.options.every((o) => o.length <= 60),
+        "Options avoid multi-line paragraph density",
+      );
       assert.equal(new Set(q.options).size, 4);
       assert(q.options.includes(q.answer));
       assert(q.sourceUrl && q.rationale.length > 60);

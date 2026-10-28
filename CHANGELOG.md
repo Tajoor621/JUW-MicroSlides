@@ -3,6 +3,7 @@
 ## V6.2.1 — conjugation teaching core and export geometry (28 October 2026)
 
 - Rendered-file follow-up: preserve PDF image clipping paths until clipping consumes them, so institutional images remain visible. Reserve footer height, bound diagram height and keep decorative motifs in the header to prevent legends/accents colliding with teaching text. Show recorded misconceptions on every applicable slide.
+- Keep assessment prompts/options concise and compare content against its available parent region during export fitting. A browser regression requires the three MCQs to remain above the reference/footer region. Identify donor synthesis as concurrent with strand transfer in the conceptual sequence.
 
 - Compose the general conjugation lecture from 14 source-linked lessons covering DNA processing, transport and recipient inheritance, with concise titles, explanatory fields, misconceptions, readable notes and distinct editable diagram steps. Keep specialised topics and supplied material on the general research path; longer requests still need additional evidence.
 - Replace title-matching conjugation quizzes with mechanism/application questions and instructor explanations. Generic evidence questions test limits of inference instead of matching section titles. Keep all claims as drafts and every export ungated and stamped.
