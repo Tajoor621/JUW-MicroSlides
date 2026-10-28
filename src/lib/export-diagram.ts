@@ -13,6 +13,7 @@ export async function teachingDiagramSvg(slide: Slide) {
       label: p.diagramLabel,
       alt: p.altText,
       color: themeOf(slide.theme).accent,
+      steps: p.steps,
     }),
   ).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ');
 }

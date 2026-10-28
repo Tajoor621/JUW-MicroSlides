@@ -35,6 +35,7 @@ export function TeachingContent({
               label={p.diagramLabel}
               alt={p.altText}
               color={color}
+              steps={p.steps}
             />
           ) : image ? (
             <img

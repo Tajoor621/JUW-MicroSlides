@@ -26,6 +26,7 @@ import { DISCIPLINES, suggestDiscipline } from "@/lib/knowledge";
 import { generateAiDeck } from "@/lib/browser-services";
 
 import { inferFocus } from "@/lib/topic-engine";
+import { hasConjugationCore } from "@/lib/conjugation-curriculum";
 import { SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
 import { LEVELS, MAX_SLIDES, type GenerateInput, type Level } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -198,6 +199,7 @@ export function GenerateForm({
         }
         if (
           input.includeAssessment &&
+          !hasConjugationCore(local) &&
           local.slides.filter((s) => s.claims?.some((c) => c.evidence.length)).length < 3
         )
           local = {
@@ -208,6 +210,7 @@ export function GenerateForm({
         if (
           input.researchDepth === "thorough" &&
           input.mode === "manual" &&
+          !hasConjugationCore(local) &&
           navigator.onLine &&
           !input.notes.trim()
         ) {
@@ -221,7 +224,8 @@ export function GenerateForm({
         }
         if (
           local.slides.length < sourceInput.count ||
-          local.slides.some((s) => s.title === "Evidence required")
+          local.slides.some((s) => s.title === "Evidence required") ||
+          (hasConjugationCore(local) && input.researchDepth === "thorough")
         ) {
           setProgress(
             `Searching research to extend this ${local.slides.length}-slide draft toward ${input.count}…`,

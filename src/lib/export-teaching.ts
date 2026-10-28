@@ -67,7 +67,11 @@ export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolea
   });
   for (let index = 0; index < deck.slides.length; index++) {
     if (index) pdf.addPage([960, 540], "landscape");
-    const scene = await slideExportScene(deck, index, { draft: true });
+    // Measure with the same bundled face embedded below. Browser Arial/Georgia
+    // widths differ from DejaVu and previously pushed PDF lines beyond columns.
+    const scene = await slideExportScene({ ...deck, exportTypography: "portable" }, index, {
+      draft: true,
+    });
     for (const item of scene) {
       const x = item.x * 0.75,
         y = item.y * 0.75,
@@ -85,6 +89,8 @@ export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolea
           item.italic ? (item.bold ? "bolditalic" : "italic") : item.bold ? "bold" : "normal",
         );
         pdf.setFontSize(item.size * 0.75);
+        const measured = pdf.getTextWidth(item.text);
+        if (measured > w && w > 0) pdf.setFontSize(item.size * 0.75 * (w / measured));
         pdf.setTextColor(`#${item.color}`);
         pdf.text(item.text, x, y + h * 0.8);
       } else if (item.kind === "rect") {
@@ -108,12 +114,19 @@ export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolea
             if (doc.querySelector("parsererror")) throw Error(`Slide ${index + 1}: invalid SVG.`);
             for (const text of doc.querySelectorAll<SVGTextElement>("text,tspan"))
               text.style.fontFamily = "Teaching";
-            await pdf.svg(doc.documentElement as unknown as SVGElement, {
-              x,
-              y,
-              width: w,
-              height: h,
-            });
+            // SVG renderers can alter the current clip/transform. Isolate each
+            // illustration so subsequent logos and text keep their own bounds.
+            pdf.saveGraphicsState();
+            try {
+              await pdf.svg(doc.documentElement as unknown as SVGElement, {
+                x,
+                y,
+                width: w,
+                height: h,
+              });
+            } finally {
+              pdf.restoreGraphicsState();
+            }
           } else {
             const image = await decodeTeachingImage(item.src, index);
             const canvas = document.createElement("canvas");

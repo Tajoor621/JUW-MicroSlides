@@ -1,4 +1,10 @@
 import { dnaTransferClarification } from "./dna-transfer-topic";
+import {
+  hasConjugationCore,
+  conjugationTopic,
+  conjugationQuestions,
+  CONJUGATION_REFERENCES,
+} from "./conjugation-curriculum";
 import { assertGenerationBiosafety, assertGeneratedBiosafety } from "./biosafety";
 import { researchTheme } from "./slide-themes";
 import { caseContinuityProblem } from "./lecture-case-context";
@@ -60,6 +66,7 @@ export async function generateCourseModule(
     let deck = writer ? await writer(sourceInput) : generateLocalDeck(sourceInput);
     if (
       input.includeAssessment &&
+      !hasConjugationCore(deck) &&
       deck.slides.filter((s) => s.claims?.some((c) => c.evidence.length)).length < 3
     )
       deck = { ...deck, slides: deck.slides[0]?.layout === "title" ? [deck.slides[0]] : [] };
@@ -222,6 +229,12 @@ export function blankLectureSlide(title: string, layout: Layout = "content"): Sl
   };
 }
 export function objectivesFor(input: GenerateInput) {
+  if (conjugationTopic(input.topic))
+    return [
+      "Explain how oriT, relaxase and the transfer apparatus coordinate DNA delivery.",
+      "Distinguish DNA entry from recipient establishment and stable inheritance.",
+      "Predict the consequences of defects in processing, delivery or helper compatibility.",
+    ];
   const verbs =
     input.level === "Undergraduate"
       ? ["Describe", "Compare", "Interpret"]
@@ -235,6 +248,49 @@ export function objectivesFor(input: GenerateInput) {
   ];
 }
 export function assessmentSlides(deck: Deck): Slide[] {
+  const curated = conjugationQuestions(deck);
+  if (curated) {
+    const citations = CONJUGATION_REFERENCES.map((c) => ({ ...c }));
+    return [
+      {
+        ...blankLectureSlide("Apply the conjugation mechanism", "assessment"),
+        assessment: curated,
+        citations,
+        notes:
+          "Instructor answers and source-linked explanations are included in exported speaker notes.",
+      },
+      {
+        ...blankLectureSlide("Explain the failed checkpoint", "assessment"),
+        citations,
+        assessment: [
+          {
+            kind: "short-answer",
+            question:
+              "A recipient contains incoming DNA but never maintains the plasmid. Explain why entry alone cannot establish successful inheritance.",
+            answer:
+              "Separate transport from DNA conversion, expression and maintenance; the observation does not locate a unique failed establishment step.",
+            options: [],
+            rationale:
+              "A stage-specific observation supports DNA entry, not every later establishment event.",
+            sourceUrl: citations[0].url,
+          },
+          {
+            kind: "short-answer",
+            question: deck.slides.some((s) => /Chromosomal transfer and Hfr/.test(s.title))
+              ? "An Hfr cross yields a recipient with one new chromosomal marker. Must that recipient now be F-positive? Explain."
+              : "Why does observing DNA entry not demonstrate cell multiplication or stable plasmid inheritance?",
+            answer: deck.slides.some((s) => /Chromosomal transfer and Hfr/.test(s.title))
+              ? "No. Chromosomal marker acquisition does not demonstrate acquisition of an intact F element; distinguish entry and recombination from complete F transfer."
+              : "The cells existed before transfer; establishment and subsequent inheritance require evidence beyond entry.",
+            options: [],
+            rationale:
+              "The fate of a chromosomal marker and the fate of the complete transfer element are separate outcomes.",
+            sourceUrl: citations[4].url,
+          },
+        ],
+      },
+    ];
+  }
   const sources = deck.slides.filter(
     (s) => s.claims?.some((c) => c.evidence.length) && s.bullets.length,
   );
@@ -244,16 +300,20 @@ export function assessmentSlides(deck: Deck): Slide[] {
     );
   const items = sources.slice(0, 3).map((s, i) => {
     const claim = s.claims!.find((c) => c.evidence.length)!;
-    const other = sources
-      .filter((x) => x.id !== s.id)
-      .slice(0, 3)
-      .map((x) => x.title);
+    const options = [
+      "The result proves the same outcome in every organism and setting.",
+      "Apply the result to the reported system; examine methods and controls before generalising.",
+      "A reported association alone identifies the only possible causal mechanism.",
+      "The source passage removes the need to consider measurement limitations.",
+    ];
     return {
       kind: "mcq" as const,
-      question: `Which teaching section is directly supported by this source passage? “${claim.text}”`,
-      options: [...other.slice(0, i % 3), s.title, ...other.slice(i % 3)],
-      answer: s.title,
-      rationale: claim.evidence[0].quote,
+      question: `A source reports: “${claim.text}” Which interpretation respects the limits of this evidence?`,
+      options: [...options.slice(i), ...options.slice(0, i)],
+      answer:
+        "Apply the result to the reported system; examine methods and controls before generalising.",
+      rationale:
+        "The passage reports a finding in a particular system. Evaluate the original methods, controls and limitations before inferring causality or generality; the full source passage remains in the project evidence records.",
       sourceUrl: claim.evidence[0].sourceUrl,
     };
   });

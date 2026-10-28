@@ -28,6 +28,7 @@ export function SlideView({
   revealCount = 999,
   reviewRequired,
   evidenceBasis,
+  exportCapture = false,
 }: {
   slide: Slide;
   deck?: Deck | null;
@@ -42,15 +43,16 @@ export function SlideView({
   revealCount?: number;
   reviewRequired?: boolean;
   evidenceBasis?: Record<string, string[]>;
+  exportCapture?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   useEffect(() => {
-    if (!host.current) return;
+    if (!host.current || exportCapture) return;
     const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / 1280));
     observer.observe(host.current);
     return () => observer.disconnect();
-  }, []);
+  }, [exportCapture]);
   const basis = evidenceBasis || slideEvidenceBasis(slide);
   const draft = reviewRequired ?? true;
   const media = slide.layout === "title" ? undefined : slide.media[0];
@@ -128,7 +130,7 @@ export function SlideView({
           width: 1280,
           height: 720,
           position: "absolute",
-          transform: `scale(${scale})`,
+          transform: `scale(${exportCapture ? 1 : scale})`,
           transformOrigin: "top left",
         }}
       >

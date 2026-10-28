@@ -20,6 +20,8 @@ import {
 } from "./source-documents";
 import { europeNotices, noticeStatus } from "./publication-status";
 import { uid } from "./utils";
+import { hasConjugationCore } from "./conjugation-curriculum";
+import { checkPublication } from "./publication-status";
 import { DeckCompletionError, requestedCount } from "./deck-completion";
 
 import { scientificPlainText as text, coherentSourcePassages } from "./source-passages";
@@ -268,6 +270,42 @@ export async function enrichTopicEvidence(
   onProgress?: (message: string) => void,
 ): Promise<Deck> {
   const target = requestedCount(input.count);
+  if (hasConjugationCore(deck) && input.researchDepth === "thorough") {
+    signal?.throwIfAborted();
+    onProgress?.("Checking the teaching core's original references and publication notices…");
+    const refs = [
+      ...new Map(deck.slides.flatMap((s) => s.citations).map((c) => [c.id, c])).values(),
+    ];
+    const checks = await Promise.allSettled(
+      refs.map(async (c) => [c.id, await checkPublication(c)] as const),
+    );
+    signal?.throwIfAborted();
+    const found = new Map(checks.flatMap((r) => (r.status === "fulfilled" ? [r.value] : [])));
+    const complete = refs.every((c) => found.get(c.id)?.complete && !found.get(c.id)?.cached);
+    deck = {
+      ...deck,
+      slides: deck.slides.map((s) => ({
+        ...s,
+        citations: s.citations.map((c) => ({
+          ...c,
+          publicationCheck: found.get(c.id) || c.publicationCheck,
+        })),
+      })),
+      ...(complete ? { lastLiteratureCheck: Date.now() } : {}),
+      contentWarnings: [
+        ...(deck.contentWarnings || []),
+        complete
+          ? "Reference notice lookups completed. This does not independently verify scientific claims."
+          : "Some reference notice checks were unavailable or cached. The editorial core remains an unverified draft.",
+        ...refs.flatMap((c) => {
+          const check = found.get(c.id);
+          return check && ["retracted", "corrected", "concern", "notice"].includes(check.status)
+            ? [`Reference notice requires attention: ${c.title} (${check.status}).`]
+            : [];
+        }),
+      ],
+    };
+  }
   try {
     const saved = JSON.parse((await readLocalRecord("teaching-source-library")) || "[]");
     if (Array.isArray(saved) && saved.length <= 30) {

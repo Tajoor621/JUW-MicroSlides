@@ -4,11 +4,13 @@ export function TeachingDiagram({
   label = "",
   alt = "",
   color = "#246b9e",
+  steps,
 }: {
   kind: NonNullable<Teaching["diagram"]>;
   label?: string;
   alt?: string;
   color?: string;
+  steps?: string[];
 }) {
   const points = [70, 140, 210, 280];
   return (
@@ -23,7 +25,12 @@ export function TeachingDiagram({
     >
       <title>{alt || kind}</title>
       <rect x="8" y="8" width="344" height="214" fill="#ffffff" stroke={color} />
-      <text x="20" y="34" fontSize="15" fill="#17344c">
+      <text
+        x="20"
+        y="34"
+        fontSize={Math.min(15, 310 / Math.max(1, (label || kind).length * 0.6))}
+        fill="#17344c"
+      >
         {label || kind}
       </text>
       {["viral-cycle", "conjugation", "one-health", "biofilm-stages"].includes(kind) ? (
@@ -57,16 +64,18 @@ export function TeachingDiagram({
             </>
           ) : (
             <>
-              {(kind === "viral-cycle"
-                ? [
-                    "Attachment",
-                    "Entry / uncoating",
-                    "Genome / protein synthesis",
-                    "Assembly / release",
-                  ]
-                : kind === "conjugation"
-                  ? ["Donor cell", "Cell contact", "DNA transfer", "Recipient cell"]
-                  : ["Attachment", "Microcolonies", "Maturation", "Dispersal"]
+              {(steps?.length === 4
+                ? steps
+                : kind === "viral-cycle"
+                  ? [
+                      "Attachment",
+                      "Entry / uncoating",
+                      "Genome / protein synthesis",
+                      "Assembly / release",
+                    ]
+                  : kind === "conjugation"
+                    ? ["Donor cell", "Cell contact", "DNA transfer", "Recipient cell"]
+                    : ["Attachment", "Microcolonies", "Maturation", "Dispersal"]
               ).map((step, i) => (
                 <g key={step}>
                   <rect
