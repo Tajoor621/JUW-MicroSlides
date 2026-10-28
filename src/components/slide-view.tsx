@@ -373,7 +373,9 @@ export function SlideView({
               </div>
             )}
 
-            {slide.layout !== "title" && slide.layout !== "bibliography" && (
+            {!["title", "bibliography", "learning-objectives", "assessment"].includes(
+              slide.layout,
+            ) && (
               <div className="relative z-[1] shrink-0 space-y-1 px-8 pb-1 text-xs">
                 {(methodSlide(slide) || teaching.pitfall) && (
                   <p className="border-l-4 border-amber-600 pl-2">
