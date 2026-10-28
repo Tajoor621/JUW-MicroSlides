@@ -4,6 +4,25 @@ import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve, extname, join } from "node:path";
 import { chromium } from "playwright";
 import JSZip from "jszip";
+import { inflateSync } from "node:zlib";
+function assertPdfImageClips(bytes) {
+  const streams = [];
+  for (const match of bytes.toString("latin1").matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+    try {
+      streams.push(inflateSync(Buffer.from(match[1], "latin1")).toString("latin1"));
+    } catch {
+      /* An image/font stream need not be a page content stream. */
+    }
+  }
+  assert(
+    streams.some((s) => /re\s+W\s+n\s+q[\s\S]*?\/I\d+ Do/.test(s)),
+    "Images have a live rectangular clipping path",
+  );
+  assert(
+    !streams.some((s) => /re\s+S\s+W\b/.test(s)),
+    "Stroking must not consume the image crop path before clipping",
+  );
+}
 const root = process.cwd();
 const output = process.env.JUW_QA_OUTPUT || "/workspace/screenshots";
 await mkdir(output, { recursive: true });
@@ -109,6 +128,7 @@ try {
     const pdfEvent = page.waitForEvent("download");
     await page.getByRole("button", { name: "Export PDF", exact: true }).click();
     const pdf = await readFile(await (await pdfEvent).path());
+    assertPdfImageClips(pdf);
     assert.match(pdf.toString("latin1"), /\/Count\s+2\b/);
     await page.getByRole("link", { name: "Download PDF", exact: true }).waitFor();
     assert.equal(
@@ -304,6 +324,7 @@ try {
   const conjugationPdfDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export PDF", exact: true }).click();
   const conjugationPdf = await readFile(await (await conjugationPdfDownload).path());
+  assertPdfImageClips(conjugationPdf);
   await writeFile(join(output, "conjugation-18.pdf"), conjugationPdf);
   assert.match(conjugationPdf.toString("latin1"), /\/Count\s+18\b/);
   console.log(

@@ -17,7 +17,7 @@ export function TeachingDiagram({
     <svg
       data-teaching-diagram
       viewBox="0 0 360 230"
-      className="h-auto w-full"
+      className="h-auto max-h-[260px] w-full"
       width="360"
       height="230"
       role="img"

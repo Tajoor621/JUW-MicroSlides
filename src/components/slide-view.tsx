@@ -148,7 +148,7 @@ export function SlideView({
                 "topic-artwork pointer-events-none absolute z-0 text-accent",
                 isTitle
                   ? "right-[3%] top-[23%] w-[20%] opacity-30"
-                  : "right-[3%] top-[28%] w-[16%] opacity-[0.22]",
+                  : "left-[16%] top-[2%] w-[7%] opacity-[0.16]",
               )}
               dangerouslySetInnerHTML={{ __html: artwork }}
             />
@@ -373,9 +373,11 @@ export function SlideView({
               </div>
             )}
 
-            {slide.layout !== "title" && slide.layout !== "bibliography" && (
-              <div className="relative z-[1] space-y-1 px-8 pb-1 text-xs">
-                {methodSlide(slide) && (
+            {!["title", "bibliography", "learning-objectives", "assessment"].includes(
+              slide.layout,
+            ) && (
+              <div className="relative z-[1] shrink-0 space-y-1 px-8 pb-1 text-xs">
+                {(methodSlide(slide) || teaching.pitfall) && (
                   <p className="border-l-4 border-amber-600 pl-2">
                     <strong>Common pitfalls / misconceptions:</strong>{" "}
                     {teaching.pitfall ||
@@ -408,7 +410,7 @@ export function SlideView({
                 </aside>
               )}
             {slide.citations.length > 0 && slide.layout !== "title" && (
-              <footer className="relative z-[1] border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted @min-[640px]:px-8">
+              <footer className="relative z-[1] shrink-0 border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted @min-[640px]:px-8">
                 {slide.citations
                   .slice(0, 2)
                   .map((c) => formatCitation(c, citationStyle))
@@ -425,13 +427,13 @@ export function SlideView({
             )}
             {draft && (
               <p
-                className="relative z-[1] border-t border-amber-600 px-8 text-xs font-semibold text-ink"
+                className="relative z-[1] shrink-0 border-t border-amber-600 px-8 text-xs font-semibold text-ink"
                 role="status"
               >
                 {DRAFT_STAMP}
               </p>
             )}
-            <div className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">
+            <div className="relative z-[1] shrink-0 px-8 text-right text-[9px] text-ink-muted">
               {deck?.courseCode} ·{" "}
               {deck?.updatedAt && deck.updatedAt > 86400000
                 ? new Date(deck.updatedAt).toISOString().slice(0, 10)
@@ -453,9 +455,9 @@ export function SlideView({
 function ThemeMotif({ theme }: { theme: SlideTheme }) {
   return (
     <svg
-      className="pointer-events-none absolute inset-0 h-full w-full text-accent opacity-50"
-      viewBox="0 0 1600 900"
-      preserveAspectRatio="xMaxYMin slice"
+      className="pointer-events-none absolute right-6 top-10 h-14 w-24 text-accent opacity-20"
+      viewBox="1280 80 320 480"
+      preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
       {theme === "gram" ? (
