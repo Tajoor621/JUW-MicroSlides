@@ -16,7 +16,7 @@ Run `npm run qa:pages`, `npm run qa:lecture`, `npm run qa:topic-recovery`, and `
 - Generate an exact requested count in 1–50. Try a new topic; never accept the saved example as the new result.
 - Import the draft fixture. Confirm species italics, ordinary text, unchanged numeric values, pending review status and unit/DOI notes. A syntactically valid DOI is not a verified source.
 - Export draft PPTX with review notes pending. After preparation, tap **Download PowerPoint**. Confirm a nonempty `.pptx`, exact slide count, editable text/diagrams, citations and draft labels in PowerPoint. Repeat on Samsung Internet and iOS Safari; browser emulation does not qualify physical devices.
-- After a scientific rendering revision, confirm formal instructor layout verification needs renewal; retain existing claim reviews and permit draft downloads.
+- After a rendering revision, recheck readable text, image quality and exact counts. Preserve historical records and permit draft downloads without a review gate.
 - Confirm the prepared link remains usable after a delay. Edit the deck and confirm the stale-file note; export again for current content.
 - Export remains ungated regardless of historical review metadata. Every exported page/slide must retain “Unverified AI-assisted draft”.
 - On first online visit wait for installation, then go offline and reload. Check university artwork (including query-string URLs), all four bundled font faces, stored slides, PDF/PPTX, and project backups. Search and external media may require connectivity.
@@ -43,4 +43,10 @@ Do not claim scientific certification, accurate taxonomy for every organism, uni
 
 Run `npm run test:uk-english` and `npm run qa:notes` alongside the required build checks. The notes browser fixture uses explicitly synthetic software text with existing bibliographic identifiers; it tests extraction/persistence/PDF geometry and is not a scientific accuracy test or a quotation from those papers. Its PDF and rendered pages belong in CI artefacts. The 20-topic fixture checks source/count/failure contracts, not live provider coverage or universal scientific correctness. Physical Note20 acceptance remains pending in [the phone checklist](QA-PHONE-NOTE20.md).
 
-Live Pages baseline observed before this change: build `11f1310`, commit `11f13104a9cf33c2b00270f4012fde6cae936b2b`. Latest workflow revision is not yet deployed/verified; record its final build after successful deployment.
+Verified live application deployment on 29 October 2026: **build `e47ffd0`**, commit `e47ffd0c4c294cb6d82456dbf7c3999baca61a1c`. [Main Pages run 40952199307](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/40952199307) completed build, deployment and live smoke checks successfully. The deployed UI was independently observed showing `e47ffd0` and `V6.2.1`.
+
+PR head `75b351bf5bda40f5416341c86c86f634d7160489` passed [Pages 40951140735](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/40951140735), [Windows 40951140543](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/40951140543) and native dependency security. The source tree matched the tested local tree before merging PR #33. The actual app regenerated `conjugation-18.pptx` in the browser-export CI artefact; it was not committed.
+
+The PDF check renders every note page with Poppler and requires a visible centred crest with faint contrast, alongside A4 sizing, draft labels, page numbers and extractable text. Physical Note20 and actual Microsoft PowerPoint rendering remain unperformed. Manual live PDF inspection was interrupted when the browser environment disconnected; it is not counted as passed.
+
+This is a dated verification record. Later documentation-only commits produce a new build ID without changing the application implementation. For the latest deployment, compare [build-info.json](https://tajoor621.github.io/JUW-MicroSlides/build-info.json) with its workflow SHA; the existing `smoke-live` job enforces that comparison on every main deployment.

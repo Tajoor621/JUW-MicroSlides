@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — verified deployment record (29 October 2026)
+
+- Record the verified live application build, CI evidence, task commits, scientific verification limits and outstanding original-artwork/hosting decisions. Keep physical-device and interrupted manual PDF checks explicitly unverified.
+
+
 ## V6.2.1 — watermark checker syntax (29 October 2026)
 
 - Correct the rendered-pixel checker string syntax and exclude Python bytecode caches from source control.
