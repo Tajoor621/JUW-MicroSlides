@@ -60,5 +60,5 @@ for path in pages:
     print(f'{path.name}: median green-region red={median_red}, 95th-percentile chroma={contrast_95}')
     # Median/95th percentile exclude dark body-text edge pixels over the watermark.
     assert median_red >= 220, f'{path.name}: watermark is too opaque ({median_red})'
-    assert contrast_95 <= 25, f'{path.name}: watermark lacks subtle contrast ({contrast_95})
+    assert contrast_95 <= 25, f'{path.name}: watermark lacks subtle contrast ({contrast_95})'
     print(f'PASS {path.name}: visible low-contrast centred crest ({len(green)} green pixels)')

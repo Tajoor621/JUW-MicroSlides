@@ -18,3 +18,5 @@ qualification-results/
 screenshots/
 .cache/
 gitleaks-report.*
+
+__pycache__/
