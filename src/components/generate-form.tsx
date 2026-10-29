@@ -1,3 +1,4 @@
+import { checkResearchClaims } from "@/lib/source-grounding";
 import { assertGenerationBiosafety, assertGeneratedBiosafety } from "@/lib/biosafety";
 import { LectureGenerationOptions } from "./lecture-generation-options";
 import { GenerationFailure } from "./generation-failure";
@@ -136,7 +137,9 @@ export function GenerateForm({
     controller.current = new AbortController();
     setBusy(true);
     live.setGenerationFailure(null);
-    setProgress("Building the topic outline…");
+    setProgress(
+      "Building the topic outline… Research allows up to 30 minutes; cancel to pause. Retry the same request to resume saved batches.",
+    );
     try {
       assertGenerationBiosafety(input);
       await writeLocalRecord(
@@ -257,7 +260,7 @@ export function GenerateForm({
         );
       if (useDeckStore.getState().workspaceEpoch !== epoch) return;
       local.generationSource ??= "knowledge";
-      local = assertGeneratedBiosafety(assertCompleteDeck(local, input.count));
+      local = assertGeneratedBiosafety(assertCompleteDeck(checkResearchClaims(local), input.count));
       if (series) {
         const complete = series;
         useDeckStore.setState((state) => ({

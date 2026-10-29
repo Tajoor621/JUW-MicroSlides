@@ -1,3 +1,6 @@
+import { fetchOpenAlexPassages } from "./openalex-research";
+import { RESEARCH_CONFIG } from "./research-config";
+import { readResearchCheckpoint, saveResearchCheckpoint } from "./research-checkpoint";
 export { researchScopes, researchQueries, sourceTopicRelevance } from "./research-queries";
 import {
   researchScopes,
@@ -182,7 +185,7 @@ function sourceSlides(
             citationId: citation.id,
             sourceUrl: source,
             locator: `${p.sourceDocument?.locator || (p.fullBody ? "Article body" : "Abstract")}, paragraph ${parts[part].paragraph}, excerpt group ${part + 1}; locate exact quoted text`,
-            quote: c.text,
+            quote: parts[part].context,
             access: p.sourceDocument?.access || (p.fullBody ? "full-text" : "abstract"),
             checkedAt: Date.now(),
           },
@@ -328,8 +331,13 @@ export async function enrichTopicEvidence(
     /* An unreadable source library must never fabricate evidence. */
   }
   const original = deck.slides.filter((s) => s.title !== "Evidence required");
-  if (original.length >= target)
-    return { ...deck, slides: original.slice(0, target), requestedCount: target };
+  if (original.length > target)
+    throw new DeckCompletionError(
+      target,
+      original.length,
+      "The draft exceeds the requested count; no slides were truncated.",
+    );
+  if (original.length === target) return { ...deck, slides: original, requestedCount: target };
   const closing = original.filter((s) => /^(Key conclusions|Suggested reading)$/.test(s.title));
   const core = original.filter((s) => !closing.includes(s));
   const needed = target - core.length - closing.length;
@@ -342,10 +350,18 @@ export async function enrichTopicEvidence(
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(
     () => controller.abort(new Error("Research search timed out")),
-    thorough ? 480000 : 120000,
+    thorough ? RESEARCH_CONFIG.defaultBudgetMs : RESEARCH_CONFIG.quickBudgetMs,
   );
   const cacheKey = `research-passages-v3:${input.topic.toLowerCase().trim().slice(0, 240)}`;
   const papers = new Map<string, Paper>();
+  const checkpoint = await readResearchCheckpoint(input).catch(() => null);
+  if (checkpoint) {
+    for (const p of checkpoint.papers as Paper[])
+      papers.set(p.doi || p.pmid || p.id || p.title || "", p);
+    onProgress?.(
+      `Resuming ${checkpoint.completedSlides.length} saved source slides; completed batches will not be fetched again.`,
+    );
+  }
   try {
     const cached = JSON.parse((await readLocalRecord(cacheKey)) || "null");
     if (cached?.papers)
@@ -429,7 +445,10 @@ export async function enrichTopicEvidence(
     needed,
     target === 1,
   );
-  let work = queries.map((query) => ({ query, cursor: "*" }));
+  let work = checkpoint?.work.length
+    ? checkpoint.work
+    : queries.map((query) => ({ query, cursor: "*" }));
+  const firstRound = checkpoint?.work.length ? checkpoint.round : 0;
   const scopes = researchScopes(input.topic);
   const missingScopes = () =>
     scopes.length > 1 && needed >= scopes.length
@@ -445,8 +464,10 @@ export async function enrichTopicEvidence(
   const enough = () => evidence.length >= needed && missingScopes().length === 0;
   try {
     for (
-      let round = 0;
-      round < (thorough ? 5 : 3) && work.length && (!enough() || (thorough && round < 2));
+      let round = firstRound;
+      round < (thorough ? RESEARCH_CONFIG.rounds : 3) &&
+      work.length &&
+      (!enough() || (thorough && round < 2));
       round++
     ) {
       onProgress?.(
@@ -528,6 +549,14 @@ export async function enrichTopicEvidence(
         needed,
         target === 1,
       );
+      await saveResearchCheckpoint({
+        input,
+        round: round + 1,
+        work,
+        completedSlides: evidence,
+        papers: [...papers.values()],
+        savedAt: Date.now(),
+      });
       if (signal?.aborted) throw signal.reason;
     }
     if ((!enough() || thorough) && !controller.signal.aborted) {
@@ -576,6 +605,33 @@ export async function enrichTopicEvidence(
       } catch (error) {
         signal?.throwIfAborted();
         requestErrors.push(error instanceof Error ? error.message : "PubMed unavailable");
+      }
+    }
+    if (!enough() && !controller.signal.aborted) {
+      onProgress?.("Searching OpenAlex for additional attributable abstracts…");
+      try {
+        const extra = await fetchOpenAlexPassages(input.topic, controller.signal);
+        successful++;
+        for (const p of extra)
+          papers.set(p.doi || p.id, mergeResearchPaper(papers.get(p.doi || p.id), p));
+        evidence = sourceSlides(
+          [...papers.values()],
+          input.topic,
+          new Set(bodyKeys),
+          needed,
+          target === 1,
+        );
+        await saveResearchCheckpoint({
+          input,
+          round: RESEARCH_CONFIG.rounds,
+          work: [],
+          completedSlides: evidence,
+          papers: [...papers.values()],
+          savedAt: Date.now(),
+        });
+      } catch (error) {
+        signal?.throwIfAborted();
+        requestErrors.push(error instanceof Error ? error.message : "OpenAlex unavailable");
       }
     }
     if (!enough())
