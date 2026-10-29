@@ -1,23 +1,10 @@
+import { educationalNotesFromDeck } from "./educational-notes";
 import { generateLocalDeck, dedicatedLecture } from "./generate-deck";
 import { enrichTopicEvidence } from "./topic-evidence";
-import { formatCitation } from "./citations";
 import { inferFocus } from "./topic-engine";
 import { assertGenerationBiosafety } from "./biosafety";
 import type { Deck, GenerateInput, Level } from "./types";
 
-export function notesMarkdown(deck: Deck) {
-  const blocks = deck.slides
-    .filter((s) => s.layout !== "title")
-    .map((s) => {
-      const body = [...s.bullets, ...s.leftBullets, ...s.rightBullets]
-        .map((b) => `- ${b}`)
-        .join("\n");
-      return `## ${s.title}\n\n${body}\n\n${s.notes || ""}\n\n${s.citations.map((c) => `Source: ${formatCitation(c, "Vancouver")}\n${c.doi ? `https://doi.org/${c.doi}` : c.pmid ? `https://pubmed.ncbi.nlm.nih.gov/${c.pmid}/` : c.url || ""}`).join("\n\n")}`;
-    });
-  if (!blocks.length)
-    throw Error("No usable notes found. Add source material or try a narrower topic.");
-  return `# ${deck.topic}\n\nStudy notes · ${deck.level} · ${new Date().toISOString().slice(0, 10)}\n\nDraft source summaries; check the original publications before teaching.\n\n${blocks.join("\n\n")}`;
-}
 export async function generateWritingNotes(
   request: { topic: string; sources: string; level: Level; mode: "manual" | "ai" },
   signal: AbortSignal,
@@ -57,5 +44,5 @@ export async function generateWritingNotes(
     );
   }
   signal.throwIfAborted();
-  return notesMarkdown(deck);
+  return educationalNotesFromDeck(deck);
 }

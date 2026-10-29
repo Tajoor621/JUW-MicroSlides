@@ -1,5 +1,18 @@
 # Changelog
 
+## V6.2.1 — A4 educational notes (29 October 2026)
+
+- Replace notes Markdown download with A4 portrait PDF (20 mm margins, bundled DejaVu, maximum 12 pages without truncation). Repeat the draft header, department seal, 6% crest watermark and page numbers.
+- Retain structured sentence-to-passage references, omit unsupported statements and non-guideline treatment material, require a guideline year and clinical-use reminder. Keep missing sections explicit rather than inventing prose.
+- Save generated notes independently in the local archive, retain legacy text, and include notes in additive JSON backups/restores. No deck export gates, backend, accounts, paid APIs or app-version changes.
+
+
+## V6.2.1 — research budget and recovery (29 October 2026)
+
+- Configure a 30-minute research attempt budget. Persist completed batches, passages, query cursors and partial source slides independently of the active deck; matching requests resume saved batches. Keep progress/cancellation and explicit source-shortage failure.
+- Add an OpenAlex abstract fallback, retain Europe PMC/PubMed, check exact passage support for research-generated statements and show Source needed on unsourced content. This is extractive grounding, not scientific verification.
+
+
 ## V6.2.1 — honest logo qualification (29 October 2026)
 
 - Retain the original active microscope asset pending departmental artwork. Add PNG signature/dimension checks and record the unresolved resolution target. Refresh independent image/service-worker cache keys without changing the app version or claiming a logo fix.

@@ -1,3 +1,5 @@
+import { educationalNotesPdfBytes } from "@/lib/export-notes";
+import { noteText } from "@/lib/educational-notes";
 import { useEffect, useRef, useState } from "react";
 import { useDeckStore } from "@/lib/deck-store";
 import { generateWritingNotes } from "@/lib/writing-notes";
@@ -16,16 +18,36 @@ export function WritingNotes() {
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), [epoch]);
   useEffect(() => {
-    if (!notes.body) {
-      setDownload("");
+    setDownload("");
+  }, [notes.document]);
+  useEffect(
+    () => () => {
+      if (download) URL.revokeObjectURL(download);
+    },
+    [download],
+  );
+  async function preparePdf() {
+    if (!notes.document) {
+      setMessage(
+        "Regenerate from source passages to create an A4 educational note. Legacy text is preserved.",
+      );
       return;
     }
-    const url = URL.createObjectURL(
-      new Blob([notes.body], { type: "text/markdown;charset=utf-8" }),
-    );
-    setDownload(url);
-    return () => URL.revokeObjectURL(url);
-  }, [notes.body]);
+    setBusy(true);
+    try {
+      const result = await educationalNotesPdfBytes(notes.document);
+      setDownload(
+        URL.createObjectURL(new Blob([new Uint8Array(result.bytes)], { type: "application/pdf" })),
+      );
+      setMessage(
+        `A4 portrait PDF ready: ${result.pages} pages. Check the original sources before teaching.`,
+      );
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Notes PDF could not be prepared.");
+    } finally {
+      setBusy(false);
+    }
+  }
   async function run() {
     if (busy) return;
     const current = new AbortController();
@@ -33,14 +55,22 @@ export function WritingNotes() {
     setBusy(true);
     setMessage("Preparing notes…");
     try {
-      const body = await generateWritingNotes(notes, current.signal, setMessage, async (data) => {
-        const result = await generateAiDeck({ data, signal: current.signal });
-        if (!result.ok) throw Error(result.error);
-        return result.deck;
-      });
+      const document = await generateWritingNotes(
+        notes,
+        current.signal,
+        setMessage,
+        async (data) => {
+          const result = await generateAiDeck({ data, signal: current.signal });
+          if (!result.ok) throw Error(result.error);
+          return result.deck;
+        },
+      );
       current.signal.throwIfAborted();
       if (useDeckStore.getState().workspaceEpoch !== epoch) return;
-      patch({ body });
+      patch({ body: noteText(document), document });
+      useDeckStore.setState((s) => ({
+        savedNotes: [document, ...s.savedNotes.filter((n) => n.id !== document.id)],
+      }));
       setMessage("Notes ready. Edit below; your slide deck is unchanged.");
     } catch (e) {
       if (useDeckStore.getState().workspaceEpoch === epoch)
@@ -59,9 +89,28 @@ export function WritingNotes() {
     <section aria-label="Writing Notes" className="space-y-3">
       <h2 className="font-serif text-lg">Writing Notes</h2>
       <p className="text-xs text-muted">
-        Generate editable study notes for a topic, independently of your slides. Saved on this
-        device.
+        Generate source-traced educational notes independently of your slides. Export A4 portrait
+        PDF only. Saved on this device and included in JSON backups.
       </p>
+      <label className="grid gap-1 text-xs">
+        Saved notes
+        <select
+          aria-label="Saved educational notes"
+          className="min-h-11 border border-border bg-elevated"
+          value=""
+          onChange={(e) => {
+            const n = useDeckStore.getState().savedNotes.find((n) => n.id === e.target.value);
+            if (n) patch({ topic: n.topic, level: n.level, document: n, body: noteText(n) });
+          }}
+        >
+          <option value="">Choose a saved note</option>
+          {useDeckStore.getState().savedNotes.map((n) => (
+            <option key={n.id} value={n.id}>
+              {n.topic} · {n.date}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="grid gap-1 text-xs">
         Notes topic
         <Input
@@ -123,23 +172,27 @@ export function WritingNotes() {
         </p>
       )}
       <label className="grid gap-1 text-xs">
-        Editable notes
+        Source-traced notes (legacy text remains editable)
         <Textarea
           aria-label="Editable notes"
           className="min-h-64"
           value={notes.body}
           disabled={busy}
+          readOnly={!!notes.document}
           onChange={(e) => patch({ body: e.target.value })}
           placeholder="Generated notes appear here. You can also write your own."
         />
       </label>
+      <Button disabled={busy || !notes.document} onClick={() => void preparePdf()}>
+        Prepare A4 notes PDF
+      </Button>
       {download && (
         <Button asChild variant="secondary">
           <a
             href={download}
-            download={`${notes.topic.replace(/[^\p{L}\p{N}-]/gu, "-").slice(0, 60) || "study-notes"}.md`}
+            download={`${notes.topic.replace(/[^\p{L}\p{N}-]/gu, "-").slice(0, 60) || "study-notes"}.pdf`}
           >
-            Download notes (.md)
+            Download notes PDF (A4 portrait)
           </a>
         </Button>
       )}

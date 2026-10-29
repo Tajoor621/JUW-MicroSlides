@@ -31,12 +31,14 @@ type InspectorTab = "edit" | "media" | "cite" | "evidence" | "notes" | "copilot"
 
 interface DeckState {
   workspaceEpoch: number;
+  savedNotes: import("./educational-notes").EducationalNote[];
   writingNotes: {
     topic: string;
     body: string;
     sources: string;
     level: import("./types").Level;
     mode: "manual" | "ai";
+    document?: import("./educational-notes").EducationalNote;
   };
   patchWritingNotes: (patch: Partial<DeckState["writingNotes"]>) => void;
   refreshWorkspace: () => void;
@@ -130,6 +132,7 @@ export const useDeckStore = create<DeckState>()(
   persist(
     (set, get) => ({
       workspaceEpoch: 0,
+      savedNotes: [],
       writingNotes: { topic: "", body: "", sources: "", level: "Undergraduate", mode: "manual" },
       patchWritingNotes: (patch) => set({ writingNotes: { ...get().writingNotes, ...patch } }),
       refreshWorkspace: () =>
@@ -469,6 +472,7 @@ export const useDeckStore = create<DeckState>()(
         library: s.library.filter((d) => d.slides.length > 0),
         activeId: s.activeId,
         writingNotes: s.writingNotes,
+        savedNotes: s.savedNotes,
         selectedIndex: s.selectedIndex,
         citationStyle: s.citationStyle,
         chromeTheme: s.chromeTheme,
@@ -498,8 +502,7 @@ export const useDeckStore = create<DeckState>()(
           activeId,
           // Older saves did not retain this panel. Keep completed decks in view;
           // empty workspaces and the starter example still invite generation.
-          generatorOpen:
-            p.generatorOpen ?? (!activeId || activeId === "sample-enzyme-mic4511"),
+          generatorOpen: p.generatorOpen ?? (!activeId || activeId === "sample-enzyme-mic4511"),
           generateDraft: { ...current.generateDraft, ...(p.generateDraft ?? {}) },
           writingNotes: { ...current.writingNotes, ...(p.writingNotes ?? {}) },
         };

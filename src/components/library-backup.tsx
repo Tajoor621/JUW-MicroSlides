@@ -4,7 +4,7 @@ import { useState } from "react";
 import { embedMediaSources } from "@/lib/offline-media";
 import { toast } from "sonner";
 import { useDeckStore } from "@/lib/deck-store";
-import { parseBackup } from "@/lib/backup";
+import { parseWorkspaceBackup } from "@/lib/backup";
 import { Button } from "./ui/button";
 export function LibraryBackup() {
   const [busy, setBusy] = useState(false);
@@ -39,7 +39,11 @@ export function LibraryBackup() {
     const state = useDeckStore.getState();
     const current = state.deck();
     const decks = currentOnly && current ? [current] : state.library;
-    const raw = JSON.stringify({ format: "juw-microslides", schemaVersion: 1, decks }, null, 2);
+    const raw = JSON.stringify(
+      { format: "juw-microslides", schemaVersion: 1, decks, notes: state.savedNotes },
+      null,
+      2,
+    );
     if (new Blob([raw]).size > 100000000 || decks.length > 500) {
       toast.error("Backup is too large. Download individual decks using Current deck backup.");
       return;
@@ -99,13 +103,18 @@ export function LibraryBackup() {
             if (!file) return;
             try {
               if (file.size > 100000000) throw new Error("Backup exceeds 100 MB.");
-              const decks = restoredDeckCopies(parseBackup(await file.text()));
+              const backup = parseWorkspaceBackup(await file.text());
+              const decks = restoredDeckCopies(backup.decks);
+              const notes = (backup.notes || []).map((n) => ({ ...n, id: crypto.randomUUID() }));
               useDeckStore.setState((s) => ({
                 library: [...decks, ...s.library],
-                activeId: decks[0].id,
+                savedNotes: [...notes, ...s.savedNotes],
+                activeId: decks[0]?.id || s.activeId,
                 selectedIndex: 0,
               }));
-              toast.success(`Restored ${decks.length} decks as copies.`);
+              toast.success(
+                `Restored ${decks.length} decks and ${notes.length} educational notes as copies.`,
+              );
             } catch (error) {
               toast.error(
                 error instanceof Error
