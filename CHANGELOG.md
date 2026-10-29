@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — topic recovery expectation (29 October 2026)
+
+- Align the preserved starter-deck browser assertion with the UK spelling Immobilisation; retain failure/current-deck preservation checks.
+
+
 ## V6.2.1 — progress and language regression checks (29 October 2026)
 
 - Keep research budget/resume instructions visible throughout generation and extend UK English checks to one-word labels while preserving file names and required identifiers.

@@ -90,7 +90,7 @@ try {
   await failure.getByText("Request and recovery details", { exact: true }).click();
   assert.match(await failure.innerText(), /24-slide deck is not complete yet/);
   assert(!/23-slide deck is not complete yet/.test(await failure.innerText()));
-  assert.match(await failure.innerText(), /Still displaying “Enzyme Immobilization”/);
+  assert.match(await failure.innerText(), /Still displaying “Enzyme Immobilisation”/);
   assert.equal(await page.getByLabel("Slide layout", { exact: true }).inputValue(), "title");
   checks.push(
     "Unavailable sources keep the saved example and show the attempted topic in a persistent inline recovery alert",
