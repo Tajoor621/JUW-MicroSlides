@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — educational workflow QA (29 October 2026)
+
+- Add A4 notes browser/PDF checks to CI, retain editable conjugation deck artefacts, document physical Note20 acceptance separately and update obsolete Markdown notes expectations.
+
+
 ## V6.2.1 — A4 educational notes (29 October 2026)
 
 - Replace notes Markdown download with A4 portrait PDF (20 mm margins, bundled DejaVu, maximum 12 pages without truncation). Repeat the draft header, department seal, 6% crest watermark and page numbers.

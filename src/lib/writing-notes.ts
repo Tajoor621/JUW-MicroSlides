@@ -18,7 +18,7 @@ export async function generateWritingNotes(
     ...dedicatedLecture(topic, discipline),
     topic,
     discipline,
-    count: 6,
+    count: 3,
     level: request.level,
     notes: request.sources,
     mode: request.mode,

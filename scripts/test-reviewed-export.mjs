@@ -148,27 +148,23 @@ try {
   await page.getByLabel("Notes source material", { exact: true }).fill(supplied);
   await page.getByRole("button", { name: "Generate notes", exact: true }).click();
   await page
-    .getByText("Notes ready. Edit below; your slide deck is unchanged.", { exact: true })
-    .waitFor();
-  assert.match(
-    await page.getByLabel("Editable notes", { exact: true }).inputValue(),
-    /Synthetic notes fixture/,
-  );
-  await page
-    .getByLabel("Editable notes", { exact: true })
-    .fill("# Edited study notes\nRetained after reload without changing slides.");
-  const mdEvent = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Download notes (.md)", exact: true }).click();
-  assert.match(await readFile(await (await mdEvent).path(), "utf8"), /Retained after reload/);
-  await page
-    .getByText(/Saved on this device/)
+    .getByText(/Sources cannot support a useful note/)
     .first()
     .waitFor();
+  assert.equal(
+    await page.getByRole("link", { name: "Download notes (.md)", exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await page.getByRole("button", { name: "Prepare A4 notes PDF", exact: true }).isDisabled(),
+    true,
+  );
+  // Unsupported supplied material cannot become an attributed note. The active deck is retained.
   await page.reload();
   await page.getByRole("button", { name: "Writing Notes", exact: true }).click();
-  assert.match(
-    await page.getByLabel("Editable notes", { exact: true }).inputValue(),
-    /Retained after reload/,
+  assert.equal(
+    await page.getByLabel("Notes topic", { exact: true }).inputValue(),
+    "Synthetic notes fixture",
   );
   assert.equal(
     await page.getByRole("textbox", { name: "Lecture topic", exact: true }).inputValue(),
@@ -352,7 +348,7 @@ try {
         checks: [
           "Editable vector PPTX/PDF with broken PNG/SVG placeholders",
           "4x SVG fallback and native slide text",
-          "Independent generated editable notes and Markdown persistence",
+          "Unsupported note rejection and independent topic persistence",
           "Empty refresh across reload preserves Library",
           "Refresh cancels stale generation",
         ],
@@ -363,7 +359,7 @@ try {
     ),
   );
   console.log(
-    "PASS notes generation, edits, downloads, persistence, mobile layout and fresh-workspace cancellation",
+    "PASS unsupported note rejection, persistence, mobile layout and fresh-workspace cancellation",
   );
 } finally {
   await browser.close();

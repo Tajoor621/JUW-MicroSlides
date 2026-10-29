@@ -33,3 +33,7 @@ The Pages CI additionally runs every `test:*` command listed below, then all `qa
 `test:slide-fidelity` checks shared scene rules. `benchmark:live` queries real providers and can be slow/rate-limited. `benchmark:semantic`, `benchmark:semantic:local` and `qualify:semantic` need the documented installed model/provenance inputs. `review:scientific` is an **offline developer CLI** for external-review packs; it does not restore a Review menu or gate exports. `format` rewrites formatting and should be used on intentional files only. `build:dev` builds static development assets. Manual actual-PowerPoint and physical classroom workflows need their documented licensed hardware and cannot be substituted by browser/ZIP checks.
 
 Historical qualification reports keep their original dates and commit hashes. Missing models, missing hardware, untested topics and incomplete results must be reported explicitly. Generated outputs stay in `qualification-results/`, an ignored `screenshots/` directory or the CI artefact directory.
+
+- `npm run test:uk-english`: authored UK English contract (required).
+- `npm run qa:notes`: A4 source-traced notes browser/PDF QA (required; installed Chrome and Poppler needed).
+- `node scripts/logo-assets.mjs`: strict logo qualification (currently fails the documented legacy resolution target; no export gate).

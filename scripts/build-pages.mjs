@@ -6,6 +6,8 @@ await rename(join(root, "pages.html"), join(root, "index.html"));
 async function files(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
+    // Atomic writer temporary files are not application assets.
+    if (entry.name.startsWith(".") && entry.name !== ".nojekyll") continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) result.push(...(await files(path)));
     else result.push(path.slice(root.length + 1));
@@ -26,9 +28,7 @@ await writeFile(
   join(root, "build-info.json"),
   JSON.stringify({ buildId, version: `V${packageVersion}` }),
 );
-const assets = (await files(root)).filter(
-  (p) => p !== "sw.js" && p !== "build-info.json",
-);
+const assets = (await files(root)).filter((p) => p !== "sw.js" && p !== "build-info.json");
 const hash = (await import("node:crypto")).createHash("sha256");
 for (const asset of assets) hash.update(await readFile(join(root, asset)));
 const version = hash.digest("hex").slice(0, 16);

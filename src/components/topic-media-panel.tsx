@@ -452,7 +452,7 @@ function MediaCard({
           <summary className="text-xs">Attribution & reuse terms</summary>
           {(["source", "credit", "license"] as const).map((key) => (
             <label key={key} className="block text-xs">
-              {key}
+              {key === "license" ? "licence" : key}
               <input
                 className="min-h-11 w-full rounded border bg-elevated p-2"
                 value={item[key]}

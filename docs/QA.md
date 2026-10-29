@@ -29,7 +29,7 @@ Do not claim scientific certification, accurate taxonomy for every organism, uni
 
 ## Writing Notes / fresh workspace regression (24 October 2026)
 
-- Verify Review is absent and Writing Notes accepts a separate topic, source text and level. Generate notes, edit, download Markdown, reload and confirm persistence without slide edits.
+- Verify Review is absent and Writing Notes accepts a separate topic, source text and level. Generate notes, download an A4 portrait PDF, reload and confirm persistence without slide edits.
 - Download draft PPTX and PDF with no citations or sign-offs. Test corrupt PNG/SVG: explicit missing-image placeholders, correct slide count, native text and no Review panel. Verify a second tap on each persistent download link.
 - Inspect native SVG plus its PNG fallback dimensions; verify selectable/editable text rather than whole-slide screenshots. Qualify actual Office/mobile rendering separately.
 - Refresh after generation failure and while research is pending. Check empty topic/search/note tabs, no stale result, reload retains empty state and all saved decks remain in Library.
@@ -38,3 +38,9 @@ Do not claim scientific certification, accurate taxonomy for every organism, uni
 ## Logo qualification — 29 October 2026
 
 **logo resolution below target**. The active legacy microscope remains unchanged pending original departmental artwork. The reconstructed PNG/SVG deliverables are not official originals and are not activated. `node scripts/logo-assets.mjs` fails qualification for the legacy image; the unit test asserts that this known defect is detected. Cache revisions are independent of V6.2.1 and do not establish improved resolution. Title-slide and physical-phone inspection are recorded separately.
+
+## Educational workflow qualification — 29 October 2026
+
+Run `npm run test:uk-english` and `npm run qa:notes` alongside the required build checks. The notes browser fixture uses explicitly synthetic software text with existing bibliographic identifiers; it tests extraction/persistence/PDF geometry and is not a scientific accuracy test or a quotation from those papers. Its PDF and rendered pages belong in CI artefacts. The 20-topic fixture checks source/count/failure contracts, not live provider coverage or universal scientific correctness. Physical Note20 acceptance remains pending in [the phone checklist](QA-PHONE-NOTE20.md).
+
+Live Pages baseline observed before this change: build `11f1310`, commit `11f13104a9cf33c2b00270f4012fde6cae936b2b`. Latest workflow revision is not yet deployed/verified; record its final build after successful deployment.

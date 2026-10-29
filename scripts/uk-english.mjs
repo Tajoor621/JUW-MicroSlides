@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 export const replacements = {
@@ -125,16 +125,7 @@ export function check() {
   return errors;
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  if (process.argv.includes("--list")) {
-    const out = [];
-    for (const file of files("src").filter((f) => /\.tsx?$/.test(f)))
-      for (const n of sourceTextNodes(file, readFileSync(file, "utf8"))) out.push({ file, ...n });
-    writeFileSync(
-      "/workspace/scratch/d7df3aceec00/uk-candidates.json",
-      JSON.stringify(out, null, 2),
-    );
-    console.log(out.length);
-  } else {
+  {
     const errors = check();
     if (errors.length) {
       console.error(errors.join("\n"));

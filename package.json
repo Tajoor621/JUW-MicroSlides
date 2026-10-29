@@ -45,7 +45,8 @@
     "test:version-lock": "node --test scripts/version-lock.test.mjs",
     "qa:topic-recovery": "node scripts/qa-topic-recovery.mjs",
     "test:slide-fidelity": "node scripts/test-slide-fidelity.mjs",
-    "test:uk-english": "node scripts/uk-english.mjs"
+    "test:uk-english": "node scripts/uk-english.mjs",
+    "qa:notes": "node scripts/qa-notes.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",
