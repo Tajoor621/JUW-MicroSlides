@@ -10,12 +10,12 @@ All claims start unreviewed. Bibliographic identity inspection is separate from 
 
 ## Primary reading and limits
 
-Bibliographic identities and available abstracts/excerpts inspected 28 October 2026:
+Bibliographic identities and exact published titles checked on 29 October 2026 against PubMed or publisher records. This is a bibliographic check, not scientific claim verification or a retraction search:
 
-- Couturier et al. (2023), real-time F-plasmid transfer and recipient DNA conversion: [PMID 36653393](https://pubmed.ncbi.nlm.nih.gov/36653393/), DOI 10.1038/s41467-023-35978-3.
-- Williams et al. (2025), F relaxosome structure and DNA processing: [PMID 40425557](https://pubmed.ncbi.nlm.nih.gov/40425557/), DOI 10.1038/s41467-025-60116-6.
-- Ares-Arroyo et al. (2023), oriT-bearing plasmids and helper dependencies: [PMID 36442505](https://pubmed.ncbi.nlm.nih.gov/36442505/), DOI 10.1093/nar/gkac1079.
-- Goldlust et al. (2023), F-pilus-mediated transfer between physically distant cells: [PMID 37963249](https://pubmed.ncbi.nlm.nih.gov/37963249/), DOI 10.1073/pnas.2310842120.
-- Wollman, Jacob and Hayes (1956), historical conjugation/recombination work: [PMID 13433587](https://pubmed.ncbi.nlm.nih.gov/13433587/), DOI 10.1101/sqb.1956.021.01.012. PubMed has no abstract. The Hfr lesson is a qualitative teaching synthesis; inspect the original before adding numerical mapping examples.
+- Couturier et al. (2023), “Real-time visualisation of the intracellular dynamics of conjugative plasmid transfer”: [PMID 36653393](https://pubmed.ncbi.nlm.nih.gov/36653393/), DOI 10.1038/s41467-023-35978-3. Title/DOI/PMID checked 29 October 2026; claim support **unverified**.
+- Williams et al. (2025), “Cryo-EM Structure of the relaxosome, a complex essential for bacterial mating and the spread of antibiotic resistance genes”: [PMID 40425557](https://pubmed.ncbi.nlm.nih.gov/40425557/), DOI 10.1038/s41467-025-60116-6. Title/DOI/PMID checked 29 October 2026; claim support **unverified**.
+- Ares-Arroyo et al. (2023), “Origins of transfer establish networks of functional dependencies for plasmid transfer by conjugation”: [PMID 36442505](https://pubmed.ncbi.nlm.nih.gov/36442505/), DOI 10.1093/nar/gkac1079. Title/DOI/PMID checked 29 October 2026; claim support **unverified**.
+- Goldlust et al. (2023), “The F pilus serves as a conduit for the DNA during conjugation between physically distant bacteria”: [PMID 37963249](https://pubmed.ncbi.nlm.nih.gov/37963249/), DOI 10.1073/pnas.2310842120. Title/DOI/PMID checked 29 October 2026; claim support **unverified**.
+- Wollman, Jacob and Hayes (1956), “Conjugation and genetic recombination in Escherichia coli K-12”: [PMID 13433587](https://pubmed.ncbi.nlm.nih.gov/13433587/), DOI 10.1101/sqb.1956.021.01.012. Title/DOI/PMID checked 29 October 2026; full text and claim support **unverified**. PubMed has no abstract. The Hfr lesson is a qualitative teaching synthesis; inspect the original before adding numerical mapping examples.
 
 F-type mechanisms must not be generalised to every bacterial/archaeal transfer system. No universal transfer rate, fixed timing, clinical treatment recommendation or laboratory operating protocol is supplied. The tests verify software contracts, sequence, count, persistence and question structure, not independent microbiology qualification.

@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — exact reference titles (29 October 2026)
+
+- Replace teaching-core reference descriptions with exact published titles; record the bibliographic check date and retain explicit unverified claim-support status.
+
+
 ## V6.2.1 — repository and deployment guidance (29 October 2026)
 
 - Remove tracked QA images under screenshots/ and ignore the directory; preserve production fonts and original institutional assets. QA images and generated exports belong in CI artefacts.
