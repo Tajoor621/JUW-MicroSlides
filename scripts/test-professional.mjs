@@ -18,22 +18,24 @@ try {
   );
   const { packProject, unpackProject } = await server.ssrLoadModule("/src/lib/project-format.ts");
   const { generateWritingNotes } = await server.ssrLoadModule("/src/lib/writing-notes.ts");
-  const body = await generateWritingNotes(
-    {
-      topic: "Synthetic notes fixture",
-      sources: Array.from(
-        { length: 6 },
-        (_, i) =>
-          `## Synthetic concept ${i + 1}\nSoftware fixture ${["amber", "birch", "cobalt", "delta", "elm", "fern"][i]} distinguishes study-note section ${i + 1}. This supplied material tests note generation without making a scientific claim.`,
-      ).join("\n\n"),
-      level: "Undergraduate",
-      mode: "manual",
-    },
-    new AbortController().signal,
-    () => {},
+  await assert.rejects(
+    () =>
+      generateWritingNotes(
+        {
+          topic: "Synthetic notes fixture",
+          sources: Array.from(
+            { length: 6 },
+            (_, i) =>
+              `## Synthetic concept ${i + 1}\nSoftware fixture ${["amber", "birch", "cobalt", "delta", "elm", "fern"][i]} distinguishes study-note section ${i + 1}. This supplied material tests note generation without making a scientific claim.`,
+          ).join("\n\n"),
+          level: "Undergraduate",
+          mode: "manual",
+        },
+        new AbortController().signal,
+        () => {},
+      ),
+    /Sources cannot support a useful note/,
   );
-  assert.match(body, /Synthetic notes fixture/);
-  assert.match(body, /Software fixture/);
   await assert.rejects(
     () =>
       generateWritingNotes(

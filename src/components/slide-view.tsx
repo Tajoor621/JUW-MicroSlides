@@ -409,6 +409,9 @@ export function SlideView({
                   <strong>Clinical pearl:</strong> {slide.clinicalPearl}
                 </aside>
               )}
+            {slide.citations.length === 0 && slide.layout !== "title" && (
+              <span className="text-xs text-amber-700">Source needed</span>
+            )}
             {slide.citations.length > 0 && slide.layout !== "title" && (
               <footer className="relative z-[1] shrink-0 border-t border-navy/10 px-5 py-1.5 text-[10px] leading-snug text-ink-muted @min-[640px]:px-8">
                 {slide.citations

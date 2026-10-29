@@ -6,7 +6,7 @@ export const JUW = {
   crest: `${import.meta.env.BASE_URL}juw-crest-transparent.svg`,
   crestMark: `${import.meta.env.BASE_URL}juw-crest-transparent.svg`,
   deptSeal: `${import.meta.env.BASE_URL}juw-dept-seal.svg?v=5`,
-  microscope: `${import.meta.env.BASE_URL}juw-microscope.png?v=crystal`,
+  microscope: `${import.meta.env.BASE_URL}juw-microscope.png?v=20261029-legacy`,
   course: "Microbial Enzyme Technology",
   courseCode: "MIC-4511",
   preparedBy: "Ms. Noor",

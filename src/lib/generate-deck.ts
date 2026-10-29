@@ -180,7 +180,7 @@ function generateLocalDeckBase(input: GenerateInput): Deck {
 }
 export function sampleDeck(): Deck {
   const deck = generateLocalDeck({
-    topic: "Enzyme Immobilization",
+    topic: "Enzyme Immobilisation",
     discipline: "Industrial & Biotechnology Microbiology",
     count: 12,
     level: "Undergraduate",

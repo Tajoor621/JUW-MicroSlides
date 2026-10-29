@@ -219,7 +219,7 @@ export async function exportTeachingPack(deck: Deck) {
     ),
   );
   const license = await fetch(`${import.meta.env.BASE_URL}fonts/LICENSE.txt`);
-  if (!license.ok) throw Error("Font license unavailable");
+  if (!license.ok) throw Error("Font licence unavailable");
   zip.file("fonts-LICENSE.txt", await license.text());
   zip.file(
     "Google-Slides-import.txt",

@@ -152,7 +152,7 @@ try {
   const deck = generateLocalDeck(input);
   check("topic-dedicated introduction and concise headings", () => {
     assert.equal(deck.slides[0].title, input.topic);
-    assert.match(deck.slides[0].subtitle, /Chromosome organization/);
+    assert.match(deck.slides[0].subtitle, /Chromosome organisation/);
     assert.equal(deck.slides.length, 12);
     assert(!deck.slides.slice(1).some((s) => s.title.includes(input.topic)));
     assert.equal(deck.courseCode, "");

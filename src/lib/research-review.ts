@@ -51,7 +51,7 @@ const rules = [
   },
   {
     re: /\bimmobili[sz]ation\s+always\s+(?:increases|improves|enhances)\s+(?:enzyme\s+)?(?:activity|stability)\b/i,
-    problem: "Immobilization outcomes depend on the enzyme, support and reaction conditions.",
+    problem: "Immobilisation outcomes depend on the enzyme, support and reaction conditions.",
     fix: "Replace the absolute claim with the measured outcome for a defined system, including the assay conditions.",
     source: "https://pmc.ncbi.nlm.nih.gov/articles/PMC3787205/",
   },
@@ -71,7 +71,7 @@ const foreign = [
   {
     re: /\b(immobili[sz]|covalent attachment|enzyme leaching)\b/i,
     context: /immobili|enzyme|biocatal|support|catalys/i,
-    label: "enzyme immobilization",
+    label: "enzyme immobilisation",
   },
   {
     re: /\b(candida albicans|aspergillus|hyphae)\b/i,

@@ -1,3 +1,4 @@
+import { educationalNoteSchema } from "./educational-notes";
 import { lectureSlideFields, lectureDeckFields, MEDIA_TAGS } from "./lecture-schema";
 import { teachingVerificationSchema } from "./teaching-verification";
 import { z } from "zod";
@@ -148,10 +149,27 @@ export const deckSchema = z.object({
 export const backupSchema = z.object({
   format: z.literal("juw-microslides"),
   schemaVersion: z.literal(1),
-  decks: z.array(deckSchema).min(1).max(500),
+  decks: z.array(deckSchema).max(500),
+  notes: z.array(educationalNoteSchema).max(500).optional(),
+  noteDraft: z
+    .object({
+      topic: text,
+      body: text,
+      sources: text,
+      level: z.enum(LEVELS),
+      mode: z.enum(["manual", "ai"]),
+    })
+    .optional(),
 });
-export function parseBackup(raw: string) {
+export function parseWorkspaceBackup(raw: string) {
   if (raw.length > 100000000) throw new Error("Backup exceeds 100 MB.");
   const embedded = raw.match(/```juw-microslides-json\s*\n([\s\S]*?)\n```/);
-  return backupSchema.parse(JSON.parse(embedded ? embedded[1] : raw)).decks;
+  const result = backupSchema.parse(JSON.parse(embedded ? embedded[1] : raw));
+  if (!result.decks.length && !result.notes?.length && !result.noteDraft?.body.trim())
+    throw Error("Backup contains no decks or educational notes.");
+  return result;
+}
+
+export function parseBackup(raw: string) {
+  return parseWorkspaceBackup(raw).decks;
 }

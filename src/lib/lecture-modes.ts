@@ -240,7 +240,7 @@ export function objectivesFor(input: GenerateInput) {
       ? ["Describe", "Compare", "Interpret"]
       : input.level === "Medical school"
         ? ["Differentiate", "Interpret", "Justify"]
-        : ["Analyze", "Evaluate", "Design"];
+        : ["Analyse", "Evaluate", "Design"];
   return [
     `${verbs[0]} the defining features and mechanisms of ${input.topic}.`,
     `${verbs[1]} the evidence, limitations and alternative explanations relevant to ${input.topic}.`,
@@ -615,7 +615,7 @@ export async function generateModeDeck(
           ...input,
           count: 1,
           topic: input.topic,
-          notes: `Organize only the supplied source wording into the ${section.title} section. Copy scientific strings verbatim. Leave missing timings, findings and management fields empty. Return structured protocol or caseData fields as appropriate. Do not add identifiers or scientific facts.\nSource text:\n${sourceText}`,
+          notes: `Organise only the supplied source wording into the ${section.title} section. Copy scientific strings verbatim. Leave missing timings, findings and management fields empty. Return structured protocol or caseData fields as appropriate. Do not add identifiers or scientific facts.\nSource text:\n${sourceText}`,
         });
         if (drafted.slides[0])
           populated = groundedModelFields(populated, drafted.slides[0], sourceText);

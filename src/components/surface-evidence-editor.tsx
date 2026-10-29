@@ -121,7 +121,7 @@ function SurfaceForm() {
                   ? "Figure creator"
                   : "Figure reuse terms"}
               <input
-                aria-label={`Figure ${property}`}
+                aria-label={`Figure ${property === "license" ? "licence" : property}`}
                 className={inputClass}
                 defaultValue={slide.media[Number(field.split(".")[1])][property]}
                 onBlur={(event) => {

@@ -27,7 +27,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
     ],
     sections: [
       section(
-        "Immobilized biocatalysts",
+        "Immobilised biocatalysts",
         "An enzyme is retained on a support or within a confined phase while substrates and products can exchange.",
         "Retention enables catalyst recovery; it does not guarantee greater catalytic activity.",
         "The attachment method and the reaction environment must be considered together.",
@@ -65,7 +65,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
       section(
         "Loading versus activity recovery",
         "Protein retained on the support estimates loading, rather than catalytic performance.",
-        "Activity recovery compares measured activity before and after immobilization under defined conditions.",
+        "Activity recovery compares measured activity before and after immobilisation under defined conditions.",
         "Loss of soluble enzyme and changes in assay conditions can confound the comparison.",
       ),
       section(
@@ -82,7 +82,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
       ),
       section(
         "Stability and microenvironment",
-        "Immobilization changes the local environment and can restrict protein movement.",
+        "Immobilisation changes the local environment and can restrict protein movement.",
         "Improved thermal or operational stability is possible but enzyme- and support-dependent.",
         "Comparisons require matched pH, temperature, substrate concentration and assay duration.",
       ),
@@ -95,12 +95,12 @@ export const TOPIC_PROFILES: TopicProfile[] = [
       section(
         "Batch and continuous operation",
         "Recoverable catalysts can be reused in repeated-batch or flow systems.",
-        "Flow behavior and pressure drop become important when particles are packed into a bed.",
+        "Flow behaviour and pressure drop become important when particles are packed into a bed.",
         "Residence time and transport influence conversion and must be reported with catalyst loading.",
       ),
       section(
         "Controls for comparative experiments",
-        "Compare free enzyme, immobilized enzyme and an appropriate support-only control.",
+        "Compare free enzyme, immobilised enzyme and an appropriate support-only control.",
         "Match the reaction conditions and report how enzyme amount or activity was normalized.",
         "Distinguish biological replication from repeated measurements of the same catalyst preparation.",
       ),
@@ -108,7 +108,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
         "Interpreting performance claims",
         "A higher retained protein concentration does not establish a higher reaction rate.",
         "Operational lifetime should be interpreted alongside product yield and catalyst recovery.",
-        "Results from one support–enzyme system cannot be generalized to all immobilized enzymes.",
+        "Results from one support–enzyme system cannot be generalised to all immobilised enzymes.",
       ),
       section(
         "Application selection",
@@ -122,10 +122,10 @@ export const TOPIC_PROFILES: TopicProfile[] = [
     key: "genome",
     match: /\b(genom(?:e|es|ic)?|chromosom(?:e|es|al)?|nucleoid|dna packaging|chromatin)\b/i,
     scope:
-      "Chromosome organization, DNA topology, gene arrangement and experimental interpretation",
+      "Chromosome organisation, DNA topology, gene arrangement and experimental interpretation",
     course: "Microbial Genetics & Molecular Biology",
     objectives: [
-      "Distinguish chromosome organization, DNA packaging and gene arrangement.",
+      "Distinguish chromosome organisation, DNA packaging and gene arrangement.",
       "Explain how topology and DNA-associated proteins influence bacterial nucleoids.",
       "Compare the conclusions supported by sequence, microscopy and chromosome-contact data.",
     ],
@@ -137,7 +137,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
     sections: [
       section(
         "Chromosomes and accessory replicons",
-        "Bacterial chromosomes carry core genetic information and are physically organized in the nucleoid.",
+        "Bacterial chromosomes carry core genetic information and are physically organised in the nucleoid.",
         "Circular chromosomes are common, but linear and multipartite genomes also occur.",
         "Plasmids are distinct replicons and should not be treated as interchangeable with chromosomes.",
       ),
@@ -145,13 +145,13 @@ export const TOPIC_PROFILES: TopicProfile[] = [
         "The bacterial nucleoid",
         "The nucleoid is a DNA-rich cellular region without a surrounding nuclear membrane.",
         "Compaction involves DNA topology, DNA-associated proteins and cellular processes.",
-        "Organization changes with species, growth conditions and cell-cycle state.",
+        "Organisation changes with species, growth conditions and cell-cycle state.",
       ),
       section(
         "DNA topology",
         "Supercoiling describes coiling of the DNA axis beyond the double helix.",
         "Torsional stress is generated during replication and transcription.",
-        "Topological organization influences both chromosome compaction and access to DNA.",
+        "Topological organisation influences both chromosome compaction and access to DNA.",
       ),
       section(
         "Topoisomerase functions",
@@ -161,14 +161,14 @@ export const TOPIC_PROFILES: TopicProfile[] = [
       ),
       section(
         "Nucleoid-associated proteins",
-        "Proteins such as HU, IHF, H-NS and Fis can bend, bridge or otherwise organize bacterial DNA.",
+        "Proteins such as HU, IHF, H-NS and Fis can bend, bridge or otherwise organise bacterial DNA.",
         "The complement and abundance of these proteins depend on the organism and physiological state.",
-        "Their regulatory effects link chromosome organization with transcription.",
+        "Their regulatory effects link chromosome organisation with transcription.",
       ),
       section(
         "Domains and long-range contacts",
         "A chromosome can contain regions with distinct physical contacts and topological constraints.",
-        "The organization described in one model species is not a universal bacterial blueprint.",
+        "The organisation described in one model species is not a universal bacterial blueprint.",
         "Chromosome-contact maps describe interaction frequencies rather than a single static structure.",
       ),
       section(
@@ -179,13 +179,13 @@ export const TOPIC_PROFILES: TopicProfile[] = [
       ),
       section(
         "Chromosome segregation",
-        "Replicated chromosomes must be organized and partitioned into daughter cells.",
+        "Replicated chromosomes must be organised and partitioned into daughter cells.",
         "Some bacteria use ParABS-associated partitioning systems; mechanisms differ among species.",
         "Segregation should be distinguished from DNA synthesis and from cytokinesis.",
       ),
       section(
         "Gene arrangement and operons",
-        "Functionally related genes may share regulatory organization in operons.",
+        "Functionally related genes may share regulatory organisation in operons.",
         "Co-transcription can coordinate expression, but not every adjacent gene belongs to one operon.",
         "Genome annotation and expression data answer different questions about regulation.",
       ),
@@ -311,7 +311,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
     sources: ["https://www.ncbi.nlm.nih.gov/books/NBK7906/"],
     sections: [
       section(
-        "Community organization",
+        "Community organisation",
         "Biofilms are surface-associated or aggregated microbial communities embedded in extracellular material.",
         "Community composition and matrix chemistry vary among organisms and conditions.",
         "A visible attached layer does not by itself establish its species composition.",
@@ -355,9 +355,9 @@ export const TOPIC_PROFILES: TopicProfile[] = [
         "Inhibition and inefficient extraction can produce misleading target estimates.",
       ),
       section(
-        "Calibration and normalization",
+        "Calibration and normalisation",
         "Absolute quantification uses a defined calibration strategy.",
-        "Relative quantification requires justified normalization and compatible assay behavior.",
+        "Relative quantification requires justified normalisation and compatible assay behaviour.",
         "Amplification efficiency must be evaluated rather than assumed identical across assays.",
       ),
       section(
@@ -386,7 +386,7 @@ function comparativeGenome(topic: string): TopicProfile {
   if (both || /bacter/i.test(topic))
     sections.push(
       section(
-        "Bacterial chromosome organization",
+        "Bacterial chromosome organisation",
         "The bacterial nucleoid is not bounded by a nuclear membrane.",
         "DNA topology and DNA-associated proteins contribute to compaction.",
         "Chromosome shape and replicon number vary among species.",
@@ -395,15 +395,15 @@ function comparativeGenome(topic: string): TopicProfile {
   if (archaeal)
     sections.push(
       section(
-        "Archaeal genome organization",
+        "Archaeal genome organisation",
         "Archaeal genomes are prokaryotic but should not be treated as identical to bacterial genomes.",
-        "Histones and other DNA-binding proteins contribute to DNA organization in different archaeal lineages.",
+        "Histones and other DNA-binding proteins contribute to DNA organisation in different archaeal lineages.",
         "The relevant organism and its protein complement must be specified.",
       ),
       section(
         "Archaeal diversity",
         "Different archaeal lineages use different combinations of DNA-associated proteins.",
-        "Chromosome organization and replication features should be interpreted at the organism level.",
+        "Chromosome organisation and replication features should be interpreted at the organism level.",
         "A single textbook diagram cannot represent every archaeal genome.",
       ),
     );
@@ -411,14 +411,14 @@ function comparativeGenome(topic: string): TopicProfile {
     sections.push(
       section(
         "Fungal chromosomes and nuclei",
-        "Fungi are eukaryotes with nuclear chromosomes organized as chromatin.",
+        "Fungi are eukaryotes with nuclear chromosomes organised as chromatin.",
         "DNA is associated with histones and packaged into nucleosomal structures.",
-        "Nuclear genome organization must be distinguished from mitochondrial genetic material.",
+        "Nuclear genome organisation must be distinguished from mitochondrial genetic material.",
       ),
       section(
         "Chromatin and genomic regions",
         "Nucleosomes contribute to packaging and to the accessibility of DNA.",
-        "Centromeric, telomeric and repetitive regions present distinct organizational and assembly challenges.",
+        "Centromeric, telomeric and repetitive regions present distinct organisational and assembly challenges.",
         "Chromatin state and DNA sequence are related but different measurements.",
       ),
       section(
@@ -431,7 +431,7 @@ function comparativeGenome(topic: string): TopicProfile {
   sections.push(
     section(
       "Comparing experimental evidence",
-      "Sequencing describes nucleotide order; imaging and contact-based assays address spatial organization.",
+      "Sequencing describes nucleotide order; imaging and contact-based assays address spatial organisation.",
       "Genome size, replicon number and packaging mechanism are separate variables.",
       "Model-organism findings require qualification when extended to another lineage.",
     ),
@@ -440,10 +440,10 @@ function comparativeGenome(topic: string): TopicProfile {
     key: "comparative-genome",
     match: /genome/i,
     scope: both
-      ? "Comparative chromosome organization and DNA packaging in bacteria, archaea and fungi"
+      ? "Comparative chromosome organisation and DNA packaging in bacteria, archaea and fungi"
       : fungal && !archaeal
         ? "Fungal nuclear chromosomes, chromatin and genome variation"
-        : "Archaeal DNA packaging and lineage-specific genome organization",
+        : "Archaeal DNA packaging and lineage-specific genome organisation",
     course: "Microbial Genetics & Molecular Biology",
     objectives: [
       "Distinguish the cellular context and genetic compartments of the named organisms.",

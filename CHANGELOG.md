@@ -1,5 +1,120 @@
 # Changelog
 
+## V6.2.1 — watermark checker syntax (29 October 2026)
+
+- Correct the rendered-pixel checker string syntax and exclude Python bytecode caches from source control.
+
+
+## V6.2.1 — watermark behind teaching text (29 October 2026)
+
+- Render the official crest SVG to a reusable image for an isolated 6% PDF draw behind body text. Check median background brightness and high-percentile chroma so text edges do not cause false opacity findings. Keep the department seal as a separate header marking.
+
+
+## V6.2.1 — legacy note backup preservation (29 October 2026)
+
+- Include the working note draft in full-library JSON backups, including legacy unsourced text, and restore it without representing it as a source-checked document. Keep Current deck backup limited to that deck.
+
+
+## V6.2.1 — rendered note watermark (29 October 2026)
+
+- Set opacity on the crest SVG itself because the SVG converter manages its own PDF graphics states. Add a rendered-pixel watermark check and clarify the notes-ready message for source-traced PDF output.
+
+
+## V6.2.1 — topic recovery expectation (29 October 2026)
+
+- Align the preserved starter-deck browser assertion with the UK spelling Immobilisation; retain failure/current-deck preservation checks.
+
+
+## V6.2.1 — progress and language regression checks (29 October 2026)
+
+- Keep research budget/resume instructions visible throughout generation and extend UK English checks to one-word labels while preserving file names and required identifiers.
+
+
+## V6.2.1 — continued research attempts (29 October 2026)
+
+- Preserve next-query cursors when a previous attempt used its round allowance; a resumed attempt can continue those cursors with a fresh bounded budget.
+
+
+## V6.2.1 — note preparation safety (29 October 2026)
+
+- Invalidate a prepared note when its topic/level changes and ignore PDF completion after Refresh. Validate imported note source URL schemes and DOI/PMID syntax without claiming bibliographic verification.
+
+
+## V6.2.1 — educational workflow QA (29 October 2026)
+
+- Add A4 notes browser/PDF checks to CI, retain editable conjugation deck artefacts, document physical Note20 acceptance separately and update obsolete Markdown notes expectations.
+
+
+## V6.2.1 — A4 educational notes (29 October 2026)
+
+- Replace notes Markdown download with A4 portrait PDF (20 mm margins, bundled DejaVu, maximum 12 pages without truncation). Repeat the draft header, department seal, 6% crest watermark and page numbers.
+- Retain structured sentence-to-passage references, omit unsupported statements and non-guideline treatment material, require a guideline year and clinical-use reminder. Keep missing sections explicit rather than inventing prose.
+- Save generated notes independently in the local archive, retain legacy text, and include notes in additive JSON backups/restores. No deck export gates, backend, accounts, paid APIs or app-version changes.
+
+
+## V6.2.1 — research budget and recovery (29 October 2026)
+
+- Configure a 30-minute research attempt budget. Persist completed batches, passages, query cursors and partial source slides independently of the active deck; matching requests resume saved batches. Keep progress/cancellation and explicit source-shortage failure.
+- Add an OpenAlex abstract fallback, retain Europe PMC/PubMed, check exact passage support for research-generated statements and show Source needed on unsourced content. This is extractive grounding, not scientific verification.
+
+
+## V6.2.1 — honest logo qualification (29 October 2026)
+
+- Retain the original active microscope asset pending departmental artwork. Add PNG signature/dimension checks and record the unresolved resolution target. Refresh independent image/service-worker cache keys without changing the app version or claiming a logo fix.
+
+
+## V6.2.1 — UK English authored text (29 October 2026)
+
+- Convert authored interface, teaching and prompt prose to UK English; retain identifiers and exact source titles/quotations. Add style rules and `test:uk-english` with narrowly documented CSS exceptions.
+
+
+
+## V6.2.1 — dependency audit (29 October 2026)
+
+- Run `npx depcheck`; inspect imports before removing dependencies. Retain `tailwindcss` and `tw-animate-css`, which are loaded by CSS imports.
+- Remove unused `@hookform/resolvers`.
+- Remove unused `@radix-ui/react-accordion`.
+- Remove unused `@radix-ui/react-alert-dialog`.
+- Remove unused `@radix-ui/react-avatar`.
+- Remove unused `@radix-ui/react-checkbox`.
+- Remove unused `@radix-ui/react-collapsible`.
+- Remove unused `@radix-ui/react-dropdown-menu`.
+- Remove unused `@radix-ui/react-popover`.
+- Remove unused `@radix-ui/react-progress`.
+- Remove unused `@radix-ui/react-radio-group`.
+- Remove unused `@radix-ui/react-select`.
+- Remove unused `@radix-ui/react-separator`.
+- Remove unused `@radix-ui/react-slider`.
+- Remove unused `@radix-ui/react-switch`.
+- Remove unused `@radix-ui/react-tabs`.
+- Remove unused `@radix-ui/react-toggle`.
+- Remove unused `@radix-ui/react-toggle-group`.
+- Remove unused `@tanstack/react-query`.
+- Remove unused `@tanstack/react-table`.
+- Remove unused `citeproc`.
+- Remove unused `cmdk`.
+- Remove unused `date-fns`.
+- Remove unused `react-day-picker`.
+- Remove unused `react-hook-form`.
+- Remove unused `react-resizable-panels`.
+- Remove unused `recharts`.
+- Remove unused `vaul`.
+- Remove unused `eslint-plugin-prettier`.
+- Remove unused `lightningcss`.
+
+
+## V6.2.1 — exact reference titles (29 October 2026)
+
+- Replace teaching-core reference descriptions with exact published titles; record the bibliographic check date and retain explicit unverified claim-support status.
+
+
+## V6.2.1 — repository and deployment guidance (29 October 2026)
+
+- Remove tracked QA images under screenshots/ and ignore the directory; preserve production fonts and original institutional assets. QA images and generated exports belong in CI artefacts.
+- Repair lecturer workflow numbering and add the personal educational use notice in README and Help.
+- Confirm the server archive branch exists; document three private-repository hosting choices without changing hosting settings or visibility.
+
+
 ## V6.2.1 — conjugation teaching core and export geometry (28 October 2026)
 
 - Rendered-file follow-up: preserve PDF image clipping paths until clipping consumes them, so institutional images remain visible. Reserve footer height, bound diagram height and keep decorative motifs in the header to prevent legends/accents colliding with teaching text. Show recorded misconceptions on every applicable slide.
