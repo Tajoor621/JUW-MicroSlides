@@ -108,7 +108,7 @@ export const TOPIC_PROFILES: TopicProfile[] = [
         "Interpreting performance claims",
         "A higher retained protein concentration does not establish a higher reaction rate.",
         "Operational lifetime should be interpreted alongside product yield and catalyst recovery.",
-        "Results from one support–enzyme system cannot be generalized to all immobilised enzymes.",
+        "Results from one support–enzyme system cannot be generalised to all immobilised enzymes.",
       ),
       section(
         "Application selection",
@@ -418,7 +418,7 @@ function comparativeGenome(topic: string): TopicProfile {
       section(
         "Chromatin and genomic regions",
         "Nucleosomes contribute to packaging and to the accessibility of DNA.",
-        "Centromeric, telomeric and repetitive regions present distinct organizational and assembly challenges.",
+        "Centromeric, telomeric and repetitive regions present distinct organisational and assembly challenges.",
         "Chromatin state and DNA sequence are related but different measurements.",
       ),
       section(

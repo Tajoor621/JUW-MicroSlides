@@ -8,6 +8,11 @@ export const replacements = {
   organizes: "organises",
   organizing: "organising",
   organization: "organisation",
+  organizational: "organisational",
+  generalized: "generalised",
+  specialized: "specialised",
+  optimized: "optimised",
+  stabilization: "stabilisation",
   organizations: "organisations",
   color: "colour",
   colors: "colours",
@@ -81,7 +86,8 @@ export function sourceTextNodes(file, source) {
             p.name.getText(tree),
           )) ||
         (!ts.isJsxText(n) &&
-          (!/[\s]/.test(n.text) ||
+          ((!/[\s]/.test(n.text) && n.text === n.text.toLowerCase()) ||
+            /^(?:[\w./-]+)\.(?:txt|md|json|png|svg|ttf)$/.test(n.text) ||
             /^(?:https?:|data:|\.\.?\/|\/|--|#[a-f\d]|\^)/i.test(n.text) ||
             /^(?:inline-flex|flex|grid|absolute|relative|fixed|border|rounded|text-|bg-|items-|justify-|mx-|my-|w-|h-|px-|py-)/.test(
               n.text,

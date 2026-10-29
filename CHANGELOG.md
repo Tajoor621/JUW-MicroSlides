@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — progress and language regression checks (29 October 2026)
+
+- Keep research budget/resume instructions visible throughout generation and extend UK English checks to one-word labels while preserving file names and required identifiers.
+
+
 ## V6.2.1 — continued research attempts (29 October 2026)
 
 - Preserve next-query cursors when a previous attempt used its round allowance; a resumed attempt can continue those cursors with a fresh bounded budget.

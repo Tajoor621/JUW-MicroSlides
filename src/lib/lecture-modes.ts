@@ -240,7 +240,7 @@ export function objectivesFor(input: GenerateInput) {
       ? ["Describe", "Compare", "Interpret"]
       : input.level === "Medical school"
         ? ["Differentiate", "Interpret", "Justify"]
-        : ["Analyze", "Evaluate", "Design"];
+        : ["Analyse", "Evaluate", "Design"];
   return [
     `${verbs[0]} the defining features and mechanisms of ${input.topic}.`,
     `${verbs[1]} the evidence, limitations and alternative explanations relevant to ${input.topic}.`,

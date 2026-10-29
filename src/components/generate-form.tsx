@@ -419,6 +419,10 @@ export function GenerateForm({
           {busy && (
             <p role="status" aria-live="polite" className="text-xs text-accent">
               {progress}
+              <span className="block text-muted">
+                Research budget: up to 30 minutes per attempt. Cancel to pause; use the identical
+                request to resume saved batches.
+              </span>
             </p>
           )}
           <p className="text-xs text-muted">
