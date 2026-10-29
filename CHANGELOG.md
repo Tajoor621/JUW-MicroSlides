@@ -1,5 +1,39 @@
 # Changelog
 
+## V6.2.1 — dependency audit (29 October 2026)
+
+- Run `npx depcheck`; inspect imports before removing dependencies. Retain `tailwindcss` and `tw-animate-css`, which are loaded by CSS imports.
+- Remove unused `@hookform/resolvers`.
+- Remove unused `@radix-ui/react-accordion`.
+- Remove unused `@radix-ui/react-alert-dialog`.
+- Remove unused `@radix-ui/react-avatar`.
+- Remove unused `@radix-ui/react-checkbox`.
+- Remove unused `@radix-ui/react-collapsible`.
+- Remove unused `@radix-ui/react-dropdown-menu`.
+- Remove unused `@radix-ui/react-popover`.
+- Remove unused `@radix-ui/react-progress`.
+- Remove unused `@radix-ui/react-radio-group`.
+- Remove unused `@radix-ui/react-select`.
+- Remove unused `@radix-ui/react-separator`.
+- Remove unused `@radix-ui/react-slider`.
+- Remove unused `@radix-ui/react-switch`.
+- Remove unused `@radix-ui/react-tabs`.
+- Remove unused `@radix-ui/react-toggle`.
+- Remove unused `@radix-ui/react-toggle-group`.
+- Remove unused `@tanstack/react-query`.
+- Remove unused `@tanstack/react-table`.
+- Remove unused `citeproc`.
+- Remove unused `cmdk`.
+- Remove unused `date-fns`.
+- Remove unused `react-day-picker`.
+- Remove unused `react-hook-form`.
+- Remove unused `react-resizable-panels`.
+- Remove unused `recharts`.
+- Remove unused `vaul`.
+- Remove unused `eslint-plugin-prettier`.
+- Remove unused `lightningcss`.
+
+
 ## V6.2.1 — exact reference titles (29 October 2026)
 
 - Replace teaching-core reference descriptions with exact published titles; record the bibliographic check date and retain explicit unverified claim-support status.
