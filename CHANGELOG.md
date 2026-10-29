@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — continued research attempts (29 October 2026)
+
+- Preserve next-query cursors when a previous attempt used its round allowance; a resumed attempt can continue those cursors with a fresh bounded budget.
+
+
 ## V6.2.1 — note preparation safety (29 October 2026)
 
 - Invalidate a prepared note when its topic/level changes and ignore PDF completion after Refresh. Validate imported note source URL schemes and DOI/PMID syntax without claiming bibliographic verification.

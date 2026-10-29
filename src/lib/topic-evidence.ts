@@ -448,7 +448,10 @@ export async function enrichTopicEvidence(
   let work = checkpoint?.work.length
     ? checkpoint.work
     : queries.map((query) => ({ query, cursor: "*" }));
-  const firstRound = checkpoint?.work.length ? checkpoint.round : 0;
+  const firstRound =
+    checkpoint?.work.length && checkpoint.round < (thorough ? RESEARCH_CONFIG.rounds : 3)
+      ? checkpoint.round
+      : 0;
   const scopes = researchScopes(input.topic);
   const missingScopes = () =>
     scopes.length > 1 && needed >= scopes.length
