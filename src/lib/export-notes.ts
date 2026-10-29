@@ -1,3 +1,4 @@
+import { decodeTeachingImage } from "./teaching-images";
 import { JUW } from "./brand";
 import { font } from "./export-teaching";
 import {
@@ -24,8 +25,8 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.addFileToVFS(file + ".ttf", await font(file));
     pdf.addFont(file + ".ttf", "Notes", style);
   }
-  const [crest, seal] = await Promise.all(
-    [JUW.crest, JUW.deptSeal].map(async (url) => {
+  const [seal] = await Promise.all(
+    [JUW.deptSeal].map(async (url) => {
       const r = await fetch(url);
       if (!r.ok)
         throw Error(
@@ -34,6 +35,23 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
       return new DOMParser().parseFromString(await r.text(), "image/svg+xml").documentElement;
     }),
   );
+  // Render the official SVG once; use a plain image draw so SVG graphics states
+  // cannot override the page watermark opacity. Keep it behind all body text.
+  const crestImage = await decodeTeachingImage(JUW.crest, 0);
+  const canvas = document.createElement("canvas");
+  canvas.width = crestImage.naturalWidth;
+  canvas.height = crestImage.naturalHeight;
+  const context = canvas.getContext("2d");
+  if (!context) throw Error("The official crest could not be prepared for notes.");
+  context.drawImage(crestImage, 0, 0);
+  const crestPng = canvas.toDataURL("image/png");
+  function drawWatermark() {
+    pdf.saveGraphicsState();
+    pdf.setGState(pdf.GState({ opacity: 0.06, "stroke-opacity": 0.06 }));
+    pdf.addImage(crestPng, "PNG", 55, 98, 100, 100, "notes-official-crest", "FAST");
+    pdf.restoreGraphicsState();
+  }
+  drawWatermark();
   const margin = 20,
     width = 170,
     bodyTop = 39,
@@ -44,6 +62,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     if (pdf.getNumberOfPages() >= 12)
       throw Error("Notes exceed 12 pages. Narrow the topic; no text was truncated.");
     pdf.addPage("a4", "portrait");
+    drawWatermark();
     pageContent.push([]);
     y = bodyTop;
   }
@@ -101,12 +120,6 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   const pages = pdf.getNumberOfPages();
   for (let page = 1; page <= pages; page++) {
     pdf.setPage(page);
-    pdf.saveGraphicsState();
-    pdf.setGState(pdf.GState({ opacity: 0.06, "stroke-opacity": 0.06 }));
-    const watermark = crest.cloneNode(true) as SVGElement;
-    watermark.setAttribute("opacity", "0.06");
-    await pdf.svg(watermark, { x: 55, y: 98, width: 100, height: 100 });
-    pdf.restoreGraphicsState();
     pdf.saveGraphicsState();
     await pdf.svg(seal.cloneNode(true) as SVGElement, { x: 20, y: 8, width: 13, height: 13 });
     pdf.restoreGraphicsState();

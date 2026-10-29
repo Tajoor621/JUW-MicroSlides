@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — watermark behind teaching text (29 October 2026)
+
+- Render the official crest SVG to a reusable image for an isolated 6% PDF draw behind body text. Check median background brightness and high-percentile chroma so text edges do not cause false opacity findings. Keep the department seal as a separate header marking.
+
+
 ## V6.2.1 — legacy note backup preservation (29 October 2026)
 
 - Include the working note draft in full-library JSON backups, including legacy unsourced text, and restore it without representing it as a source-checked document. Keep Current deck backup limited to that deck.
