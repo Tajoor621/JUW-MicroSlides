@@ -73,7 +73,7 @@ try {
   );
   await page.getByRole("button", { name: "Generate notes", exact: true }).click();
   await page
-    .getByText("Notes ready. Edit below; your slide deck is unchanged.", { exact: true })
+    .getByText("Notes ready. Prepare the A4 PDF; your slide deck is unchanged.", { exact: true })
     .waitFor({ timeout: 60000 });
   await page.getByRole("button", { name: "Prepare A4 notes PDF", exact: true }).click();
   const link = page.getByRole("link", { name: "Download notes PDF (A4 portrait)", exact: true });
@@ -101,6 +101,8 @@ try {
   }
   assert.match(text, /10\.1038\/s41467-023-35978-3/);
   execFileSync("pdftoppm", ["-scale-to", "1280", "-png", file, join(output, "notes-page")]);
+  // Check actual rendered crest pixels; a PDF graphics-state entry alone does not prove SVG opacity.
+  execFileSync("python3", ["scripts/check-note-watermark.py", output]);
   const saved = await page.getByLabel("Editable notes", { exact: true }).inputValue();
   await page.reload();
   await page.getByRole("button", { name: "Writing Notes", exact: true }).click();

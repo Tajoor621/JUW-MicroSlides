@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — rendered note watermark (29 October 2026)
+
+- Set opacity on the crest SVG itself because the SVG converter manages its own PDF graphics states. Add a rendered-pixel watermark check and clarify the notes-ready message for source-traced PDF output.
+
+
 ## V6.2.1 — topic recovery expectation (29 October 2026)
 
 - Align the preserved starter-deck browser assertion with the UK spelling Immobilisation; retain failure/current-deck preservation checks.

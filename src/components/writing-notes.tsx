@@ -76,7 +76,7 @@ export function WritingNotes() {
       useDeckStore.setState((s) => ({
         savedNotes: [document, ...s.savedNotes.filter((n) => n.id !== document.id)],
       }));
-      setMessage("Notes ready. Edit below; your slide deck is unchanged.");
+      setMessage("Notes ready. Prepare the A4 PDF; your slide deck is unchanged.");
     } catch (e) {
       if (useDeckStore.getState().workspaceEpoch === epoch)
         setMessage(

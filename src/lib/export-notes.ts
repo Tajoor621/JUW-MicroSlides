@@ -103,7 +103,9 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.setPage(page);
     pdf.saveGraphicsState();
     pdf.setGState(pdf.GState({ opacity: 0.06, "stroke-opacity": 0.06 }));
-    await pdf.svg(crest.cloneNode(true) as SVGElement, { x: 55, y: 98, width: 100, height: 100 });
+    const watermark = crest.cloneNode(true) as SVGElement;
+    watermark.setAttribute("opacity", "0.06");
+    await pdf.svg(watermark, { x: 55, y: 98, width: 100, height: 100 });
     pdf.restoreGraphicsState();
     pdf.saveGraphicsState();
     await pdf.svg(seal.cloneNode(true) as SVGElement, { x: 20, y: 8, width: 13, height: 13 });
