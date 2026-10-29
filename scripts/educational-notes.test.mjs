@@ -49,6 +49,19 @@ test("notes reject unsupported claims and undated treatment; backups retain trac
       notes: [note],
     });
     assert.equal(parseWorkspaceBackup(raw).notes[0].id, note.id);
+    const noteDraft = {
+      topic: "Legacy draft",
+      body: "Retained user text",
+      sources: "",
+      level: "Undergraduate",
+      mode: "manual",
+    };
+    assert.equal(
+      parseWorkspaceBackup(
+        JSON.stringify({ format: "juw-microslides", schemaVersion: 1, decks: [], noteDraft }),
+      ).noteDraft.body,
+      "Retained user text",
+    );
     assert.throws(
       () =>
         assertNoteSources({

@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — legacy note backup preservation (29 October 2026)
+
+- Include the working note draft in full-library JSON backups, including legacy unsourced text, and restore it without representing it as a source-checked document. Keep Current deck backup limited to that deck.
+
+
 ## V6.2.1 — rendered note watermark (29 October 2026)
 
 - Set opacity on the crest SVG itself because the SVG converter manages its own PDF graphics states. Add a rendered-pixel watermark check and clarify the notes-ready message for source-traced PDF output.

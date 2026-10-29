@@ -109,6 +109,9 @@ export function LibraryBackup() {
               useDeckStore.setState((s) => ({
                 library: [...decks, ...s.library],
                 savedNotes: [...notes, ...s.savedNotes],
+                writingNotes: backup.noteDraft
+                  ? { ...s.writingNotes, ...backup.noteDraft, document: undefined }
+                  : s.writingNotes,
                 activeId: decks[0]?.id || s.activeId,
                 selectedIndex: 0,
               }));
