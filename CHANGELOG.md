@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — honest logo qualification (29 October 2026)
+
+- Retain the original active microscope asset pending departmental artwork. Add PNG signature/dimension checks and record the unresolved resolution target. Refresh independent image/service-worker cache keys without changing the app version or claiming a logo fix.
+
+
 ## V6.2.1 — UK English authored text (29 October 2026)
 
 - Convert authored interface, teaching and prompt prose to UK English; retain identifiers and exact source titles/quotations. Add style rules and `test:uk-english` with narrowly documented CSS exceptions.
