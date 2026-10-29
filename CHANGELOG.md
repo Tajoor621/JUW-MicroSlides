@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — note preparation safety (29 October 2026)
+
+- Invalidate a prepared note when its topic/level changes and ignore PDF completion after Refresh. Validate imported note source URL schemes and DOI/PMID syntax without claiming bibliographic verification.
+
+
 ## V6.2.1 — educational workflow QA (29 October 2026)
 
 - Add A4 notes browser/PDF checks to CI, retain editable conjugation deck artefacts, document physical Note20 acceptance separately and update obsolete Markdown notes expectations.

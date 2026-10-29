@@ -6,9 +6,18 @@ export const NOTES_LABEL = "Unverified AI-assisted draft — personal educationa
 export const noteSourceSchema = z.object({
   id: z.string(),
   title: z.string(),
-  url: z.string().url(),
-  doi: z.string().optional(),
-  pmid: z.string().optional(),
+  url: z
+    .string()
+    .url()
+    .refine((s) => /^https?:\/\//.test(s), "Use an HTTP(S) source URL"),
+  doi: z
+    .string()
+    .regex(/^10\.\d{4,9}\/\S+$/i)
+    .optional(),
+  pmid: z
+    .string()
+    .regex(/^\d{1,10}$/)
+    .optional(),
   year: z.string(),
   guideline: z.boolean(),
 });
@@ -130,12 +139,10 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
     label: NOTES_LABEL,
     sections,
     sources,
-    questions: all
-      .slice(0, 3)
-      .map((answer, i) => ({
-        question: `${i + 1}. Explain the source statement and one limit of its application.`,
-        answer,
-      })),
+    questions: all.slice(0, 3).map((answer, i) => ({
+      question: `${i + 1}. Explain the source statement and one limit of its application.`,
+      answer,
+    })),
     glossary: [],
   };
   // Only source-defined terms enter the glossary; never manufacture a definition.

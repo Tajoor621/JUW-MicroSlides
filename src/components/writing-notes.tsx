@@ -36,6 +36,11 @@ export function WritingNotes() {
     setBusy(true);
     try {
       const result = await educationalNotesPdfBytes(notes.document);
+      if (
+        useDeckStore.getState().workspaceEpoch !== epoch ||
+        useDeckStore.getState().writingNotes.document?.id !== notes.document.id
+      )
+        return;
       setDownload(
         URL.createObjectURL(new Blob([new Uint8Array(result.bytes)], { type: "application/pdf" })),
       );
@@ -117,7 +122,7 @@ export function WritingNotes() {
           aria-label="Notes topic"
           value={notes.topic}
           disabled={busy}
-          onChange={(e) => patch({ topic: e.target.value })}
+          onChange={(e) => patch({ topic: e.target.value, document: undefined })}
           placeholder="e.g. Bacterial chromosome organisation"
         />
       </label>
@@ -128,7 +133,7 @@ export function WritingNotes() {
           className="min-h-11 rounded border border-border bg-elevated px-2"
           disabled={busy}
           value={notes.level}
-          onChange={(e) => patch({ level: e.target.value as Level })}
+          onChange={(e) => patch({ level: e.target.value as Level, document: undefined })}
         >
           {LEVELS.map((l) => (
             <option key={l}>{l}</option>
