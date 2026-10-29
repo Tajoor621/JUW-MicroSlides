@@ -49,7 +49,7 @@ npm audit --audit-level=high
 npm run build
 ```
 
-`npm run dev` serves the same static application used in production. `npm run build` and `npm run build:pages` produce `dist-pages/`; the Pages base is `/JUW-MicroSlides/`. In repository Settings → Pages, select GitHub Actions as the build source. The deployment workflow verifies source/tests and browser behavior before publishing. No sandbox-specific startup script is needed.
+`npm run dev` serves the same static application used in production. `npm run build` and `npm run build:pages` produce `dist-pages/`; the Pages base is `/JUW-MicroSlides/`. In repository Settings → Pages, select GitHub Actions as the build source. The deployment workflow verifies source/tests and browser behaviour before publishing. No sandbox-specific startup script is needed.
 
 See [script reference](docs/SCRIPTS.md) for required, optional and environment-dependent commands; [QA checklist](docs/QA.md) for manual checks; [phone contributor guide](docs/CONTRIBUTING-PHONE.md) for mobile-only edits; and [storage migrations](docs/STORAGE-MIGRATIONS.md) for compatibility rules. Generated PPTX/PDF files and screenshots belong in CI artefacts, not tracked source. Windows installers are optional unsigned test builds, not a signed institutional release.
 

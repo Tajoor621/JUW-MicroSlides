@@ -182,7 +182,7 @@ export function teachingFindings(deck: Deck) {
         [s.title, ...bullets, p.mechanism, p.advantage].join(" "),
       )
     )
-      add("Remove the unsupported universal claim; immobilization outcomes depend on the system.");
+      add("Remove the unsupported universal claim; immobilisation outcomes depend on the system.");
     if (p.diagramLabel.length > 40) add("Keep the schematic heading at 40 characters or fewer.");
     const visible = [
       p.definition,

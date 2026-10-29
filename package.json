@@ -44,7 +44,8 @@
     "qa:lecture": "node scripts/qa-lecture-modes.mjs",
     "test:version-lock": "node --test scripts/version-lock.test.mjs",
     "qa:topic-recovery": "node scripts/qa-topic-recovery.mjs",
-    "test:slide-fidelity": "node scripts/test-slide-fidelity.mjs"
+    "test:slide-fidelity": "node scripts/test-slide-fidelity.mjs",
+    "test:uk-english": "node scripts/uk-english.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",

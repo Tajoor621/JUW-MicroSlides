@@ -19,7 +19,7 @@ Decorative topic SVGs are schematic ornaments, **not scientifically validated il
 
 ### Validation
 
-Run `node scripts/test-slide-fidelity.mjs`, `npm run typecheck`, `npm run test:professional` and export a sample PPTX. Inspect in Microsoft PowerPoint at 100% and 200%, including a title slide, icon-rich slide and micrograph. Check editable text, sharp vector icon edges, color contrast and any SVG compatibility warnings. Automated source checks do **not** replace manual PowerPoint rendering or a native-office roundtrip.
+Run `node scripts/test-slide-fidelity.mjs`, `npm run typecheck`, `npm run test:professional` and export a sample PPTX. Inspect in Microsoft PowerPoint at 100% and 200%, including a title slide, icon-rich slide and micrograph. Check editable text, sharp vector icon edges, colour contrast and any SVG compatibility warnings. Automated source checks do **not** replace manual PowerPoint rendering or a native-office roundtrip.
 
 ### Known limitations
 

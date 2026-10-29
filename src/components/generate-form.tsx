@@ -47,7 +47,7 @@ const TOPIC_CHIPS = [
   "Tuberculosis",
   "Candida albicans",
   "Influenza",
-  "Enzyme Immobilization",
+  "Enzyme Immobilisation",
 ];
 
 export function GenerateForm({

@@ -37,7 +37,7 @@ export function FirstDeckWizard() {
             className={field}
             value={draft.topic}
             onChange={(e) => patch({ topic: e.target.value })}
-            placeholder="For example: enzyme immobilization"
+            placeholder="For example: enzyme immobilisation"
           />
         </label>
       )}

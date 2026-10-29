@@ -1,5 +1,11 @@
 # Changelog
 
+## V6.2.1 — UK English authored text (29 October 2026)
+
+- Convert authored interface, teaching and prompt prose to UK English; retain identifiers and exact source titles/quotations. Add style rules and `test:uk-english` with narrowly documented CSS exceptions.
+
+
+
 ## V6.2.1 — dependency audit (29 October 2026)
 
 - Run `npx depcheck`; inspect imports before removing dependencies. Retain `tailwindcss` and `tw-animate-css`, which are loaded by CSS imports.

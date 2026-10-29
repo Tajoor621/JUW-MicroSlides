@@ -1,0 +1,17 @@
+[
+  {
+    "file": "src/components/slide-view.tsx",
+    "text": "slide-title-text w-full text-center font-serif font-bold uppercase leading-tight text-ink",
+    "reason": "CSS class names / embedded CSS properties are code identifiers, not prose."
+  },
+  {
+    "file": "src/lib/export-lecture.ts",
+    "text": "</title><style>body{max-width:70ch;margin:2rem auto;padding:1rem;font:1.25rem/1.7 sans-serif;color:#000;background:#fff}section{border-top:2px solid;padding-top:1rem}table{border-collapse:collapse}th,td{border:2px solid;padding:.5rem}@media print{section{break-before:page}}</style><main><h1>",
+    "reason": "CSS class names / embedded CSS properties are code identifiers, not prose."
+  },
+  {
+    "file": "src/lib/export-teaching.ts",
+    "text": " — accessible teaching transcript</title><style>body{max-width:70ch;margin:2rem auto;padding:1rem;font:1.15rem/1.6 sans-serif;color:#111;background:#fff}section{border-top:1px solid;padding-top:1rem}dt{font-weight:bold}dd{margin-bottom:1rem}</style><main><h1>",
+    "reason": "CSS class names / embedded CSS properties are code identifiers, not prose."
+  }
+]

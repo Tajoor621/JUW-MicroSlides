@@ -20,9 +20,9 @@ The Pages CI additionally runs every `test:*` command listed below, then all `qa
 
 ## Deterministic suites required by Pages CI
 
-`test:research` covers citation/import and transport rules. `test:topics` covers topic specificity, media separation and source matching. `test:generation` covers exact counts and source/model fixtures. `test:scientific` covers source/notice/context contracts. `test:professional` covers draft/export/project behavior. `test:audit` covers provenance and data protection. `test:lecture` covers generation modes/assessment records. `test:teaching`, `test:release` and `test:lecturer` include historical evidence/review API compatibility; their names do not imply active Review UI or gated downloads.
+`test:research` covers citation/import and transport rules. `test:topics` covers topic specificity, media separation and source matching. `test:generation` covers exact counts and source/model fixtures. `test:scientific` covers source/notice/context contracts. `test:professional` covers draft/export/project behaviour. `test:audit` covers provenance and data protection. `test:lecture` covers generation modes/assessment records. `test:teaching`, `test:release` and `test:lecturer` include historical evidence/review API compatibility; their names do not imply active Review UI or gated downloads.
 
-`qa:reviewed-export` is a legacy command name for **ungated editable exports**, Writing Notes, Refresh and mobile checks. `qa:pages` checks browser/exports/offline behavior. `qa:lecture` checks structured modes. `qa:topic-recovery` checks generation/display recovery. Build Pages first and set `JUW_CHROMIUM` to an installed Chrome/Chromium binary when needed. `JUW_QA_OUTPUT` selects the CI artifact directory.
+`qa:reviewed-export` is a legacy command name for **ungated editable exports**, Writing Notes, Refresh and mobile checks. `qa:pages` checks browser/exports/offline behaviour. `qa:lecture` checks structured modes. `qa:topic-recovery` checks generation/display recovery. Build Pages first and set `JUW_CHROMIUM` to an installed Chrome/Chromium binary when needed. `JUW_QA_OUTPUT` selects the CI artefact directory.
 
 ## Optional Windows companion
 
@@ -32,4 +32,4 @@ The Pages CI additionally runs every `test:*` command listed below, then all `qa
 
 `test:slide-fidelity` checks shared scene rules. `benchmark:live` queries real providers and can be slow/rate-limited. `benchmark:semantic`, `benchmark:semantic:local` and `qualify:semantic` need the documented installed model/provenance inputs. `review:scientific` is an **offline developer CLI** for external-review packs; it does not restore a Review menu or gate exports. `format` rewrites formatting and should be used on intentional files only. `build:dev` builds static development assets. Manual actual-PowerPoint and physical classroom workflows need their documented licensed hardware and cannot be substituted by browser/ZIP checks.
 
-Historical qualification reports keep their original dates and commit hashes. Missing models, missing hardware, untested topics and incomplete results must be reported explicitly. Generated outputs stay in `qualification-results/`, an ignored `screenshots/` directory or the CI artifact directory.
+Historical qualification reports keep their original dates and commit hashes. Missing models, missing hardware, untested topics and incomplete results must be reported explicitly. Generated outputs stay in `qualification-results/`, an ignored `screenshots/` directory or the CI artefact directory.
