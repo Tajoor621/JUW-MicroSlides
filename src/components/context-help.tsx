@@ -15,6 +15,7 @@ export function ContextHelp({ tab }: { tab: keyof typeof help }) {
     <details className="rounded border border-border p-2 text-xs">
       <summary className="cursor-pointer font-medium">Help: {tab}</summary>
       <p className="mt-2 leading-relaxed text-muted">{help[tab]}</p>
+      <p className="mt-2 text-muted">For personal educational use. Not for distribution. Not an official publication of Jinnah University for Women.</p>
     </details>
   );
 }

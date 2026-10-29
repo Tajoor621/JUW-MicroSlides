@@ -1,5 +1,12 @@
 # Changelog
 
+## V6.2.1 — repository and deployment guidance (29 October 2026)
+
+- Remove tracked QA images under screenshots/ and ignore the directory; preserve production fonts and original institutional assets. QA images and generated exports belong in CI artefacts.
+- Repair lecturer workflow numbering and add the personal educational use notice in README and Help.
+- Confirm the server archive branch exists; document three private-repository hosting choices without changing hosting settings or visibility.
+
+
 ## V6.2.1 — conjugation teaching core and export geometry (28 October 2026)
 
 - Rendered-file follow-up: preserve PDF image clipping paths until clipping consumes them, so institutional images remain visible. Reserve footer height, bound diagram height and keep decorative motifs in the header to prevent legends/accents colliding with teaching text. Show recorded misconceptions on every applicable slide.
