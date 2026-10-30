@@ -1,5 +1,9 @@
 # Changelog
 
+## V6.2.1 — source-failure browser assertion (30 October 2026)
+
+- Scope the unconfigured-model assertion to the generation alert. The preserved-work error now appears in both summary and recovery details; assert its message without an ambiguous text locator. Keep the failure and existing-deck preservation behaviour.
+
 ## V6.2.1 — browser source-display regression (30 October 2026)
 
 - Keep the established local-model setup message while retaining source-first failure handling. Add a browser check for the collapsed read-only source display before confirming ungated editable export. The first CI attempt passed notes/export checks but found a changed setup-message expectation; no app exception occurred.

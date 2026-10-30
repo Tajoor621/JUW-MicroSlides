@@ -953,12 +953,14 @@ try {
   await mp.screenshot({ path: join(output, "juw-mobile-library.png") });
   results.push("Mobile backup controls are accessible");
   await mp.getByRole("button", { name: "Close", exact: true }).click();
+  const preservedTitle = await mp.locator('[aria-label="Lecture title"]').innerText();
   await mp.locator("#gen-topic").fill("Bacterial genome architecture");
   await mp.getByRole("radio", { name: "AI lecture writer" }).check();
   await mp.getByRole("button", { name: "Generate deck", exact: true }).click();
   await saved(mp);
-  assert(await mp.getByText(/Local AI is not configured/).isVisible());
+  assert.match(await mp.getByRole("alert").innerText(), /Local AI is not configured/);
   assert.match(await mp.locator('[role="status"]').first().innerText(), /Knowledge draft/);
+  assert.equal(await mp.locator('[aria-label="Lecture title"]').innerText(), preservedTitle);
   await mp.locator('[aria-label="Lecture title"]').scrollIntoViewIfNeeded();
   assert(
     await mp
@@ -966,8 +968,8 @@ try {
       .evaluate((el) => el.scrollHeight <= el.clientHeight + 2),
   );
   await mp.screenshot({ path: join(output, "juw-mobile-generated.png") });
-  results.push("Unavailable AI explicitly falls back to a labelled knowledge draft");
-  results.push("Long lecture title fits in the mobile slide preview");
+  results.push("Unavailable AI preserves the saved Knowledge draft and exposes recovery details");
+  results.push("Preserved lecture title fits in the mobile slide preview");
   assert(
     await mp
       .locator(".slide-course-meta")
