@@ -1,5 +1,9 @@
 # Changelog
 
+## V6.2.1 — publication locator headings (30 October 2026)
+
+- Live retrieval exposed “Table S1” as a slide heading. Exclude table/figure locators during concept extraction, including letter suffixes and supplementary labels, while preserving original scientific body text, organism abbreviations and gene case. Add negative and alternative-concept tests.
+
 ## V6.2.1 — live local AI reliability (30 October 2026)
 
 - A real CPU test exposed the 55-second writer timeout. Allow bounded three-minute structured requests in browser/native transport, constrain response counts with JSON schemas, and use only advertised thinking controls. Preserve local-only endpoints, size limits, cancellation and existing saves.
