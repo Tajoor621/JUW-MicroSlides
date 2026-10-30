@@ -1,9 +1,47 @@
-import { generateLocalAiDeck, localCopilot } from "./local-ai";
-import type { Citation, GenerateInput } from "./types";
-import { generateLocalDeck } from "./generate-deck";
+import { generateLocalAiDeck, localCopilot, localAiConfig } from "./local-ai";
+import type { Citation, GenerateInput, Deck } from "./types";
+import { retrieveModelSources, groundModelDeck } from "./source-grounded-ai";
 const unavailable =
-  "AI mode requires a configured local Ollama model. Knowledge mode uses public research sources.";
+  "Local AI is not configured. Set up a local Ollama model, or use Knowledge mode with public research sources.";
 export async function generateAiDeck({
+  data,
+  signal,
+  progress,
+}: {
+  data: GenerateInput;
+  progress?: (message: string) => void;
+  signal?: AbortSignal;
+}) {
+  let source: Deck | undefined;
+  try {
+    if (!localAiConfig()) throw Error(unavailable);
+    source = await retrieveModelSources(data, signal, progress);
+    progress?.("Drafting from the retrieved passage pack with local AI…");
+    const drafted = await generateLocalAiDeck(data, signal, source);
+    signal?.throwIfAborted();
+    return { ok: true as const, deck: groundModelDeck(drafted, source) };
+  } catch (error) {
+    signal?.throwIfAborted();
+    if (source)
+      return {
+        ok: true as const,
+        deck: {
+          ...source,
+          contentWarnings: [
+            ...(source.contentWarnings || []),
+            "Local AI drafting failed; the complete retrieved source draft was retained. No unsupported model content was inserted.",
+          ],
+        },
+      };
+    return {
+      ok: false as const,
+      error: `${error instanceof Error ? error.message : unavailable} Existing work was kept; add attributable sources or choose Knowledge research.`,
+      deck: undefined,
+    };
+  }
+}
+/** Structured-mode layout proposals are untrusted; callers must run groundedModelFields before copying them. */
+export async function generateAiLayout({
   data,
   signal,
 }: {
@@ -14,11 +52,7 @@ export async function generateAiDeck({
     return { ok: true as const, deck: await generateLocalAiDeck(data, signal) };
   } catch (error) {
     signal?.throwIfAborted();
-    return {
-      ok: false as const,
-      error: `${error instanceof Error ? error.message : unavailable} Continuing with research generation for the requested slide count.`,
-      deck: generateLocalDeck(data),
-    };
+    return { ok: false as const, error: error instanceof Error ? error.message : unavailable };
   }
 }
 export async function askCopilot(_input: {

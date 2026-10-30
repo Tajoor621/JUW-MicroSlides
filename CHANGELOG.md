@@ -1,5 +1,32 @@
 # Changelog
 
+## V6.2.1 — source-failure browser assertion (30 October 2026)
+
+- Scope the unconfigured-model assertion to the generation alert. The preserved-work error now appears in both summary and recovery details; assert its message without an ambiguous text locator. Keep the failure and existing-deck preservation behaviour.
+
+## V6.2.1 — browser source-display regression (30 October 2026)
+
+- Keep the established local-model setup message while retaining source-first failure handling. Add a browser check for the collapsed read-only source display before confirming ungated editable export. The first CI attempt passed notes/export checks but found a changed setup-message expectation; no app exception occurred.
+
+## V6.2.1 — useful-note minimum (30 October 2026)
+
+- Live notes exposed sparse study-result fragments being labelled ready. Exclude first-person/context-dependent fragments and require four distinct source statements across two teaching sections, including an explanatory section. Otherwise fail explicitly and preserve existing notes. Keep archived notes readable; use section-specific self-check instructions. Extend synthetic tests without claiming scientific validation.
+
+## V6.2.1 — research label spelling (30 October 2026)
+
+- Use UK “prioritises” in the research control and include this spelling in the authored-prose check.
+
+## V6.2.1 — source-first AI and full-field provenance (30 October 2026)
+
+- Retrieve attributable passages before standard/curriculum local AI and AI notes. Bind accepted wording to independently retrieved references; discard unsupported model text and structures. Preserve exact counts and cancellation; retain a complete source draft if inference fails, and retain the active deck when sources fail.
+- Check complete source statements without dropping qualifications or negation. Include every slide ID and structured field in a collapsed read-only source display; recompute after edits. Reference-only bundled/editorial content and visual meaning remain unverified. No Review menu or export gate is restored.
+- Require protocol timings within their complete action and table values within the same source row. Keep notes source checks aligned and show retrieval progress in Writing Notes. Add source-first integration and negative provenance fixtures; synthetic wording is software test data, not scientific qualification.
+
+## V6.2.1 — complete OpenAlex passages (30 October 2026)
+
+- Reject missing words, duplicate positions and malformed abstract indices rather than creating a continuous quotation across a gap. Preserve complete provider wording and DOI identities.
+
+
 ## V6.2.1 — verified deployment record (29 October 2026)
 
 - Record the verified live application build, CI evidence, task commits, scientific verification limits and outstanding original-artwork/hosting decisions. Keep physical-device and interrupted manual PDF checks explicitly unverified.

@@ -211,6 +211,12 @@ try {
   await typographyPage.getByRole("button", { name: /^02 content Nomenclature/ }).click();
   assert.equal(await typographyPage.locator("[data-slide-stage] em").count(), 2);
   assert.equal(await typographyPage.getByLabel("Slide review status", { exact: true }).count(), 0);
+  const provenance = typographyPage.getByLabel("Source provenance", { exact: true });
+  assert.equal(await provenance.getAttribute("open"), null);
+  await provenance.locator("summary").click();
+  assert(await provenance.getByText(/never blocks downloads/).isVisible());
+  assert((await provenance.locator("li").count()) > 0);
+  await provenance.locator("summary").click();
   const typographyDownload = typographyPage.waitForEvent("download");
   await typographyPage.getByRole("button", { name: "Export PPTX", exact: true }).click();
   const typographyXml = pptxXmlFiles(await readFile(await (await typographyDownload).path()));
@@ -947,12 +953,14 @@ try {
   await mp.screenshot({ path: join(output, "juw-mobile-library.png") });
   results.push("Mobile backup controls are accessible");
   await mp.getByRole("button", { name: "Close", exact: true }).click();
+  const preservedTitle = await mp.locator('[aria-label="Lecture title"]').innerText();
   await mp.locator("#gen-topic").fill("Bacterial genome architecture");
   await mp.getByRole("radio", { name: "AI lecture writer" }).check();
   await mp.getByRole("button", { name: "Generate deck", exact: true }).click();
   await saved(mp);
-  assert(await mp.getByText(/Local AI is not configured/).isVisible());
+  assert.match(await mp.getByRole("alert").innerText(), /Local AI is not configured/);
   assert.match(await mp.locator('[role="status"]').first().innerText(), /Knowledge draft/);
+  assert.equal(await mp.locator('[aria-label="Lecture title"]').innerText(), preservedTitle);
   await mp.locator('[aria-label="Lecture title"]').scrollIntoViewIfNeeded();
   assert(
     await mp
@@ -960,8 +968,8 @@ try {
       .evaluate((el) => el.scrollHeight <= el.clientHeight + 2),
   );
   await mp.screenshot({ path: join(output, "juw-mobile-generated.png") });
-  results.push("Unavailable AI explicitly falls back to a labelled knowledge draft");
-  results.push("Long lecture title fits in the mobile slide preview");
+  results.push("Unavailable AI preserves the saved Knowledge draft and exposes recovery details");
+  results.push("Preserved lecture title fits in the mobile slide preview");
   assert(
     await mp
       .locator(".slide-course-meta")

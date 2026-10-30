@@ -1,3 +1,4 @@
+import { passageContainsStatement } from "./generation-grounding";
 import { z } from "zod";
 import { LEVELS } from "./types";
 import type { Deck } from "./types";
@@ -63,11 +64,7 @@ export function assertNoteSources(note: EducationalNote) {
     );
   for (const s of statements) {
     const ref = parsed.sources.find((r) => r.id === s.sourceId);
-    if (
-      !ref ||
-      (!ref.doi && !ref.pmid) ||
-      !s.quote.replace(/\s+/g, " ").includes(s.text.replace(/\s+/g, " "))
-    )
+    if (!ref || (!ref.doi && !ref.pmid) || !passageContainsStatement(s.quote, s.text))
       throw Error(
         "A note statement has no traceable DOI/PMID passage. Regenerate from attributable sources.",
       );
@@ -84,9 +81,17 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
   }));
   const seen = new Set<string>();
   for (const slide of deck.slides) {
-    for (const statement of supportedSlideSentences(slide)) {
+    for (const statement of supportedSlideSentences(slide, deck.sourceDocuments)) {
       const ref = slide.citations.find((c) => c.id === statement.citationId);
       if (!ref || (!ref.doi && !ref.pmid)) continue;
+      // Excerpt fidelity alone is insufficient: deictic and first-person result
+      // fragments cannot stand in for a topic explanation without their context.
+      if (
+        /^(?:this\b|these\b|those\b|such\b|it\b|they\b|we\b|our\b|here\b|in light of this\b)/i.test(
+          statement.text.trim(),
+        )
+      )
+        continue;
       const guideline = statement.access === "guideline";
       if (treatment.test(statement.text) && (!guideline || !/^\d{4}$/.test(ref.year))) continue;
       const key = statement.text.toLowerCase().replace(/\W/g, "");
@@ -112,24 +117,28 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
       };
       const index = treatment.test(fact.text)
         ? 4
-        : /misconception|not always|does not|cannot be/i.test(fact.text)
-          ? 6
-          : /diagnos|assay|detect|test(?:ing)?\b/i.test(fact.text)
-            ? 3
-            : /mechanis|pathogenes|transfer|replicat|process/i.test(fact.text)
-              ? 2
-              : /classif|structure|morpholog|wall|membrane/i.test(fact.text)
-                ? 1
-                : /\b(is|are|defined|refers)\b/i.test(fact.text)
-                  ? 0
-                  : 5;
+        : /\b(?:defined as|refers to|means)\b/i.test(fact.text)
+          ? 0
+          : /misconception|not always|does not|cannot be/i.test(fact.text)
+            ? 6
+            : /diagnos|assay|detect|test(?:ing)?\b/i.test(fact.text)
+              ? 3
+              : /mechanis|pathogenes|transfer|replicat|process/i.test(fact.text)
+                ? 2
+                : /classif|structure|morpholog|wall|membrane/i.test(fact.text)
+                  ? 1
+                  : /\b(is|are|defined|refers)\b/i.test(fact.text)
+                    ? 0
+                    : 5;
       sections[index].statements.push(fact);
     }
   }
   const all = sections.flatMap((s) => s.statements);
-  if (all.length < 4)
+  const coreSections = sections.slice(0, 5).filter((s) => s.statements.length).length;
+  const explanatorySection = sections.slice(0, 3).some((s) => s.statements.length);
+  if (all.length < 4 || coreSections < 2 || !explanatorySection)
     throw Error(
-      "Sources cannot support a useful note. Source-linked statements with retrieved passages and DOI/PMID are needed. Existing notes were kept.",
+      "Sources cannot support a useful note: at least four distinct, self-contained source statements spanning two teaching sections, including a definition, structure or mechanism, are needed. Add attributable teaching passages with DOI/PMID. Existing notes were kept.",
     );
   const note: EducationalNote = {
     id: crypto.randomUUID(),
@@ -139,10 +148,13 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
     label: NOTES_LABEL,
     sections,
     sources,
-    questions: all.slice(0, 3).map((answer, i) => ({
-      question: `${i + 1}. Explain the source statement and one limit of its application.`,
-      answer,
-    })),
+    questions: sections
+      .filter((s) => s.statements.length)
+      .slice(0, 3)
+      .map((s, i) => ({
+        question: `${i + 1}. For “${s.heading}”, explain the quoted statement and identify a limit of what its source establishes.`,
+        answer: s.statements[0],
+      })),
     glossary: [],
   };
   // Only source-defined terms enter the glossary; never manufacture a definition.

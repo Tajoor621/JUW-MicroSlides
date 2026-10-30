@@ -38,7 +38,7 @@ export function LectureGenerationOptions({
         </select>
       </label>
       <p className="text-xs text-muted">
-        Thorough research prioritizes subject coverage and open full text over speed. All scientific
+        Thorough research prioritises subject coverage and open full text over speed. All scientific
         drafts still require human judgement. Offline work uses supplied or bundled material.
       </p>
       <label className="block text-xs">

@@ -1,3 +1,4 @@
+import { SourceProvenance } from "./source-provenance";
 import { SourceLibrary } from "./source-library";
 import { LecturePanel } from "./lecture-panel";
 import { GuidelineCards } from "./guideline-cards";
@@ -92,6 +93,7 @@ function EditTab() {
       <p className="text-xs text-muted">
         Every field is live — you can also click the slide canvas and type.
       </p>
+      <SourceProvenance />
       <LecturePanel />
       <TeachingPanel />
       <Field label="Layout">

@@ -72,7 +72,7 @@ test("20-topic source retrieval contracts: count, distinct content, provenance a
                     url: "https://example.invalid/test-fixture",
                     publisher: "Software test",
                     access: "full-text",
-                    text: "",
+                    text: `This synthetic ${topic} fixture describes an artificial observation for software checks and is not teaching evidence. Its purpose is to test whether the retrieval contract preserves contiguous source wording without inventing scientific results.\n\nA separate synthetic ${topic} fixture compares artificial classification labels within this test dataset only. The comparison illustrates a different test pathway and does not describe biological findings or recommendations.`,
                     locator: "Synthetic fixture only",
                     license: "Synthetic test text",
                     retrievedAt: 1,
@@ -92,7 +92,7 @@ test("20-topic source retrieval contracts: count, distinct content, provenance a
       assert.equal(new Set(body.map((s) => s.bullets.join(" "))).size, 2, topic);
       for (const s of body) {
         assert(s.citations.length, topic);
-        assert(supportedSlideSentences(s).length, topic);
+        assert(supportedSlideSentences(s, deck.sourceDocuments).length, topic);
       }
       assert.equal(JSON.stringify(draft), snapshot, "retrieval must not mutate active draft");
       const checkpoint = {

@@ -65,7 +65,11 @@ export function WritingNotes() {
         current.signal,
         setMessage,
         async (data) => {
-          const result = await generateAiDeck({ data, signal: current.signal });
+          const result = await generateAiDeck({
+            data,
+            signal: current.signal,
+            progress: setMessage,
+          });
           if (!result.ok) throw Error(result.error);
           return result.deck;
         },
@@ -101,7 +105,7 @@ export function WritingNotes() {
         Saved notes
         <select
           aria-label="Saved educational notes"
-          className="min-h-11 border border-border bg-elevated"
+          className="min-h-11 w-full min-w-0 max-w-full border border-border bg-elevated"
           value=""
           onChange={(e) => {
             const n = useDeckStore.getState().savedNotes.find((n) => n.id === e.target.value);

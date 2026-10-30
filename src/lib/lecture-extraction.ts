@@ -1,5 +1,6 @@
 import type { Slide } from "./types";
 import { lectureSlideSchema } from "./lecture-schema";
+import { passageContainsStatement, passageText } from "./generation-grounding";
 /** Deterministic labelled-note extraction. Missing values stay empty; laboratory
  * timings and clinical decisions are never completed with generic defaults. */
 export function populateLabelledFields(slide: Slide, sectionText: string): Slide {
@@ -55,25 +56,31 @@ export function populateLabelledFields(slide: Slide, sectionText: string): Slide
     next.taxonomy = lineage.split(/\s*>\s*/).map((label, i) => ({ label, parent: i - 1 }));
   return next;
 }
-/** A model may organize the supplied source wording, but cannot introduce new
- * scientific strings into a structured mode. Review is still required. */
+/** A model may organise supplied wording. Complete statements retain their
+ * qualifications; structured values cannot borrow unrelated numbers. */
 export function groundedModelFields(slide: Slide, candidate: Slide, source: string): Slide {
   const parsed = lectureSlideSchema.safeParse(candidate);
   if (!parsed.success) return slide;
-  const normalized = source.replace(/\s+/g, " ");
-  const present = (text: string) => !text || normalized.includes(text.replace(/\s+/g, " "));
+  const normalized = passageText(source);
+  const present = (text: string) => !text || passageContainsStatement(source, text);
+  const label = (text: string) => !text || normalized.includes(passageText(text));
   const next = structuredClone(slide),
     p = parsed.data;
   if (
     p.protocol &&
     [
-      ...p.protocol.materials,
-      ...p.protocol.steps.flatMap((s) => [s.action, s.timing, s.sourceUrl]),
       p.protocol.interpretation,
       p.protocol.qc,
       p.protocol.biosafety,
       p.protocol.troubleshooting,
-    ].every(present)
+    ].every(present) &&
+    p.protocol.materials.every(label) &&
+    p.protocol.steps.every(
+      (s) =>
+        present(s.action) &&
+        (!s.timing || passageText(s.action).includes(passageText(s.timing))) &&
+        label(s.sourceUrl),
+    )
   )
     next.protocol = p.protocol;
   if (
@@ -85,21 +92,18 @@ export function groundedModelFields(slide: Slide, candidate: Slide, source: stri
       p.caseData.results,
       p.caseData.diagnosis,
       p.caseData.management,
-      ...p.caseData.questions,
     ].every(present)
   )
     next.caseData = {
       ...p.caseData,
+      questions: p.caseData.questions.filter(label),
       caseNumber: slide.caseData?.caseNumber || p.caseData.caseNumber,
       phase: slide.caseData?.phase || p.caseData.phase,
     };
   if (
     p.scientificTable &&
-    [
-      p.scientificTable.caption,
-      ...p.scientificTable.headers,
-      ...p.scientificTable.rows.flat(),
-    ].every(present)
+    [p.scientificTable.caption, ...p.scientificTable.headers].every(label) &&
+    p.scientificTable.rows.every((row) => normalized.includes(passageText(row.join("\t"))))
   )
     next.scientificTable = p.scientificTable;
   return next;

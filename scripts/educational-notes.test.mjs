@@ -9,7 +9,7 @@ test("notes reject unsupported claims and undated treatment; backups retain trac
     logLevel: "error",
   });
   try {
-    const { assertNoteSources, NOTES_LABEL } = await server.ssrLoadModule(
+    const { assertNoteSources, educationalNotesFromDeck, NOTES_LABEL } = await server.ssrLoadModule(
       "/src/lib/educational-notes.ts",
     );
     const { parseWorkspaceBackup } = await server.ssrLoadModule("/src/lib/backup.ts");
@@ -19,7 +19,7 @@ test("notes reject unsupported claims and undated treatment; backups retain trac
         "Real-time visualisation of the intracellular dynamics of conjugative plasmid transfer",
       url: "https://pubmed.ncbi.nlm.nih.gov/36653393/",
       doi: "10.1038/s41467-023-35978-3",
-      year: "2026",
+      year: "2023",
       guideline: false,
     };
     const statement = {
@@ -93,6 +93,59 @@ test("notes reject unsupported claims and undated treatment; backups retain trac
       sources: [{ ...source, guideline: true }],
       sections: [{ heading: "Treatment", statements: Array(4).fill(treatment) }],
     });
+    // Generated notes need useful teaching breadth; legacy archives stay readable.
+    const makeDeck = (facts) => ({
+      topic: "Software fixture",
+      level: "Undergraduate",
+      slides: [
+        {
+          id: "not-a-research-id",
+          title: "Fixture",
+          layout: "content",
+          bullets: facts,
+          leftBullets: [],
+          rightBullets: [],
+          citations: [source],
+          claims: facts.map((text, i) => ({
+            id: `c${i}`,
+            text,
+            status: "supported-excerpt",
+            evidence: [
+              {
+                citationId: source.id,
+                sourceUrl: source.url,
+                quote: facts.join(" "),
+                locator: "Synthetic fixture",
+                access: "abstract",
+                checkedAt: 1,
+              },
+            ],
+          })),
+        },
+      ],
+    });
+    assert.throws(
+      () =>
+        educationalNotesFromDeck(
+          makeDeck([
+            "We presented the fixture results.",
+            "This phenomenon was observed.",
+            "Our experiments used an artificial observation.",
+            "These results concern software only.",
+          ]),
+        ),
+      /cannot support a useful note/,
+    );
+    const useful = educationalNotesFromDeck(
+      makeDeck([
+        "A software fixture is defined as artificial application test data.",
+        "The synthetic fixture structure contains two labelled passages.",
+        "The synthetic process retains contiguous wording without asserting biological findings.",
+        "Passage provenance does not establish scientific validity.",
+      ]),
+    );
+    assert.equal(useful.sections.flatMap((s) => s.statements).length, 4);
+    assert.equal(new Set(useful.questions.map((q) => q.question)).size, useful.questions.length);
   } finally {
     await server.close();
   }

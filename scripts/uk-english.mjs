@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 export const replacements = {
   organize: "organise",
+  prioritizes: "prioritises",
   organized: "organised",
   organizes: "organises",
   organizing: "organising",
