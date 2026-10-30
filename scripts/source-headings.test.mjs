@@ -62,3 +62,13 @@ test("does not turn quantitative findings into unitless heading claims", () => {
   assert.equal(title, "Activity recovery");
   assert.equal(heading(["The and or."], topic, new Set()), "Source excerpt");
 });
+
+// Wording observed in a real live source retrieval; headings remain source spans.
+test("natural-competence headings avoid infinitive verbs and dangling using clauses", () => {
+  const source = "Natural competence is a useful tool for researchers to manipulate bacterial genotypes.";
+  assert.equal(heading([source], "Natural competence in bacteria", new Set()), "Natural competence");
+  const second = "They also conferred streptomycin resistance to susceptible strains using DNA.";
+  const label = heading([second], "Natural competence in bacteria", new Set());
+  assert.equal(label, "streptomycin resistance");
+  assert(second.includes(label));
+});
