@@ -48,3 +48,13 @@ Physical Note20/Chrome/Samsung Internet downloads, real phone keyboard behaviour
 | [`44a80fb`](https://github.com/Tajoor621/JUW-MicroSlides/commit/44a80fb443b0e8b62b3d5e922bc69525ef3319e1) | test: preserve setup guidance and exercise source provenance UI |
 | [`267e985`](https://github.com/Tajoor621/JUW-MicroSlides/commit/267e9859aecf0114e6b70f8b77b97f1bdcc048c8) | test: scope model setup failure to its generation alert |
 | [`54c56f7`](https://github.com/Tajoor621/JUW-MicroSlides/commit/54c56f751742cb4a5a673636b4deff123452c23b) | fix: prefer concept nouns in competence source headings |
+
+
+## Further continuation — local inference and source qualification
+
+- D: Run actual local CPU inference. Replace retyped source prose with corresponding source-statement ID selection, preserve original text/citations, reject invalid IDs, bound structured calls at three minutes and keep cancellation. Add exact-schema, wrong-section/repeated-ID, truthful fallback provenance and interrupted-batch resume checks. No model is bundled or required.
+- C: Search existing Library material and official university department/prospectus sources for original artwork. No qualifying original was identified; retain the unchanged low-resolution logo.
+- F: Compare the 14 conjugation lessons with retrieved primary sources, add the Lloyd/Buckman Hfr-recombination reference and state the historical full-text gap. Exclude publication table/figure locators from teaching headings. Keep every lesson unreviewed.
+- A/B/E/G: Preserve the supported runtime, UK authored prose, existing notes minimum, storage/backups, V6.2.1 and ungated draft exports. No visibility, hosting or account changes.
+
+See [live inference results](qualification/local-ai-cpu-2026-10-30.md), [source comparison](qualification/conjugation-source-map-2026-10-30.md), [QA](QA.md) and the PR commit list for this continuation. Passing source identity does not establish scientific truth or lecturer readiness. Hardware, Office, original artwork and hosting decisions remain open.

@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — bounded live qualification evidence (30 October 2026)
+
+- Record real CPU Ollama inference, the initial timeout, rejected rewrites and successful original-source statement selection without implying scientific approval. Add a batch-resume regression proving completed inference is retained and global statement IDs remain stable.
+- Document the bounded Library/university search for original artwork; the legacy logo remains below target. Preserve physical-device, Office, independent subject assessment and hosting decision gaps.
+
 ## V6.2.1 — scoped conjugation source comparison (30 October 2026)
 
 - Compare the 14 editorial lessons with four retrieved primary full texts; document direct observations, background models, inference limits and retrieval fingerprints. Add the checked Lloyd/Buckman Hfr-recombination reference while retaining the original historical identifiers and its full-text verification gap.
