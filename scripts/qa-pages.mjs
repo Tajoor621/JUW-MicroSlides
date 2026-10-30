@@ -211,6 +211,12 @@ try {
   await typographyPage.getByRole("button", { name: /^02 content Nomenclature/ }).click();
   assert.equal(await typographyPage.locator("[data-slide-stage] em").count(), 2);
   assert.equal(await typographyPage.getByLabel("Slide review status", { exact: true }).count(), 0);
+  const provenance = typographyPage.getByLabel("Source provenance", { exact: true });
+  assert.equal(await provenance.getAttribute("open"), null);
+  await provenance.locator("summary").click();
+  assert(await provenance.getByText(/never blocks downloads/).isVisible());
+  assert((await provenance.locator("li").count()) > 0);
+  await provenance.locator("summary").click();
   const typographyDownload = typographyPage.waitForEvent("download");
   await typographyPage.getByRole("button", { name: "Export PPTX", exact: true }).click();
   const typographyXml = pptxXmlFiles(await readFile(await (await typographyDownload).path()));

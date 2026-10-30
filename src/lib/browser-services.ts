@@ -2,7 +2,7 @@ import { generateLocalAiDeck, localCopilot, localAiConfig } from "./local-ai";
 import type { Citation, GenerateInput, Deck } from "./types";
 import { retrieveModelSources, groundModelDeck } from "./source-grounded-ai";
 const unavailable =
-  "AI mode requires a configured local Ollama model. Knowledge mode uses public research sources.";
+  "Local AI is not configured. Set up a local Ollama model, or use Knowledge mode with public research sources.";
 export async function generateAiDeck({
   data,
   signal,

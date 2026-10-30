@@ -1,5 +1,9 @@
 # Changelog
 
+## V6.2.1 — browser source-display regression (30 October 2026)
+
+- Keep the established local-model setup message while retaining source-first failure handling. Add a browser check for the collapsed read-only source display before confirming ungated editable export. The first CI attempt passed notes/export checks but found a changed setup-message expectation; no app exception occurred.
+
 ## V6.2.1 — useful-note minimum (30 October 2026)
 
 - Live notes exposed sparse study-result fragments being labelled ready. Exclude first-person/context-dependent fragments and require four distinct source statements across two teaching sections, including an explanatory section. Otherwise fail explicitly and preserve existing notes. Keep archived notes readable; use section-specific self-check instructions. Extend synthetic tests without claiming scientific validation.
