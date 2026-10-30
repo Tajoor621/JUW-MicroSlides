@@ -1,5 +1,9 @@
 # Changelog
 
+## V6.2.1 — useful-note minimum (30 October 2026)
+
+- Live notes exposed sparse study-result fragments being labelled ready. Exclude first-person/context-dependent fragments and require four distinct source statements across two teaching sections, including an explanatory section. Otherwise fail explicitly and preserve existing notes. Keep archived notes readable; use section-specific self-check instructions. Extend synthetic tests without claiming scientific validation.
+
 ## V6.2.1 — research label spelling (30 October 2026)
 
 - Use UK “prioritises” in the research control and include this spelling in the authored-prose check.

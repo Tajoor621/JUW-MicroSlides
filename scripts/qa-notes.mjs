@@ -47,8 +47,8 @@ try {
   await page.getByLabel("Notes topic", { exact: true }).fill("Conjugation software fixture");
   // Controlled response exercises the real retrieval/generation/export pipeline. It is explicitly not scientific qualification.
   const paragraphs = [
-    "This synthetic conjugation software fixture tests source-to-sentence provenance without asserting a biological finding. The conjugation fixture checks whether one contiguous source passage remains available after educational note generation.",
-    "This second synthetic conjugation software passage exercises a separate explanation pathway in the application. The separate conjugation fixture checks that a downloaded document preserves source identifiers and extractable text.",
+    "A synthetic conjugation fixture is defined as artificial text used to check software source-to-sentence provenance without asserting a biological finding. The synthetic conjugation fixture structure contains separate labelled passages for checking educational note generation in this software test only.",
+    "The synthetic conjugation software process preserves a contiguous source passage as an artificial application test rather than a biological explanation. Passage provenance in the synthetic conjugation fixture does not establish scientific validity or independence of the cited claims.",
   ].join("\n\n");
   await page.route("https://www.ebi.ac.uk/europepmc/**", (route) =>
     route.fulfill({
