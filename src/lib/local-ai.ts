@@ -1,4 +1,9 @@
-import { sourcePackGuidance } from "./source-grounded-ai";
+import { sourcePackGuidance, sourceStatementPack } from "./source-grounded-ai";
+import {
+  LOCAL_AI_JSON_BUDGET_MS,
+  LOCAL_AI_CHAT_BUDGET_MS,
+  jsonThinkingPreference,
+} from "./local-ai-policy";
 import { assertGenerationBiosafety, BIOSAFETY_PROMPT } from "./biosafety";
 import { lectureSlideFields } from "./lecture-schema";
 import { LAYOUTS } from "./types";
@@ -64,22 +69,56 @@ export async function probeLocalAi(
       Boolean(config.embeddingModel?.trim()) && installed(config.embeddingModel || ""),
   };
 }
-async function chat(prompt: string, json = false, images: string[] = [], signal?: AbortSignal) {
+const thinkingCache = new Map<string, { expires: number; value: false | "low" | undefined }>();
+async function jsonThinking(url: string, model: string, signal?: AbortSignal) {
+  const key = `${url}\n${model}`,
+    cached = thinkingCache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.value;
+  try {
+    const r = await localAiFetch(`${url}/api/show`, {
+      method: "POST",
+      credentials: "omit",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model }),
+      signal: AbortSignal.any([AbortSignal.timeout(8000), ...(signal ? [signal] : [])]),
+    });
+    if (!r.ok) return undefined;
+    const value = jsonThinkingPreference(await r.json());
+    if (thinkingCache.size >= 16) thinkingCache.clear();
+    thinkingCache.set(key, { value, expires: Date.now() + 180_000 });
+    return value;
+  } catch {
+    signal?.throwIfAborted();
+    return undefined;
+  }
+}
+async function chat(
+  prompt: string,
+  json: boolean | object = false,
+  images: string[] = [],
+  signal?: AbortSignal,
+) {
   signal?.throwIfAborted();
   const config = localAiConfig();
   if (!config)
     throw new Error(
       "Local AI is not configured. Open Settings to configure your own Ollama server, or use Knowledge mode.",
     );
-  const response = await localAiFetch(`${validateLocalAiUrl(config.url)}/api/chat`, {
+  const origin = validateLocalAiUrl(config.url);
+  const think = json ? await jsonThinking(origin, config.model, signal) : undefined;
+  const response = await localAiFetch(`${origin}/api/chat`, {
     method: "POST",
     credentials: "omit",
     headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.any([AbortSignal.timeout(55000), ...(signal ? [signal] : [])]),
+    signal: AbortSignal.any([
+      AbortSignal.timeout(json ? LOCAL_AI_JSON_BUDGET_MS : LOCAL_AI_CHAT_BUDGET_MS),
+      ...(signal ? [signal] : []),
+    ]),
     body: JSON.stringify({
       model: config.model,
       stream: false,
-      ...(json ? { format: "json" } : {}),
+      ...(json ? { format: typeof json === "object" ? json : "json" } : {}),
+      ...(think !== undefined ? { think } : {}),
       messages: [
         {
           role: "system",
@@ -109,6 +148,7 @@ const generatedSlide = z.object({
   leftBullets: z.array(z.string().max(3000)).max(12).default([]),
   rightBullets: z.array(z.string().max(3000)).max(12).default([]),
   notes: z.string().max(10000).default(""),
+  sourceStatementIds: z.array(z.string().max(80)).max(6).optional(),
 });
 export async function generateLocalAiDeck(
   input: GenerateInput,
@@ -151,7 +191,9 @@ export async function generateLocalAiDeck(
     JSON.parse(
       await chat(
         `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. ${source ? sourcePackGuidance(source) : ""} ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
-        true,
+        z.toJSONSchema(
+          z.object({ headings: z.array(z.string().min(1).max(200)).length(contentCount) }),
+        ),
         [],
         signal,
       ),
@@ -181,7 +223,22 @@ export async function generateLocalAiDeck(
   await checkpoint();
   const bodies = new Set<string>();
   function appendRow(row: z.infer<typeof generatedSlide>, heading: string) {
-    const body = [...row.bullets, ...row.leftBullets, ...row.rightBullets]
+    const { sourceStatementIds, ...fields } = row;
+    let bullets = fields.bullets;
+    if (source && sourceStatementIds?.length) {
+      if (new Set(sourceStatementIds).size !== sourceStatementIds.length)
+        throw Error("The model repeated a source statement. Existing work was kept.");
+      const pack = sourceStatementPack(source, slides.length - (count === 1 ? 0 : 1), 1);
+      bullets = sourceStatementIds.map((id) => {
+        const statement = pack.find((p) => p.id === id);
+        if (!statement)
+          throw Error(
+            "The model selected a missing or wrong-section source statement. Existing work was kept.",
+          );
+        return statement.text;
+      });
+    }
+    const body = [...bullets, ...fields.leftBullets, ...fields.rightBullets]
       .join(" ")
       .trim()
       .toLowerCase();
@@ -190,7 +247,8 @@ export async function generateLocalAiDeck(
     bodies.add(body);
     const layout = row.layout === "title" ? "content" : row.layout;
     slides.push({
-      ...row,
+      ...fields,
+      bullets,
       layout,
       title: count === 1 ? input.topic : heading,
       id: uid("s"),
@@ -203,9 +261,25 @@ export async function generateLocalAiDeck(
   for (let offset = rows.length; offset < headings.length; offset += 8) {
     signal?.throwIfAborted();
     const batch = headings.slice(offset, offset + 8);
+    const statements = source ? sourceStatementPack(source, offset, batch.length) : [];
+    if (source && !statements.length)
+      throw Error("No attributable source statements are available for this batch.");
+    const selection = source
+      ? z.object({
+          title: z.string().min(1).max(200),
+          sourceStatementIds: z
+            .array(z.enum(statements.map((s) => s.id) as [string, ...string[]]))
+            .min(1)
+            .max(6),
+        })
+      : generatedSlide;
     const response = await chat(
-      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${source ? sourcePackGuidance(source, offset, batch.length) : ""}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Use the requested generation mode and section headings when supplied in guidance. You may also supply learningObjectives, clinicalPearl, keyTakeaway, difficulty, sectionType, commonMisconceptions, protocol:{materials,steps:[{action,timing,sourceUrl}],interpretation,qc,biosafety,troubleshooting}, caseData:{caseNumber,vignette,differential,workup,results,diagnosis,management,questions,phase}, scientificTable:{caption,headers,rows}. Never invent missing protocol timings or clinical findings. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
-      true,
+      source
+        ? `Select exactly ${batch.length} slide records about ${input.topic}. Batch headings JSON: ${JSON.stringify(batch)}\n${sourcePackGuidance(source, offset, batch.length)}\nReturn rows in source-slide order ${offset + 1} through ${offset + batch.length}. Each row must select 1–4 sourceStatementIds belonging to that same numbered source slide. Keep source IDs unique per row. Return only {slides:[{title,sourceStatementIds}]}; factual text is inserted by the app, not rewritten by you. Do not return speaker notes, new factual annotations or citations.`
+        : `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${source ? sourcePackGuidance(source, offset, batch.length) : ""}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Use the requested generation mode and section headings when supplied in guidance. You may also supply learningObjectives, clinicalPearl, keyTakeaway, difficulty, sectionType, commonMisconceptions, protocol:{materials,steps:[{action,timing,sourceUrl}],interpretation,qc,biosafety,troubleshooting}, caseData:{caseNumber,vignette,differential,workup,results,diagnosis,management,questions,phase}, scientificTable:{caption,headers,rows}. Never invent missing protocol timings or clinical findings. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
+      z.toJSONSchema(z.object({ slides: z.array(selection).length(batch.length) }), {
+        io: "input",
+      }),
       [],
       signal,
     );
@@ -229,7 +303,9 @@ export async function generateLocalAiDeck(
     title: input.topic,
     requestedCount: count,
     contentWarnings: [
-      "AI-authored teaching draft. Review scientific claims and add supporting references.",
+      source
+        ? "Local AI selected source statements; factual text is copied from retrieved passages and remains unverified."
+        : "AI-authored teaching draft. Review scientific claims and add supporting references.",
       ...(!resumable
         ? ["Batch checkpoints could not be saved; export a backup before closing."]
         : []),

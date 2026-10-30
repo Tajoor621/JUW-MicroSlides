@@ -49,6 +49,14 @@ test("conjugation teaching sequence, draft provenance, assessments and backup su
     }
     const content = deck.slides.filter((s) => s.teachingPurpose === "conjugation-core/v1");
     assert.equal(content.length, 14);
+    const hfr = content.find((s) => s.title.includes("Hfr"));
+    assert(
+      hfr.citations.some((c) => c.pmid === "7768428" && c.doi === "10.1093/genetics/139.3.1123"),
+    );
+    assert(
+      hfr.citations.some((c) => c.pmid === "13433587"),
+      "Keep the original historical reference",
+    );
     for (const slide of content) {
       assert(
         slide.teaching.definition &&

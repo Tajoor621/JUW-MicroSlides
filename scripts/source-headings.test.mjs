@@ -3,12 +3,19 @@ import { test } from "node:test";
 import { sourceConceptHeading as heading } from "../src/lib/source-headings.ts";
 const topic = "Bacterial chromosome segregation";
 test("separates provider-glued section boundaries without damaging organism abbreviations", () => {
-  const source = "We estimate the effective reproduction number.ResultsThe incubation period was measured.";
+  const source =
+    "We estimate the effective reproduction number.ResultsThe incubation period was measured.";
   const title = heading([source], "Transmission dynamics", new Set());
   assert.equal(title, "effective reproduction number");
   assert(source.includes(title));
-  assert.equal(heading(["ResultsThe incubation period was measured."], topic, new Set()), "incubation period");
-  assert.equal(heading(["S. aureus virulence factors were investigated."], topic, new Set()), "S. aureus virulence factors");
+  assert.equal(
+    heading(["ResultsThe incubation period was measured."], topic, new Set()),
+    "incubation period",
+  );
+  assert.equal(
+    heading(["S. aureus virulence factors were investigated."], topic, new Set()),
+    "S. aureus virulence factors",
+  );
 });
 test("extracts source-contiguous concept labels instead of first-nine-word fragments", () => {
   for (const [source, expected] of [
@@ -62,11 +69,26 @@ test("does not turn quantitative findings into unitless heading claims", () => {
   assert.equal(title, "Activity recovery");
   assert.equal(heading(["The and or."], topic, new Set()), "Source excerpt");
 });
+test("paper table/figure locators are not teaching concepts", () => {
+  for (const locator of ["Table S1", "Figure 2A", "Supplementary Table IV"]) {
+    const title = heading(
+      [`Results are in ${locator}. Bacterial plasmid maintenance was investigated.`],
+      topic,
+      new Set(),
+    );
+    assert(!title.includes(locator));
+    assert.equal(title, "Bacterial plasmid maintenance");
+  }
+});
 
 // Wording observed in a real live source retrieval; headings remain source spans.
 test("natural-competence headings avoid infinitive verbs and dangling using clauses", () => {
-  const source = "Natural competence is a useful tool for researchers to manipulate bacterial genotypes.";
-  assert.equal(heading([source], "Natural competence in bacteria", new Set()), "Natural competence");
+  const source =
+    "Natural competence is a useful tool for researchers to manipulate bacterial genotypes.";
+  assert.equal(
+    heading([source], "Natural competence in bacteria", new Set()),
+    "Natural competence",
+  );
   const second = "They also conferred streptomycin resistance to susceptible strains using DNA.";
   const label = heading([second], "Natural competence in bacteria", new Set());
   assert.equal(label, "streptomycin resistance");

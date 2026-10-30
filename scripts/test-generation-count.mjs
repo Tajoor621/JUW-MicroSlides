@@ -196,6 +196,7 @@ try {
   };
   let modelCalls = 0;
   globalThis.fetch = async (_url, options) => {
+    if (String(_url).endsWith("/api/show")) return Response.json({ thinking: { values: [false] } });
     modelCalls++;
     const prompt = JSON.parse(options.body).messages.at(-1).content;
     let content;

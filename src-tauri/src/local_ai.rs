@@ -21,7 +21,7 @@ fn endpoint(raw: &str, post: bool) -> Result<reqwest::Url, String> {
             })
             .unwrap_or(false);
     let path_ok = if post {
-        matches!(url.path(), "/api/chat" | "/api/embed")
+        matches!(url.path(), "/api/chat" | "/api/embed" | "/api/show")
     } else {
         url.path() == "/api/tags"
     };
@@ -34,7 +34,7 @@ fn endpoint(raw: &str, post: bool) -> Result<reqwest::Url, String> {
         || !path_ok
     {
         return Err(
-            "Only local/private Ollama chat, embed and tags endpoints are permitted".into(),
+            "Only local/private Ollama chat, embed, show and tags endpoints are permitted".into(),
         );
     }
     Ok(url)
@@ -97,7 +97,7 @@ pub async fn local_ai_request(
         let client = reqwest::Client::builder()
             .no_proxy()
             .redirect(reqwest::redirect::Policy::none())
-            .timeout(Duration::from_secs(55))
+            .timeout(Duration::from_secs(180))
             .build()
             .map_err(|e| e.to_string())?;
         let builder = if let Some(body) = body {
@@ -132,6 +132,7 @@ mod tests {
     fn restricts_ollama_endpoints() {
         for url in [
             "http://localhost:11434/api/chat",
+            "http://localhost:11434/api/show",
             "http://127.0.0.1:11434/api/chat",
             "http://[::1]:11434/api/chat",
             "http://192.168.1.2:11434/api/chat",

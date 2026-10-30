@@ -1,5 +1,25 @@
 # Changelog
 
+## V6.2.1 — bounded live qualification evidence (30 October 2026)
+
+- Record real CPU Ollama inference, the initial timeout, rejected rewrites and successful original-source statement selection without implying scientific approval. Add a batch-resume regression proving completed inference is retained and global statement IDs remain stable.
+- Document the bounded Library/university search for original artwork; the legacy logo remains below target. Preserve physical-device, Office, independent subject assessment and hosting decision gaps.
+
+## V6.2.1 — scoped conjugation source comparison (30 October 2026)
+
+- Compare the 14 editorial lessons with four retrieved primary full texts; document direct observations, background models, inference limits and retrieval fingerprints. Add the checked Lloyd/Buckman Hfr-recombination reference while retaining the original historical identifiers and its full-text verification gap.
+- Make selection-frequency wording conditional and use UK mobilise/mobilisable/generalise in authored prose. Preserve published titles, quotations, gene/class identifiers, unreviewed claim status and ungated draft exports. This is an assistant-led source comparison, not independent scientific qualification.
+
+## V6.2.1 — publication locator headings (30 October 2026)
+
+- Live retrieval exposed “Table S1” as a slide heading. Exclude table/figure locators during concept extraction, including letter suffixes and supplementary labels, while preserving original scientific body text, organism abbreviations and gene case. Add negative and alternative-concept tests.
+
+## V6.2.1 — live local AI reliability (30 October 2026)
+
+- A real CPU test exposed the 55-second writer timeout. Allow bounded three-minute structured requests in browser/native transport, constrain response counts with JSON schemas, and use only advertised thinking controls. Preserve local-only endpoints, size limits, cancellation and existing saves.
+- Let source-first AI select numbered, corresponding source statements; insert original text and bound citations in the app. Reject unknown, wrong-section or repeated IDs. Retain legacy free-text filtering; label wholly retained source content as Knowledge rather than imply AI authorship.
+- Add optional real-endpoint `qa:local-ai`, recording model digests and filtering/fallback outcomes without raw prompts or stored lecturer changes. No server/model is installed or downloaded by this command and none is bundled in the product. Live model testing is not scientific qualification.
+
 ## V6.2.1 — natural-competence concept headings (30 October 2026)
 
 - A live three-slide natural-competence run succeeded with cited content but exposed infinitive/dangling-clause headings. Treat “manipulate”, “using”, “transform” and “conferred” forms as extraction boundaries. Keep original scientific body wording and add the observed heading regression.

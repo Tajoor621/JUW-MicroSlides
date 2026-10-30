@@ -14,3 +14,9 @@ Apply this section to JUW-MicroSlides V6.2.1, package `juw-microslides`. Do not 
 10. Until the original artwork is supplied and the replacement passes those checks, keep the existing active logo and record exactly **“logo resolution below target”** in the QA report. Do not describe the logo as fixed. The reconstructed files are optional reference assets, not proof that this issue is resolved.
 
 All other sections A–B and D–G of the implementation brief remain applicable. Creating these logo files and revising this section does not implement or verify those sections.
+
+## Original-artwork search — 30 October 2026
+
+The available Library results contain the generated microscope image and reconstructed PNG/SVG package, not an identified departmental original. The [official department page](https://www.juw.edu.pk/department-of-microbiology/), its linked 1,024 × 1,536 JPEG admissions poster, and the department section of the [official 2026 prospectus](https://www.juw.edu.pk/resource/uploads/2025/09/eProspectus_2026.pdf) (PDF pages 193–205) were inspected. No matching self-contained original microscope logo meeting the replacement requirement was identified in these resources. A composite poster's overall dimensions do not establish the resolution of a logo inside it. This bounded search does not establish that no original exists elsewhere.
+
+The active asset is unchanged: **logo resolution below target**. Original artwork is still needed. No poster was cropped/upscaled, no generated reconstruction was activated, and no institutional approval or licence was invented.

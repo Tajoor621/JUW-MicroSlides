@@ -36,6 +36,8 @@ test("public AI generation retrieves first, rejects unsupported model text and f
       getItem: () => JSON.stringify({ url: "http://localhost:11434", model: "software-fixture" }),
     };
     globalThis.fetch = async (url, options) => {
+      if (String(url).endsWith("/api/show"))
+        return Response.json({ thinking: { values: [false] } });
       const local = String(url).startsWith("http://localhost:11434");
       calls.push(local ? "model" : "source");
       if (!local) {
@@ -64,12 +66,19 @@ test("public AI generation retrieves first, rejects unsupported model text and f
         });
       }
       if (mode === "model-error") return new Response("Unavailable", { status: 503 });
-      const prompt = JSON.parse(options.body).messages.at(-1).content;
+      const request = JSON.parse(options.body);
+      const prompt = request.messages.at(-1).content;
+      assert.equal(request.think, false);
+      assert.equal(request.format.type, "object");
+      const items =
+        request.format.properties[prompt.startsWith("Plan exactly") ? "headings" : "slides"];
+      assert.equal(items.minItems, 2);
+      assert.equal(items.maxItems, 2);
       assert(
         prompt.includes("Source pack:"),
         "inference must receive an independently retrieved source pack",
       );
-      const content = prompt.startsWith("Plan exactly")
+      let content = prompt.startsWith("Plan exactly")
         ? { headings: ["First fixture", "Second fixture"] }
         : {
             slides: paragraphs.map((p, i) => ({
@@ -80,6 +89,27 @@ test("public AI generation retrieves first, rejects unsupported model text and f
               teaching: { mechanism: "Unsupported model mechanism." },
             })),
           };
+      if (
+        !prompt.startsWith("Plan exactly") &&
+        ["ids", "wrong-ids", "repeated-ids"].includes(mode)
+      ) {
+        const pack = JSON.parse(prompt.split("Source statements: ")[1].split("\nSource pack:")[0]);
+        content = {
+          slides: [1, 2].map((slide) => ({
+            title: `Selection ${slide}`,
+            sourceStatementIds: pack
+              .filter((s) => s.slide === slide)
+              .slice(0, 2)
+              .map((s) => s.id),
+          })),
+        };
+        if (mode === "wrong-ids")
+          content.slides[0].sourceStatementIds = content.slides[1].sourceStatementIds;
+        if (mode === "repeated-ids")
+          content.slides[0].sourceStatementIds = Array(2).fill(
+            content.slides[0].sourceStatementIds[0],
+          );
+      }
       return Response.json({ message: { content: JSON.stringify(content) } });
     };
     const result = await generateAiDeck({ data: input });
@@ -91,6 +121,19 @@ test("public AI generation retrieves first, rejects unsupported model text and f
       assert(slide.citations.some((c) => c.pmid === "36653393"));
       assert(!JSON.stringify(slide).includes("99%"));
       assert(!JSON.stringify(slide).includes("Unsupported model mechanism"));
+    }
+    mode = "ids";
+    const selected = await generateAiDeck({ data: input });
+    assert.equal(selected.ok, true);
+    assert.equal(selected.deck.generationSource, "local-ai");
+    assert.equal(selected.deck.slides.length, 3);
+    assert(!selected.deck.contentWarnings.some((s) => s.includes("Local AI drafting failed")));
+    for (const invalidMode of ["wrong-ids", "repeated-ids"]) {
+      mode = invalidMode;
+      const safe = await generateAiDeck({ data: input });
+      assert.equal(safe.ok, true);
+      assert.equal(safe.deck.generationSource, "knowledge");
+      assert(safe.deck.contentWarnings.some((s) => s.includes("Local AI drafting failed")));
     }
     mode = "empty";
     calls = [];

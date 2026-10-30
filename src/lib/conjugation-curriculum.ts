@@ -3,7 +3,7 @@ import { teachingSchema } from "./teaching-schema";
 import { uid } from "./utils";
 
 /** Editorial teaching synthesis, not a source quotation or human review.
- * Primary bibliographic identities checked 28 October 2026. Deliberately narrow
+ * Primary bibliographic identities checked 29–30 October 2026. Deliberately narrow
  * matching: specialised organism requests still use the general research path.
  */
 export function conjugationTopic(topic: string) {
@@ -84,6 +84,21 @@ export const CONJUGATION_REFERENCES: Citation[] = [
     doi: "10.1101/sqb.1956.021.01.012",
     pmid: "13433587",
     url: "https://pubmed.ncbi.nlm.nih.gov/13433587/",
+  },
+  {
+    id: "conjugation-lloyd-1995",
+    evidenceKind: "primary",
+    type: "article-journal",
+    authors: "Lloyd RG, Buckman C.",
+    title:
+      "Conjugational recombination in Escherichia coli: genetic analysis of recombinant formation in Hfr x F- crosses.",
+    journal: "Genetics",
+    year: "1995",
+    volume: "139",
+    pages: "1123–1148",
+    doi: "10.1093/genetics/139.3.1123",
+    pmid: "7768428",
+    url: "https://pubmed.ncbi.nlm.nih.gov/7768428/",
   },
 ];
 type Lesson = {
@@ -265,12 +280,12 @@ const LESSONS: Lesson[] = [
       "Explain the distinction between detecting DNA and detecting an expressed phenotype. For research audiences, discuss the leading-region single-stranded promoters identified in the study.",
   },
   {
-    title: "Mobilizable elements borrow transfer functions",
+    title: "Mobilisable elements borrow transfer functions",
     definition:
       "Some plasmids depend on another element's transfer functions to move between cells.",
     bullets: [
       "An oriT-bearing plasmid may use a compatible helper's DNA-processing functions.",
-      "Dependencies are specific: not every helper can mobilize every plasmid.",
+      "Dependencies are specific: not every helper can mobilise every plasmid.",
     ],
     mechanism:
       "Compatible origin recognition and access to transfer machinery permit transfer in trans.",
@@ -303,9 +318,9 @@ const LESSONS: Lesson[] = [
       "Mating is interrupted",
       "Marker order is inferred",
     ],
-    refs: [4],
+    refs: [4, 5],
     notes:
-      "Use qualitative marker order without inventing transfer times. The cited classic paper supplies historical context; its PubMed record has no abstract, so inspect the full original before adding quantitative examples.",
+      "Use qualitative marker order without inventing transfer times. Lloyd and Buckman provide primary experimental evidence on recipient recombination, not universal mapping timings. The classic paper supplies historical context; its PubMed record has no abstract, so inspect the full original before adding quantitative examples.",
   },
   {
     title: "Resistance spread depends on genetic cargo",
@@ -315,7 +330,7 @@ const LESSONS: Lesson[] = [
       "Helper-dependent plasmids can also contribute to resistance-gene dissemination.",
     ],
     mechanism:
-      "Horizontal movement changes which cells carry a trait; selection subsequently changes its prevalence.",
+      "Horizontal transfer changes which cells carry a trait; subsequent selection can change its frequency.",
     pitfall: "Resistance transfer does not imply a new mutation occurred during mating.",
     takeaway: "Separate transfer of an existing gene from selection of its carriers.",
     steps: [
@@ -354,7 +369,7 @@ const LESSONS: Lesson[] = [
     definition: "A mechanistic diagram is a model with an explicit biological scope.",
     bullets: [
       "F-type pili, relaxases and coupling proteins are named components of a particular model system.",
-      "Do not generalize an F-system observation to all bacterial or archaeal DNA transfer.",
+      "Do not generalise an F-system observation to all bacterial or archaeal DNA transfer.",
     ],
     mechanism:
       "Compare the claim with the organism, element and experimental stage actually studied.",
@@ -440,7 +455,7 @@ export function conjugationCore(deck: Deck, input: GenerateInput): Deck {
     ...deck,
     slides: [deck.slides[0], ...slides],
     contentWarnings: [
-      "Source-linked editorial core for F-type conjugation; references checked 28 October 2026. Claims remain unreviewed. Live reference checks are separate from scientific review.",
+      "Source-linked editorial core for F-type conjugation; bibliographic checks recorded 29–30 October 2026. Claims remain unreviewed. Live reference checks are separate from scientific review.",
     ],
   };
 }

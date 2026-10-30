@@ -26,6 +26,10 @@ export function sourceConceptHeading(sentences: string[], topic: string, used: S
     }
   for (const [sentenceIndex, sentence] of sentences.entries()) {
     const clean = sentence
+      .replace(
+        /\b(?:(?:supplementary|supplemental)\s+)?(?:tables?|fig(?:ure)?s?)\s+(?:[A-Z]?\d+[A-Z]?|[IVXLC]+)\b/gi,
+        ";",
+      )
       .replace(/^(?:background|objectives?|methods?|results?|conclusions?)\s*:\s*/i, "")
       .replace(/^(?:recent studies|this (?:study|review)|our (?:study|results|data))\s*/i, "");
     // Punctuation is a boundary too: don't join terms across different clauses.
@@ -47,6 +51,9 @@ export function sourceConceptHeading(sentences: string[], topic: string, used: S
             text.length < 4 ||
             text.length > 68 ||
             run.some(({ word }) => /^\p{N}+$/u.test(word)) ||
+            /^(?:(?:supplementary|supplemental)\s+)?(?:tables?|fig(?:ure)?s?)\s+(?:[A-Z]?\d+[A-Z]?|[IVXLC]+)\b/i.test(
+              text,
+            ) ||
             /^(?:study|studies|review|data|results?|different|aspects?|demands?|modes?)$/i.test(
               text,
             )

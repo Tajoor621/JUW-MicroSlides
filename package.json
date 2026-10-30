@@ -46,7 +46,8 @@
     "qa:topic-recovery": "node scripts/qa-topic-recovery.mjs",
     "test:slide-fidelity": "node scripts/test-slide-fidelity.mjs",
     "test:uk-english": "node scripts/uk-english.mjs",
-    "qa:notes": "node scripts/qa-notes.mjs"
+    "qa:notes": "node scripts/qa-notes.mjs",
+    "qa:local-ai": "node scripts/qa-local-ai.mjs"
   },
   "dependencies": {
     "@citation-js/core": "^0.9.0",
