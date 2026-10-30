@@ -1,5 +1,9 @@
 # Changelog
 
+## V6.2.1 — research label spelling (30 October 2026)
+
+- Use UK “prioritises” in the research control and include this spelling in the authored-prose check.
+
 ## V6.2.1 — complete OpenAlex passages (30 October 2026)
 
 - Reject missing words, duplicate positions and malformed abstract indices rather than creating a continuous quotation across a gap. Preserve complete provider wording and DOI identities.
