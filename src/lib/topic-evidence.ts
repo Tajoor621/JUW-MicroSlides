@@ -151,6 +151,7 @@ function sourceSlides(
         : p.doi
           ? `https://doi.org/${p.doi}`
           : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`);
+    citation.url ||= source;
     for (let part = 0; part < parts.length; part++) {
       const bullets = parts[part].sentences;
       const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");

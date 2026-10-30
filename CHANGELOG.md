@@ -4,6 +4,12 @@
 
 - Use UK “prioritises” in the research control and include this spelling in the authored-prose check.
 
+## V6.2.1 — source-first AI and full-field provenance (30 October 2026)
+
+- Retrieve attributable passages before standard/curriculum local AI and AI notes. Bind accepted wording to independently retrieved references; discard unsupported model text and structures. Preserve exact counts and cancellation; retain a complete source draft if inference fails, and retain the active deck when sources fail.
+- Check complete source statements without dropping qualifications or negation. Include every slide ID and structured field in a collapsed read-only source display; recompute after edits. Reference-only bundled/editorial content and visual meaning remain unverified. No Review menu or export gate is restored.
+- Require protocol timings within their complete action and table values within the same source row. Keep notes source checks aligned and show retrieval progress in Writing Notes. Add source-first integration and negative provenance fixtures; synthetic wording is software test data, not scientific qualification.
+
 ## V6.2.1 — complete OpenAlex passages (30 October 2026)
 
 - Reject missing words, duplicate positions and malformed abstract indices rather than creating a continuous quotation across a gap. Preserve complete provider wording and DOI identities.

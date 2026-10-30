@@ -1,3 +1,4 @@
+import { generationGroundingSummary } from "@/lib/generation-grounding";
 import { checkResearchClaims } from "@/lib/source-grounding";
 import { assertGenerationBiosafety, assertGeneratedBiosafety } from "@/lib/biosafety";
 import { LectureGenerationOptions } from "./lecture-generation-options";
@@ -24,7 +25,7 @@ import { useDeckStore } from "@/lib/deck-store";
 import { generateLocalDeck, dedicatedLecture } from "@/lib/generate-deck";
 import { DISCIPLINES, suggestDiscipline } from "@/lib/knowledge";
 
-import { generateAiDeck } from "@/lib/browser-services";
+import { generateAiDeck, generateAiLayout } from "@/lib/browser-services";
 
 import { inferFocus } from "@/lib/topic-engine";
 import { hasConjugationCore } from "@/lib/conjugation-curriculum";
@@ -165,7 +166,11 @@ export function GenerateForm({
           setProgress,
           input.mode === "ai"
             ? async (data) => {
-                const r = await generateAiDeck({ data, signal: controller.current!.signal });
+                const r = await generateAiDeck({
+                  data,
+                  signal: controller.current!.signal,
+                  progress: setProgress,
+                });
                 if (!r.ok) throw Error(r.error);
                 return r.deck;
               }
@@ -179,7 +184,7 @@ export function GenerateForm({
           setProgress,
           input.mode === "ai"
             ? async (data) => {
-                const r = await generateAiDeck({ data, signal: controller.current!.signal });
+                const r = await generateAiLayout({ data, signal: controller.current!.signal });
                 if (!r.ok) throw Error(r.error);
                 return r.deck;
               }
@@ -191,14 +196,12 @@ export function GenerateForm({
           setProgress("Drafting and checking the research deck…");
           const result = await generateAiDeck({
             data: sourceInput,
+            progress: setProgress,
             signal: controller.current.signal,
           });
           controller.current.signal.throwIfAborted();
           if (result.ok) local = result.deck;
-          else {
-            local = result.deck ?? local;
-            toast.message(result.error);
-          }
+          else throw Error(result.error);
         }
         if (
           input.includeAssessment &&
@@ -261,8 +264,19 @@ export function GenerateForm({
       if (useDeckStore.getState().workspaceEpoch !== epoch) return;
       local.generationSource ??= "knowledge";
       local = assertGeneratedBiosafety(assertCompleteDeck(checkResearchClaims(local), input.count));
+      const noteGrounding = (deck: import("@/lib/types").Deck) => {
+        const report = generationGroundingSummary(deck);
+        return {
+          ...deck,
+          contentWarnings: [
+            ...(deck.contentWarnings || []),
+            `At generation: ${report.exact} of ${report.checked} text/visual fields had exact passage wording; ${report.unmatched} fields remained reference-only or needed a passage. This is provenance, not scientific verification. Exports remain available.`,
+          ],
+        };
+      };
+      local = noteGrounding(local);
       if (series) {
-        const complete = series;
+        const complete = series.map(noteGrounding);
         useDeckStore.setState((state) => ({
           library: [...complete, ...state.library],
           activeId: complete[0].id,

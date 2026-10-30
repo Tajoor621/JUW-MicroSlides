@@ -1,3 +1,4 @@
+import { sourcePackGuidance } from "./source-grounded-ai";
 import { assertGenerationBiosafety, BIOSAFETY_PROMPT } from "./biosafety";
 import { lectureSlideFields } from "./lecture-schema";
 import { LAYOUTS } from "./types";
@@ -5,7 +6,7 @@ import { readLocalRecord, writeLocalRecord } from "./durable-storage";
 import { localAiFetch } from "./local-ai-transport";
 import { z } from "zod";
 import { teachingSchema } from "./teaching-schema";
-import { MAX_SLIDES, type GenerateInput, type Slide } from "./types";
+import { MAX_SLIDES, type GenerateInput, type Slide, type Deck } from "./types";
 import { assertCompleteDeck, requestedCount } from "./deck-completion";
 import { generateLocalDeck } from "./generate-deck";
 import { uid } from "./utils";
@@ -109,14 +110,22 @@ const generatedSlide = z.object({
   rightBullets: z.array(z.string().max(3000)).max(12).default([]),
   notes: z.string().max(10000).default(""),
 });
-export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSignal) {
+export async function generateLocalAiDeck(
+  input: GenerateInput,
+  signal?: AbortSignal,
+  source?: Deck,
+) {
   assertGenerationBiosafety(input);
   signal?.throwIfAborted();
   const count = requestedCount(input.count);
   const deck = generateLocalDeck({ ...input, count });
   const slides: Slide[] = count === 1 ? [] : [deck.slides[0]];
   const contentCount = count === 1 ? 1 : count - 1;
-  const fingerprint = JSON.stringify({ input, config: localAiConfig() });
+  const fingerprint = JSON.stringify({
+    input,
+    config: localAiConfig(),
+    sourcePack: source ? sourcePackGuidance(source) : null,
+  });
   const checkpointSchema = z.object({
     fingerprint: z.string(),
     headings: z.array(z.string().min(1).max(200)).max(MAX_SLIDES),
@@ -141,7 +150,7 @@ export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSi
     cached ||
     JSON.parse(
       await chat(
-        `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
+        `Plan exactly ${contentCount} distinct substantive content slides for a microbiology lecture about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. ${source ? sourcePackGuidance(source) : ""} ${count === 1 ? "This one-slide lecture must itself contain substantive teaching content." : "The topic introduction is already present and is not part of this outline."} Cover the topic progressively: foundations, mechanisms, methods, evidence, applications, limits and synthesis when relevant. Keep all headings specific and concise. Do not repeat the topic in every heading. Return JSON {headings:string[]}.`,
         true,
         [],
         signal,
@@ -195,7 +204,7 @@ export async function generateLocalAiDeck(input: GenerateInput, signal?: AbortSi
     signal?.throwIfAborted();
     const batch = headings.slice(offset, offset + 8);
     const response = await chat(
-      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Use the requested generation mode and section headings when supplied in guidance. You may also supply learningObjectives, clinicalPearl, keyTakeaway, difficulty, sectionType, commonMisconceptions, protocol:{materials,steps:[{action,timing,sourceUrl}],interpretation,qc,biosafety,troubleshooting}, caseData:{caseNumber,vignette,differential,workup,results,diagnosis,management,questions,phase}, scientificTable:{caption,headers,rows}. Never invent missing protocol timings or clinical findings. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
+      `Write exactly ${batch.length} substantive microbiology content slides about ${input.topic}. Level: ${input.level}. Focus depth: ${input.focusDepth || "standard"}. Generation mode: ${input.generationMode || "standard"}. Guidance: ${input.notes}. Batch headings JSON: ${JSON.stringify(batch)}\n${source ? sourcePackGuidance(source, offset, batch.length) : ""}\n${count === 1 ? "This is the complete single-slide lecture; include its substantive teaching content." : `These are slides ${offset + 2} to ${offset + batch.length + 1} of ${count}; the opening slide already exists.`} Follow these headings in order, with 3–5 factual explanatory bullets and useful speaker notes. Use content or two-column layouts. No empty outlines, unrelated filler, repeated bodies, invented DOIs/references, or claims of verified accuracy. Flag uncertain statements in notes. Include teaching:{definition,mechanism,advantage,limitation,pitfall,takeaway,equation,assumptions,discussion,quantitative:[]}. Undergraduate: definitions and pros/cons; graduate/medical: mechanisms and source-linked data; research: models, units, assumptions and critical discussion. Reaction-diffusion lectures should discuss η and Thiele modulus where appropriate. Never invent a numeric benchmark or citation; leave missing data unverified. Use the requested generation mode and section headings when supplied in guidance. You may also supply learningObjectives, clinicalPearl, keyTakeaway, difficulty, sectionType, commonMisconceptions, protocol:{materials,steps:[{action,timing,sourceUrl}],interpretation,qc,biosafety,troubleshooting}, caseData:{caseNumber,vignette,differential,workup,results,diagnosis,management,questions,phase}, scientificTable:{caption,headers,rows}. Never invent missing protocol timings or clinical findings. Return JSON {slides:[{layout,title,subtitle,bullets,leftBullets,rightBullets,notes,teaching}]}.`,
       true,
       [],
       signal,

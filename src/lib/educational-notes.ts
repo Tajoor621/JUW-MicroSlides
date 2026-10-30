@@ -1,3 +1,4 @@
+import { passageContainsStatement } from "./generation-grounding";
 import { z } from "zod";
 import { LEVELS } from "./types";
 import type { Deck } from "./types";
@@ -63,11 +64,7 @@ export function assertNoteSources(note: EducationalNote) {
     );
   for (const s of statements) {
     const ref = parsed.sources.find((r) => r.id === s.sourceId);
-    if (
-      !ref ||
-      (!ref.doi && !ref.pmid) ||
-      !s.quote.replace(/\s+/g, " ").includes(s.text.replace(/\s+/g, " "))
-    )
+    if (!ref || (!ref.doi && !ref.pmid) || !passageContainsStatement(s.quote, s.text))
       throw Error(
         "A note statement has no traceable DOI/PMID passage. Regenerate from attributable sources.",
       );
@@ -84,7 +81,7 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
   }));
   const seen = new Set<string>();
   for (const slide of deck.slides) {
-    for (const statement of supportedSlideSentences(slide)) {
+    for (const statement of supportedSlideSentences(slide, deck.sourceDocuments)) {
       const ref = slide.citations.find((c) => c.id === statement.citationId);
       if (!ref || (!ref.doi && !ref.pmid)) continue;
       const guideline = statement.access === "guideline";
