@@ -37,3 +37,9 @@ Historical qualification reports keep their original dates and commit hashes. Mi
 - `npm run test:uk-english`: authored UK English contract (required).
 - `npm run qa:notes`: A4 source-traced notes browser/PDF QA (required; installed Chrome and Poppler needed).
 - `node scripts/logo-assets.mjs`: strict logo qualification (currently fails the documented legacy resolution target; no export gate).
+
+## Optional real local AI qualification
+
+`JUW_OLLAMA_MODEL=<installed-model> npm run qa:local-ai` exercises actual local Ollama and public literature retrieval through the application generation engine. Set `JUW_OLLAMA_URL` only for your own local/private server; default is `http://127.0.0.1:11434`. The command does not install/start a server, download a model, change app settings or write saved decks. Outputs go to the ignored qualification directory (or `JUW_QA_OUTPUT`). It records server/model digest, real call outcomes, exact count and source checks; raw prompts and source text are not retained in the report.
+
+A request failure can preserve a complete source draft, but is not an AI-writing pass. If every model body is rejected/repeated, the report says filtering was verified; this does not qualify that model as a lecture writer. Node/server tests do not establish browser CORS/private-network permission, physical-phone acceptance, Office rendering or scientific accuracy. Small CPU models used in development checks are not teaching-quality recommendations. This optional command is not part of default CI and makes no paid cloud calls.

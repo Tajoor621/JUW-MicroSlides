@@ -1,5 +1,11 @@
 # Changelog
 
+## V6.2.1 — live local AI reliability (30 October 2026)
+
+- A real CPU test exposed the 55-second writer timeout. Allow bounded three-minute structured requests in browser/native transport, constrain response counts with JSON schemas, and use only advertised thinking controls. Preserve local-only endpoints, size limits, cancellation and existing saves.
+- Let source-first AI select numbered, corresponding source statements; insert original text and bound citations in the app. Reject unknown, wrong-section or repeated IDs. Retain legacy free-text filtering; label wholly retained source content as Knowledge rather than imply AI authorship.
+- Add optional real-endpoint `qa:local-ai`, recording model digests and filtering/fallback outcomes without raw prompts or stored lecturer changes. No server/model is installed or downloaded by this command and none is bundled in the product. Live model testing is not scientific qualification.
+
 ## V6.2.1 — natural-competence concept headings (30 October 2026)
 
 - A live three-slide natural-competence run succeeded with cited content but exposed infinitive/dangling-clause headings. Treat “manipulate”, “using”, “transform” and “conferred” forms as extraction boundaries. Keep original scientific body wording and add the observed heading regression.

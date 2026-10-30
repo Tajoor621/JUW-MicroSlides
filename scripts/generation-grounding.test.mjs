@@ -261,6 +261,16 @@ test("model text cannot fabricate citations, change quantities or inject structu
     assert(made.slides[1].claims.every((c) => c.status === "unreviewed"));
     assert.equal(supportedSlideSentences(made.slides[1]).length, 1);
     assert.equal(deckSchema.parse(made).slides.length, 3);
+    const rejected = structuredClone(model);
+    rejected.slides[1].bullets = ["Unsupported first body."];
+    rejected.slides[2].bullets = ["Unsupported second body."];
+    const retained = groundModelDeck(rejected, src);
+    assert.equal(
+      retained.generationSource,
+      "knowledge",
+      "Rejected model bodies must not imply AI authorship",
+    );
+    assert.deepEqual(retained.slides[1].bullets, src.slides[1].bullets);
     const bad = structuredClone(model);
     bad.slides.pop();
     assert.throws(() => groundModelDeck(bad, src), /slide count/);

@@ -16,7 +16,7 @@ export async function generateAiDeck({
   try {
     if (!localAiConfig()) throw Error(unavailable);
     source = await retrieveModelSources(data, signal, progress);
-    progress?.("Drafting from the retrieved passage pack with local AI…");
+    progress?.("Drafting from retrieved passages with local AI — up to 3 minutes per request; Cancel to stop…");
     const drafted = await generateLocalAiDeck(data, signal, source);
     signal?.throwIfAborted();
     return { ok: true as const, deck: groundModelDeck(drafted, source) };
