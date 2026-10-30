@@ -19,3 +19,9 @@ Bibliographic identities and exact published titles checked on 29 October 2026 a
 - Wollman, Jacob and Hayes (1956), “Conjugation and genetic recombination in Escherichia coli K-12”: [PMID 13433587](https://pubmed.ncbi.nlm.nih.gov/13433587/), DOI 10.1101/sqb.1956.021.01.012. Title/DOI/PMID checked 29 October 2026; full text and claim support **unverified**. PubMed has no abstract. The Hfr lesson is a qualitative teaching synthesis; inspect the original before adding numerical mapping examples.
 
 F-type mechanisms must not be generalised to every bacterial/archaeal transfer system. No universal transfer rate, fixed timing, clinical treatment recommendation or laboratory operating protocol is supplied. The tests verify software contracts, sequence, count, persistence and question structure, not independent microbiology qualification.
+
+## Scoped source comparison — 30 October 2026
+
+Four contemporary primary full texts were compared with the 14 lessons; this is an assistant-led source comparison, not independent expert qualification. See [the source map](qualification/conjugation-source-map-2026-10-30.md) for direct observations, background mechanisms, teaching inferences and the remaining historical access gap. All generated claims remain unreviewed.
+
+The Hfr lesson also links Lloyd and Buckman (1995), “Conjugational recombination in Escherichia coli: genetic analysis of recombinant formation in Hfr x F- crosses.”, [PMID 7768428](https://pubmed.ncbi.nlm.nih.gov/7768428/), DOI 10.1093/genetics/139.3.1123. Exact Europe PMC title, authors, year and identifiers, plus the PMC abstract, were checked on 30 October 2026. The abstract supports a role for recipient recombination; it does not establish every Hfr mapping statement or a universal transfer rate. Full PDF and independent claim assessment remain unverified. The Wollman/Jacob/Hayes DOI and PMID are retained.

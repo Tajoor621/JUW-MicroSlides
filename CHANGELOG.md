@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — scoped conjugation source comparison (30 October 2026)
+
+- Compare the 14 editorial lessons with four retrieved primary full texts; document direct observations, background models, inference limits and retrieval fingerprints. Add the checked Lloyd/Buckman Hfr-recombination reference while retaining the original historical identifiers and its full-text verification gap.
+- Make selection-frequency wording conditional and use UK mobilise/mobilisable/generalise in authored prose. Preserve published titles, quotations, gene/class identifiers, unreviewed claim status and ungated draft exports. This is an assistant-led source comparison, not independent scientific qualification.
+
 ## V6.2.1 — publication locator headings (30 October 2026)
 
 - Live retrieval exposed “Table S1” as a slide heading. Exclude table/figure locators during concept extraction, including letter suffixes and supplementary labels, while preserving original scientific body text, organism abbreviations and gene case. Add negative and alternative-concept tests.
