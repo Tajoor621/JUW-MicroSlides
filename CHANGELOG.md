@@ -1,5 +1,10 @@
 # Changelog
 
+## V6.2.1 — complete OpenAlex passages (30 October 2026)
+
+- Reject missing words, duplicate positions and malformed abstract indices rather than creating a continuous quotation across a gap. Preserve complete provider wording and DOI identities.
+
+
 ## V6.2.1 — verified deployment record (29 October 2026)
 
 - Record the verified live application build, CI evidence, task commits, scientific verification limits and outstanding original-artwork/hosting decisions. Keep physical-device and interrupted manual PDF checks explicitly unverified.
