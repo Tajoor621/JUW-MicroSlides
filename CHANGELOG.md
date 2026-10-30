@@ -1,5 +1,13 @@
 # Changelog
 
+## V6.2.1 — natural-competence concept headings (30 October 2026)
+
+- A live three-slide natural-competence run succeeded with cited content but exposed infinitive/dangling-clause headings. Treat “manipulate”, “using”, “transform” and “conferred” forms as extraction boundaries. Keep original scientific body wording and add the observed heading regression.
+
+## V6.2.1 — continued deployment evidence (30 October 2026)
+
+- Record the tested source tree, merged/live build, Pages and Windows results, real rendered PDF inspection, CI conjugation artefacts, task commits and remaining scientific/device/logo/hosting limits. Preserve the dated initial CI failures instead of reporting them as passes.
+
 ## V6.2.1 — source-failure browser assertion (30 October 2026)
 
 - Scope the unconfigured-model assertion to the generation alert. The preserved-work error now appears in both summary and recovery details; assert its message without an ambiguous text locator. Keep the failure and existing-deck preservation behaviour.
