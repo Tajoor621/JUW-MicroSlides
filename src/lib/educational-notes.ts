@@ -1,3 +1,4 @@
+import { needsGuideline } from "./scientific-presentation";
 import { passageContainsStatement } from "./generation-grounding";
 import { z } from "zod";
 import { LEVELS } from "./types";
@@ -55,6 +56,13 @@ export const NOTE_HEADINGS = [
 ];
 const treatment =
   /\b(treat(?:ment|ed|ing)?|dos(?:e|ing)|therapy|therapeutic|recommend(?:ation|ed)?|first-line)\b/i;
+const requiresGuideline = (text: string) => treatment.test(text) || needsGuideline(text);
+const datedGuideline = (
+  ref: Pick<EducationalNote["sources"][number], "title" | "year" | "guideline">,
+) =>
+  ref.guideline &&
+  /^\d{4}$/.test(ref.year) &&
+  /\b(?:CLSI|EUCAST|IDSA|CDC|WHO|guideline|guidance)\b/i.test(ref.title);
 export function assertNoteSources(note: EducationalNote) {
   const parsed = educationalNoteSchema.parse(note);
   const statements = [
@@ -76,8 +84,8 @@ export function assertNoteSources(note: EducationalNote) {
       throw Error(
         "A note statement has no traceable DOI/PMID passage. Regenerate from attributable sources.",
       );
-    if (treatment.test(s.text) && (!ref.guideline || !/^\d{4}$/.test(ref.year)))
-      throw Error("Treatment statements require a dated guideline.");
+    if (requiresGuideline(s.text) && !datedGuideline(ref))
+      throw Error("Clinical values and treatment statements require a named, dated guideline.");
   }
   return parsed;
 }
@@ -101,7 +109,7 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
       )
         continue;
       const guideline = statement.access === "guideline";
-      if (treatment.test(statement.text) && (!guideline || !/^\d{4}$/.test(ref.year))) continue;
+      if (requiresGuideline(statement.text) && !datedGuideline({ ...ref, guideline })) continue;
       const key = statement.text.toLowerCase().replace(/\W/g, "");
       if (seen.has(key)) continue;
       seen.add(key);
@@ -114,7 +122,14 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
           pmid: ref.pmid,
           year: ref.year,
           guideline,
-          kind: statement.access === "textbook" ? "textbook" : guideline ? "guideline" : "primary",
+          kind:
+            statement.access === "textbook"
+              ? "textbook"
+              : guideline
+                ? "guideline"
+                : ref.evidenceKind === "review"
+                  ? "review"
+                  : "primary",
           chapter: statement.access === "textbook" ? ref.title : undefined,
           retrievedAt: new Date(statement.checkedAt).toISOString().slice(0, 10),
         });

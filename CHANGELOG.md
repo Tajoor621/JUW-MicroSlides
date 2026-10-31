@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Notes clinical-value provenance — 31 October 2026
+
+- Apply named, dated guideline requirements to numerical incubation, MIC and breakpoint statements in notes as well as treatment prose, including supplied/imported sources. Omit unsupported generated statements and reject malformed prepared notes explicitly. Add negative numerical-source cases; preserve source-type metadata for reviews. No lecturer Review menu or export review gate is introduced.
+
 ### Density-aware artwork verification — 31 October 2026
 
 - CI passed the source/build suites and historical textbook extraction check, then exposed a browser-test assumption: `naturalWidth` is density-corrected for a width-descriptor image source. Check decoded bitmap pixels independently and keep preview size hints and the original artwork unchanged. No failed browser run is reported as a pass.
