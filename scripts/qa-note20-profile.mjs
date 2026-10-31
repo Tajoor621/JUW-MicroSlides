@@ -248,11 +248,14 @@ try {
     assert.match(notePage, /Unverified AI-assisted draft/);
     assert.match(notePage, /Not yet expert-reviewed/);
   }
-  assert.match(text, /Staining Microscopic Specimens/);
+  // A4 wrapping may split a complete reference across extracted text lines.
+  // Preserve raw page separators above; normalise only prose-presence checks.
+  const flowingText = text.replace(/\s+/g, " ");
+  assert.match(flowingText, /Staining Microscopic Specimens/);
   assert.match(text, /Download for free/);
-  assert.match(text, /Parker N/);
-  assert.match(text, /MB-2016-000/);
-  assert.match(text, /Source type: textbook/);
+  assert.match(flowingText, /Parker N/);
+  assert.match(flowingText, /MB-2016-000/);
+  assert.match(flowingText, /Source type: textbook/);
   assert.doesNotMatch(text, /PMID: undefined/);
   await page.reload();
   await page.getByRole("button", { name: "Writing Notes", exact: true }).click();

@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Wrapped bibliography PDF checks — 31 October 2026
+
+- CI confirmed the two-page note, visible disclosures, watermark and complete reference text, then exposed an assertion expecting a chapter title on one extracted line. Normalise whitespace for bibliography-presence assertions while retaining raw page separators and every-page visual/text checks. Do not remove or shorten the actual reference.
+
 ### Distinct-source summary regression — 31 October 2026
 
 - CI exposed an old assertion counting the new Key points summary as extra source statements. Check the four distinct originals separately, require every summary item to retain its original text/source/quote, and explicitly reject repeated material as a way to satisfy note usefulness. The failed run is retained as a failure.
