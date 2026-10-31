@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Retired desktop-report instructions — 31 October 2026
+
+- A final documentation search found superseded reviewed-export and reviewer-menu instructions in the Windows implementation report and visual-fidelity history. Replace them with current concise usage/verification guides and preserve the original reports, with all failures, from the fixed historical commit in CI artefacts. No archived data or current functionality is deleted.
+
 ### Current-asset and offline instructions — 31 October 2026
 
 - Remove the permissions document’s stale reference to the deleted microscope bitmap, name the actual retained artwork and explain the notes seal rendering fallback. Clarify that a configured local model cannot replace missing offline evidence. Keep ownership, personal-use limits and source permissions explicit.
