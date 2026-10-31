@@ -6,7 +6,7 @@ const help = {
   evidence:
     "Paste an exported reference list. Review imported authors, year, title, and DOI before attaching. Elicit support imports exports; it does not connect to your account.",
   notes:
-    "Enter any microbiology topic to generate source-attributed study notes. Download a source-traced A4 portrait PDF. Unsupported statements are omitted; treatment statements require a dated guideline. Notes save on this device independently from the slide deck and are included in JSON backups. Supplied material works offline; research needs connectivity, and AI needs a configured model.",
+    "Enter a topic with enough reviewable source material to generate study notes. Eight named textbook topics are bundled offline. A successful result automatically prepares a visible A4 PDF download. Download a source-traced A4 portrait PDF. Unsupported statements are omitted; treatment statements require a dated guideline. Notes save on this device independently from the slide deck and are included in JSON backups. Supplied material works offline; research needs connectivity, and AI needs a configured model.",
   copilot:
     "For AI on Pages, configure your own Ollama server and installed model in Settings, then select AI mode. Paid cloud AI is not part of the supported product. Always review generated claims. Never put private API keys into a public website.",
 };

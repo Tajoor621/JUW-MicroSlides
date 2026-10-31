@@ -1,5 +1,5 @@
 import type { Deck } from "./types";
-export const SCIENTIFIC_RENDER_REVISION = "2026-10-24.2";
+export const SCIENTIFIC_RENDER_REVISION = "2026-10-31.1";
 // Conservative typography hints, not a taxonomy resolver. Unknown names stay unchanged.
 const genera = new Set(
   "Escherichia Staphylococcus Streptococcus Bacillus Clostridium Clostridioides Mycobacterium Neisseria Salmonella Shigella Pseudomonas Klebsiella Vibrio Helicobacter Enterococcus Campylobacter Legionella Haemophilus Bordetella Treponema Borrelia Chlamydia Mycoplasma Corynebacterium Candida Aspergillus Cryptococcus Histoplasma Plasmodium Giardia Trypanosoma Leishmania Toxoplasma Saccharomyces Acinetobacter Yersinia Francisella Brucella Coxiella Burkholderia Listeria".split(
@@ -8,16 +8,24 @@ const genera = new Set(
 );
 export function scientificRuns(text: string): { text: string; italic: boolean }[] {
   const runs: { text: string; italic: boolean }[] = [];
+  const spans: { start: number; end: number }[] = [];
+  const nonSpecies = new Set(["species", "spp", "strain", "infection", "infections", "isolates"]);
+  for (const match of text.matchAll(/\b([A-Z][a-z]+)(?: ([a-z][a-z-]{1,}))?\b/g)) {
+    if (!genera.has(match[1])) continue;
+    const length = match[2] && !nonSpecies.has(match[2]) ? match[0].length : match[1].length;
+    spans.push({ start: match.index!, end: match.index! + length });
+  }
+  // Explicit common abbreviations only; do not italicise arbitrary initials in prose.
+  for (const match of text.matchAll(
+    /\b(?:E\. coli|S\. aureus|S\. pneumoniae|C\. albicans|C\. difficile|C\. auris|C\. neoformans|P\. aeruginosa|P\. falciparum|T\. gondii|M\. tuberculosis|G\. intestinalis)\b/g,
+  ))
+    spans.push({ start: match.index!, end: match.index! + match[0].length });
   let end = 0;
-  for (const match of text.matchAll(/\b([A-Z][a-z]+) ([a-z][a-z-]{1,})\b/g)) {
-    if (
-      !genera.has(match[1]) ||
-      ["species", "spp", "strain", "infection", "infections", "isolates"].includes(match[2])
-    )
-      continue;
-    if (match.index > end) runs.push({ text: text.slice(end, match.index), italic: false });
-    runs.push({ text: match[0], italic: true });
-    end = match.index + match[0].length;
+  for (const span of spans.sort((a, b) => a.start - b.start)) {
+    if (span.start < end) continue;
+    if (span.start > end) runs.push({ text: text.slice(end, span.start), italic: false });
+    runs.push({ text: text.slice(span.start, span.end), italic: true });
+    end = span.end;
   }
   if (end < text.length) runs.push({ text: text.slice(end), italic: false });
   return runs;
@@ -49,6 +57,12 @@ export function scientificPreflight(deck: Deck) {
       ...slide.leftBullets,
       ...slide.rightBullets,
     ].join("\n");
+    if (/\bClostridium difficile\b/i.test(text))
+      notes.push({
+        index,
+        message:
+          "Outdated name in source: Clostridium difficile; current usage is Clostridioides difficile. Preserve source quotations and check nomenclature before teaching.",
+      });
     if (unitTypography(text) !== text)
       notes.push({
         index,

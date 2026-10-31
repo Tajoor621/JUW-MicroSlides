@@ -26,7 +26,18 @@ const buildId =
 const packageVersion = JSON.parse(await readFile("package.json", "utf8")).version;
 await writeFile(
   join(root, "build-info.json"),
-  JSON.stringify({ buildId, version: `V${packageVersion}` }),
+  JSON.stringify({
+    buildId,
+    version: `V${packageVersion}`,
+    commit:
+      process.env.GITHUB_SHA ||
+      execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+    ...(process.env.GITHUB_RUN_ID
+      ? {
+          runUrl: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+        }
+      : {}),
+  }),
 );
 const assets = (await files(root)).filter((p) => p !== "sw.js" && p !== "build-info.json");
 const hash = (await import("node:crypto")).createHash("sha256");
@@ -34,7 +45,7 @@ for (const asset of assets) hash.update(await readFile(join(root, asset)));
 const version = hash.digest("hex").slice(0, 16);
 await writeFile(
   join(root, "sw.js"),
-  `const CACHE = "juw-pages-${version}-assets-20261029";
+  `const CACHE = "juw-pages-${version}-assets-20261031";
 const BASE = new URL("./", self.location.href).href;
 const ASSETS = ${JSON.stringify(assets)}.map(p => new URL(p, BASE).href);
 self.addEventListener("install", event => event.waitUntil((async () => {

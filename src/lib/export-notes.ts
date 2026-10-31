@@ -1,4 +1,6 @@
+import { scientificRuns } from "./scientific-format";
 import { decodeTeachingImage } from "./teaching-images";
+import { OPENSTAX_ATTRIBUTION } from "./textbook-concepts";
 import { JUW } from "./brand";
 import { font } from "./export-teaching";
 import {
@@ -10,7 +12,7 @@ import {
 /** A4 portrait only. No note-to-PPTX path. */
 export async function educationalNotesPdfBytes(raw: EducationalNote) {
   const note = assertNoteSources(raw);
-  const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
+  const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -21,20 +23,23 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   for (const [file, style] of [
     ["DejaVuSans", "normal"],
     ["DejaVuSans-Bold", "bold"],
+    ["DejaVuSans-Oblique", "italic"],
+    ["DejaVuSans-BoldOblique", "bolditalic"],
   ] as const) {
     pdf.addFileToVFS(file + ".ttf", await font(file));
     pdf.addFont(file + ".ttf", "Notes", style);
   }
-  const [seal] = await Promise.all(
-    [JUW.deptSeal].map(async (url) => {
-      const r = await fetch(url);
-      if (!r.ok)
-        throw Error(
-          "Notes branding could not be loaded. Retry after the application assets are available.",
-        );
-      return new DOMParser().parseFromString(await r.text(), "image/svg+xml").documentElement;
-    }),
-  );
+  // Rasterise the original seal once at 600 px for this small PDF header.
+  // Repeated svg2pdf calls can leak page graphics state; the source stays SVG.
+  const sealImage = await decodeTeachingImage(JUW.deptSeal, 0);
+  const sealCanvas = document.createElement("canvas");
+  sealCanvas.width = 600;
+  sealCanvas.height = 600;
+  const sealContext = sealCanvas.getContext("2d");
+  if (!sealContext)
+    throw Error("The department seal could not be prepared for notes. Retry PDF preparation.");
+  sealContext.drawImage(sealImage, 0, 0, 600, 600);
+  const sealPng = sealCanvas.toDataURL("image/png");
   // Render the official SVG once; use a plain image draw so SVG graphics states
   // cannot override the page watermark opacity. Keep it behind all body text.
   const crestImage = await decodeTeachingImage(JUW.crest, 0);
@@ -70,9 +75,32 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.setFont("Notes", bold ? "bold" : "normal");
     pdf.setFontSize(size);
     const lines = pdf.splitTextToSize(text, width) as string[];
+    const spans: { start: number; end: number; italic: boolean }[] = [];
+    let length = 0;
+    for (const run of scientificRuns(text)) {
+      spans.push({ start: length, end: length + run.text.length, italic: run.italic });
+      length += run.text.length;
+    }
+    let searchFrom = 0;
     for (const line of lines) {
       if (y + size * 0.48 > bodyBottom) addPage();
-      pdf.text(line, margin, y);
+      const at = text.indexOf(line, searchFrom);
+      let x = margin;
+      if (at >= 0) {
+        for (const span of spans.filter((s) => s.start < at + line.length && s.end > at)) {
+          const part = text.slice(Math.max(at, span.start), Math.min(at + line.length, span.end));
+          pdf.setFont(
+            "Notes",
+            span.italic ? (bold ? "bolditalic" : "italic") : bold ? "bold" : "normal",
+          );
+          pdf.text(part, x, y);
+          x += pdf.getTextWidth(part);
+        }
+        searchFrom = at + line.length;
+      } else {
+        pdf.setFont("Notes", bold ? "bold" : "normal");
+        pdf.text(line, margin, y);
+      }
       pageContent.at(-1)!.push(line);
       y += size * 0.48;
     }
@@ -94,7 +122,10 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   write(`${note.level} · ${note.date}`);
   write(NOTES_LABEL, 9);
   heading("Learning outcomes");
-  write("Explain the retrieved source statements, compare their scope and identify limitations.");
+  for (const outcome of note.learningOutcomes?.length
+    ? note.learningOutcomes
+    : ["Explain the retrieved source statements, compare their scope and identify limitations."])
+    write(outcome);
   for (const section of note.sections) {
     heading(section.heading);
     if (!section.statements.length)
@@ -109,7 +140,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   heading("References");
   for (const [i, ref] of note.sources.entries()) {
     write(
-      `${i + 1}. ${ref.title} (${ref.year}). ${ref.doi ? `DOI: ${ref.doi}` : `PMID: ${ref.pmid}`}`,
+      `${i + 1}. ${ref.title} (${ref.year}). ${ref.doi ? `DOI: ${ref.doi}` : ref.pmid ? `PMID: ${ref.pmid}` : `Textbook chapter: ${ref.chapter}`}`,
     );
     write(ref.url, 9);
   }
@@ -121,15 +152,22 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   for (let page = 1; page <= pages; page++) {
     pdf.setPage(page);
     pdf.saveGraphicsState();
-    await pdf.svg(seal.cloneNode(true) as SVGElement, { x: 20, y: 8, width: 13, height: 13 });
+    pdf.setGState(pdf.GState({ opacity: 1, "stroke-opacity": 1 }));
+    pdf.addImage(sealPng, "PNG", 20, 8, 13, 13, "notes-department-seal", "FAST");
     pdf.restoreGraphicsState();
     pdf.setFont("Notes", "normal");
     pdf.setFontSize(8);
     pdf.setTextColor("#203248");
     pdf.text(NOTES_LABEL, 36, 13);
+    pdf.text("Not yet expert-reviewed", 36, 24);
     pdf.text(pdf.splitTextToSize(note.topic, 150).slice(0, 2), 36, 18);
     pdf.setDrawColor("#aab4bd");
     pdf.line(20, 27, 190, 27);
+    if (note.sources.some((s) => s.kind === "textbook" && s.title.includes("Microbiology"))) {
+      pdf.setFontSize(6.5);
+      pdf.text(OPENSTAX_ATTRIBUTION, 20, 291);
+      pdf.setFontSize(8);
+    }
     pdf.text(
       `Page ${page} of ${pages} · For personal educational use. Not for distribution.`,
       20,
@@ -137,8 +175,8 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     );
   }
   pdf.setProperties({
-    title: note.topic,
-    subject: NOTES_LABEL,
+    title: `${JUW.name} · ${note.topic}`,
+    subject: `${JUW.name} ${JUW.version} · ${NOTES_LABEL} · Not yet expert-reviewed`,
     keywords: "A4 portrait; watermark opacity 0.06; personal educational use; V6.2.1",
   });
   return { bytes: new Uint8Array(pdf.output("arraybuffer")), pages, pageContent };

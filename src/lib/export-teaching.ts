@@ -1,3 +1,4 @@
+import { defensibleExport } from "./scientific-presentation";
 import { scientificPreflight } from "./scientific-format";
 import { lectureStructuredHtml } from "./lecture-transcript";
 import { lectureSpeakerNotes } from "./lecture-notes";
@@ -39,6 +40,7 @@ export async function font(name: string) {
 export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolean } = {}) {
   if (deck.slides.length < 1 || deck.slides.length > 50)
     throw Error("PDF requires 1–50 slides. Historical archives are preserved.");
+  deck = defensibleExport(deck);
   const presentationNotes = scientificPreflight(deck);
   const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
   const pdf = new jsPDF({
@@ -60,9 +62,9 @@ export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolea
     pdf.addFont(`${file}.ttf`, "Teaching", style);
   }
   pdf.setProperties({
-    title: deck.title,
+    title: `${JUW.name} · ${deck.title}`,
     author: deck.preparedBy,
-    subject: `${JUW.version} · ${deck.courseCode}`,
+    subject: `${JUW.name} ${JUW.version} · ${deck.courseCode} · Unverified AI-assisted draft · Not yet expert-reviewed`,
     keywords: presentationNotes.map((n) => `Slide ${n.index + 1}: ${n.message}`).join("; "),
   });
   for (let index = 0; index < deck.slides.length; index++) {

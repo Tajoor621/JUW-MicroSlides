@@ -1,14 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import { digest } from "./scientific-evaluation.mjs";
 import { semanticAcceptance } from "./semantic-acceptance.mjs";
-test("the real failed MiniLM evaluation cannot qualify", async () => {
-  const raw = await readFile("benchmarks/semantic-pairs.json", "utf8");
-  const measured = JSON.parse(
-    await readFile("docs/qualification/semantic-minilm-2026-10-20.json", "utf8"),
-  );
-  const result = semanticAcceptance(raw, measured);
+test("synthetic development results cannot substitute for a blind holdout", () => {
+  const { raw, report } = fixture();
+  const corpus = JSON.parse(raw);
+  corpus.holdoutDeclaration.externalBlindHoldout = false;
+  const development = JSON.stringify(corpus);
+  report.corpusSha256 = digest(development);
+  const result = semanticAcceptance(development, report);
   assert.equal(result.status, "not-qualified");
   assert.equal(result.scientificCertification, false);
   assert(result.errors.some((e) => /external blind holdout/.test(e)));

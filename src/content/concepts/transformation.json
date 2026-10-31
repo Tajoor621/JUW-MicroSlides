@@ -1,0 +1,52 @@
+{
+  "topic": "Bacterial transformation",
+  "aliases": ["Natural competence in bacteria", "Natural competence"],
+  "discipline": "Microbial Genetics & Molecular Biology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Explain environmental DNA uptake in transformation.",
+    "Distinguish DNA uptake from stable integration.",
+    "Compare chromosomal recombination with plasmid acquisition."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "11.6 How Asexual Prokaryotes Achieve Genetic Diversity",
+    "locator": "Printed pp. 479–480, Transformation"
+  },
+  "concepts": [
+    {
+      "id": "transformation-1",
+      "title": "Environmental DNA uptake",
+      "section": "Definition",
+      "quote": "In transformation, the prokaryote takes up naked DNA found in its environment and that is derived from other cells that have lysed on death and released their contents, including their genome, into the environment."
+    },
+    {
+      "id": "transformation-2",
+      "title": "Recombinant DNA",
+      "section": "Definition",
+      "quote": "A molecule of DNA that contains fragments of DNA from different organisms is called recombinant DNA."
+    },
+    {
+      "id": "transformation-3",
+      "title": "Recombination and phenotype",
+      "section": "Mechanism or pathogenesis",
+      "quote": "If the bacterium incorporates the new DNA into its own genome through recombination, the bacterial cell may gain new phenotypic properties."
+    },
+    {
+      "id": "transformation-4",
+      "title": "Plasmid uptake",
+      "section": "Mechanism or pathogenesis",
+      "quote": "Plasmid DNA may also be taken up by competent bacteria and confer new properties to the cell."
+    }
+  ]
+}

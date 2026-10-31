@@ -21,6 +21,7 @@ export const LAYOUTS = [
   "learning-objectives",
   "assessment",
   "key-takeaway",
+  "common-misconceptions",
   "growth-curve",
   "taxonomy-tree",
 ] as const;
@@ -44,6 +45,7 @@ export const MAX_SLIDES = 50;
 export type MediaKind = "micrograph" | "diagram" | "icon" | "photo" | "gif" | "chart" | "video";
 
 export interface MediaItem {
+  altText?: string;
   tags?: (typeof import("./lecture-schema").MEDIA_TAGS)[number][];
   id: string;
   kind: MediaKind;

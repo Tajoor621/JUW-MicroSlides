@@ -4,7 +4,7 @@
 
 The Jinnah University for Women crest and Department of Microbiology marks are retained as owner-supplied institutional artwork. Their inclusion in this repository is **not evidence of a licence**, institutional endorsement, or permission for third-party redistribution. The institution/rights holder controls these marks. Maintainers must obtain and record permission for the intended distribution before claiming institutional approval. No permission document has been supplied in this repository audit. Preserve original artwork, colours and lettering; do not apply the software licence to the marks.
 
-Assets include `public/juw-crest*`, `public/juw-dept-seal*`, `public/juw-microscope.png` and `public/favicon.svg`. The original source artwork remains available alongside display variants. Do not add a maskable declaration unless the artwork has been checked for safe-zone cropping.
+Assets include `public/juw-crest-transparent.svg`, the manifest-referenced crest PNG, `public/juw-dept-seal.svg`, the owner-selected `public/juw-department-microscope-1254.jpeg` and `public/favicon.svg`. The original source artwork remains available alongside display variants. The notes PDF draws the small seal from a 600-pixel rendering of its original SVG to keep repeated-page graphics state reliable; the source asset remains vector. Do not add a maskable declaration unless the artwork has been checked for safe-zone cropping.
 
 ## Libraries and fonts
 
@@ -17,3 +17,7 @@ Bundled DejaVu Sans regular, bold, oblique and bold-oblique fonts retain the Bit
 Media attribution, original source, source URL and reuse licence must stay attached to each asset and survive backup/export. A PubMed identifier or PMC-hosted figure does not itself grant reuse permission. Verify the article/figure-specific licence and any third-party exclusions. The app's metadata discovery is not legal clearance.
 
 Reference metadata checks and a DOI's valid syntax do not establish scientific truth, claim support or absence of a correction/retraction. Use the Evidence workflow and qualified human review. Instructor verification is a local attestation, not authenticated identity or independent certification.
+
+## Bundled textbook extracts
+
+Eight pilot concept files contain short verbatim text selections from OpenStax _Microbiology_, 2016 edition MB-2016-000(11/16)-BKB, © Rice University. The downloaded historical edition expressly grants CC BY 4.0; its fingerprint and institutional repository URL are recorded in each file. This attribution concerns that third-party text, not a licence for JUW-MicroSlides or university marks. Original source spelling is retained. No publisher logo, cover or textbook figure is copied. Source-derived slide views and note pages carry the edition’s required “Download for free at http://cnx.org/content/col12087/latest/.” notice. The application’s editorial selection and teaching suitability remain unapproved by an external educator.

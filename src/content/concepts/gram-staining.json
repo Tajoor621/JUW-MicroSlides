@@ -1,0 +1,64 @@
+{
+  "topic": "Gram staining",
+  "aliases": ["Gram stain"],
+  "discipline": "Bacteriology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Explain how cell-wall structure affects differential dye retention.",
+    "Interpret decolourisation and counterstaining outcomes.",
+    "Identify effects of cell age and staining errors."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "2.4 Staining Microscopic Specimens",
+    "locator": "Printed pp. 73–74, Gram Staining"
+  },
+  "concepts": [
+    {
+      "id": "gram-staining-1",
+      "title": "Differential staining",
+      "section": "Definition",
+      "quote": "The Gram stain procedure is a differential staining procedure that involves multiple steps."
+    },
+    {
+      "id": "gram-staining-2",
+      "title": "Crystal violet retention",
+      "section": "Mechanism or pathogenesis",
+      "quote": "Cells that have thick peptidoglycan layers in their cell walls are much less affected by the decolorizing agent; they generally retain the crystal violet dye and remain purple."
+    },
+    {
+      "id": "gram-staining-3",
+      "title": "Decolourisation",
+      "section": "Mechanism or pathogenesis",
+      "quote": "However, the decolorizing agent more easily washes the dye out of cells with thinner peptidoglycan layers, making them again colorless."
+    },
+    {
+      "id": "gram-staining-4",
+      "title": "Counterstaining",
+      "section": "Mechanism or pathogenesis",
+      "quote": "This stains the decolorized cells pink and is less noticeable in the cells that still contain the crystal violet dye."
+    },
+    {
+      "id": "gram-staining-5",
+      "title": "Cell-wall damage",
+      "section": "Common misconceptions",
+      "quote": "First, older bacterial cells may have damage to their cell walls that causes them to appear gram- negative even if the species is gram-positive."
+    },
+    {
+      "id": "gram-staining-6",
+      "title": "Interpretation errors",
+      "section": "Common misconceptions",
+      "quote": "Second, errors such as leaving on decolorizer too long can affect the results."
+    }
+  ]
+}

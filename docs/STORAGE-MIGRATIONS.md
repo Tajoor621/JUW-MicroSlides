@@ -7,3 +7,7 @@ The existing database is `juw-microslides`. It was already opened with IndexedDB
 Future migrations must be additive by default. Do not delete a store, call `deleteDatabase`, drop unknown keys, or reinterpret saved scientific content just to change a schema. Data transformations require explicit format validation and a retained raw recovery copy. Changing a version constant is not a migration plan.
 
 Library JSON export/import already exists. Import validates before adding copies; it does not replace the library. Keep a backup outside the browser because eviction, clearing site data or device loss can still remove browser storage. Formal reviewed status is derived from current claim/surface evidence snapshots, not a trusted imported flag.
+
+## Historical evidence compatibility
+
+The unmounted specialist-review/workbench/returns components were removed on 31 October 2026. Legacy claim, surface-review and teaching-verification fields remain readable in IndexedDB and JSON archives. No migration deletes historical records. The `review-session` URL validator is still imported by Evidence Overview; scientific review pack/assessment helpers remain exercised by archive-format tests and are not an active menu or export gate.

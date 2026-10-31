@@ -402,7 +402,13 @@ try {
   const sourced = broad.slides.filter((s) => s.citations.length);
   assert(sourced.every((s) => s.title.length <= 75));
   assert(sourced.every((s) => !/\b(is|was|were|have|has|that|during|using)$/.test(s.title)));
-  assert(sourced.every((s) => s.bullets.every((bullet) => s.notes.includes(bullet))));
+  assert(
+    sourced.every((s) =>
+      s.bullets.every((bullet) =>
+        s.claims.some((claim) => claim.evidence.some((e) => e.quote.includes(bullet))),
+      ),
+    ),
+  );
   assert(sourced.every((s) => s.claims.every((claim) => claim.status !== "lecturer-reviewed")));
 
   checks++;

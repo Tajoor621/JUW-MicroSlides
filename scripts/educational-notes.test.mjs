@@ -90,9 +90,37 @@ test("notes reject unsupported claims and undated treatment; backups retain trac
     );
     assertNoteSources({
       ...note,
-      sources: [{ ...source, guideline: true }],
+      sources: [{ ...source, title: "Synthetic guideline fixture", guideline: true }],
       sections: [{ heading: "Treatment", statements: Array(4).fill(treatment) }],
     });
+    for (const text of [
+      "Synthetic incubation lasts 12 hours.",
+      "A synthetic MIC breakpoint is 4 mg/L.",
+    ]) {
+      const numerical = { ...statement, text, quote: text };
+      assert.throws(
+        () =>
+          assertNoteSources({
+            ...note,
+            sections: [{ heading: "Diagnosis", statements: Array(4).fill(numerical) }],
+          }),
+        /dated guideline/,
+      );
+      assert.throws(
+        () =>
+          assertNoteSources({
+            ...note,
+            sources: [{ ...source, guideline: true }],
+            sections: [{ heading: "Diagnosis", statements: Array(4).fill(numerical) }],
+          }),
+        /named, dated guideline/,
+      );
+      assertNoteSources({
+        ...note,
+        sources: [{ ...source, title: "Synthetic guideline fixture", guideline: true }],
+        sections: [{ heading: "Diagnosis", statements: Array(4).fill(numerical) }],
+      });
+    }
     // Generated notes need useful teaching breadth; legacy archives stay readable.
     const makeDeck = (facts) => ({
       topic: "Software fixture",

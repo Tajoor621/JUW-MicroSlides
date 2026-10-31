@@ -1,6 +1,9 @@
 import { educationalNotesPdfBytes } from "@/lib/export-notes";
+import { ScientificText } from "./scientific-text";
+import { TEXTBOOK_CONCEPTS } from "@/lib/textbook-concepts";
+import type { EducationalNote } from "@/lib/educational-notes";
 import { noteText } from "@/lib/educational-notes";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDeckStore } from "@/lib/deck-store";
 import { generateWritingNotes } from "@/lib/writing-notes";
 import { generateAiDeck } from "@/lib/browser-services";
@@ -10,6 +13,9 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 export function WritingNotes() {
   const notes = useDeckStore((s) => s.writingNotes);
+  const savedNotes = useDeckStore((s) => s.savedNotes);
+  const [preparing, setPreparing] = useState(false);
+  const [failed, setFailed] = useState(false);
   const patch = useDeckStore((s) => s.patchWritingNotes);
   const epoch = useDeckStore((s) => s.workspaceEpoch);
   const [busy, setBusy] = useState(false),
@@ -17,47 +23,62 @@ export function WritingNotes() {
   const [download, setDownload] = useState("");
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), [epoch]);
-  useEffect(() => {
-    setDownload("");
-  }, [notes.document]);
   useEffect(
     () => () => {
       if (download) URL.revokeObjectURL(download);
     },
     [download],
   );
-  async function preparePdf() {
-    if (!notes.document) {
-      setMessage(
-        "Regenerate from source passages to create an A4 educational note. Legacy text is preserved.",
-      );
-      return;
-    }
-    setBusy(true);
-    try {
-      const result = await educationalNotesPdfBytes(notes.document);
-      if (
-        useDeckStore.getState().workspaceEpoch !== epoch ||
-        useDeckStore.getState().writingNotes.document?.id !== notes.document.id
-      )
+  const preparePdf = useCallback(
+    async (document?: EducationalNote) => {
+      const note = document || useDeckStore.getState().writingNotes.document;
+      if (!note) {
+        setFailed(true);
+        setMessage(
+          "Regenerate from attributable sources to create an A4 note. Legacy text is preserved.",
+        );
         return;
-      setDownload(
-        URL.createObjectURL(new Blob([new Uint8Array(result.bytes)], { type: "application/pdf" })),
-      );
-      setMessage(
-        `A4 portrait PDF ready: ${result.pages} pages. Check the original sources before teaching.`,
-      );
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Notes PDF could not be prepared.");
-    } finally {
-      setBusy(false);
-    }
-  }
+      }
+      setPreparing(true);
+      setFailed(false);
+      try {
+        const result = await educationalNotesPdfBytes(note);
+        if (
+          useDeckStore.getState().workspaceEpoch !== epoch ||
+          useDeckStore.getState().writingNotes.document?.id !== note.id
+        )
+          return;
+        setDownload(
+          URL.createObjectURL(
+            new Blob([new Uint8Array(result.bytes)], { type: "application/pdf" }),
+          ),
+        );
+        setMessage(
+          `Notes ready: ${result.pages}-page A4 PDF. Tap Download notes PDF below. Your slide deck is unchanged.`,
+        );
+      } catch (error) {
+        if (useDeckStore.getState().workspaceEpoch === epoch) {
+          setFailed(true);
+          setMessage(
+            `Notes remain saved, but PDF preparation failed: ${error instanceof Error ? error.message : "asset loading failed"} Retry Prepare A4 notes PDF.`,
+          );
+        }
+      } finally {
+        setPreparing(false);
+      }
+    },
+    [epoch],
+  );
+  useEffect(() => {
+    setDownload("");
+    if (notes.document) void preparePdf(notes.document);
+  }, [notes.document, preparePdf]);
   async function run() {
-    if (busy) return;
+    if (busy || preparing) return;
     const current = new AbortController();
     controller.current = current;
     setBusy(true);
+    setFailed(false);
     setMessage("Preparing notes…");
     try {
       const document = await generateWritingNotes(
@@ -80,9 +101,10 @@ export function WritingNotes() {
       useDeckStore.setState((s) => ({
         savedNotes: [document, ...s.savedNotes.filter((n) => n.id !== document.id)],
       }));
-      setMessage("Notes ready. Prepare the A4 PDF; your slide deck is unchanged.");
+      setMessage("Notes saved. Preparing the A4 PDF automatically…");
     } catch (e) {
-      if (useDeckStore.getState().workspaceEpoch === epoch)
+      if (useDeckStore.getState().workspaceEpoch === epoch) {
+        setFailed(!current.signal.aborted);
         setMessage(
           current.signal.aborted
             ? "Notes generation cancelled. Existing notes kept."
@@ -90,6 +112,7 @@ export function WritingNotes() {
               ? e.message
               : "Notes generation failed. Existing notes kept.",
         );
+      }
     } finally {
       setBusy(false);
     }
@@ -101,6 +124,20 @@ export function WritingNotes() {
         Generate source-traced educational notes independently of your slides. Export A4 portrait
         PDF only. Saved on this device and included in JSON backups.
       </p>
+      <details className="text-xs">
+        <summary>Bundled textbook notes available offline</summary>
+        <ul>
+          {TEXTBOOK_CONCEPTS.map((c) => (
+            <li key={c.topic}>
+              {c.discipline}: {c.topic} — educator approval pending
+            </li>
+          ))}
+        </ul>
+        <p>
+          Other topics need enough reviewable literature or attributable source passages. Universal
+          topic coverage is not claimed.
+        </p>
+      </details>
       <label className="grid gap-1 text-xs">
         Saved notes
         <select
@@ -108,12 +145,12 @@ export function WritingNotes() {
           className="min-h-11 w-full min-w-0 max-w-full border border-border bg-elevated"
           value=""
           onChange={(e) => {
-            const n = useDeckStore.getState().savedNotes.find((n) => n.id === e.target.value);
+            const n = savedNotes.find((n) => n.id === e.target.value);
             if (n) patch({ topic: n.topic, level: n.level, document: n, body: noteText(n) });
           }}
         >
           <option value="">Choose a saved note</option>
-          {useDeckStore.getState().savedNotes.map((n) => (
+          {savedNotes.map((n) => (
             <option key={n.id} value={n.id}>
               {n.topic} · {n.date}
             </option>
@@ -125,7 +162,7 @@ export function WritingNotes() {
         <Input
           aria-label="Notes topic"
           value={notes.topic}
-          disabled={busy}
+          disabled={busy || preparing}
           onChange={(e) => patch({ topic: e.target.value, document: undefined })}
           placeholder="e.g. Bacterial chromosome organisation"
         />
@@ -135,7 +172,7 @@ export function WritingNotes() {
         <select
           aria-label="Notes level"
           className="min-h-11 rounded border border-border bg-elevated px-2"
-          disabled={busy}
+          disabled={busy || preparing}
           value={notes.level}
           onChange={(e) => patch({ level: e.target.value as Level, document: undefined })}
         >
@@ -149,7 +186,7 @@ export function WritingNotes() {
         <select
           aria-label="Notes engine"
           className="min-h-11 rounded border border-border bg-elevated px-2"
-          disabled={busy}
+          disabled={busy || preparing}
           value={notes.mode}
           onChange={(e) => patch({ mode: e.target.value as "manual" | "ai" })}
         >
@@ -164,37 +201,26 @@ export function WritingNotes() {
         <Textarea
           aria-label="Notes source material"
           value={notes.sources}
-          disabled={busy}
+          disabled={busy || preparing}
           onChange={(e) => patch({ sources: e.target.value })}
           placeholder="Paste source excerpts or your own lecture material."
         />
       </details>
       <div className="flex flex-wrap gap-2">
-        <Button variant="accent" disabled={busy || !notes.topic.trim()} onClick={() => void run()}>
-          {busy ? "Writing notes…" : "Generate notes"}
+        <Button
+          variant="accent"
+          disabled={busy || preparing || !notes.topic.trim()}
+          onClick={() => void run()}
+        >
+          {busy ? "Writing notes…" : preparing ? "Preparing PDF…" : "Generate notes"}
         </Button>
         {busy && <Button onClick={() => controller.current?.abort()}>Cancel notes</Button>}
       </div>
       {message && (
-        <p role="status" className="break-words text-xs">
+        <p role={failed ? "alert" : "status"} className="break-words text-xs" aria-live="polite">
           {message}
         </p>
       )}
-      <label className="grid gap-1 text-xs">
-        Source-traced notes (legacy text remains editable)
-        <Textarea
-          aria-label="Editable notes"
-          className="min-h-64"
-          value={notes.body}
-          disabled={busy}
-          readOnly={!!notes.document}
-          onChange={(e) => patch({ body: e.target.value })}
-          placeholder="Generated notes appear here. You can also write your own."
-        />
-      </label>
-      <Button disabled={busy || !notes.document} onClick={() => void preparePdf()}>
-        Prepare A4 notes PDF
-      </Button>
       {download && (
         <Button asChild variant="secondary">
           <a
@@ -205,6 +231,45 @@ export function WritingNotes() {
           </a>
         </Button>
       )}
+      {notes.document && (
+        <article
+          aria-label="Generated educational notes"
+          className="space-y-3 break-words rounded border border-border p-3 text-sm"
+        >
+          <h3 className="font-serif text-lg">{notes.document.topic}</h3>
+          <p className="text-xs">Unverified AI-assisted draft · Not yet expert-reviewed</p>
+          {notes.document.sections
+            .filter((section) => section.statements.length)
+            .map((section) => (
+              <section key={section.heading}>
+                <h4 className="font-semibold">{section.heading}</h4>
+                {section.statements.map((statement, i) => (
+                  <p key={i} className="mt-2">
+                    <ScientificText text={statement.text} />
+                  </p>
+                ))}
+              </section>
+            ))}
+        </article>
+      )}
+      <label className="grid gap-1 text-xs">
+        Source-traced notes (legacy text remains editable)
+        <Textarea
+          aria-label="Editable notes"
+          className="min-h-64"
+          value={notes.body}
+          disabled={busy || preparing}
+          readOnly={!!notes.document}
+          onChange={(e) => patch({ body: e.target.value })}
+          placeholder="Generated notes appear here. You can also write your own."
+        />
+      </label>
+      <Button
+        disabled={busy || preparing || !notes.document}
+        onClick={() => void preparePdf(notes.document)}
+      >
+        Prepare A4 notes PDF
+      </Button>
     </section>
   );
 }

@@ -1,37 +1,5 @@
-# Dependency audit — 29 October 2026
+# Dependency policy — JUW-MicroSlides
 
-`npx depcheck --json` reported unused packages. Confirmed no source/config/script imports for the removed packages. CSS imports in src/styles.css retain tailwindcss and tw-animate-css despite depcheck false positives. Vite still uses @tailwindcss/vite; its internal lightningcss dependency is independent from the removed direct declaration. Citation.js plugin-csl retains its transitive citeproc dependency.
+The required Pages workflow runs pinned depcheck in GitHub Actions. It retains the complete report and CSS usage explanation in CI artefacts, and fails on genuinely unused or missing packages. `tailwindcss` and `tw-animate-css` are imported by `src/styles.css`; they are required even when depcheck reports them as unused. No package is removed on that false-positive basis.
 
-Removal list:
-
-- `@hookform/resolvers`
-- `@radix-ui/react-accordion`
-- `@radix-ui/react-alert-dialog`
-- `@radix-ui/react-avatar`
-- `@radix-ui/react-checkbox`
-- `@radix-ui/react-collapsible`
-- `@radix-ui/react-dropdown-menu`
-- `@radix-ui/react-popover`
-- `@radix-ui/react-progress`
-- `@radix-ui/react-radio-group`
-- `@radix-ui/react-select`
-- `@radix-ui/react-separator`
-- `@radix-ui/react-slider`
-- `@radix-ui/react-switch`
-- `@radix-ui/react-tabs`
-- `@radix-ui/react-toggle`
-- `@radix-ui/react-toggle-group`
-- `@tanstack/react-query`
-- `@tanstack/react-table`
-- `citeproc`
-- `cmdk`
-- `date-fns`
-- `react-day-picker`
-- `react-hook-form`
-- `react-resizable-panels`
-- `recharts`
-- `vaul`
-- `eslint-plugin-prettier`
-- `lightningcss`
-
-Production fonts are intentional offline assets. No font packages or files removed.
+Keep `npm ci`, the existing npm lockfile, pinned build tooling and the blocking `npm audit --audit-level=high`. The lockfile controls installed versions; optional Tauri dependencies remain locked separately in Cargo.lock. Do not remove bundled fonts or citation style assets required for offline rendering. Historical removal lists belong in CHANGELOG and historical CI artefacts, not a second release report.

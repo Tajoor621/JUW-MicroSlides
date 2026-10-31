@@ -17,7 +17,7 @@ Public GitHub Pages hosting and public-repository CI can run without a hosting s
 ## Lecturer workflow
 
 1. Choose **Generate**, enter a microbiology topic, level and exact total slide count (1–50). Select Standard Lecture, Pathogen Profile, Laboratory Method, Clinical Case Series or Curriculum Module. Learning objectives and optional assessments count toward the requested total.
-2. **Thorough research** retrieves topic-specific abstracts and available open full text through Europe PMC and PubMed. Bundled/cached mode uses available local material first. Source shortages produce an explicit failure while preserving the existing deck; the app does not substitute unrelated material or silently save a shorter deck. Offline generation requires supplied/cached material or a configured local model.
+2. **Thorough research** retrieves topic-specific abstracts and available open full text through Europe PMC and PubMed. Bundled/cached mode uses available local material first. Source shortages produce an explicit failure while preserving the existing deck; the app does not substitute unrelated material or silently save a shorter deck. Offline generation uses bundled, supplied or cached source material; configuring a local model does not replace missing evidence.
 3. Edit slide text directly or in **Edit**. Select layouts, theme, notes, difficulty and teaching fields. Themes and decorative motifs are visual aids, not scientific evidence. Media is never automatically attached to replace a removed figure.
 
 General **Bacterial conjugation** requests have a [source-linked teaching core](docs/CONJUGATION-CORE.md): 14 distinct content lessons, original editable schematics and mechanism/application questions. With title, objectives and assessments this yields 18 slides. It remains an unreviewed editorial draft, not a live-literature synthesis or a qualification of every topic. Thorough mode attempts current reference-notice lookups; larger requests require additional research. Specialised organism requests and instructor material keep the general research path.
@@ -29,7 +29,7 @@ General **Bacterial conjugation** requests have a [source-linked teaching core](
 
 ## Draft status and exports
 
-**There is no Review tab and no export review gate.** All exported PPTX slides and PDF pages carry **“Unverified AI-assisted draft”**, including imported decks with old verification metadata. Export does not certify claims, citations, assessments or institutional approval. The draft label is a disclosure, not an export restriction.
+**There is no Review tab and no export review gate.** All exported PPTX slides and PDF pages carry **“Unverified AI-assisted draft”** and **“Not yet expert-reviewed”**, including imported decks with old verification metadata. Export does not certify claims, citations, assessments or institutional approval. The draft label is a disclosure, not an export restriction.
 
 Historical review/source records remain readable in project data for compatibility. Older qualification reports and archived review modules do not describe currently available lecturer menus. Writing Notes does not perform independent scientific review. Assessment questions and teaching fields are drafts that require faculty judgement; empty fields are not evidence that a topic was covered.
 
@@ -55,7 +55,7 @@ See [script reference](docs/SCRIPTS.md) for required, optional and environment-d
 
 ## Qualification and permissions
 
-Software checks distinguish successful generation, source traceability and independent scientific review. Passing fixtures does not prove accuracy across all microbiology topics. Actual Microsoft PowerPoint rendering, representative classroom hardware, accessibility and independent scientific qualification have separate requirements in [scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md), [Windows qualification](docs/WINDOWS-QUALIFICATION.md) and the [classroom matrix](benchmarks/classroom-qualification.json). Historical reports retain their date and commit; do not treat them as a current release certificate or instructions for removed Review menus.
+Software checks distinguish successful generation, source traceability and independent scientific review. Passing fixtures does not prove accuracy across all microbiology topics. Actual Microsoft PowerPoint rendering, representative classroom hardware, accessibility and independent scientific qualification have separate requirements in [scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md), [Windows qualification](docs/WINDOWS-QUALIFICATION.md) and the [physical-device checklist](docs/QA-PHONE-NOTE20.md). Historical reports retain their date and commit; do not treat them as a current release certificate or instructions for removed Review menus.
 
 University marks remain owner-supplied artwork. Inclusion does not establish institutional endorsement or third-party redistribution permission. See [permissions and attribution](docs/PERMISSIONS.md). Article/figure licences and third-party exclusions must be checked individually. The app does not grant blanket reuse rights or authenticate lecturer/reviewer identities.
 
@@ -71,4 +71,12 @@ Educational notes retain exact retrieved wording and DOI/PMID source links. They
 
 The collapsed **Source provenance** section under **Edit** recalculates wording links for the selected slide after edits. It includes bundled and AI slide IDs, speaker notes, mechanisms, protocol timings, table rows and chart values. Linked references alone do not approve a field; visual meaning and editorial bundled claims remain unverified. This read-only information introduces no Review menu or export gate. Complete-statement matching preserves qualifications and negation, but is not scientific entailment or a guarantee of correctness.
 
-Implementation and verification limits are recorded in the [30 October V6.2.1 continuation report](docs/WORKFLOW-REPORT-2026-10-30.md), including source-first AI, notes quality, CI evidence and task commits.
+Implementation and verification limits are recorded in the [release QA record](docs/QA.md), including source-first AI, notes quality, CI evidence and task commits.
+
+## Textbook concepts and Writing Notes
+
+The app covers topics with enough reviewable literature; it does not guarantee every microbiology topic or every requested count. Eight named pilot textbook files are bundled: Gram staining, bacterial transformation/natural competence, bacterial conjugation, bacterial growth curve, viral life cycle, fungal structure, protozoan life cycles and PCR. These are editorial selections from the attributed 2016 OpenStax edition, not department-approved or teacher-authored app curricula. The original edition and chapter locators are recorded per topic. Historical classifications and clinical guidance must be checked separately. Conjugation retains its existing 14-lesson editorial core.
+
+Writing Notes shows generated text and automatically prepares a persistent **Download notes PDF (A4 portrait)** link. It prepares saved notes again when reopened. PDF errors leave the note saved and expose a retry button. Online note retrieval gathers enough explanatory passages rather than requiring a three-slide outline; source scarcity still fails explicitly. Unattributed free text is preserved, but is not silently certified as a source-traced PDF. Bundled textbook notes work offline after the first cached load. All pages keep both draft disclosures, the faint crest, seal and attribution. Textbook chapters may have no DOI or PMID: the app supplies their real chapter/edition/URL instead of inventing an identifier.
+
+The department topic list has not been supplied. [The coverage contract](docs/TOPIC-COVERAGE.md) distinguishes pilot files, CI source/count checks and unclaimed subject approval. Generated evidence stays in [CI artefacts](https://github.com/Tajoor621/JUW-MicroSlides/actions).

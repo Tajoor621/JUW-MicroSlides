@@ -8,12 +8,30 @@ for (let attempt = 1; attempt <= 12; attempt++) {
     const response = await fetch(origin + "?verify=" + Date.now(), { cache: "no-store" });
     assert(response.ok, `Public site returned HTTP ${response.status}`);
     const html = await response.text();
-    assert(html.includes('id="root"'), "Public URL serves a landing page instead of the editor mount");
-    assert(/assets\/pages-[^" ]+\.js/.test(html), "Public URL does not reference the compiled interactive editor");
-    const build = await fetch(new URL("build-info.json?verify=" + Date.now(), origin), { cache: "no-store" });
+    assert(
+      html.includes('id="root"'),
+      "Public URL serves a landing page instead of the editor mount",
+    );
+    assert(
+      /assets\/pages-[^" ]+\.js/.test(html),
+      "Public URL does not reference the compiled interactive editor",
+    );
+    const build = await fetch(new URL("build-info.json?verify=" + Date.now(), origin), {
+      cache: "no-store",
+    });
     assert(build.ok, "Public build-info.json is missing");
     const info = await build.json();
     assert.equal(info.buildId, expected, "Public URL is serving a stale or competing deployment");
+    if (process.env.GITHUB_SHA)
+      assert.equal(
+        info.commit,
+        process.env.GITHUB_SHA,
+        "Live full commit differs from deployed workflow",
+      );
+    assert.match(
+      info.runUrl,
+      /^https:\/\/github\.com\/Tajoor621\/JUW-MicroSlides\/actions\/runs\/\d+$/,
+    );
     const jsPath = html.match(/(?:src=")([^"]*assets\/pages-[^"]+\.js)"/)?.[1];
     assert(jsPath, "Compiled editor script is absent");
     const jsResponse = await fetch(new URL(jsPath, origin), { cache: "no-store" });

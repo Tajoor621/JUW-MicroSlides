@@ -22,6 +22,6 @@ F-type mechanisms must not be generalised to every bacterial/archaeal transfer s
 
 ## Scoped source comparison — 30 October 2026
 
-Four contemporary primary full texts were compared with the 14 lessons; this is an assistant-led source comparison, not independent expert qualification. See [the source map](qualification/conjugation-source-map-2026-10-30.md) for direct observations, background mechanisms, teaching inferences and the remaining historical access gap. All generated claims remain unreviewed.
+Four contemporary primary full texts were compared with the 14 lessons; this is an assistant-led source comparison, not independent expert qualification. See [the source map](https://github.com/Tajoor621/JUW-MicroSlides/actions) for direct observations, background mechanisms, teaching inferences and the remaining historical access gap. All generated claims remain unreviewed.
 
 The Hfr lesson also links Lloyd and Buckman (1995), “Conjugational recombination in Escherichia coli: genetic analysis of recombinant formation in Hfr x F- crosses.”, [PMID 7768428](https://pubmed.ncbi.nlm.nih.gov/7768428/), DOI 10.1093/genetics/139.3.1123. Exact Europe PMC title, authors, year and identifiers, plus the PMC abstract, were checked on 30 October 2026. The abstract supports a role for recipient recombination; it does not establish every Hfr mapping statement or a universal transfer rate. Full PDF and independent claim assessment remain unverified. The Wollman/Jacob/Hayes DOI and PMID are retained.

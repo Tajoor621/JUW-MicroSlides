@@ -58,7 +58,7 @@ JSON and portable recovery retain all structured fields and course membership. M
 
 Automated tests use explicitly synthetic software material. They cannot certify scientific accuracy, specialist credentials, real-case management, guideline applicability, actual Office/Google Slides rendering or physical classroom accessibility. Existing independent-review and physical qualification requirements remain open. These improvements do not add a hosted AI service, trusted installer signing or PDF-UA certification. Formal source scarcity remains an explicit generation/review condition rather than a fabricated success.
 
-The [23 October software validation record](qualification/v7-software-workflows-2026-10-23.md) lists the exercised paths and remaining qualifications.
+The [23 October software validation record](https://github.com/Tajoor621/JUW-MicroSlides/actions) lists the exercised paths and remaining qualifications.
 
 ## Topic generation and theme recovery
 

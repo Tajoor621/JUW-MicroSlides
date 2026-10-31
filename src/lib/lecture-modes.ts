@@ -365,6 +365,24 @@ export function assessmentSlides(deck: Deck): Slide[] {
 }
 export function applyStandardPedagogy(deck: Deck, input: GenerateInput): Deck {
   const made = structuredClone(deck);
+  if (made.slides[0]) made.slides[0].learningObjectives = objectivesFor(input).slice(0, 1);
+  const closing = made.slides.at(-1);
+  if (closing && !["assessment", "bibliography", "learning-objectives"].includes(closing.layout)) {
+    const summary = closing.keyTakeaway || closing.teaching?.takeaway || closing.bullets[0];
+    if (summary) closing.keyTakeaway = summary;
+    closing.assessment ||= [
+      {
+        kind: "short-answer",
+        question:
+          "Self-check: explain this concept, compare it with an earlier idea and identify one source limitation.",
+        options: [],
+        answer: summary || "Use the cited source to support the explanation.",
+        rationale:
+          "A defensible answer connects the stated mechanism to its source and preserves the source’s scope.",
+        sourceUrl: closing.citations[0]?.url,
+      },
+    ];
+  }
   const clarification = dnaTransferClarification(input.topic);
   if (clarification) {
     made.contentWarnings = [...new Set([...(made.contentWarnings || []), clarification])];

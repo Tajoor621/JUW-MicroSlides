@@ -20,6 +20,7 @@ const safeSrc = z
     "Unsupported image URL",
   );
 const media = z.object({
+  altText: text.optional(),
   tags: z.array(z.enum(MEDIA_TAGS)).max(10).optional(),
   id: text,
   kind: z.enum(["micrograph", "diagram", "icon", "photo", "gif", "chart", "video"]),

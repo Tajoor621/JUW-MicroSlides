@@ -1,0 +1,58 @@
+{
+  "topic": "Protozoan life cycles",
+  "aliases": ["Unicellular eukaryotic parasites", "Protozoa"],
+  "discipline": "Parasitology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Distinguish free-living and parasitic life cycles.",
+    "Explain encystment and the protective cyst.",
+    "Compare sexual and asexual reproductive possibilities."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "5.1 Unicellular Eukaryotic Parasites",
+    "locator": "Printed pp. 197–198, protozoan life cycles"
+  },
+  "concepts": [
+    {
+      "id": "protozoan-life-cycles-1",
+      "title": "Protozoan habitats",
+      "section": "Definition",
+      "quote": "Protozoans inhabit a wide variety of habitats, both aquatic and terrestrial."
+    },
+    {
+      "id": "protozoan-life-cycles-2",
+      "title": "Parasitic and free-living forms",
+      "section": "Definition",
+      "quote": "Many are free-living, while others are parasitic, carrying out a life cycle within a host or hosts and potentially causing illness."
+    },
+    {
+      "id": "protozoan-life-cycles-3",
+      "title": "Cyst formation",
+      "section": "Mechanism or pathogenesis",
+      "quote": "While some types of protozoa exist exclusively in the trophozoite form, others can develop from trophozoite to an encapsulated cyst stage when environmental conditions are too harsh for the trophozoite."
+    },
+    {
+      "id": "protozoan-life-cycles-4",
+      "title": "Encystment",
+      "section": "Mechanism or pathogenesis",
+      "quote": "A cyst is a cell with a protective wall, and the process by which a trophozoite becomes a cyst is called encystment."
+    },
+    {
+      "id": "protozoan-life-cycles-5",
+      "title": "Modes of reproduction",
+      "section": "Classification or structure",
+      "quote": "Some protozoans reproduce asexually and others reproduce sexually; still others are capable of both sexual and asexual reproduction."
+    }
+  ]
+}

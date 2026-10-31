@@ -1,32 +1,13 @@
-# Topic-coordinated slides and sharp PowerPoint export
+# Slide visual fidelity — JUW-MicroSlides V6.2.1
 
-## Scope of this change
+The editor and export use a shared 1,280 × 720 composition. Title and content themes use the topic selector; existing saved slide themes remain editable. Decorative topic SVGs identify a subject visually and are not validated scientific figures. Figures require their own caption, source, attribution and descriptive alt text.
 
-This update **does not alter existing deck JSON, slide text, research claims, source citations, media lists, or slide counts**. The application version remains 6.2.1.
+PPTX keeps native editable text and supported SVG diagrams. A raster fallback assists viewers without compatible SVG support; original bitmap quality remains limited by the supplied source. The owner-selected department JPEG is embedded at its full original resolution. The crest/seal source files remain vector. PDF is for reading/printing; educational notes use A4 portrait pages and a cached high-resolution seal rendering for reliable running headers.
 
-### Topic identity and introductory slide
+Every export keeps “Unverified AI-assisted draft” and “Not yet expert-reviewed”. No scientific Review menu or export review gate exists. Source matching and output geometry do not certify factual accuracy.
 
-The title slide is now decorated using the same deterministic research-topic theme selector used by the content slides. Examples include molecular/genomics, culture/enzymes, mycology, clinical, and parasitology. It keeps the established institutional crest, course details, author/department and slide layout. Each existing content slide retains its individually saved theme; the title slide acts as a visual introduction to the overall research topic, not a forced generic template.
+## Check a revision
 
-Decorative topic SVGs are schematic ornaments, **not scientifically validated illustrations**.
+Inspect its [Actions](https://github.com/Tajoor621/JUW-MicroSlides/actions) results and browser/export artefacts. CI checks count, native text, vector/fallback presence, shared geometry, theme contrast, artwork bytes and desktop/portrait previews. Rendered notes checks inspect the visible watermark and disclosure lines as well as extracted text. The desktop timing profile is hosted Chromium emulation, not physical Note20 hardware.
 
-### PPTX visual fidelity
-
-- Text remains native PowerPoint text, so it stays editable and scales without raster blur.
-- Embedded topic illustrations and SVG icons now remain **SVG vectors** inside PPTX instead of being flattened into a PNG.
-- Bitmap photos/micrographs use source-resolution-aware export up to 3x layout pixels, capped at 4096×2304. Low-resolution source images cannot be made genuinely sharp by upscaling; replace them with higher-resolution, properly licensed originals.
-- No change to the 16:9 aspect ratio, slide dimensions, existing references, notes or scientific review gates.
-
-### Validation
-
-Run `node scripts/test-slide-fidelity.mjs`, `npm run typecheck`, `npm run test:professional` and export a sample PPTX. Inspect in Microsoft PowerPoint at 100% and 200%, including a title slide, icon-rich slide and micrograph. Check editable text, sharp vector icon edges, colour contrast and any SVG compatibility warnings. Automated source checks do **not** replace manual PowerPoint rendering or a native-office roundtrip.
-
-### Known limitations
-
-- Bitmap quality is limited by the original image resolution and compression.
-- PowerPoint SVG support varies by Office version; modern desktop PowerPoint is recommended.
-- Installed fonts and office rendering engines can alter text metrics. Keep fonts installed and test actual presentation hardware.
-
-## Export-parity regression correction (20 October 2026)
-
-The browser qualification exposed an actual defect: data-URI SVG attachments displayed in the preview but were missing from the PPTX. The export scene now retains image sources even before intrinsic dimensions become available; SVG data is encoded as base64 and embedded without rasterization. The full 50-slide desktop/mobile parity test passed on commit `ad58628`, including image placement. A further ZIP-level regression assertion verifies that the exported PPTX contains genuine `.svg` media rather than only rasterized artwork. Passing that final assertion and independent desktop PowerPoint inspection remain separate gates.
+Use the [device checklist](QA-PHONE-NOTE20.md) for actual Chrome, Samsung Internet and PowerPoint testing. Check editable text, organism italics, fonts, figure captions and every slide/page at normal viewing size. Installed fonts and Office rendering can change metrics; CI does not replace that inspection. Keep generated PPTX/PDF/screenshots in CI artefacts. Historical regression reports are archived from the recorded source commit and must not be presented as current passes.

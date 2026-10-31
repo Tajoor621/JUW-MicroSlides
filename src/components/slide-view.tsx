@@ -1,3 +1,5 @@
+import { sourcePresentation } from "@/lib/scientific-presentation";
+import { OPENSTAX_ATTRIBUTION } from "@/lib/textbook-concepts";
 import { ScientificText } from "./scientific-text";
 import { LectureSlideContent } from "./lecture-slide-content";
 import { slideEvidenceBasis } from "@/lib/evidence-basis";
@@ -7,9 +9,9 @@ import { TeachingContent } from "./teaching-content";
 import { teachingOf, methodSlide } from "@/lib/teaching";
 import { useDeckStore } from "@/lib/deck-store";
 import { useEffect, useRef, useState } from "react";
-import { DRAFT_STAMP, JUW } from "@/lib/brand";
+import { DRAFT_STAMP, EXPERT_STAMP, JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
-import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
+import { accessibleTheme, themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
 import { cn, mediaDisplaySrc } from "@/lib/utils";
 import { topicArtworkSvg } from "@/lib/topic-artwork";
@@ -68,7 +70,7 @@ export function SlideView({
   );
   const visualTheme = slide.theme;
   const baseTokens = themeOf(visualTheme);
-  const tokens =
+  const tokens = accessibleTheme(
     deck?.exportMode === "dark"
       ? {
           ...baseTokens,
@@ -91,7 +93,8 @@ export function SlideView({
             frame: "#000000",
             dark: false,
           }
-        : baseTokens;
+        : baseTokens,
+  );
   const teaching = teachingOf(slide);
   const teachingLayout = !!slide.teaching;
 
@@ -126,6 +129,7 @@ export function SlideView({
             "--color-navy": tokens.navy,
             "--color-ink-muted": tokens.muted,
             "--color-frame-band": tokens.band,
+            "--color-accent": tokens.accent,
           },
           width: 1280,
           height: 720,
@@ -168,6 +172,10 @@ export function SlideView({
               {isTitle ? (
                 <img
                   src={JUW.microscope}
+                  srcSet={`${JUW.microscope} 1254w`}
+                  sizes="116px"
+                  width={1254}
+                  height={1254}
                   alt="Department of Microbiology, JUW"
                   className="h-[6.25rem] w-auto max-w-[12.5rem] bg-transparent object-contain @min-[640px]:h-[7.25rem]"
                 />
@@ -203,6 +211,12 @@ export function SlideView({
                     <p className="slide-scope text-center text-ink-muted">{slide.subtitle}</p>
                   )}
                 </div>
+                {!!slide.learningObjectives?.length && (
+                  <p className="mb-3 text-center text-base text-ink">
+                    <strong>Learning outcome: </strong>
+                    {slide.learningObjectives[0]}
+                  </p>
+                )}
                 <div className="slide-course-meta ml-auto max-w-[70%] text-right">
                   <div className="mb-2.5 ml-auto h-1 w-9 bg-accent" />
                   <EditableText
@@ -264,6 +278,12 @@ export function SlideView({
                   />
                 )}
 
+                <p
+                  className="mt-1 text-sm text-ink-muted"
+                  aria-label="Source type and retrieval date"
+                >
+                  {sourcePresentation(slide)}
+                </p>
                 <div
                   className={cn(
                     "mt-3 min-h-0 flex-1",
@@ -292,6 +312,7 @@ export function SlideView({
                       "learning-objectives",
                       "assessment",
                       "key-takeaway",
+                      "common-misconceptions",
                       "growth-curve",
                       "taxonomy-tree",
                     ].includes(slide.layout) ? (
@@ -380,14 +401,20 @@ export function SlideView({
                 {(methodSlide(slide) || teaching.pitfall) && (
                   <p className="border-l-4 border-amber-600 pl-2">
                     <strong>Common pitfalls / misconceptions:</strong>{" "}
-                    {teaching.pitfall ||
-                      "Review required — record a method-specific misconception."}
+                    <ScientificText
+                      text={
+                        teaching.pitfall ||
+                        "Review required — record a method-specific misconception."
+                      }
+                    />
                     <EvidenceBadge basis={basis} field="teaching.pitfall" />
                   </p>
                 )}
                 <p>
                   <strong>Key takeaway:</strong>{" "}
-                  {slide.keyTakeaway || teaching.takeaway || "Review required"}
+                  <ScientificText
+                    text={slide.keyTakeaway || teaching.takeaway || "Review required"}
+                  />
                   <EvidenceBadge basis={basis} field="teaching.takeaway" />
                 </p>
               </div>
@@ -402,6 +429,7 @@ export function SlideView({
                 "learning-objectives",
                 "assessment",
                 "key-takeaway",
+                "common-misconceptions",
                 "growth-curve",
                 "taxonomy-tree",
               ].includes(slide.layout) && (
@@ -421,6 +449,12 @@ export function SlideView({
               </footer>
             )}
 
+            {slide.layout !== "assessment" && !!slide.assessment?.length && (
+              <p className="relative z-[1] shrink-0 px-8 pb-1 text-sm text-ink">
+                <strong>Self-check: </strong>
+                {slide.assessment[0].question.replace(/^Self-check:\s*/, "")}
+              </p>
+            )}
             {!draft && deck?.teachingVerification && (
               <p className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">
                 Last verified by {deck.teachingVerification.instructor} on{" "}
@@ -433,7 +467,14 @@ export function SlideView({
                 className="relative z-[1] shrink-0 border-t border-amber-600 px-8 text-xs font-semibold text-ink"
                 role="status"
               >
-                {DRAFT_STAMP}
+                {DRAFT_STAMP} · {EXPERT_STAMP}
+              </p>
+            )}
+            {deck?.slides.some((s) =>
+              s.citations.some((c) => c.publisher?.includes("OpenStax")),
+            ) && (
+              <p className="relative z-[1] shrink-0 px-8 text-[9px] text-ink-muted">
+                {OPENSTAX_ATTRIBUTION}
               </p>
             )}
             <div className="relative z-[1] shrink-0 px-8 text-right text-[9px] text-ink-muted">
@@ -666,7 +707,7 @@ function SlideMedia({
       ) : (
         <img
           src={mediaDisplaySrc(media.src)}
-          alt={media.title}
+          alt={media.altText || media.title}
           className={imgClass}
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}

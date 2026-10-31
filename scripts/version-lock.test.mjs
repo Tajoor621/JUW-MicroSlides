@@ -32,7 +32,6 @@ test("owner's V6.2.1 lock agrees across web, native and package identities", () 
 test("exports, reviewer packs, native artifacts and qualification runners retain the lock", () => {
   const surfaces = [
     ["src/components/app-updates.tsx", /Windows desktop · V6\.2\.1/],
-    ["src/components/specialist-review.tsx", /version: "V6\.2\.1"/],
     ["src/lib/project-format.ts", /appVersion: "V6\.2\.1"/],
     ["scripts/benchmark-live.mjs", /appVersion: "V6\.2\.1"/],
     ["scripts/scientific-matrix-summary.mjs", /appVersion: "V6\.2\.1"/],

@@ -1,3 +1,4 @@
+import { needsGuideline } from "./scientific-presentation";
 import { passageContainsStatement } from "./generation-grounding";
 import { z } from "zod";
 import { LEVELS } from "./types";
@@ -21,6 +22,9 @@ export const noteSourceSchema = z.object({
     .optional(),
   year: z.string(),
   guideline: z.boolean(),
+  kind: z.enum(["textbook", "guideline", "review", "primary"]).optional(),
+  chapter: z.string().optional(),
+  retrievedAt: z.string().optional(),
 });
 export const noteStatementSchema = z.object({
   text: z.string().min(1),
@@ -34,6 +38,7 @@ export const educationalNoteSchema = z.object({
   level: z.enum(LEVELS),
   date: z.string(),
   label: z.literal(NOTES_LABEL),
+  learningOutcomes: z.array(z.string()).max(6).optional(),
   sections: z.array(z.object({ heading: z.string(), statements: z.array(noteStatementSchema) })),
   sources: z.array(noteSourceSchema),
   questions: z.array(z.object({ question: z.string(), answer: noteStatementSchema })),
@@ -51,6 +56,13 @@ export const NOTE_HEADINGS = [
 ];
 const treatment =
   /\b(treat(?:ment|ed|ing)?|dos(?:e|ing)|therapy|therapeutic|recommend(?:ation|ed)?|first-line)\b/i;
+const requiresGuideline = (text: string) => treatment.test(text) || needsGuideline(text);
+const datedGuideline = (
+  ref: Pick<EducationalNote["sources"][number], "title" | "year" | "guideline">,
+) =>
+  ref.guideline &&
+  /^\d{4}$/.test(ref.year) &&
+  /\b(?:CLSI|EUCAST|IDSA|CDC|WHO|guideline|guidance)\b/i.test(ref.title);
 export function assertNoteSources(note: EducationalNote) {
   const parsed = educationalNoteSchema.parse(note);
   const statements = [
@@ -64,12 +76,16 @@ export function assertNoteSources(note: EducationalNote) {
     );
   for (const s of statements) {
     const ref = parsed.sources.find((r) => r.id === s.sourceId);
-    if (!ref || (!ref.doi && !ref.pmid) || !passageContainsStatement(s.quote, s.text))
+    if (
+      !ref ||
+      (!ref.doi && !ref.pmid && !(ref.kind === "textbook" && ref.chapter?.trim())) ||
+      !passageContainsStatement(s.quote, s.text)
+    )
       throw Error(
         "A note statement has no traceable DOI/PMID passage. Regenerate from attributable sources.",
       );
-    if (treatment.test(s.text) && (!ref.guideline || !/^\d{4}$/.test(ref.year)))
-      throw Error("Treatment statements require a dated guideline.");
+    if (requiresGuideline(s.text) && !datedGuideline(ref))
+      throw Error("Clinical values and treatment statements require a named, dated guideline.");
   }
   return parsed;
 }
@@ -83,7 +99,7 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
   for (const slide of deck.slides) {
     for (const statement of supportedSlideSentences(slide, deck.sourceDocuments)) {
       const ref = slide.citations.find((c) => c.id === statement.citationId);
-      if (!ref || (!ref.doi && !ref.pmid)) continue;
+      if (!ref || (!ref.doi && !ref.pmid && ref.evidenceKind !== "textbook")) continue;
       // Excerpt fidelity alone is insufficient: deictic and first-person result
       // fragments cannot stand in for a topic explanation without their context.
       if (
@@ -93,7 +109,7 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
       )
         continue;
       const guideline = statement.access === "guideline";
-      if (treatment.test(statement.text) && (!guideline || !/^\d{4}$/.test(ref.year))) continue;
+      if (requiresGuideline(statement.text) && !datedGuideline({ ...ref, guideline })) continue;
       const key = statement.text.toLowerCase().replace(/\W/g, "");
       if (seen.has(key)) continue;
       seen.add(key);
@@ -106,6 +122,16 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
           pmid: ref.pmid,
           year: ref.year,
           guideline,
+          kind:
+            statement.access === "textbook"
+              ? "textbook"
+              : guideline
+                ? "guideline"
+                : ref.evidenceKind === "review"
+                  ? "review"
+                  : "primary",
+          chapter: statement.access === "textbook" ? ref.title : undefined,
+          retrievedAt: new Date(statement.checkedAt).toISOString().slice(0, 10),
         });
       const fact = {
         text: statement.text,
@@ -115,21 +141,25 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
           slide.claims?.flatMap((c) => c.evidence).find((e) => e.citationId === ref.id)?.locator ||
           "Retrieved passage",
       };
-      const index = treatment.test(fact.text)
-        ? 4
-        : /\b(?:defined as|refers to|means)\b/i.test(fact.text)
-          ? 0
-          : /misconception|not always|does not|cannot be/i.test(fact.text)
-            ? 6
-            : /diagnos|assay|detect|test(?:ing)?\b/i.test(fact.text)
-              ? 3
-              : /mechanis|pathogenes|transfer|replicat|process/i.test(fact.text)
-                ? 2
-                : /classif|structure|morpholog|wall|membrane/i.test(fact.text)
-                  ? 1
-                  : /\b(is|are|defined|refers)\b/i.test(fact.text)
-                    ? 0
-                    : 5;
+      const explicitSection = NOTE_HEADINGS.indexOf(slide.teachingPurpose || "");
+      const index =
+        explicitSection >= 0
+          ? explicitSection
+          : treatment.test(fact.text)
+            ? 4
+            : /\b(?:defined as|refers to|means)\b/i.test(fact.text)
+              ? 0
+              : /misconception|not always|does not|cannot be/i.test(fact.text)
+                ? 6
+                : /diagnos|assay|detect|test(?:ing)?\b/i.test(fact.text)
+                  ? 3
+                  : /mechanis|pathogenes|transfer|replicat|process/i.test(fact.text)
+                    ? 2
+                    : /classif|structure|morpholog|wall|membrane/i.test(fact.text)
+                      ? 1
+                      : /\b(is|are|defined|refers)\b/i.test(fact.text)
+                        ? 0
+                        : 5;
       sections[index].statements.push(fact);
     }
   }
@@ -146,6 +176,10 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
     level: deck.level,
     date: new Date().toISOString().slice(0, 10),
     label: NOTES_LABEL,
+    learningOutcomes: deck.slides
+      .flatMap((s) => s.learningObjectives || [])
+      .filter((s, i, all) => all.indexOf(s) === i)
+      .slice(0, 6),
     sections,
     sources,
     questions: sections
@@ -168,7 +202,7 @@ export function noteText(note: EducationalNote) {
   const sourceIndex = (id: string) => note.sources.findIndex((s) => s.id === id) + 1;
   return [
     `${note.topic}\n${note.level} · ${note.date}\n${note.label}`,
-    "Learning outcomes\nExplain the retrieved source statements, compare their scope and identify limitations.",
+    `Learning outcomes\n${note.learningOutcomes?.length ? note.learningOutcomes.join("\n") : "Explain the retrieved source statements, compare their scope and identify limitations."}`,
     ...note.sections.map(
       (s) =>
         `${s.heading}\n${s.statements.length ? s.statements.map((v) => `${v.text} [${sourceIndex(v.sourceId)}]${treatment.test(v.text) ? "\nCheck current guidance before clinical use." : ""}`).join("\n\n") : "No source-supported passage retrieved for this section."}`,
@@ -181,7 +215,7 @@ export function noteText(note: EducationalNote) {
       note.sources
         .map(
           (s, i) =>
-            `${i + 1}. ${s.title} (${s.year}). ${s.doi ? `DOI: ${s.doi}` : `PMID: ${s.pmid}`}\n${s.url}`,
+            `${i + 1}. ${s.title} (${s.year}). ${s.doi ? `DOI: ${s.doi}` : s.pmid ? `PMID: ${s.pmid}` : `Textbook chapter: ${s.chapter}`}\n${s.url}`,
         )
         .join("\n\n"),
     "Glossary\n" +

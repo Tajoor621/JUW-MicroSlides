@@ -45,7 +45,7 @@ export function TeachingContent({
                 setDisplayWidth(e.currentTarget.clientWidth);
               }}
               src={image.src}
-              alt={p.altText || image.title}
+              alt={p.altText || image.altText || image.title}
               className="max-h-60 max-w-full object-contain"
             />
           ) : (
@@ -96,7 +96,7 @@ export function TeachingContent({
             </ul>
           </aside>
         )}
-        {p.definition && (
+        {p.definition && !bulletRows.includes(p.definition) && (
           <p className="text-xl font-semibold">
             <ScientificText text={p.definition} />
             <EvidenceBadge basis={basis} field="teaching.definition" />
@@ -165,14 +165,14 @@ export function TeachingContent({
                       : "hidden",
                   }}
                 >
-                  • {b}
+                  • <ScientificText text={b} />
                   <EvidenceBadge basis={basis} field={`bullet.${i}`} />
                 </li>
               );
             })}
           </ul>
         )}
-        {p.mechanism && (
+        {p.mechanism && !bulletRows.includes(p.mechanism) && (
           <p className="text-lg">
             <strong>Mechanism:</strong> <ScientificText text={p.mechanism} />
             <EvidenceBadge basis={basis} field="teaching.mechanism" />

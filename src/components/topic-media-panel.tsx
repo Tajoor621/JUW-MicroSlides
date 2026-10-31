@@ -425,7 +425,7 @@ function MediaCard({
             onDragStart={(e) => e.dataTransfer.setData("application/juw-media", item.id)}
             loading="lazy"
             src={item.src}
-            alt={item.title}
+            alt={item.altText || item.title}
             className="max-h-48 w-full object-contain"
             referrerPolicy="no-referrer"
             onError={() => setFailed(true)}
@@ -434,6 +434,15 @@ function MediaCard({
       </div>
       <div className="space-y-2 p-3">
         <h4 className="text-sm font-medium leading-snug">{item.title}</h4>
+        <label className="block text-xs">
+          Image alt text
+          <Input
+            aria-label={`Image alt text: ${item.title}`}
+            value={item.altText || ""}
+            onChange={(e) => update({ altText: e.target.value })}
+            placeholder="Describe the teaching-relevant visual; check it against the source."
+          />
+        </label>
         <label className="block text-xs">
           Scientific media tag
           <select

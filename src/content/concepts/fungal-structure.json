@@ -1,0 +1,58 @@
+{
+  "topic": "Fungal structure",
+  "aliases": ["Characteristics of fungi", "Fungi"],
+  "discipline": "Mycology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Distinguish hyphae, mycelia and unicellular yeasts.",
+    "Describe fungal wall and membrane components.",
+    "Separate structural concepts from claims of complete current taxonomy."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "5.3 Fungi",
+    "locator": "Printed pp. 219–221, Characteristics of Fungi"
+  },
+  "concepts": [
+    {
+      "id": "fungal-structure-1",
+      "title": "Fungal hyphae",
+      "section": "Classification or structure",
+      "quote": "Most multicellular fungal bodies, commonly called molds, are made up of filaments called hyphae."
+    },
+    {
+      "id": "fungal-structure-2",
+      "title": "Mycelial networks",
+      "section": "Classification or structure",
+      "quote": "Hyphae can form a tangled network called a mycelium and form the thallus (body) of fleshy fungi."
+    },
+    {
+      "id": "fungal-structure-3",
+      "title": "Unicellular yeasts",
+      "section": "Definition",
+      "quote": "In contrast to molds, yeasts are unicellular fungi."
+    },
+    {
+      "id": "fungal-structure-4",
+      "title": "Fungal cell walls",
+      "section": "Mechanism or pathogenesis",
+      "quote": "Fungal cell walls contain chitin, as opposed to the cellulose found in the cell walls of plants and many protists."
+    },
+    {
+      "id": "fungal-structure-5",
+      "title": "Membrane sterols",
+      "section": "Mechanism or pathogenesis",
+      "quote": "Additionally, whereas animals have cholesterol in their cell membranes, fungal cell membranes have different sterols called ergosterols."
+    }
+  ]
+}

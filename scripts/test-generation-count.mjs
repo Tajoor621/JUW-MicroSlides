@@ -61,12 +61,15 @@ try {
         const start = cursor === "page2" ? 10 : cursor === "page3" ? 20 : 0;
         const papers = Array.from({ length: 10 }, (_, n) => {
           const i = start + n;
+          // A numbered study label is not a treatment dose. Keep synthetic prose
+          // non-numeric so therapy-topic fixtures do not imply clinical guidance.
+          const dataset = String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26));
           return {
             id: `qa-${i}`,
             pmid: `9000${i}`,
             source: "MED",
             title: `${topic}: source study ${i}`,
-            abstractText: `${topic} was investigated in dataset ${i} using a defined experimental comparison. The researchers in dataset ${i} recorded a condition-specific response using controlled measurements. The reported ${topic} findings in dataset ${i} apply to the study design and sampled conditions. The authors in dataset ${i} noted that further independent observations were needed before generalization.`,
+            abstractText: `${topic} was investigated in dataset ${dataset} using a defined experimental comparison. The researchers in dataset ${dataset} recorded a condition-specific response using controlled measurements. The reported ${topic} findings in dataset ${dataset} apply to the study design and sampled conditions. The authors in dataset ${dataset} noted that further independent observations were needed before generalisation.`,
             authorString: "QA Author",
             pubYear: "2025",
           };
@@ -81,7 +84,10 @@ try {
       };
       const request = { ...input, topic, count };
       const base = generateLocalDeck(request);
-      const deck = await enrichTopicEvidence(base, request);
+      const deck = await enrichTopicEvidence(base, request).catch((error) => {
+        error.message = `${topic} (${count} slides): ${error.message}`;
+        throw error;
+      });
       assertCompleteDeck(deck, count);
       assert.equal(deck.slides.length, count);
       assert.equal(deck.slides[0].title, topic);

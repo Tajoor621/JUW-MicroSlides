@@ -28,15 +28,11 @@ The Pages CI additionally runs every `test:*` command listed below, then all `qa
 
 `desktop:icons`, `dev:desktop`, `build:desktop`, `desktop` and `desktop:build` require Rust/Tauri and native platform tools. The desktop companion uses local SQLite, not a hosted database. Windows CI packages and smoke-tests it separately. It is not required to use or deploy Pages.
 
-## Optional specialist/developer qualification
+## Source and rendering qualification
 
-`test:slide-fidelity` checks shared scene rules. `benchmark:live` queries real providers and can be slow/rate-limited. `benchmark:semantic`, `benchmark:semantic:local` and `qualify:semantic` need the documented installed model/provenance inputs. `review:scientific` is an **offline developer CLI** for external-review packs; it does not restore a Review menu or gate exports. `format` rewrites formatting and should be used on intentional files only. `build:dev` builds static development assets. Manual actual-PowerPoint and physical classroom workflows need their documented licensed hardware and cannot be substituted by browser/ZIP checks.
+`test:slide-fidelity` checks shared scene rules. `benchmark:live` is used by the manual scientific-source matrix workflows and can be slow or provider-limited. Its manifest and planner remain required. Unused semantic benchmark/review CLI wrappers were removed; evaluation helpers retained by CI still test historical evidence formats and cannot establish scientific approval.
 
-Historical qualification reports keep their original dates and commit hashes. Missing models, missing hardware, untested topics and incomplete results must be reported explicitly. Generated outputs stay in `qualification-results/`, an ignored `screenshots/` directory or the CI artefact directory.
-
-- `npm run test:uk-english`: authored UK English contract (required).
-- `npm run qa:notes`: A4 source-traced notes browser/PDF QA (required; installed Chrome and Poppler needed).
-- `node scripts/logo-assets.mjs`: strict logo qualification (currently fails the documented legacy resolution target; no export gate).
+`qa:notes` checks A4/source/persistence/download behaviour. `node scripts/qa-textbook-sources.mjs` checks the pinned historical source edition in Actions, after Poppler is installed. `node scripts/logo-assets.mjs` qualifies the owner-selected JPEG. Generated reports, PDFs and screenshots belong in ignored output directories or CI artefacts. The owner can inspect Actions from a phone; local commands are not required as release evidence.
 
 ## Optional real local AI qualification
 

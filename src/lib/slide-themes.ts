@@ -1,3 +1,4 @@
+import { readableColour } from "./colour-contrast.ts";
 export const SLIDE_THEMES = [
   "classic",
   "gram",
@@ -160,9 +161,20 @@ export const THEME_TOKENS: Record<SlideTheme, ThemeTokens> = {
   },
 };
 
+export function accessibleTheme(theme: ThemeTokens): ThemeTokens {
+  const backgrounds = [theme.slide, theme.band];
+  return {
+    ...theme,
+    ink: readableColour(theme.ink, backgrounds),
+    navy: readableColour(theme.navy, backgrounds),
+    muted: readableColour(theme.muted, backgrounds),
+    accent: readableColour(theme.accent, backgrounds),
+  };
+}
+
 export function themeOf(id?: string | null): ThemeTokens {
-  if (id && id in THEME_TOKENS) return THEME_TOKENS[id as SlideTheme];
-  return THEME_TOKENS.classic;
+  if (id && id in THEME_TOKENS) return accessibleTheme(THEME_TOKENS[id as SlideTheme]);
+  return accessibleTheme(THEME_TOKENS.classic);
 }
 
 export function themeVars(id?: string | null): Record<string, string> {
