@@ -2,13 +2,16 @@
 
 ## V6.2.1
 
+### Synthetic count-fixture scope — 31 October 2026
+
+- Keep fabricated provider fixtures clearly synthetic: use alphabetic dataset labels in research sentences so phage-therapy topic fixtures do not accidentally look like numerical treatment recommendations. Retain the clinical filter and add topic/count context to failed count assertions. These fixtures test pipeline mechanics, not scientific topic qualification.
+
 ### CI dependency policy and unused wrappers — 31 October 2026
 
 - CI depcheck from [the deletion-stage run](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41182933689) reported only the two CSS imports. Keep both packages; no dependency removal is justified. Make the checked CSS exception explicit and block genuinely unused/missing dependencies. The npm dependency lock is unchanged because no package was removed.
 - Remove the old `public/juw-microscope.png`: `rg -n "juw-microscope.png" src scripts` showed only its legacy qualification fixture after the new artwork was activated; replace that test input with synthetic small PNG bytes.
 - Remove `src/lib/multiplayer/index.ts` and `p2p.ts`, plus unmounted duplicate-review, claim-evidence-editor and surface-evidence-editor components: `rg -n "multiplayer|duplicate-review|claim-evidence-editor|surface-evidence-editor" src scripts .github` found only internal references. No persisted data schema depends on these components.
 - Remove the unused benchmark-semantic, benchmark-semantic-local, qualify-semantic and scientific-review CLI wrappers and npm aliases: searches of `.github` and `scripts` found no CI callers. Keep scientific evaluation/legacy-format helpers, source matrix runners, topic and semantic-pair manifests because CI reads them. Refresh their instructional documentation; do not report historical results as current passes.
-
 
 ### Source-context test location — 31 October 2026
 
@@ -93,56 +96,45 @@
 
 - Reject missing words, duplicate positions and malformed abstract indices rather than creating a continuous quotation across a gap. Preserve complete provider wording and DOI identities.
 
-
 ### V6.2.1 — verified deployment record (29 October 2026)
 
 - Record the verified live application build, CI evidence, task commits, scientific verification limits and outstanding original-artwork/hosting decisions. Keep physical-device and interrupted manual PDF checks explicitly unverified.
-
 
 ### V6.2.1 — watermark checker syntax (29 October 2026)
 
 - Correct the rendered-pixel checker string syntax and exclude Python bytecode caches from source control.
 
-
 ### V6.2.1 — watermark behind teaching text (29 October 2026)
 
 - Render the official crest SVG to a reusable image for an isolated 6% PDF draw behind body text. Check median background brightness and high-percentile chroma so text edges do not cause false opacity findings. Keep the department seal as a separate header marking.
-
 
 ### V6.2.1 — legacy note backup preservation (29 October 2026)
 
 - Include the working note draft in full-library JSON backups, including legacy unsourced text, and restore it without representing it as a source-checked document. Keep Current deck backup limited to that deck.
 
-
 ### V6.2.1 — rendered note watermark (29 October 2026)
 
 - Set opacity on the crest SVG itself because the SVG converter manages its own PDF graphics states. Add a rendered-pixel watermark check and clarify the notes-ready message for source-traced PDF output.
-
 
 ### V6.2.1 — topic recovery expectation (29 October 2026)
 
 - Align the preserved starter-deck browser assertion with the UK spelling Immobilisation; retain failure/current-deck preservation checks.
 
-
 ### V6.2.1 — progress and language regression checks (29 October 2026)
 
 - Keep research budget/resume instructions visible throughout generation and extend UK English checks to one-word labels while preserving file names and required identifiers.
-
 
 ### V6.2.1 — continued research attempts (29 October 2026)
 
 - Preserve next-query cursors when a previous attempt used its round allowance; a resumed attempt can continue those cursors with a fresh bounded budget.
 
-
 ### V6.2.1 — note preparation safety (29 October 2026)
 
 - Invalidate a prepared note when its topic/level changes and ignore PDF completion after Refresh. Validate imported note source URL schemes and DOI/PMID syntax without claiming bibliographic verification.
 
-
 ### V6.2.1 — educational workflow QA (29 October 2026)
 
 - Add A4 notes browser/PDF checks to CI, retain editable conjugation deck artefacts, document physical Note20 acceptance separately and update obsolete Markdown notes expectations.
-
 
 ### V6.2.1 — A4 educational notes (29 October 2026)
 
@@ -150,23 +142,18 @@
 - Retain structured sentence-to-passage references, omit unsupported statements and non-guideline treatment material, require a guideline year and clinical-use reminder. Keep missing sections explicit rather than inventing prose.
 - Save generated notes independently in the local archive, retain legacy text, and include notes in additive JSON backups/restores. No deck export gates, backend, accounts, paid APIs or app-version changes.
 
-
 ### V6.2.1 — research budget and recovery (29 October 2026)
 
 - Configure a 30-minute research attempt budget. Persist completed batches, passages, query cursors and partial source slides independently of the active deck; matching requests resume saved batches. Keep progress/cancellation and explicit source-shortage failure.
 - Add an OpenAlex abstract fallback, retain Europe PMC/PubMed, check exact passage support for research-generated statements and show Source needed on unsourced content. This is extractive grounding, not scientific verification.
 
-
 ### V6.2.1 — honest logo qualification (29 October 2026)
 
 - Retain the original active microscope asset pending departmental artwork. Add PNG signature/dimension checks and record the unresolved resolution target. Refresh independent image/service-worker cache keys without changing the app version or claiming a logo fix.
 
-
 ### V6.2.1 — UK English authored text (29 October 2026)
 
 - Convert authored interface, teaching and prompt prose to UK English; retain identifiers and exact source titles/quotations. Add style rules and `test:uk-english` with narrowly documented CSS exceptions.
-
-
 
 ### V6.2.1 — dependency audit (29 October 2026)
 
@@ -201,18 +188,15 @@
 - Remove unused `eslint-plugin-prettier`.
 - Remove unused `lightningcss`.
 
-
 ### V6.2.1 — exact reference titles (29 October 2026)
 
 - Replace teaching-core reference descriptions with exact published titles; record the bibliographic check date and retain explicit unverified claim-support status.
-
 
 ### V6.2.1 — repository and deployment guidance (29 October 2026)
 
 - Remove tracked QA images under screenshots/ and ignore the directory; preserve production fonts and original institutional assets. QA images and generated exports belong in CI artefacts.
 - Repair lecturer workflow numbering and add the personal educational use notice in README and Help.
 - Confirm the server archive branch exists; document three private-repository hosting choices without changing hosting settings or visibility.
-
 
 ### V6.2.1 — conjugation teaching core and export geometry (28 October 2026)
 
