@@ -87,13 +87,11 @@ try {
     })),
   ];
   await page.getByRole("button", { name: "Library", exact: true }).click();
-  await page
-    .getByLabel("Restore backup", { exact: true })
-    .setInputFiles({
-      name: "performance-fixture.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(data)),
-    });
+  await page.getByLabel("Restore backup", { exact: true }).setInputFiles({
+    name: "performance-fixture.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(data)),
+  });
   await page.getByRole("button", { name: "Close", exact: true }).click();
   const artwork = page.locator('[data-slide-stage] img[alt="Department of Microbiology, JUW"]');
   await artwork.waitFor();
@@ -104,8 +102,17 @@ try {
     rect: el.getBoundingClientRect().toJSON(),
     stage: el.closest("[data-slide-stage]").getBoundingClientRect().toJSON(),
   }));
-  assert.equal(geometry.w, 1254);
-  assert.equal(geometry.h, 1254);
+  // naturalWidth is density-corrected when srcset uses a width descriptor.
+  // Verify actual encoded pixels independently, without changing preview hints.
+  const bitmap = await artwork.evaluate(async (el) => {
+    const decoded = await createImageBitmap(await (await fetch(el.currentSrc)).blob());
+    const size = { width: decoded.width, height: decoded.height };
+    decoded.close();
+    return size;
+  });
+  assert.equal(bitmap.width, 1254);
+  assert.equal(bitmap.height, 1254);
+  report.artwork = { bitmap, densityAdjustedNaturalWidth: geometry.w };
   assert(geometry.rect.x > geometry.stage.x + geometry.stage.width / 2);
   await page.screenshot({ path: join(output, "title-1280x720.png") });
   for (const [button, name] of [

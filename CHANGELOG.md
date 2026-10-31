@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Density-aware artwork verification — 31 October 2026
+
+- CI passed the source/build suites and historical textbook extraction check, then exposed a browser-test assumption: `naturalWidth` is density-corrected for a width-descriptor image source. Check decoded bitmap pixels independently and keep preview size hints and the original artwork unchanged. No failed browser run is reported as a pass.
+
 ### Synthetic count-fixture scope — 31 October 2026
 
 - Keep fabricated provider fixtures clearly synthetic: use alphabetic dataset labels in research sentences so phage-therapy topic fixtures do not accidentally look like numerical treatment recommendations. Retain the clinical filter and add topic/count context to failed count assertions. These fixtures test pipeline mechanics, not scientific topic qualification.
