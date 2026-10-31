@@ -6,20 +6,27 @@
 
 - Keep fabricated provider fixtures clearly synthetic: use alphabetic dataset labels in research sentences so phage-therapy topic fixtures do not accidentally look like numerical treatment recommendations. Retain the clinical filter and add topic/count context to failed count assertions. These fixtures test pipeline mechanics, not scientific topic qualification.
 
+### Source-context test location — 31 October 2026
+
+- CI exposed old assertions requiring full article paragraphs in lecturer notes. Assert the original complete context in each claim’s evidence instead, and assert that the lecturer narrative stays free of that paragraph. This preserves the source-fidelity check in its new location; the failed run remains a failure.
+
+### Rendered accessibility and desktop workflow profile — 31 October 2026
+
+- Adjust text/accent colours conservatively to AA normal-text contrast on slide and band surfaces, including dark export; retain theme hues and identity. Add deterministic ratio checks without claiming a complete accessibility certification.
+- Add an editable alt-text field to every media card; preserve it in JSON projects and exports. Render recognised organism names consistently across bullets, tables, questions, takeaways and notes; avoid repeating the same source definition in the body.
+- Give the eight pilot topics specific learning outcomes in notes and carry clinical-value sanitation and organism typography into printable handouts. Explain unavailable offline notes without replacing saved work.
+- Add a GitHub Actions desktop-workflow proxy recording first interactive load and actual 20-slide PPTX/PDF times, original-artwork byte preservation, rendered body size, portrait preview and automatic offline notes downloads after reload. This is Chromium emulation, not a physical Note20 or Samsung Internet measurement.
+
+### Nonclinical topic filtering — 31 October 2026
+
+- CI found a direct Node import failure and a false-positive guideline filter on a synthetic phage-therapy topic mention. Use the explicit TypeScript module path and distinguish clinical recommendations/values from subject labels. Keep clinical-dose/MIC/incubation safeguards and add negative tests. The failed notes-stage run is not a release pass.
+
 ### CI dependency policy and unused wrappers — 31 October 2026
 
 - CI depcheck from [the deletion-stage run](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41182933689) reported only the two CSS imports. Keep both packages; no dependency removal is justified. Make the checked CSS exception explicit and block genuinely unused/missing dependencies. The npm dependency lock is unchanged because no package was removed.
 - Remove the old `public/juw-microscope.png`: `rg -n "juw-microscope.png" src scripts` showed only its legacy qualification fixture after the new artwork was activated; replace that test input with synthetic small PNG bytes.
 - Remove `src/lib/multiplayer/index.ts` and `p2p.ts`, plus unmounted duplicate-review, claim-evidence-editor and surface-evidence-editor components: `rg -n "multiplayer|duplicate-review|claim-evidence-editor|surface-evidence-editor" src scripts .github` found only internal references. No persisted data schema depends on these components.
 - Remove the unused benchmark-semantic, benchmark-semantic-local, qualify-semantic and scientific-review CLI wrappers and npm aliases: searches of `.github` and `scripts` found no CI callers. Keep scientific evaluation/legacy-format helpers, source matrix runners, topic and semantic-pair manifests because CI reads them. Refresh their instructional documentation; do not report historical results as current passes.
-
-### Source-context test location — 31 October 2026
-
-- CI exposed old assertions requiring full article paragraphs in lecturer notes. Assert the original complete context in each claim’s evidence instead, and assert that the lecturer narrative stays free of that paragraph. This preserves the source-fidelity check in its new location; the failed run remains a failure.
-
-### Nonclinical topic filtering — 31 October 2026
-
-- CI found a direct Node import failure and a false-positive guideline filter on a synthetic phage-therapy topic mention. Use the explicit TypeScript module path and distinguish clinical recommendations/values from subject labels. Keep clinical-dose/MIC/incubation safeguards and add negative tests. The failed notes-stage run is not a release pass.
 
 ### Functional notes and bounded textbook concepts — 31 October 2026
 

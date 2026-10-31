@@ -42,6 +42,10 @@ export async function generateWritingNotes(
       textbookConceptDeck(deck, { ...input, count: bundled.concepts.length + 1 }, true),
     );
   }
+  if (typeof navigator !== "undefined" && navigator.onLine === false && !request.sources.trim())
+    throw Error(
+      `No bundled textbook note is available for “${topic}”. Go online to retrieve attributable sources, import source passages in Evidence, or choose a topic from the bundled notes list. Existing notes were kept.`,
+    );
   if (request.mode === "ai") {
     if (!ai) throw Error("Configure a local AI model in Settings, or choose Knowledge research.");
     progress("Writing topic notes with the configured model…");

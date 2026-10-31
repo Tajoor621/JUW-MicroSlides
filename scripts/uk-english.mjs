@@ -118,6 +118,17 @@ export function check() {
       if (!allow.some((e) => e.file === file && e.text === n.text))
         errors.push(`${file}:${n.line}: ${n.text}`);
   }
+  // Concept quotations and published chapter metadata retain their original spelling.
+  for (const file of files("src/content/concepts").filter((f) => f.endsWith(".json"))) {
+    const concept = JSON.parse(readFileSync(file, "utf8"));
+    const prose = [
+      concept.topic,
+      concept.authoring,
+      ...concept.learningOutcomes,
+      ...concept.concepts.map((c) => c.title),
+    ];
+    for (const text of prose) if (text.match(pattern)) errors.push(`${file}: ${text}`);
+  }
   // Markdown code, inline identifiers, quoted source titles and explicit spelling examples are preserved.
   for (const file of ["README.md", ...files("docs").filter((f) => f.endsWith(".md"))]) {
     const source = readFileSync(file, "utf8")

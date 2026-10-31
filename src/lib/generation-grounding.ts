@@ -176,7 +176,9 @@ export function scientificFields(s: Slide): ScientificField[] {
       `${n.label}; parent: ${n.parent < 0 ? "root" : s.taxonomy?.[n.parent]?.label || "missing"}`,
     ),
   );
-  s.media.forEach((m, i) => add(`media.${i}`, `${m.title} · ${m.source}`, "visual"));
+  s.media.forEach((m, i) =>
+    add(`media.${i}`, `${m.title} · ${m.source}${m.altText ? ` · ${m.altText}` : ""}`, "visual"),
+  );
   return result;
 }
 export function passageFor(field: ScientificField, bank: Passage[]) {

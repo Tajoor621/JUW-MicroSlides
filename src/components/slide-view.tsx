@@ -11,7 +11,7 @@ import { useDeckStore } from "@/lib/deck-store";
 import { useEffect, useRef, useState } from "react";
 import { DRAFT_STAMP, EXPERT_STAMP, JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
-import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
+import { accessibleTheme, themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
 import { cn, mediaDisplaySrc } from "@/lib/utils";
 import { topicArtworkSvg } from "@/lib/topic-artwork";
@@ -70,7 +70,7 @@ export function SlideView({
   );
   const visualTheme = slide.theme;
   const baseTokens = themeOf(visualTheme);
-  const tokens =
+  const tokens = accessibleTheme(
     deck?.exportMode === "dark"
       ? {
           ...baseTokens,
@@ -93,7 +93,8 @@ export function SlideView({
             frame: "#000000",
             dark: false,
           }
-        : baseTokens;
+        : baseTokens,
+  );
   const teaching = teachingOf(slide);
   const teachingLayout = !!slide.teaching;
 
@@ -128,6 +129,7 @@ export function SlideView({
             "--color-navy": tokens.navy,
             "--color-ink-muted": tokens.muted,
             "--color-frame-band": tokens.band,
+            "--color-accent": tokens.accent,
           },
           width: 1280,
           height: 720,
@@ -399,14 +401,20 @@ export function SlideView({
                 {(methodSlide(slide) || teaching.pitfall) && (
                   <p className="border-l-4 border-amber-600 pl-2">
                     <strong>Common pitfalls / misconceptions:</strong>{" "}
-                    {teaching.pitfall ||
-                      "Review required — record a method-specific misconception."}
+                    <ScientificText
+                      text={
+                        teaching.pitfall ||
+                        "Review required — record a method-specific misconception."
+                      }
+                    />
                     <EvidenceBadge basis={basis} field="teaching.pitfall" />
                   </p>
                 )}
                 <p>
                   <strong>Key takeaway:</strong>{" "}
-                  {slide.keyTakeaway || teaching.takeaway || "Review required"}
+                  <ScientificText
+                    text={slide.keyTakeaway || teaching.takeaway || "Review required"}
+                  />
                   <EvidenceBadge basis={basis} field="teaching.takeaway" />
                 </p>
               </div>
@@ -699,7 +707,7 @@ function SlideMedia({
       ) : (
         <img
           src={mediaDisplaySrc(media.src)}
-          alt={media.title}
+          alt={media.altText || media.title}
           className={imgClass}
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}

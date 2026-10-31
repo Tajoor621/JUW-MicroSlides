@@ -45,6 +45,7 @@ export const MAX_SLIDES = 50;
 export type MediaKind = "micrograph" | "diagram" | "icon" | "photo" | "gif" | "chart" | "video";
 
 export interface MediaItem {
+  altText?: string;
   tags?: (typeof import("./lecture-schema").MEDIA_TAGS)[number][];
   id: string;
   kind: MediaKind;

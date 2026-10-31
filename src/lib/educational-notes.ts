@@ -37,6 +37,7 @@ export const educationalNoteSchema = z.object({
   level: z.enum(LEVELS),
   date: z.string(),
   label: z.literal(NOTES_LABEL),
+  learningOutcomes: z.array(z.string()).max(6).optional(),
   sections: z.array(z.object({ heading: z.string(), statements: z.array(noteStatementSchema) })),
   sources: z.array(noteSourceSchema),
   questions: z.array(z.object({ question: z.string(), answer: noteStatementSchema })),
@@ -160,6 +161,10 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
     level: deck.level,
     date: new Date().toISOString().slice(0, 10),
     label: NOTES_LABEL,
+    learningOutcomes: deck.slides
+      .flatMap((s) => s.learningObjectives || [])
+      .filter((s, i, all) => all.indexOf(s) === i)
+      .slice(0, 6),
     sections,
     sources,
     questions: sections
@@ -182,7 +187,7 @@ export function noteText(note: EducationalNote) {
   const sourceIndex = (id: string) => note.sources.findIndex((s) => s.id === id) + 1;
   return [
     `${note.topic}\n${note.level} · ${note.date}\n${note.label}`,
-    "Learning outcomes\nExplain the retrieved source statements, compare their scope and identify limitations.",
+    `Learning outcomes\n${note.learningOutcomes?.length ? note.learningOutcomes.join("\n") : "Explain the retrieved source statements, compare their scope and identify limitations."}`,
     ...note.sections.map(
       (s) =>
         `${s.heading}\n${s.statements.length ? s.statements.map((v) => `${v.text} [${sourceIndex(v.sourceId)}]${treatment.test(v.text) ? "\nCheck current guidance before clinical use." : ""}`).join("\n\n") : "No source-supported passage retrieved for this section."}`,

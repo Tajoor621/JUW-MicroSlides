@@ -42,7 +42,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
           {slide.assessment?.map((q, i) => (
             <section key={i} className={box}>
               <h3 className="text-lg font-semibold">
-                {i + 1}. {q.question}
+                {i + 1}. <ScientificText text={q.question} />
               </h3>
               {q.kind === "image" && slide.media.find((m) => m.id === q.mediaId) && (
                 <img
@@ -57,7 +57,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
                 <ol className="mt-1 grid grid-cols-2 gap-2 text-base">
                   {q.options.map((o, j) => (
                     <li key={j}>
-                      {String.fromCharCode(65 + j)}. {o}
+                      {String.fromCharCode(65 + j)}. <ScientificText text={o} />
                     </li>
                   ))}
                 </ol>
@@ -130,7 +130,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
             {slide.media[0] && (
               <img
                 src={slide.media[0].src}
-                alt={slide.teaching?.altText || slide.media[0].title}
+                alt={slide.teaching?.altText || slide.media[0].altText || slide.media[0].title}
                 className="max-h-40 max-w-full object-contain"
               />
             )}
@@ -162,7 +162,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
               <tr key={i}>
                 {r.map((c, j) => (
                   <td className="border border-current p-3" key={j}>
-                    {c}
+                    <ScientificText text={c} />
                   </td>
                 ))}
               </tr>
@@ -232,7 +232,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
             {slide.taxonomy.map((n, i) => (
               <li key={i} className="rounded border border-current px-3 py-1 text-lg">
                 {n.parent >= 0 ? `${slide.taxonomy![n.parent]?.label || "Parent"} → ` : ""}
-                {n.label}
+                <ScientificText text={n.label} />
               </li>
             ))}
           </ol>
@@ -254,15 +254,19 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
             ) : slide.media[0] ? (
               <img
                 src={slide.media[0].src}
-                alt={slide.teaching?.altText || slide.media[0].title}
+                alt={slide.teaching?.altText || slide.media[0].altText || slide.media[0].title}
                 className="max-h-64 max-w-full object-contain"
               />
             ) : null}
             {slide.teaching?.definition && (
-              <p className="text-xl font-semibold">{slide.teaching.definition}</p>
+              <p className="text-xl font-semibold">
+                <ScientificText text={slide.teaching.definition} />
+              </p>
             )}
             {slide.teaching?.mechanism && (
-              <p className="mt-3 text-lg">{slide.teaching.mechanism}</p>
+              <p className="mt-3 text-lg">
+                <ScientificText text={slide.teaching.mechanism} />
+              </p>
             )}
             {slide.learningObjectives?.map((x, i) => (
               <p key={i}>{x}</p>
@@ -271,7 +275,7 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
           <ul className="space-y-4 text-xl">
             {slide.bullets.map((b, i) => (
               <li key={i} className={i < reveal ? "" : "invisible"}>
-                {b}
+                <ScientificText text={b} />
               </li>
             ))}
           </ul>
@@ -279,12 +283,12 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
       )}
       {slide.clinicalPearl && (
         <aside className="col-span-2 rounded border-2 border-current p-3">
-          <strong>Clinical pearl:</strong> {slide.clinicalPearl}
+          <strong>Clinical pearl:</strong> <ScientificText text={slide.clinicalPearl} />
         </aside>
       )}
       {slide.keyTakeaway && (
         <aside className="col-span-2 rounded border-l-4 border-current p-3">
-          <strong>Key takeaway:</strong> {slide.keyTakeaway}
+          <strong>Key takeaway:</strong> <ScientificText text={slide.keyTakeaway} />
         </aside>
       )}
     </div>

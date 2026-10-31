@@ -121,7 +121,10 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   write(`${note.level} · ${note.date}`);
   write(NOTES_LABEL, 9);
   heading("Learning outcomes");
-  write("Explain the retrieved source statements, compare their scope and identify limitations.");
+  for (const outcome of note.learningOutcomes?.length
+    ? note.learningOutcomes
+    : ["Explain the retrieved source statements, compare their scope and identify limitations."])
+    write(outcome);
   for (const section of note.sections) {
     heading(section.heading);
     if (!section.statements.length)

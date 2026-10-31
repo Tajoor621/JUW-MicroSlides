@@ -66,6 +66,9 @@ jobs:
       - name: Install PDF inspection tools
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - run: node scripts/qa-textbook-sources.mjs
+      - run: node scripts/qa-note20-profile.mjs
+        env:
+          JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa
       - run: npm run qa:notes
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa

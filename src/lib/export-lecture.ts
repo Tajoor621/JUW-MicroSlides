@@ -1,3 +1,6 @@
+import { defensibleExport } from "./scientific-presentation";
+import { OPENSTAX_ATTRIBUTION } from "./textbook-concepts";
+import { scientificRuns } from "./scientific-format";
 import { DRAFT_STAMP, EXPERT_STAMP } from "./brand";
 import {
   escapeLectureHtml,
@@ -12,7 +15,7 @@ import type { Deck } from "./types";
 const filename = (d: Deck) => d.title.replace(/[^\p{L}\p{N}-]/gu, "-").slice(0, 80) || "lecture";
 export function lectureMarkdown(deck: Deck) {
   return (
-    `# ${deck.title}\n\nDraft status: Check original sources before teaching\n\n` +
+    `# JUW-MicroSlides · ${deck.title}\n\n${DRAFT_STAMP} · ${EXPERT_STAMP}\n\n` +
     deck.slides
       .map(
         (s, i) =>
@@ -26,12 +29,25 @@ export async function exportMarkdownBackup(deck: Deck) {
   return saveFile(`${filename(deck)}.md`, new TextEncoder().encode(lectureMarkdown(deck)), "md");
 }
 export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
+  deck = defensibleExport(deck);
   const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   pdf.addFileToVFS("DejaVuSans.ttf", await font("DejaVuSans"));
   pdf.addFont("DejaVuSans.ttf", "Teaching", "normal");
   pdf.addFileToVFS("DejaVuSans-Bold.ttf", await font("DejaVuSans-Bold"));
   pdf.addFont("DejaVuSans-Bold.ttf", "Teaching", "bold");
+  for (const [file, style] of [
+    ["DejaVuSans-Oblique", "italic"],
+    ["DejaVuSans-BoldOblique", "bolditalic"],
+  ]) {
+    pdf.addFileToVFS(file + ".ttf", await font(file));
+    pdf.addFont(file + ".ttf", "Teaching", style);
+  }
+  pdf.setProperties({
+    title: `JUW-MicroSlides · ${deck.title}`,
+    author: deck.preparedBy,
+    subject: `${DRAFT_STAMP} · ${EXPERT_STAMP}`,
+  });
   let y = 40;
   const margin = 40,
     width = 515;
@@ -47,7 +63,15 @@ export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
         pdf.addPage();
         y = 40;
       }
-      pdf.text(line, margin, y);
+      let x = margin;
+      for (const run of scientificRuns(line)) {
+        pdf.setFont(
+          "Teaching",
+          run.italic ? (bold ? "bolditalic" : "italic") : bold ? "bold" : "normal",
+        );
+        pdf.text(run.text, x, y);
+        x += pdf.getTextWidth(run.text);
+      }
       y += size * 1.4;
     }
     y += 5;
@@ -152,6 +176,10 @@ export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
     pdf.setFont("Teaching", "bold");
     pdf.setFontSize(9);
     pdf.text(`${DRAFT_STAMP} · ${EXPERT_STAMP}`, margin, pdf.internal.pageSize.getHeight() - 16);
+    if (deck.slides.some((s) => s.citations.some((c) => c.publisher?.includes("OpenStax")))) {
+      pdf.setFontSize(8);
+      pdf.text(OPENSTAX_ATTRIBUTION, margin, pdf.internal.pageSize.getHeight() - 28);
+    }
   }
   return saveFile(
     `${filename(deck)}-${protocolOnly ? "protocol-card" : "student-handout"}.pdf`,
@@ -164,7 +192,7 @@ export async function exportAccessibleLecture(deck: Deck) {
   const body = deck.slides
     .map(
       (s, i) =>
-        `<section aria-labelledby="slide-${i}"><h2 id="slide-${i}">${esc(s.title)}</h2><p>${esc(s.subtitle)}</p><ul>${[...s.bullets, ...s.leftBullets, ...s.rightBullets].map((b) => `<li>${esc(b)}</li>`).join("")}</ul>${teachingStructuredHtml(s)}${lectureStructuredHtml(s)}${s.media.map((m) => `<p>Figure description: ${esc(s.teaching?.altText || m.title)}. ${esc(m.credit)} — ${esc(m.license)} — ${esc(m.source)}</p>`).join("")}</section>`,
+        `<section aria-labelledby="slide-${i}"><h2 id="slide-${i}">${esc(s.title)}</h2><p>${esc(s.subtitle)}</p><ul>${[...s.bullets, ...s.leftBullets, ...s.rightBullets].map((b) => `<li>${esc(b)}</li>`).join("")}</ul>${teachingStructuredHtml(s)}${lectureStructuredHtml(s)}${s.media.map((m) => `<p>Figure description: ${esc(s.teaching?.altText || m.altText || m.title)}. ${esc(m.credit)} — ${esc(m.license)} — ${esc(m.source)}</p>`).join("")}</section>`,
     )
     .join("");
   const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(deck.title)}</title><style>body{max-width:70ch;margin:2rem auto;padding:1rem;font:1.25rem/1.7 sans-serif;color:#000;background:#fff}section{border-top:2px solid;padding-top:1rem}table{border-collapse:collapse}th,td{border:2px solid;padding:.5rem}@media print{section{break-before:page}}</style><main><h1>${esc(deck.title)}</h1><p>${esc(deck.courseCode)} · For educational use only</p><p>Last verified by ${esc(deck.teachingVerification!.instructor)} on ${new Date(deck.teachingVerification!.at).toISOString().slice(0, 10)}; lecturer self-attestation.</p>${body}<h2>References</h2><ol>${teachingReferences(
