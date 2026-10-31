@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Visible title-slide evidence — 31 October 2026
+
+- Visual inspection of the first proxy screenshot found the restored generator obscured the off-screen title. Close that panel explicitly, capture the complete shared 1,280 × 720 composition, and scroll the portrait preview into view with an in-viewport logo assertion. Check textbook provenance on the content slide, after the deliberately separate opening/objectives slides. This corrects QA evidence rather than claiming an unseen slide was visually checked.
+
 ### Notes clinical-value provenance — 31 October 2026
 
 - Apply named, dated guideline requirements to numerical incubation, MIC and breakpoint statements in notes as well as treatment prose, including supplied/imported sources. Omit unsupported generated statements and reject malformed prepared notes explicitly. Add negative numerical-source cases; preserve source-type metadata for reviews. No lecturer Review menu or export review gate is introduced.

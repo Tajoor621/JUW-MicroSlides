@@ -94,6 +94,7 @@ try {
     buffer: Buffer.from(JSON.stringify(data)),
   });
   await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByRole("button", { name: /Generate a scientific deck/ }).click();
   const artwork = page.locator('[data-slide-stage] img[alt="Department of Microbiology, JUW"]');
   await artwork.waitFor();
   await artwork.evaluate((el) => el.decode());
@@ -115,7 +116,24 @@ try {
   assert.equal(bitmap.height, 1254);
   report.artwork = { bitmap, densityAdjustedNaturalWidth: geometry.w };
   assert(geometry.rect.x > geometry.stage.x + geometry.stage.width / 2);
-  await page.screenshot({ path: join(output, "title-1280x720.png") });
+  await page.evaluate(() => {
+    const clone = document.querySelector("[data-slide-stage]").cloneNode(true);
+    clone.id = "profile-title-composition";
+    Object.assign(clone.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      transform: "none",
+      width: "1280px",
+      height: "720px",
+      zIndex: "2147483647",
+    });
+    document.body.append(clone);
+  });
+  await page
+    .locator("#profile-title-composition")
+    .screenshot({ path: join(output, "title-1280x720.png") });
+  await page.locator("#profile-title-composition").evaluate((el) => el.remove());
   for (const [button, name] of [
     ["Export PPTX", "twenty-slide-profile.pptx"],
     ["Export PDF", "twenty-slide-profile.pdf"],
@@ -172,6 +190,15 @@ try {
     .getByRole("button", { name: /01\s+title\s+Twenty-slide performance fixture/i })
     .click();
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("[data-slide-stage]").scrollIntoViewIfNeeded();
+  const portraitLogo = await artwork.boundingBox();
+  assert(
+    portraitLogo &&
+      portraitLogo.x >= 0 &&
+      portraitLogo.x + portraitLogo.width <= 390 &&
+      portraitLogo.y >= 0 &&
+      portraitLogo.y + portraitLogo.height <= 844,
+  );
   await page.screenshot({ path: join(output, "title-portrait-390.png") });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => navigator.serviceWorker.ready);
@@ -230,7 +257,7 @@ try {
     Object.keys(threeZip.files).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n)).length,
     3,
   );
-  const scientificText = await threeZip.file("ppt/slides/slide2.xml").async("string");
+  const scientificText = await threeZip.file("ppt/slides/slide3.xml").async("string");
   assert.match(scientificText, /Textbook/);
   assert.match(scientificText, /2016/);
   report.offlineThreeSlideDeck = true;
