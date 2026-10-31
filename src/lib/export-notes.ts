@@ -12,7 +12,7 @@ import {
 /** A4 portrait only. No note-to-PPTX path. */
 export async function educationalNotesPdfBytes(raw: EducationalNote) {
   const note = assertNoteSources(raw);
-  const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
+  const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -29,16 +29,17 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.addFileToVFS(file + ".ttf", await font(file));
     pdf.addFont(file + ".ttf", "Notes", style);
   }
-  const [seal] = await Promise.all(
-    [JUW.deptSeal].map(async (url) => {
-      const r = await fetch(url);
-      if (!r.ok)
-        throw Error(
-          "Notes branding could not be loaded. Retry after the application assets are available.",
-        );
-      return new DOMParser().parseFromString(await r.text(), "image/svg+xml").documentElement;
-    }),
-  );
+  // Rasterise the original seal once at 600 px for this small PDF header.
+  // Repeated svg2pdf calls can leak page graphics state; the source stays SVG.
+  const sealImage = await decodeTeachingImage(JUW.deptSeal, 0);
+  const sealCanvas = document.createElement("canvas");
+  sealCanvas.width = 600;
+  sealCanvas.height = 600;
+  const sealContext = sealCanvas.getContext("2d");
+  if (!sealContext)
+    throw Error("The department seal could not be prepared for notes. Retry PDF preparation.");
+  sealContext.drawImage(sealImage, 0, 0, 600, 600);
+  const sealPng = sealCanvas.toDataURL("image/png");
   // Render the official SVG once; use a plain image draw so SVG graphics states
   // cannot override the page watermark opacity. Keep it behind all body text.
   const crestImage = await decodeTeachingImage(JUW.crest, 0);
@@ -151,7 +152,8 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   for (let page = 1; page <= pages; page++) {
     pdf.setPage(page);
     pdf.saveGraphicsState();
-    await pdf.svg(seal.cloneNode(true) as SVGElement, { x: 20, y: 8, width: 13, height: 13 });
+    pdf.setGState(pdf.GState({ opacity: 1, "stroke-opacity": 1 }));
+    pdf.addImage(sealPng, "PNG", 20, 8, 13, 13, "notes-department-seal", "FAST");
     pdf.restoreGraphicsState();
     pdf.setFont("Notes", "normal");
     pdf.setFontSize(8);

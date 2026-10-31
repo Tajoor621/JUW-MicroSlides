@@ -2,6 +2,11 @@
 
 ## V6.2.1
 
+### Notes running-header rendering — 31 October 2026
+
+- Inspection of rendered textbook notes exposed an invisible second-page header despite extractable text. Avoid repeated SVG page-state mutations: retain the original SVG asset and render its small PDF seal once at 600 pixels, then draw the cached image with explicit opaque header state on every page. Keep the crest watermark at 6%.
+- Extend the CI raster check to require visibly painted draft and expert-disclosure lines on every page, separately from the seal and extracted-text checks. This is a header-rendering correction, not a scientific-approval claim.
+
 ### Visible title-slide evidence — 31 October 2026
 
 - Visual inspection of the first proxy screenshot found the restored generator obscured the off-screen title. Close that panel explicitly, capture the complete shared 1,280 × 720 composition, and scroll the portrait preview into view with an in-viewport logo assertion. Check textbook provenance on the content slide, after the deliberately separate opening/objectives slides. This corrects QA evidence rather than claiming an unseen slide was visually checked.

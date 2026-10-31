@@ -47,6 +47,13 @@ pages = sorted(pathlib.Path(sys.argv[1]).glob('notes-page-*.png'))
 assert pages, 'No rendered note pages'
 for path in pages:
     width, height, rows = png_rgb(path)
+    # Text extraction cannot prove a running header was actually painted.
+    # Exclude the seal so it cannot hide a missing disclosure text line.
+    for label, top, bottom in [('draft label', .032, .048), ('expert label', .071, .086)]:
+        dark = sum(1 for y in range(int(height*top),int(height*bottom))
+                   for x in range(int(width*.17),int(width*.90))
+                   if max(rows[y][x*3:x*3+3]) < 150)
+        assert dark >= 60, f'{path.name}: {label} is not visibly painted ({dark} dark pixels)'
     green = []
     for y in range(int(height*.34),int(height*.66)):
         for x in range(int(width*.27),int(width*.73)):
