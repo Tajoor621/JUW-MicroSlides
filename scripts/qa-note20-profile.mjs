@@ -64,6 +64,7 @@ try {
   const started = performance.now();
   await page.goto(`http://127.0.0.1:${server.address().port}/JUW-MicroSlides/`);
   await page.getByRole("button", { name: "Generate", exact: true }).waitFor();
+  await page.getByText(/Saved on this device/).waitFor();
   await page.evaluate(() => document.fonts.ready);
   report.firstInteractiveMs = Math.round(performance.now() - started);
   const data = JSON.parse(await readFile("scripts/fixtures/export-draft.json", "utf8"));
@@ -190,6 +191,16 @@ try {
   await (await event).saveAs(notePath);
   const noteInfo = execFileSync("pdfinfo", [notePath], { encoding: "utf8" });
   assert.match(noteInfo, /Page size:\s+595\.2\d* x 841\.8\d* pts \(A4\)/);
+  const renderedNotes = join(output, "book-note-pages");
+  await mkdir(renderedNotes, { recursive: true });
+  execFileSync("pdftoppm", [
+    "-scale-to",
+    "1280",
+    "-png",
+    notePath,
+    join(renderedNotes, "notes-page"),
+  ]);
+  execFileSync("python3", ["scripts/check-note-watermark.py", renderedNotes], { stdio: "inherit" });
   const text = execFileSync("pdftotext", [notePath, "-"], { encoding: "utf8" });
   for (const notePage of text.split("\f").filter((s) => s.trim())) {
     assert.match(notePage, /Unverified AI-assisted draft/);
@@ -203,6 +214,26 @@ try {
   await page
     .getByRole("link", { name: "Download notes PDF (A4 portrait)", exact: true })
     .waitFor({ timeout: 60000 });
+  await page.getByRole("button", { name: "Refresh workspace", exact: true }).click();
+  await page.locator("#gen-topic").fill("Gram staining");
+  await page.getByLabel("Research approach", { exact: true }).selectOption("standard");
+  await page.locator("#gen-count").fill("3");
+  await page.getByRole("button", { name: "Generate deck", exact: true }).click();
+  await page.getByRole("button", { name: "Open generator", exact: true }).waitFor();
+  assert.match(await page.locator("main").innerText(), /Slide 1 of 3/);
+  const threeSlides = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export PPTX", exact: true }).click();
+  const threePath = join(output, "gram-staining-3.pptx");
+  await (await threeSlides).saveAs(threePath);
+  const threeZip = await JSZip.loadAsync(await readFile(threePath));
+  assert.equal(
+    Object.keys(threeZip.files).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n)).length,
+    3,
+  );
+  const scientificText = await threeZip.file("ppt/slides/slide2.xml").async("string");
+  assert.match(scientificText, /Textbook/);
+  assert.match(scientificText, /2016/);
+  report.offlineThreeSlideDeck = true;
   report.offlineNotes = true;
   report.savedNotesDownloadAfterReload = true;
   assert.equal(errors.length, 0, errors.join("\n"));

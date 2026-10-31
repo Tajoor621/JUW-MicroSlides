@@ -6,6 +6,12 @@
 
 - Apply named, dated guideline requirements to numerical incubation, MIC and breakpoint statements in notes as well as treatment prose, including supplied/imported sources. Omit unsupported generated statements and reject malformed prepared notes explicitly. Add negative numerical-source cases; preserve source-type metadata for reviews. No lecturer Review menu or export review gate is introduced.
 
+### Reproducible release evidence — 31 October 2026
+
+- Recheck private-repository hosting terms against the official GitHub and Cloudflare documents on 31 October; leave the hosting choice, visibility and settings unchanged.
+- Include the full commit and Actions run URL in live build metadata; verify them after deployment without changing the app version or Pages settings. Keep QA documentation concise and link current machine-produced evidence.
+- Extend the desktop proxy with a real three-slide bundled Gram-staining generation/export and rendered textbook-note pages, checked for a subtle visible crest. Keep all generated files in CI artefacts and retain physical-device and educator-review gaps.
+
 ### Density-aware artwork verification — 31 October 2026
 
 - CI passed the source/build suites and historical textbook extraction check, then exposed a browser-test assumption: `naturalWidth` is density-corrected for a width-descriptor image source. Check decoded bitmap pixels independently and keep preview size hints and the original artwork unchanged. No failed browser run is reported as a pass.

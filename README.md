@@ -29,7 +29,7 @@ General **Bacterial conjugation** requests have a [source-linked teaching core](
 
 ## Draft status and exports
 
-**There is no Review tab and no export review gate.** All exported PPTX slides and PDF pages carry **“Unverified AI-assisted draft”**, including imported decks with old verification metadata. Export does not certify claims, citations, assessments or institutional approval. The draft label is a disclosure, not an export restriction.
+**There is no Review tab and no export review gate.** All exported PPTX slides and PDF pages carry **“Unverified AI-assisted draft”** and **“Not yet expert-reviewed”**, including imported decks with old verification metadata. Export does not certify claims, citations, assessments or institutional approval. The draft label is a disclosure, not an export restriction.
 
 Historical review/source records remain readable in project data for compatibility. Older qualification reports and archived review modules do not describe currently available lecturer menus. Writing Notes does not perform independent scientific review. Assessment questions and teaching fields are drafts that require faculty judgement; empty fields are not evidence that a topic was covered.
 
@@ -72,7 +72,6 @@ Educational notes retain exact retrieved wording and DOI/PMID source links. They
 The collapsed **Source provenance** section under **Edit** recalculates wording links for the selected slide after edits. It includes bundled and AI slide IDs, speaker notes, mechanisms, protocol timings, table rows and chart values. Linked references alone do not approve a field; visual meaning and editorial bundled claims remain unverified. This read-only information introduces no Review menu or export gate. Complete-statement matching preserves qualifications and negation, but is not scientific entailment or a guarantee of correctness.
 
 Implementation and verification limits are recorded in the [release QA record](docs/QA.md), including source-first AI, notes quality, CI evidence and task commits.
-
 
 ## Textbook concepts and Writing Notes
 
