@@ -62,7 +62,7 @@ export async function teachingPdfBytes(deck: Deck, _options: { reviewed?: boolea
   pdf.setProperties({
     title: deck.title,
     author: deck.preparedBy,
-    subject: `${JUW.version} · ${deck.courseCode}`,
+    subject: `${JUW.name} ${JUW.version} · ${deck.courseCode} · Unverified AI-assisted draft · Not yet expert-reviewed`,
     keywords: presentationNotes.map((n) => `Slide ${n.index + 1}: ${n.message}`).join("; "),
   });
   for (let index = 0; index < deck.slides.length; index++) {

@@ -127,6 +127,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.setFontSize(8);
     pdf.setTextColor("#203248");
     pdf.text(NOTES_LABEL, 36, 13);
+    pdf.text("Not yet expert-reviewed", 36, 24);
     pdf.text(pdf.splitTextToSize(note.topic, 150).slice(0, 2), 36, 18);
     pdf.setDrawColor("#aab4bd");
     pdf.line(20, 27, 190, 27);
@@ -138,7 +139,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   }
   pdf.setProperties({
     title: note.topic,
-    subject: NOTES_LABEL,
+    subject: `${JUW.name} ${JUW.version} · ${NOTES_LABEL} · Not yet expert-reviewed`,
     keywords: "A4 portrait; watermark opacity 0.06; personal educational use; V6.2.1",
   });
   return { bytes: new Uint8Array(pdf.output("arraybuffer")), pages, pageContent };

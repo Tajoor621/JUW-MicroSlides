@@ -2,6 +2,11 @@
 
 ## V6.2.1
 
+### Supplied department artwork and export disclosure — 31 October 2026
+
+- Activate the owner-selected 1,254-pixel JPEG at the top-right of opening slides; preserve the supplied bytes and original lettering/background. Embed the complete JPEG in PPTX, retain vector crest/seal, and update independent cache revisions. Do not call this bitmap a vector or a transparent image.
+- Add “Not yet expert-reviewed” alongside the existing draft label on every slide/PDF page. Legacy lecturer self-attestation does not authenticate an external educator. No review gate is added and no archived deck is discarded.
+
 ### Repository clean-up — 31 October 2026
 
 - Remove tracked `attachments/`, `.node_modules.lock`, the unmounted `specialist-review`, `scientific-review-workbench` and `scientific-review-returns` components, and the obsolete version-test entry. Search: `rg -n "specialist-review|scientific-review-workbench|scientific-review-returns" src scripts` found only their internal imports and the test entry; none was mounted. Attachments were personal lecturer material, not runtime imports. Keep these paths ignored. `screenshots/` already had no tracked files.

@@ -1,4 +1,4 @@
-import { DRAFT_STAMP } from "./brand";
+import { DRAFT_STAMP, EXPERT_STAMP } from "./brand";
 import {
   escapeLectureHtml,
   lectureStructuredHtml,
@@ -151,7 +151,7 @@ export async function exportLectureHandout(deck: Deck, protocolOnly = false) {
     pdf.setPage(page);
     pdf.setFont("Teaching", "bold");
     pdf.setFontSize(9);
-    pdf.text(DRAFT_STAMP, margin, pdf.internal.pageSize.getHeight() - 16);
+    pdf.text(`${DRAFT_STAMP} · ${EXPERT_STAMP}`, margin, pdf.internal.pageSize.getHeight() - 16);
   }
   return saveFile(
     `${filename(deck)}-${protocolOnly ? "protocol-card" : "student-handout"}.pdf`,

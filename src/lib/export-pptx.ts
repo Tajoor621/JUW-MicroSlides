@@ -41,7 +41,7 @@ export async function exportPptx(
   pptx.layout = "JUW_PREVIEW";
   pptx.author = "JUW-MicroSlides";
   pptx.title = deck.title;
-  pptx.subject = `${deck.discipline} · ${deck.topic}`;
+  pptx.subject = `JUW-MicroSlides · ${deck.discipline} · ${deck.topic} · Unverified AI-assisted draft · Not yet expert-reviewed`;
   let portable: Awaited<ReturnType<typeof loadPortableFonts>> | undefined;
   if (deck.exportTypography === "portable") {
     try {
@@ -58,6 +58,16 @@ export async function exportPptx(
     : { headFontFace: "Georgia", bodyFontFace: "Arial" };
   const images = new Map<string, string | null>();
   async function imageData(src: string, width: number, height: number, cover: boolean) {
+    // Preserve every supplied source pixel; the microscope JPEG is not a vector.
+    if (src.includes("juw-department-microscope-1254.jpeg")) {
+      const response = await fetch(src);
+      if (!response.ok) throw Error("Department artwork is unavailable. Reload the app and retry export.");
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 8192)
+        binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+      return `data:image/jpeg;base64,${btoa(binary)}`;
+    }
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
     if (/^data:image\/svg\+xml[;,]/i.test(src)) {
       // PptxGenJS expects a base64-encoded SVG payload; percent-encoded data

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { inspectPng } from "./logo-assets.mjs";
+import { inspectPng, inspectJpeg } from "./logo-assets.mjs";
 test("logo qualification rejects small and disguised JPEG assets", () => {
   assert.throws(
     () => inspectPng(readFileSync("public/juw-microscope.png")),
@@ -13,4 +13,13 @@ test("logo qualification rejects small and disguised JPEG assets", () => {
   valid.writeUInt32BE(1200, 16);
   valid.writeUInt32BE(1000, 20);
   assert.deepEqual(inspectPng(valid), { width: 1200, height: 1000 });
+});
+
+test("owner-supplied department artwork is genuine full-resolution JPEG", () => {
+  const bytes = readFileSync("public/juw-department-microscope-1254.jpeg");
+  assert.equal(bytes.subarray(0, 2).toString("hex"), "ffd8");
+  const size = inspectJpeg(bytes);
+  assert.equal(size.width, 1254);
+  assert.equal(size.height, 1254);
+  assert(Math.max(size.width, size.height) >= 1200);
 });

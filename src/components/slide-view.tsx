@@ -7,7 +7,7 @@ import { TeachingContent } from "./teaching-content";
 import { teachingOf, methodSlide } from "@/lib/teaching";
 import { useDeckStore } from "@/lib/deck-store";
 import { useEffect, useRef, useState } from "react";
-import { DRAFT_STAMP, JUW } from "@/lib/brand";
+import { DRAFT_STAMP, EXPERT_STAMP, JUW } from "@/lib/brand";
 import { formatCitation } from "@/lib/citations";
 import { themeOf, themeVars, type SlideTheme } from "@/lib/slide-themes";
 import type { CitationStyle, Deck, DeckMetaPatch, MediaItem, Slide } from "@/lib/types";
@@ -168,6 +168,10 @@ export function SlideView({
               {isTitle ? (
                 <img
                   src={JUW.microscope}
+                  srcSet={`${JUW.microscope} 1254w`}
+                  sizes="116px"
+                  width={1254}
+                  height={1254}
                   alt="Department of Microbiology, JUW"
                   className="h-[6.25rem] w-auto max-w-[12.5rem] bg-transparent object-contain @min-[640px]:h-[7.25rem]"
                 />
@@ -433,7 +437,7 @@ export function SlideView({
                 className="relative z-[1] shrink-0 border-t border-amber-600 px-8 text-xs font-semibold text-ink"
                 role="status"
               >
-                {DRAFT_STAMP}
+                {DRAFT_STAMP} · {EXPERT_STAMP}
               </p>
             )}
             <div className="relative z-[1] shrink-0 px-8 text-right text-[9px] text-ink-muted">
