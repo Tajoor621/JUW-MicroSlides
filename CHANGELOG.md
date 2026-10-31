@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Source-context test location — 31 October 2026
+
+- CI exposed old assertions requiring full article paragraphs in lecturer notes. Assert the original complete context in each claim’s evidence instead, and assert that the lecturer narrative stays free of that paragraph. This preserves the source-fidelity check in its new location; the failed run remains a failure.
+
 ### Nonclinical topic filtering — 31 October 2026
 
 - CI found a direct Node import failure and a false-positive guideline filter on a synthetic phage-therapy topic mention. Use the explicit TypeScript module path and distinguish clinical recommendations/values from subject labels. Keep clinical-dose/MIC/incubation safeguards and add negative tests. The failed notes-stage run is not a release pass.
