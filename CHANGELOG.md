@@ -2,6 +2,11 @@
 
 ## V6.2.1
 
+### Complete source-backed note summaries — 31 October 2026
+
+- Populate otherwise empty Key points with selected original, traceable statements after the distinct-source usefulness check. This is a summary, not invented teaching content or a way to pad source sufficiency. Remove the leading article from extracted glossary terms while retaining the complete original definition.
+- Preserve optional author, publisher, publication/edition and passage-locator metadata in notes and JSON restores. Use one bibliography formatter for visible notes and A4 PDF, with source type, retrieval date and historical age. Keep legacy notes readable and add pilot-topic/restore/browser assertions.
+
 ### Clear department-logo background — 31 October 2026
 
 - Use an owner-requested transparent RGBA display variant of the department artwork at its original 1,254 × 1,254 dimensions. Retain the untouched JPEG reference and SVG crest/seal. The display file is an image-edited bitmap, not an invented vector master or an unmodified original.
