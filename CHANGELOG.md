@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Nonclinical topic filtering — 31 October 2026
+
+- CI found a direct Node import failure and a false-positive guideline filter on a synthetic phage-therapy topic mention. Use the explicit TypeScript module path and distinguish clinical recommendations/values from subject labels. Keep clinical-dose/MIC/incubation safeguards and add negative tests. The failed notes-stage run is not a release pass.
+
 ### Functional notes and bounded textbook concepts — 31 October 2026
 
 - Add eight named, attributed textbook-extract topic files with chapter/edition, source fingerprint, learning outcomes and explicit pending educator approval. Use them for bounded offline notes and suitable core drafting; retain the existing conjugation core. Do not claim teacher authorship, a department syllabus or universal coverage.

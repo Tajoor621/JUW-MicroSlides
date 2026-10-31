@@ -1,4 +1,4 @@
-import { passageContainsStatement } from "./generation-grounding";
+import { passageContainsStatement } from "./generation-grounding.ts";
 import type { Deck, Slide } from "./types";
 /** A conservative disclosure, never evidence that a clinical value is current. */
 export function guidelineNamedAndDated(slide: Slide, statement?: string) {
@@ -22,8 +22,15 @@ export function guidelineNamedAndDated(slide: Slide, statement?: string) {
   );
 }
 export function needsGuideline(text: string) {
+  const treatment = /\b(?:treat(?:ment|ed|ing)?|dos(?:e|age|ing)|therap(?:y|eutic))\b/i.test(text);
+  // A subject label such as phage therapy is not itself a prescribing statement.
+  const clinicalClaim =
+    /\d|\b(?:recommend(?:ed|ation)?|prescrib\w*|administer\w*|effective|efficacy|patients?|regimen|contraindicat\w*)\b/i.test(
+      text,
+    );
   return (
-    /\b(?:treat(?:ment|ed|ing)?|dos(?:e|age|ing)|first.line|therap(?:y|eutic))\b/i.test(text) ||
+    /\bfirst.line\b/i.test(text) ||
+    (treatment && clinicalClaim) ||
     (/\d/.test(text) && /\b(?:MIC|breakpoint|incubat\w*)\b/i.test(text))
   );
 }

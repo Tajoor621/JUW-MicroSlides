@@ -53,6 +53,8 @@ test("dated guidelines cannot lend support to unrelated clinical statements; ori
   assert.match(result.slides[0].bullets[1], /omitted/);
   assert.equal(JSON.stringify(deck), before);
   assert(needsGuideline("Incubate for 24 hours."));
+  assert(!needsGuideline("A synthetic phage therapy fixture describes artificial software text."));
+  assert(needsGuideline("This treatment is recommended for patients."));
   assert(!needsGuideline("A 16S rRNA sequence comparison."));
   assert.match(sourcePresentation(slide), /Guideline · 2026 · retrieved/);
   assert.match(
