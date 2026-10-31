@@ -2,6 +2,14 @@
 
 ## V6.2.1
 
+### CI dependency policy and unused wrappers — 31 October 2026
+
+- CI depcheck from [the deletion-stage run](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41182933689) reported only the two CSS imports. Keep both packages; no dependency removal is justified. Make the checked CSS exception explicit and block genuinely unused/missing dependencies. The npm dependency lock is unchanged because no package was removed.
+- Remove the old `public/juw-microscope.png`: `rg -n "juw-microscope.png" src scripts` showed only its legacy qualification fixture after the new artwork was activated; replace that test input with synthetic small PNG bytes.
+- Remove `src/lib/multiplayer/index.ts` and `p2p.ts`, plus unmounted duplicate-review, claim-evidence-editor and surface-evidence-editor components: `rg -n "multiplayer|duplicate-review|claim-evidence-editor|surface-evidence-editor" src scripts .github` found only internal references. No persisted data schema depends on these components.
+- Remove the unused benchmark-semantic, benchmark-semantic-local, qualify-semantic and scientific-review CLI wrappers and npm aliases: searches of `.github` and `scripts` found no CI callers. Keep scientific evaluation/legacy-format helpers, source matrix runners, topic and semantic-pair manifests because CI reads them. Refresh their instructional documentation; do not report historical results as current passes.
+
+
 ### Source-context test location — 31 October 2026
 
 - CI exposed old assertions requiring full article paragraphs in lecturer notes. Assert the original complete context in each claim’s evidence instead, and assert that the lecturer narrative stays free of that paragraph. This preserves the source-fidelity check in its new location; the failed run remains a failure.

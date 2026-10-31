@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { inspectPng, inspectJpeg } from "./logo-assets.mjs";
 test("logo qualification rejects small and disguised JPEG assets", () => {
-  assert.throws(
-    () => inspectPng(readFileSync("public/juw-microscope.png")),
-    /logo resolution below target/,
-  );
+  const small = Buffer.alloc(26);
+  Buffer.from("89504e470d0a1a0a", "hex").copy(small);
+  small.writeUInt32BE(375, 16);
+  small.writeUInt32BE(391, 20);
+  assert.throws(() => inspectPng(small), /logo resolution below target/);
   assert.throws(() => inspectPng(Buffer.from("ffd8ffe000", "hex")), /not a PNG/);
   const valid = Buffer.alloc(26);
   Buffer.from("89504e470d0a1a0a", "hex").copy(valid);

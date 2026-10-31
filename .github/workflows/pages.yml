@@ -35,11 +35,11 @@ jobs:
       - run: npm install --global npm@11.9.0
       - run: npm ci
       - run: node scripts/archive-release-evidence.mjs
-      - name: Discover unused dependencies in CI
-        continue-on-error: true
+      - name: Check unused dependencies in CI
         run: |
           mkdir -p qualification-results/dependencies
-          npx --yes depcheck@1.4.7 --json > qualification-results/dependencies/depcheck.json
+          npx --yes depcheck@1.4.7 --json > qualification-results/dependencies/depcheck.json || true
+          node scripts/check-depcheck.mjs
       - run: npm audit --audit-level=high
       - run: npm run test:version-lock
       - run: npm run typecheck
