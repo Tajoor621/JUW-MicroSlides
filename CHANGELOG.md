@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Distinct-source summary regression — 31 October 2026
+
+- CI exposed an old assertion counting the new Key points summary as extra source statements. Check the four distinct originals separately, require every summary item to retain its original text/source/quote, and explicitly reject repeated material as a way to satisfy note usefulness. The failed run is retained as a failure.
+
 ### Dependency-advisory follow-up — 31 October 2026
 
 - Retain complete registry-audit JSON and locked dependency paths, versions, development flags and proposed fixes in CI artefacts. Reject incomplete audit evidence and preserve the separate blocking high/critical gate.
