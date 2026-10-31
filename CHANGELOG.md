@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Current-asset and offline instructions — 31 October 2026
+
+- Remove the permissions document’s stale reference to the deleted microscope bitmap, name the actual retained artwork and explain the notes seal rendering fallback. Clarify that a configured local model cannot replace missing offline evidence. Keep ownership, personal-use limits and source permissions explicit.
+
 ### Notes running-header rendering — 31 October 2026
 
 - Inspection of rendered textbook notes exposed an invisible second-page header despite extractable text. Avoid repeated SVG page-state mutations: retain the original SVG asset and render its small PDF seal once at 600 pixels, then draw the cached image with explicit opaque header state on every page. Keep the crest watermark at 6%.
