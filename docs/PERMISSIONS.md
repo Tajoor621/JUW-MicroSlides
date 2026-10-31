@@ -4,7 +4,7 @@
 
 The Jinnah University for Women crest and Department of Microbiology marks are retained as owner-supplied institutional artwork. Their inclusion in this repository is **not evidence of a licence**, institutional endorsement, or permission for third-party redistribution. The institution/rights holder controls these marks. Maintainers must obtain and record permission for the intended distribution before claiming institutional approval. No permission document has been supplied in this repository audit. Preserve original artwork, colours and lettering; do not apply the software licence to the marks.
 
-Assets include `public/juw-crest-transparent.svg`, the manifest-referenced crest PNG, `public/juw-dept-seal.svg`, the owner-selected `public/juw-department-microscope-1254.jpeg` and `public/favicon.svg`. The original source artwork remains available alongside display variants. The notes PDF draws the small seal from a 600-pixel rendering of its original SVG to keep repeated-page graphics state reliable; the source asset remains vector. Do not add a maskable declaration unless the artwork has been checked for safe-zone cropping.
+Assets include `public/juw-crest-transparent.svg`, the manifest-referenced crest PNG, `public/juw-dept-seal.svg`, the original `public/juw-department-microscope-1254.jpeg` and its owner-requested transparent PNG display variant and `public/favicon.svg`. The original source artwork remains available alongside display variants. The notes PDF draws the small seal from a 600-pixel rendering of its original SVG to keep repeated-page graphics state reliable; the source asset remains vector. Do not add a maskable declaration unless the artwork has been checked for safe-zone cropping.
 
 ## Libraries and fonts
 

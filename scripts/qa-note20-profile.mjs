@@ -108,12 +108,24 @@ try {
   // Verify actual encoded pixels independently, without changing preview hints.
   const bitmap = await artwork.evaluate(async (el) => {
     const decoded = await createImageBitmap(await (await fetch(el.currentSrc)).blob());
-    const size = { width: decoded.width, height: decoded.height };
+    const canvas = document.createElement("canvas");
+    canvas.width = decoded.width;
+    canvas.height = decoded.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(decoded, 0, 0);
+    const corners = [
+      [0, 0],
+      [decoded.width - 1, 0],
+      [0, decoded.height - 1],
+      [decoded.width - 1, decoded.height - 1],
+    ].map(([x, y]) => ctx.getImageData(x, y, 1, 1).data[3]);
+    const size = { width: decoded.width, height: decoded.height, corners };
     decoded.close();
     return size;
   });
   assert.equal(bitmap.width, 1254);
   assert.equal(bitmap.height, 1254);
+  assert.deepEqual(bitmap.corners, [0, 0, 0, 0], "Preview branding has no white backplate");
   report.artwork = { bitmap, densityAdjustedNaturalWidth: geometry.w };
   assert(geometry.rect.x > geometry.stage.x + geometry.stage.width / 2);
   await page.evaluate(() => {
@@ -157,7 +169,7 @@ try {
         assert.match(xml, /<a:t>/);
       }
       const expected = createHash("sha256")
-        .update(await readFile("public/juw-department-microscope-1254.jpeg"))
+        .update(await readFile("public/juw-department-microscope-transparent.png"))
         .digest("hex");
       const media = await Promise.all(
         Object.keys(zip.files)
@@ -168,7 +180,10 @@ try {
               .digest("hex"),
           ),
       );
-      assert(media.includes(expected), "PPTX retains every supplied artwork pixel");
+      assert(
+        media.includes(expected),
+        "PPTX retains the full transparent display asset without resampling",
+      );
     } else {
       const info = execFileSync("pdfinfo", [path], { encoding: "utf8" });
       assert.match(info, /Pages:\s+20\b/);

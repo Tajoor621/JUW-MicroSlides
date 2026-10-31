@@ -2,6 +2,12 @@
 
 ## V6.2.1
 
+### Clear department-logo background — 31 October 2026
+
+- Use an owner-requested transparent RGBA display variant of the department artwork at its original 1,254 × 1,254 dimensions. Retain the untouched JPEG reference and SVG crest/seal. The display file is an image-edited bitmap, not an invented vector master or an unmodified original.
+- Preserve complete PNG bytes/alpha in PPTX and the shared PDF scene; change independent preview/service-worker cache keys. Add decoded alpha/ink tests, browser corner checks and full-resolution PPTX-byte checks.
+- Update artwork instructions and record the completed `5fa73c0` release snapshot with exact CI links, while keeping later revisions subject to their own checks and recording the separate Pages-publisher decision.
+
 ### Retired desktop-report instructions — 31 October 2026
 
 - A final documentation search found superseded reviewed-export and reviewer-menu instructions in the Windows implementation report and visual-fidelity history. Replace them with current concise usage/verification guides and preserve the original reports, with all failures, from the fixed historical commit in CI artefacts. No archived data or current functionality is deleted.
