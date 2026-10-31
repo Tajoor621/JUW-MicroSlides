@@ -45,7 +45,7 @@ for (const asset of assets) hash.update(await readFile(join(root, asset)));
 const version = hash.digest("hex").slice(0, 16);
 await writeFile(
   join(root, "sw.js"),
-  `const CACHE = "juw-pages-${version}-assets-20261031";
+  `const CACHE = "juw-pages-${version}-assets-20261031-transparent-1";
 const BASE = new URL("./", self.location.href).href;
 const ASSETS = ${JSON.stringify(assets)}.map(p => new URL(p, BASE).href);
 self.addEventListener("install", event => event.waitUntil((async () => {

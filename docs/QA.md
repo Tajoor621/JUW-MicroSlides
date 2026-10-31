@@ -1,12 +1,8 @@
 # JUW-MicroSlides V6.2.1 QA
 
-## Verified release snapshot — 30 October 2026
+## Verified release snapshot — 31 October 2026
 
-Live build `b95ff43`, commit `b95ff43a9d59bc33a1004b26c1146d5a2c722713`. [Pages build, deployment and live smoke](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41058384019) passed. The identical source tree passed [Windows installer/native UI qualification](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41057347803). [Browser/export artefacts](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41058384019/artifacts/12977978142) include the regenerated conjugation deck and notes PDF checks. Generated evidence belongs in CI artefacts, not documentation files.
-
-## Release candidate checks — 31 October 2026
-
-[PR #38](https://github.com/Tajoor621/JUW-MicroSlides/pull/38) retains the task commit list. [Candidate CI](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41199443504) checked head `93306cb`: source suites, the pinned textbook edition, automatic notes PDF preparation, 20-slide native exports and offline notes, and the regenerated 18-slide conjugation PPTX/PDF. This is candidate software evidence, not the final deployed build or educator approval. Subsequent changes must pass their own checks. Use the live metadata below for the deployed source/run.
+Live build `5fa73c0`, commit `5fa73c03c21411909d08e054f61d7c01afc47c14`. [Production build/deployment/live smoke](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41201445814) and [Windows installer/native checks](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41201445826) passed. [Export artefacts](https://github.com/Tajoor621/JUW-MicroSlides/actions/runs/41201445814/artifacts/13042697877) include the regenerated conjugation deck, A4 notes and rendered checks. An old live tab updated successfully, preserved saves, generated exactly three Gram-staining slides and downloaded a two-page note. This dated snapshot precedes the transparent-logo change; every later revision requires its own CI evidence.
 
 ## Current revision evidence
 
@@ -16,4 +12,6 @@ Keep lint, typecheck, UK English, tests, dependency audit, coverage contracts, p
 
 ## Checks requiring external access
 
-The owner-selected 1,254-pixel department JPEG supplied on 31 October is integrated; dimensional qualification is separate from visual inspection. Actual Note20/Chrome/Samsung Internet and Microsoft PowerPoint tests remain unperformed. Record physical results only in [the device checklist](QA-PHONE-NOTE20.md). Teacher-authored concept approval, a department topic list and independent scientific assessment remain outstanding. Never infer these from CI or an assistant-led source comparison.
+The original 1,254-pixel JPEG is retained; the owner-requested transparent PNG display variant is being qualified. Dimensional and alpha checks are separate from visual inspection. Actual Note20/Chrome/Samsung Internet and Microsoft PowerPoint tests remain unperformed. Record physical results only in [the device checklist](QA-PHONE-NOTE20.md). Teacher-authored concept approval, a department topic list and independent scientific assessment remain outstanding. Never infer these from CI or an assistant-led source comparison.
+
+An additional GitHub-generated Pages publisher was observed during the snapshot deployment. The final compiled application won that deployment and passed live smoke, but publishing-source consolidation remains a settings decision. Repository visibility and Pages settings have not been changed.

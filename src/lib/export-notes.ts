@@ -6,6 +6,7 @@ import { font } from "./export-teaching";
 import {
   assertNoteSources,
   NOTES_LABEL,
+  noteReference,
   treatmentStatement,
   type EducationalNote,
 } from "./educational-notes";
@@ -139,9 +140,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   }
   heading("References");
   for (const [i, ref] of note.sources.entries()) {
-    write(
-      `${i + 1}. ${ref.title} (${ref.year}). ${ref.doi ? `DOI: ${ref.doi}` : ref.pmid ? `PMID: ${ref.pmid}` : `Textbook chapter: ${ref.chapter}`}`,
-    );
+    write(`${i + 1}. ${noteReference(ref)}`);
     write(ref.url, 9);
   }
   heading("Glossary");

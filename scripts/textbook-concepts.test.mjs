@@ -39,6 +39,12 @@ test("eight provisional textbook topics support bounded counts, sourced notes, r
       );
       const note = educationalNotesFromDeck(deck);
       assertNoteSources(note);
+      const summary = note.sections.find((s) => s.heading === "Key points");
+      assert(summary.statements.length > 0, "Useful notes have sourced key points");
+      assert(summary.statements.every((f) => note.sources.some((s) => s.id === f.sourceId)));
+      assert.equal(note.sources[0].authors, c.source.authors);
+      assert(note.sources[0].publication.includes(c.source.edition));
+      assert(note.sources[0].locator.includes("Printed"));
       const restored = parseWorkspaceBackup(
         JSON.stringify({
           format: "juw-microslides",
@@ -48,6 +54,11 @@ test("eight provisional textbook topics support bounded counts, sourced notes, r
         }),
       );
       assert.equal(restored.notes[0].topic, c.topic);
+      assert.equal(restored.notes[0].sources[0].authors, c.source.authors);
+      assert.equal(
+        restored.notes[0].sections.find((s) => s.heading === "Key points").statements.length,
+        summary.statements.length,
+      );
       assert.equal(restored.decks[0].slides.length, deck.slides.length);
       assert.throws(() => assertCompleteDeck(deck, 50), /not complete/);
       for (let count = 1; count <= input.count; count++)

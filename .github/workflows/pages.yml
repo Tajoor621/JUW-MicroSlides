@@ -40,6 +40,10 @@ jobs:
           mkdir -p qualification-results/dependencies
           npx --yes depcheck@1.4.7 --json > qualification-results/dependencies/depcheck.json || true
           node scripts/check-depcheck.mjs
+      - name: Retain complete dependency audit evidence
+        run: |
+          npm audit --json > qualification-results/dependencies/audit.json || true
+          node scripts/record-dependency-audit.mjs
       - run: npm audit --audit-level=high
       - run: npm run test:version-lock
       - run: npm run typecheck

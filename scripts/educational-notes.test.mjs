@@ -172,7 +172,22 @@ test("notes reject unsupported claims and undated treatment; backups retain trac
         "Passage provenance does not establish scientific validity.",
       ]),
     );
-    assert.equal(useful.sections.flatMap((s) => s.statements).length, 4);
+    const original = useful.sections
+      .filter((s) => s.heading !== "Key points")
+      .flatMap((s) => s.statements);
+    assert.equal(original.length, 4);
+    assert.equal(new Set(original.map((s) => s.text)).size, 4);
+    const summary = useful.sections.find((s) => s.heading === "Key points").statements;
+    assert(summary.length > 0);
+    assert(
+      summary.every((s) =>
+        original.some((v) => v.text === s.text && v.sourceId === s.sourceId && v.quote === s.quote),
+      ),
+    );
+    assert.throws(
+      () => educationalNotesFromDeck(makeDeck(Array(4).fill(original[0].text))),
+      /cannot support a useful note/,
+    );
     assert.equal(new Set(useful.questions.map((q) => q.question)).size, useful.questions.length);
   } finally {
     await server.close();

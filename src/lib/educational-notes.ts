@@ -25,6 +25,10 @@ export const noteSourceSchema = z.object({
   kind: z.enum(["textbook", "guideline", "review", "primary"]).optional(),
   chapter: z.string().optional(),
   retrievedAt: z.string().optional(),
+  authors: z.string().max(2000).optional(),
+  publisher: z.string().max(500).optional(),
+  publication: z.string().max(1000).optional(),
+  locator: z.string().max(1000).optional(),
 });
 export const noteStatementSchema = z.object({
   text: z.string().min(1),
@@ -117,6 +121,11 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
         sources.push({
           id: ref.id,
           title: ref.title,
+          authors: ref.authors,
+          publisher: ref.publisher,
+          publication: ref.journal,
+          locator: slide.claims?.flatMap((c) => c.evidence).find((e) => e.citationId === ref.id)
+            ?.locator,
           url: statement.url,
           doi: ref.doi,
           pmid: ref.pmid,
@@ -170,6 +179,11 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
     throw Error(
       "Sources cannot support a useful note: at least four distinct, self-contained source statements spanning two teaching sections, including a definition, structure or mechanism, are needed. Add attributable teaching passages with DOI/PMID. Existing notes were kept.",
     );
+  // A summary repeats supported statements; it must not invent a new paraphrase
+  // or let repetition satisfy the distinct-statement usefulness threshold above.
+  const keyPoints = sections.find((section) => section.heading === "Key points")!;
+  if (!keyPoints.statements.length)
+    keyPoints.statements = all.slice(0, 3).map((fact) => ({ ...fact }));
   const note: EducationalNote = {
     id: crypto.randomUUID(),
     topic: deck.topic,
@@ -183,7 +197,7 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
     sections,
     sources,
     questions: sections
-      .filter((s) => s.statements.length)
+      .filter((s) => s.statements.length && s.heading !== "Key points")
       .slice(0, 3)
       .map((s, i) => ({
         question: `${i + 1}. For “${s.heading}”, explain the quoted statement and identify a limit of what its source establishes.`,
@@ -194,9 +208,32 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
   // Only source-defined terms enter the glossary; never manufacture a definition.
   for (const definition of all) {
     const m = definition.text.match(/^([A-Z][\w -]{2,60}) (?:is|are|refers to) /);
-    if (m && note.glossary.length < 8) note.glossary.push({ term: m[1], definition });
+    if (m && note.glossary.length < 8)
+      note.glossary.push({ term: m[1].replace(/^The /, ""), definition });
   }
   return assertNoteSources(note);
+}
+/** One consistent bibliography for readable notes and their PDF; old optional fields remain readable. */
+export function noteReference(ref: EducationalNote["sources"][number], at = new Date()) {
+  const historical = /^\d{4}$/.test(ref.year) && at.getUTCFullYear() - Number(ref.year) > 10;
+  const identifier = ref.doi
+    ? `DOI: ${ref.doi}`
+    : ref.pmid
+      ? `PMID: ${ref.pmid}`
+      : ref.chapter === ref.title
+        ? "Textbook chapter source."
+        : `Textbook chapter: ${ref.chapter || "not recorded"}`;
+  return [
+    ref.authors ? `${ref.authors}.` : "",
+    `${ref.title} (${ref.year}${historical ? "; historical" : ""}).`,
+    ref.publisher ? `${ref.publisher}.` : "",
+    ref.publication ? `${ref.publication}.` : "",
+    ref.locator ? `${ref.locator}.` : "",
+    identifier,
+    `Source type: ${ref.kind || "unclassified"}; retrieved ${ref.retrievedAt || "not recorded"}.`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 export function noteText(note: EducationalNote) {
   const sourceIndex = (id: string) => note.sources.findIndex((s) => s.id === id) + 1;
@@ -212,12 +249,7 @@ export function noteText(note: EducationalNote) {
         .map((q) => `${q.question}\nAnswer: ${q.answer.text} [${sourceIndex(q.answer.sourceId)}]`)
         .join("\n\n"),
     "References\n" +
-      note.sources
-        .map(
-          (s, i) =>
-            `${i + 1}. ${s.title} (${s.year}). ${s.doi ? `DOI: ${s.doi}` : s.pmid ? `PMID: ${s.pmid}` : `Textbook chapter: ${s.chapter}`}\n${s.url}`,
-        )
-        .join("\n\n"),
+      note.sources.map((s, i) => `${i + 1}. ${noteReference(s)}\n${s.url}`).join("\n\n"),
     "Glossary\n" +
       (note.glossary
         .map((g) => `${g.term}: ${g.definition.text} [${sourceIndex(g.definition.sourceId)}]`)

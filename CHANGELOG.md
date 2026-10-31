@@ -2,6 +2,30 @@
 
 ## V6.2.1
 
+### Wrapped bibliography PDF checks — 31 October 2026
+
+- CI confirmed the two-page note, visible disclosures, watermark and complete reference text, then exposed an assertion expecting a chapter title on one extracted line. Normalise whitespace for bibliography-presence assertions while retaining raw page separators and every-page visual/text checks. Do not remove or shorten the actual reference.
+
+### Distinct-source summary regression — 31 October 2026
+
+- CI exposed an old assertion counting the new Key points summary as extra source statements. Check the four distinct originals separately, require every summary item to retain its original text/source/quote, and explicitly reject repeated material as a way to satisfy note usefulness. The failed run is retained as a failure.
+
+### Dependency-advisory follow-up — 31 October 2026
+
+- Retain complete registry-audit JSON and locked dependency paths, versions, development flags and proposed fixes in CI artefacts. Reject incomplete audit evidence and preserve the separate blocking high/critical gate.
+- Document the moderate minimatch/lint-tool chain and the proposed breaking remediation. No dependency downgrade, incompatible blanket override, advisory suppression or false zero-vulnerability claim is applied. Compatible upstream remediation remains outstanding.
+
+### Complete source-backed note summaries — 31 October 2026
+
+- Populate otherwise empty Key points with selected original, traceable statements after the distinct-source usefulness check. This is a summary, not invented teaching content or a way to pad source sufficiency. Remove the leading article from extracted glossary terms while retaining the complete original definition.
+- Preserve optional author, publisher, publication/edition and passage-locator metadata in notes and JSON restores. Use one bibliography formatter for visible notes and A4 PDF, with source type, retrieval date and historical age. Keep legacy notes readable and add pilot-topic/restore/browser assertions.
+
+### Clear department-logo background — 31 October 2026
+
+- Use an owner-requested transparent RGBA display variant of the department artwork at its original 1,254 × 1,254 dimensions. Retain the untouched JPEG reference and SVG crest/seal. The display file is an image-edited bitmap, not an invented vector master or an unmodified original.
+- Preserve complete PNG bytes/alpha in PPTX and the shared PDF scene; change independent preview/service-worker cache keys. Add decoded alpha/ink tests, browser corner checks and full-resolution PPTX-byte checks.
+- Update artwork instructions and record the completed `5fa73c0` release snapshot with exact CI links, while keeping later revisions subject to their own checks and recording the separate Pages-publisher decision.
+
 ### Retired desktop-report instructions — 31 October 2026
 
 - A final documentation search found superseded reviewed-export and reviewer-menu instructions in the Windows implementation report and visual-fidelity history. Replace them with current concise usage/verification guides and preserve the original reports, with all failures, from the fixed historical commit in CI artefacts. No archived data or current functionality is deleted.
