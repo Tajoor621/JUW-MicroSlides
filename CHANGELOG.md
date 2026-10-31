@@ -2,6 +2,11 @@
 
 ## V6.2.1
 
+### Dependency-advisory follow-up — 31 October 2026
+
+- Retain complete registry-audit JSON and locked dependency paths, versions, development flags and proposed fixes in CI artefacts. Reject incomplete audit evidence and preserve the separate blocking high/critical gate.
+- Document the moderate minimatch/lint-tool chain and the proposed breaking remediation. No dependency downgrade, incompatible blanket override, advisory suppression or false zero-vulnerability claim is applied. Compatible upstream remediation remains outstanding.
+
 ### Complete source-backed note summaries — 31 October 2026
 
 - Populate otherwise empty Key points with selected original, traceable statements after the distinct-source usefulness check. This is a summary, not invented teaching content or a way to pad source sufficiency. Remove the leading article from extracted glossary terms while retaining the complete original definition.
