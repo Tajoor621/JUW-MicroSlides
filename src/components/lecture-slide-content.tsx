@@ -16,7 +16,18 @@ export function LectureSlideContent({ slide, reveal = 999 }: { slide: Slide; rev
   const diagram = slide.teaching?.diagram;
   return (
     <div data-lecture-content className="grid min-h-0 grid-cols-2 gap-5 text-lg">
-      {slide.layout === "learning-objectives" ? (
+      {slide.layout === "common-misconceptions" ? (
+        <aside className="col-span-2 rounded border-2 border-current p-5">
+          <h3 className="text-xl font-semibold">
+            Common misconceptions — source-supported correction
+          </h3>
+          {slide.bullets.map((text, i) => (
+            <p key={i} className="mt-4 text-xl">
+              <ScientificText text={text} />
+            </p>
+          ))}
+        </aside>
+      ) : slide.layout === "learning-objectives" ? (
         <ol className="col-span-2 space-y-4 text-2xl">
           {(slide.learningObjectives?.length ? slide.learningObjectives : slide.bullets).map(
             (s, i) => (

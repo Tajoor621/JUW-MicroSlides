@@ -1,3 +1,4 @@
+import { TEXTBOOK_CONCEPTS } from "@/lib/textbook-concepts";
 import { GENERATION_MODES, MODE_NAMES, type LectureOptions } from "@/lib/lecture-schema";
 import { modeMinimum } from "@/lib/lecture-modes";
 import type { GenerateDraft } from "@/lib/types";
@@ -41,6 +42,20 @@ export function LectureGenerationOptions({
         Thorough research prioritises subject coverage and open full text over speed. All scientific
         drafts still require human judgement. Offline work uses supplied or bundled material.
       </p>
+      <details className="text-xs">
+        <summary>Named bundled textbook topics (offline)</summary>
+        <ul>
+          {TEXTBOOK_CONCEPTS.map((c) => (
+            <li key={c.topic}>
+              {c.discipline}: {c.topic}
+            </li>
+          ))}
+        </ul>
+        <p>
+          Only bounded counts are supported by these extracts. Larger decks need additional
+          reviewable sources. Department topic coverage and educator approval are not claimed.
+        </p>
+      </details>
       <label className="block text-xs">
         Generation Mode
         <select

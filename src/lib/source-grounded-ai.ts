@@ -1,3 +1,4 @@
+import { hasTextbookCore } from "./textbook-concepts";
 import type { Deck, GenerateInput, Slide, Claim } from "./types";
 import { sourcePassages, passageText, passageFor, type Passage } from "./generation-grounding";
 import { generateLocalDeck } from "./generate-deck";
@@ -148,11 +149,15 @@ export async function retrieveModelSources(
 ) {
   signal?.throwIfAborted();
   progress?.("Retrieving attributable passages before local AI drafting…");
-  const seed = generateLocalDeck(input);
+  const seed = generateLocalDeck({ ...input, mode: "manual" });
   const source = await enrichTopicEvidence(
     {
       ...seed,
-      slides: input.count > 1 ? seed.slides.filter((s) => s.layout === "title").slice(0, 1) : [],
+      slides: hasTextbookCore(seed)
+        ? seed.slides
+        : input.count > 1
+          ? seed.slides.filter((s) => s.layout === "title").slice(0, 1)
+          : [],
     },
     input,
     signal,

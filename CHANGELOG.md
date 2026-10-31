@@ -2,6 +2,14 @@
 
 ## V6.2.1
 
+### Functional notes and bounded textbook concepts — 31 October 2026
+
+- Add eight named, attributed textbook-extract topic files with chapter/edition, source fingerprint, learning outcomes and explicit pending educator approval. Use them for bounded offline notes and suitable core drafting; retain the existing conjugation core. Do not claim teacher authorship, a department syllabus or universal coverage.
+- Decouple note source collection from three-slide completion, retain minimum explanatory breadth and automatically prepare a visible persistent A4 PDF link. Show readable results and explicit retryable failures; saved notes and JSON restores remain additive. Include real textbook chapter URLs where no DOI/PMID exists, rather than fabricate identifiers.
+- Display source type, year, retrieval date and historical age. Scope research as study findings; keep original paragraph context in evidence rather than lecturer narrative. Prefer multiword source concepts over isolated drug names. Omit unsupported clinical recommendations/values from export copies while preserving saved originals; no export gate is added.
+- Add an opening learning outcome, final self-check, a source-supported misconceptions layout and a five-bullet generation limit without changing exact counts.
+- Preserve original quoted spelling, add the historical edition’s required attribution and extend notes typography to bundled italic faces. Record physical-device checks separately from CI emulation.
+
 ### Supplied department artwork and export disclosure — 31 October 2026
 
 - Activate the owner-selected 1,254-pixel JPEG at the top-right of opening slides; preserve the supplied bytes and original lettering/background. Embed the complete JPEG in PPTX, retain vector crest/seal, and update independent cache revisions. Do not call this bitmap a vector or a transparent image.

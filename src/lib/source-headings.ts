@@ -69,6 +69,7 @@ export function sourceConceptHeading(sentences: string[], topic: string, used: S
             Math.min(run.length, 4) * 2 +
             repeated / run.length +
             (sentenceIndex === 0 ? 2 : 0) -
+            (run.length === 1 ? 120 : 0) -
             i / 10 -
             (used.has(k) ? 100 : 0);
           candidates.push({ text, score, order: candidates.length });

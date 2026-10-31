@@ -1,3 +1,4 @@
+import { hasTextbookCore } from "@/lib/textbook-concepts";
 import { generationGroundingSummary } from "@/lib/generation-grounding";
 import { checkResearchClaims } from "@/lib/source-grounding";
 import { assertGenerationBiosafety, assertGeneratedBiosafety } from "@/lib/biosafety";
@@ -217,6 +218,7 @@ export function GenerateForm({
           input.researchDepth === "thorough" &&
           input.mode === "manual" &&
           !hasConjugationCore(local) &&
+          !hasTextbookCore(local) &&
           navigator.onLine &&
           !input.notes.trim()
         ) {
@@ -440,11 +442,12 @@ export function GenerateForm({
             </p>
           )}
           <p className="text-xs text-muted">
-            Enter any microbiology topic and the exact number of slides. The generator builds the
-            complete deck using topic material and paginated research passages; AI mode can use a
-            configured local model. Review every scientific claim. On Pages, search images in Media
-            and references in PubMed or Evidence while online. Media stays in the Media collection
-            until you attach it. Configure Ollama in Settings for local AI.
+            Enter a microbiology topic and the exact number of slides. Generation requires enough
+            reviewable source material; coverage of every topic is not claimed. The generator uses
+            bundled textbook material and paginated research passages; AI can use a configured local
+            model. Review every scientific claim. On Pages, search images in Media and references in
+            PubMed or Evidence while online. Media stays in the Media collection until you attach
+            it. Configure Ollama in Settings for local AI.
           </p>
           <div className="flex flex-wrap gap-1">
             {SLIDE_THEMES.map((id) => (

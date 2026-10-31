@@ -14,7 +14,7 @@ test("nomenclature runs preserve exact scientific strings and avoid ambiguous ge
   assert.equal(runs.map((r) => r.text).join(""), text);
   assert.deepEqual(
     runs.filter((r) => r.italic).map((r) => r.text),
-    ["Escherichia coli", "Candida albicans"],
+    ["Escherichia coli", "Candida albicans", "Candida", "E. coli"],
   );
   assert(!scientificRuns("Research methods and Unknownus species").some((r) => r.italic));
 });

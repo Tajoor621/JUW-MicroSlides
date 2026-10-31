@@ -17,3 +17,7 @@ Bundled DejaVu Sans regular, bold, oblique and bold-oblique fonts retain the Bit
 Media attribution, original source, source URL and reuse licence must stay attached to each asset and survive backup/export. A PubMed identifier or PMC-hosted figure does not itself grant reuse permission. Verify the article/figure-specific licence and any third-party exclusions. The app's metadata discovery is not legal clearance.
 
 Reference metadata checks and a DOI's valid syntax do not establish scientific truth, claim support or absence of a correction/retraction. Use the Evidence workflow and qualified human review. Instructor verification is a local attestation, not authenticated identity or independent certification.
+
+## Bundled textbook extracts
+
+Eight pilot concept files contain short verbatim text selections from OpenStax *Microbiology*, 2016 edition MB-2016-000(11/16)-BKB, © Rice University. The downloaded historical edition expressly grants CC BY 4.0; its fingerprint and institutional repository URL are recorded in each file. This attribution concerns that third-party text, not a licence for JUW-MicroSlides or university marks. Original source spelling is retained. No publisher logo, cover or textbook figure is copied. Source-derived slide views and note pages carry the edition’s required “Download for free at http://cnx.org/content/col12087/latest/.” notice. The application’s editorial selection and teaching suitability remain unapproved by an external educator.

@@ -1,0 +1,52 @@
+{
+  "topic": "Bacterial conjugation",
+  "aliases": ["Conjugation", "Bacterial conjugation mechanism"],
+  "discipline": "Microbial Genetics & Molecular Biology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Explain the core concepts using the cited chapter.",
+    "Distinguish the scope of the textbook model from current research.",
+    "Identify an unsupported inference or limitation."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "11.6 How Asexual Prokaryotes Achieve Genetic Diversity",
+    "locator": "Printed pp. 481–482, F-plasmid model"
+  },
+  "concepts": [
+    {
+      "id": "conjugation-1",
+      "title": "F-plasmid transfer functions",
+      "section": "Definition",
+      "quote": "The F-plasmid genes encode both the proteins composing the F pilus and those involved in rolling circle replication of the plasmid."
+    },
+    {
+      "id": "conjugation-2",
+      "title": "Donor and recipient roles",
+      "section": "Classification or structure",
+      "quote": "Cells containing the F plasmid, capable of forming an F pilus, are called F+ cells or donor cells, and those lacking an F plasmid are called F− cells or recipient cells."
+    },
+    {
+      "id": "conjugation-3",
+      "title": "F-type strand transfer",
+      "section": "Mechanism or pathogenesis",
+      "quote": "As rolling circle replication of the F plasmid occurs in the F+ cell, a single-stranded copy of the F plasmid is transferred through the cytoplasmic bridge to the F− cell, which then synthesizes the complementary strand, making it double stranded."
+    },
+    {
+      "id": "conjugation-4",
+      "title": "Chromosomal DNA transfer",
+      "section": "Common misconceptions",
+      "quote": "Although typical conjugation in E. coli results in the transfer of the F-plasmid DNA only, conjugation may also transfer chromosomal DNA."
+    }
+  ]
+}

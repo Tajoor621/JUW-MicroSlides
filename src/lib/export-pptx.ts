@@ -1,3 +1,4 @@
+import { defensibleExport } from "./scientific-presentation";
 import { embedPortableFonts, loadPortableFonts } from "./pptx-fonts";
 import { lectureSpeakerNotes } from "./lecture-notes";
 import { safeExportSvg } from "./export-svg";
@@ -33,6 +34,7 @@ export async function exportPptx(
     throw new Error(
       "PPTX requires 1–50 slides. Your legacy project is preserved; export a reduced copy.",
     );
+  deck = defensibleExport(deck);
   let sceneDeck = deck;
   const exportWarnings: string[] = [];
   const PptxGenJS = (await import("pptxgenjs")).default;
@@ -40,7 +42,7 @@ export async function exportPptx(
   pptx.defineLayout({ name: "JUW_PREVIEW", width: 1280 / 96, height: 720 / 96 });
   pptx.layout = "JUW_PREVIEW";
   pptx.author = "JUW-MicroSlides";
-  pptx.title = deck.title;
+  pptx.title = `JUW-MicroSlides · ${deck.title}`;
   pptx.subject = `JUW-MicroSlides · ${deck.discipline} · ${deck.topic} · Unverified AI-assisted draft · Not yet expert-reviewed`;
   let portable: Awaited<ReturnType<typeof loadPortableFonts>> | undefined;
   if (deck.exportTypography === "portable") {
@@ -61,7 +63,8 @@ export async function exportPptx(
     // Preserve every supplied source pixel; the microscope JPEG is not a vector.
     if (src.includes("juw-department-microscope-1254.jpeg")) {
       const response = await fetch(src);
-      if (!response.ok) throw Error("Department artwork is unavailable. Reload the app and retry export.");
+      if (!response.ok)
+        throw Error("Department artwork is unavailable. Reload the app and retry export.");
       const bytes = new Uint8Array(await response.arrayBuffer());
       let binary = "";
       for (let i = 0; i < bytes.length; i += 8192)

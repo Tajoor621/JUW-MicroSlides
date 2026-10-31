@@ -1,0 +1,58 @@
+{
+  "topic": "Viral life cycle",
+  "aliases": ["Viral replication", "Virus replication"],
+  "discipline": "Virology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Explain the core concepts using the cited chapter.",
+    "Distinguish the scope of the textbook model from current research.",
+    "Identify an unsupported inference or limitation."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "6.2 The Viral Life Cycle",
+    "locator": "Printed p. 251, introductory explanation"
+  },
+  "concepts": [
+    {
+      "id": "viral-life-cycle-1",
+      "title": "Host-cell dependence",
+      "section": "Definition",
+      "quote": "All viruses depend on cells for reproduction and metabolic processes."
+    },
+    {
+      "id": "viral-life-cycle-2",
+      "title": "Replication machinery",
+      "section": "Classification or structure",
+      "quote": "By themselves, viruses do not encode for all of the enzymes necessary for viral replication."
+    },
+    {
+      "id": "viral-life-cycle-3",
+      "title": "DNA-virus replication sites",
+      "section": "Mechanism or pathogenesis",
+      "quote": "In eukaryotic cells, most DNA viruses can replicate inside the nucleus, with an exception observed in the large DNA viruses, such as the poxviruses, that can replicate in the cytoplasm."
+    },
+    {
+      "id": "viral-life-cycle-4",
+      "title": "RNA-virus replication sites",
+      "section": "Mechanism or pathogenesis",
+      "quote": "RNA viruses that infect animal cells often replicate in the cytoplasm."
+    },
+    {
+      "id": "viral-life-cycle-5",
+      "title": "Virulent phages",
+      "section": "Mechanism or pathogenesis",
+      "quote": "Virulent phages typically lead to the death of the cell through cell lysis."
+    }
+  ]
+}

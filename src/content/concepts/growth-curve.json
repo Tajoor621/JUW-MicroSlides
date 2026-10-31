@@ -1,0 +1,64 @@
+{
+  "topic": "Bacterial growth curve",
+  "aliases": ["Microbial growth curve"],
+  "discipline": "Bacteriology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Explain the core concepts using the cited chapter.",
+    "Distinguish the scope of the textbook model from current research.",
+    "Identify an unsupported inference or limitation."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "9.1 How Microbes Grow",
+    "locator": "Printed pp. 363–365, The Growth Curve"
+  },
+  "concepts": [
+    {
+      "id": "growth-curve-1",
+      "title": "Batch-culture model",
+      "section": "Definition",
+      "quote": "Microorganisms grown in closed culture (also known as a batch culture), in which no nutrients are added and most waste is not removed, follow a reproducible growth pattern referred to as the growth curve."
+    },
+    {
+      "id": "growth-curve-2",
+      "title": "Culture density",
+      "section": "Definition",
+      "quote": "The culture density is defined as the number of cells per unit volume."
+    },
+    {
+      "id": "growth-curve-3",
+      "title": "Lag-phase activity",
+      "section": "Mechanism or pathogenesis",
+      "quote": "The number of cells does not change during the lag phase; however, cells grow larger and are metabolically active, synthesizing proteins needed to grow within the medium."
+    },
+    {
+      "id": "growth-curve-4",
+      "title": "Exponential growth",
+      "section": "Mechanism or pathogenesis",
+      "quote": "In the logarithmic (log) growth phase, sometimes called exponential growth phase, the cells are actively dividing by binary fission and their number increases exponentially."
+    },
+    {
+      "id": "growth-curve-5",
+      "title": "Stationary population",
+      "section": "Mechanism or pathogenesis",
+      "quote": "In this phase, the number of new cells created by cell division is now equivalent to the number of cells dying; thus, the total population of living cells is relatively stagnant."
+    },
+    {
+      "id": "growth-curve-6",
+      "title": "Limits of the batch model",
+      "section": "Common misconceptions",
+      "quote": "Infections of the body do not always follow the growth curve, but correlations can exist depending upon the site and type of infection."
+    }
+  ]
+}

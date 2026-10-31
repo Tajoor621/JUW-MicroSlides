@@ -1,3 +1,5 @@
+import { educationalNotesFromDeck } from "./educational-notes";
+import { needsGuideline } from "./scientific-presentation";
 import { fetchOpenAlexPassages } from "./openalex-research";
 import { RESEARCH_CONFIG } from "./research-config";
 import { readResearchCheckpoint, saveResearchCheckpoint } from "./research-checkpoint";
@@ -131,6 +133,12 @@ function sourceSlides(
     const citation: Citation = {
       id: `epmc-${p.source || "MED"}-${p.id || p.doi || p.pmid}`,
       title: sourceTitle,
+      evidenceKind:
+        p.sourceDocument?.access === "textbook"
+          ? "textbook"
+          : /review/i.test(JSON.stringify(p.pubTypeList || ""))
+            ? "review"
+            : "primary",
       authors: p.authorString || "Authors not supplied",
       journal: p.journalInfo?.journal?.title || "Journal not supplied",
       year: p.pubYear || "n.d.",
@@ -153,7 +161,12 @@ function sourceSlides(
           : `https://europepmc.org/article/${p.source || "MED"}/${p.id}`);
     citation.url ||= source;
     for (let part = 0; part < parts.length; part++) {
-      const bullets = parts[part].sentences;
+      const bullets = parts[part].sentences.filter(
+        (sentence) =>
+          (p.sourceDocument?.access === "guideline" && /^\d{4}/.test(p.pubYear || "")) ||
+          !needsGuideline(sentence),
+      );
+      if (bullets.length < 2) continue;
       const key = bullets.join(" ").toLowerCase().replace(/\W/g, "");
       if (usedBodies.has(key)) continue;
       usedBodies.add(key);
@@ -163,11 +176,11 @@ function sourceSlides(
         layout: "content",
         theme: "molecular",
         title,
-        subtitle: `${p.sourceDocument?.access || (p.fullBody ? "Full-text" : "Abstract")} · ${p.pubYear || "date unrecorded"} · source excerpt`,
+        subtitle: `${p.sourceDocument?.access === "textbook" ? "Textbook extract" : p.sourceDocument?.access === "guideline" ? "Guideline extract" : "One study reported — inspect its scope"} · ${p.sourceDocument?.access || (p.fullBody ? "Full-text" : "Abstract")} · ${p.pubYear || "date unrecorded"} · source excerpt`,
         bullets,
         leftBullets: [],
         rightBullets: [],
-        notes: `Source: ${sourceTitle}\n${source}\nParagraph ${parts[part].paragraph}; excerpt group ${part + 1} of ${parts.length} from the ${p.fullBody ? "article body" : "publication abstract"}. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.\n\nSource paragraph context (verbatim):\n${parts[part].context}`,
+        notes: `Source: ${sourceTitle}\n${source}\nParagraph ${parts[part].paragraph}; excerpt group ${part + 1} of ${parts.length} from the ${p.fullBody ? "article body" : "publication abstract"}. The excerpts describe the cited study, not universal facts. Review the full study and publication status before teaching.\n\nCommon misconceptions\nA finding in one study does not establish a universal mechanism, typical value or clinical recommendation. Full source context is preserved in the claim evidence, not copied into the lecturer narrative.`,
         citations: [citation],
         media: [],
       };
@@ -272,6 +285,7 @@ export async function enrichTopicEvidence(
   input: GenerateInput,
   signal?: AbortSignal,
   onProgress?: (message: string) => void,
+  options: { notesOnly?: boolean } = {},
 ): Promise<Deck> {
   const target = requestedCount(input.count);
   if (hasConjugationCore(deck) && input.researchDepth === "thorough") {
@@ -465,7 +479,17 @@ export async function enrichTopicEvidence(
             ),
         )
       : [];
-  const enough = () => evidence.length >= needed && missingScopes().length === 0;
+  const enough = () => {
+    if (options.notesOnly) {
+      try {
+        educationalNotesFromDeck({ ...deck, slides: [...core, ...evidence] });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return evidence.length >= needed && missingScopes().length === 0;
+  };
   try {
     for (
       let round = firstRound;
@@ -475,7 +499,9 @@ export async function enrichTopicEvidence(
       round++
     ) {
       onProgress?.(
-        `Research search ${round + 1}/${thorough ? 5 : 3} · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
+        options.notesOnly
+          ? `Notes research ${round + 1}/${thorough ? 5 : 3} · ${evidence.length} source groups; checking explanatory breadth…`
+          : `Research search ${round + 1}/${thorough ? 5 : 3} · ${Math.min(target, original.length + evidence.length)} of ${target} slides planned`,
       );
       const attempted = work;
       const responses = await Promise.allSettled(
@@ -650,7 +676,11 @@ export async function enrichTopicEvidence(
       ...s,
       theme: researchTheme(input.topic, input.discipline, s.layout),
     }));
-    onProgress?.(`Completed ${slides.length} of ${target} slides`);
+    onProgress?.(
+      options.notesOnly
+        ? "Attributable notes source material ready; preparing the document…"
+        : `Completed ${slides.length} of ${target} slides`,
+    );
     return {
       ...deck,
       slides,
@@ -667,7 +697,7 @@ export async function enrichTopicEvidence(
           ].map((d) => [d.id, d]),
         ).values(),
       ].slice(0, 30),
-      requestedCount: target,
+      requestedCount: options.notesOnly ? undefined : target,
       contentWarnings: [
         ...(deck.contentWarnings || []).filter(
           (warning) => !/^Requested \d+ slides;/.test(warning),

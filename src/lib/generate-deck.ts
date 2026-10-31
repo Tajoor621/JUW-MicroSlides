@@ -1,3 +1,4 @@
+import { textbookConceptDeck } from "./textbook-concepts";
 import { prepareTeachingDeck } from "./teaching";
 import { requestedCount } from "./deck-completion";
 import { reconcileDeck } from "./deck-integrity";
@@ -202,5 +203,7 @@ export function sampleDeck(): Deck {
 }
 
 export function generateLocalDeck(input: GenerateInput): Deck {
-  return prepareTeachingDeck(conjugationCore(generateLocalDeckBase(input), input));
+  return prepareTeachingDeck(
+    textbookConceptDeck(conjugationCore(generateLocalDeckBase(input), input), input),
+  );
 }

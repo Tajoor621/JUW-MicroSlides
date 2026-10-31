@@ -1,0 +1,52 @@
+{
+  "topic": "Polymerase chain reaction",
+  "aliases": ["PCR"],
+  "discipline": "Microbial Genetics & Molecular Biology",
+  "authoring": "Editorial selection of licensed textbook passages; department educator approval pending.",
+  "educatorApproved": false,
+  "learningOutcomes": [
+    "Explain the core concepts using the cited chapter.",
+    "Distinguish the scope of the textbook model from current research.",
+    "Identify an unsupported inference or limitation."
+  ],
+  "source": {
+    "title": "Microbiology",
+    "authors": "Parker N, Schneegurt M, Thi Tu A-H, Forster BM, Lister P",
+    "publisher": "OpenStax, Rice University",
+    "year": "2016",
+    "edition": "MB-2016-000(11/16)-BKB",
+    "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/351/1/Microbiology-LR.pdf",
+    "licence": "CC BY 4.0, as printed in this 2016 edition; third-party exclusions apply",
+    "attribution": "Download for free at http://cnx.org/content/col12087/latest/.",
+    "retrievedAt": "2026-10-31",
+    "sha256": "f8ea1849bed3cd15f608bf154be66229de32903a3bc42cee4e8c80be58195046",
+    "chapter": "12.2 Visualizing and Characterizing DNA, RNA, and Protein",
+    "locator": "Printed pp. 529–530, Polymerase Chain Reaction (PCR)"
+  },
+  "concepts": [
+    {
+      "id": "pcr-1",
+      "title": "DNA replication in vitro",
+      "section": "Definition",
+      "quote": "PCR is an in vitro laboratory technique that takes advantage of the natural process of DNA replication."
+    },
+    {
+      "id": "pcr-2",
+      "title": "Heat-stable polymerases",
+      "section": "Classification or structure",
+      "quote": "The heat-stable DNA polymerase enzymes used in PCR are derived from hyperthermophilic prokaryotes."
+    },
+    {
+      "id": "pcr-3",
+      "title": "Primer chemistry",
+      "section": "Mechanism or pathogenesis",
+      "quote": "However, while primers composed of RNA are normally used in cells, DNA primers are used for PCR."
+    },
+    {
+      "id": "pcr-4",
+      "title": "PCR cycle stages",
+      "section": "Mechanism or pathogenesis",
+      "quote": "PCR occurs over multiple cycles, each containing three steps: denaturation, annealing, and extension."
+    }
+  ]
+}

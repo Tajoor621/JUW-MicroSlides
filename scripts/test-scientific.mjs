@@ -504,7 +504,8 @@ try {
       const result = await enrichTopicEvidence(seed, input);
       assert.equal(result.slides.length, 1);
       assert.match(result.slides[0].bullets[0], /is the distribution/);
-      assert.match(result.slides[0].notes, /Source paragraph context/);
+      assert.match(result.slides[0].notes, /Full source context is preserved/);
+      assert(result.slides[0].claims.some((c) => c.evidence.some((e) => e.quote.length)));
       assert(result.slides[0].notes.includes(opening));
       assert(result.slides[0].claims.every((c) => c.status !== "lecturer-reviewed"));
     },

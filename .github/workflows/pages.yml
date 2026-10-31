@@ -65,6 +65,7 @@ jobs:
           echo "JUW_CHROMIUM=$JUW_BROWSER_PATH" >> "$GITHUB_ENV"
       - name: Install PDF inspection tools
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - run: node scripts/qa-textbook-sources.mjs
       - run: npm run qa:notes
         env:
           JUW_QA_OUTPUT: ${{ runner.temp }}/juw-qa

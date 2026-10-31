@@ -1,4 +1,6 @@
+import { scientificRuns } from "./scientific-format";
 import { decodeTeachingImage } from "./teaching-images";
+import { OPENSTAX_ATTRIBUTION } from "./textbook-concepts";
 import { JUW } from "./brand";
 import { font } from "./export-teaching";
 import {
@@ -21,6 +23,8 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   for (const [file, style] of [
     ["DejaVuSans", "normal"],
     ["DejaVuSans-Bold", "bold"],
+    ["DejaVuSans-Oblique", "italic"],
+    ["DejaVuSans-BoldOblique", "bolditalic"],
   ] as const) {
     pdf.addFileToVFS(file + ".ttf", await font(file));
     pdf.addFont(file + ".ttf", "Notes", style);
@@ -70,9 +74,32 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.setFont("Notes", bold ? "bold" : "normal");
     pdf.setFontSize(size);
     const lines = pdf.splitTextToSize(text, width) as string[];
+    const spans: { start: number; end: number; italic: boolean }[] = [];
+    let length = 0;
+    for (const run of scientificRuns(text)) {
+      spans.push({ start: length, end: length + run.text.length, italic: run.italic });
+      length += run.text.length;
+    }
+    let searchFrom = 0;
     for (const line of lines) {
       if (y + size * 0.48 > bodyBottom) addPage();
-      pdf.text(line, margin, y);
+      const at = text.indexOf(line, searchFrom);
+      let x = margin;
+      if (at >= 0) {
+        for (const span of spans.filter((s) => s.start < at + line.length && s.end > at)) {
+          const part = text.slice(Math.max(at, span.start), Math.min(at + line.length, span.end));
+          pdf.setFont(
+            "Notes",
+            span.italic ? (bold ? "bolditalic" : "italic") : bold ? "bold" : "normal",
+          );
+          pdf.text(part, x, y);
+          x += pdf.getTextWidth(part);
+        }
+        searchFrom = at + line.length;
+      } else {
+        pdf.setFont("Notes", bold ? "bold" : "normal");
+        pdf.text(line, margin, y);
+      }
       pageContent.at(-1)!.push(line);
       y += size * 0.48;
     }
@@ -109,7 +136,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
   heading("References");
   for (const [i, ref] of note.sources.entries()) {
     write(
-      `${i + 1}. ${ref.title} (${ref.year}). ${ref.doi ? `DOI: ${ref.doi}` : `PMID: ${ref.pmid}`}`,
+      `${i + 1}. ${ref.title} (${ref.year}). ${ref.doi ? `DOI: ${ref.doi}` : ref.pmid ? `PMID: ${ref.pmid}` : `Textbook chapter: ${ref.chapter}`}`,
     );
     write(ref.url, 9);
   }
@@ -131,6 +158,11 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     pdf.text(pdf.splitTextToSize(note.topic, 150).slice(0, 2), 36, 18);
     pdf.setDrawColor("#aab4bd");
     pdf.line(20, 27, 190, 27);
+    if (note.sources.some((s) => s.kind === "textbook" && s.title.includes("Microbiology"))) {
+      pdf.setFontSize(6.5);
+      pdf.text(OPENSTAX_ATTRIBUTION, 20, 291);
+      pdf.setFontSize(8);
+    }
     pdf.text(
       `Page ${page} of ${pages} · For personal educational use. Not for distribution.`,
       20,
@@ -138,7 +170,7 @@ export async function educationalNotesPdfBytes(raw: EducationalNote) {
     );
   }
   pdf.setProperties({
-    title: note.topic,
+    title: `${JUW.name} · ${note.topic}`,
     subject: `${JUW.name} ${JUW.version} · ${NOTES_LABEL} · Not yet expert-reviewed`,
     keywords: "A4 portrait; watermark opacity 0.06; personal educational use; V6.2.1",
   });

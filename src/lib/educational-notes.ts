@@ -21,6 +21,9 @@ export const noteSourceSchema = z.object({
     .optional(),
   year: z.string(),
   guideline: z.boolean(),
+  kind: z.enum(["textbook", "guideline", "review", "primary"]).optional(),
+  chapter: z.string().optional(),
+  retrievedAt: z.string().optional(),
 });
 export const noteStatementSchema = z.object({
   text: z.string().min(1),
@@ -64,7 +67,11 @@ export function assertNoteSources(note: EducationalNote) {
     );
   for (const s of statements) {
     const ref = parsed.sources.find((r) => r.id === s.sourceId);
-    if (!ref || (!ref.doi && !ref.pmid) || !passageContainsStatement(s.quote, s.text))
+    if (
+      !ref ||
+      (!ref.doi && !ref.pmid && !(ref.kind === "textbook" && ref.chapter?.trim())) ||
+      !passageContainsStatement(s.quote, s.text)
+    )
       throw Error(
         "A note statement has no traceable DOI/PMID passage. Regenerate from attributable sources.",
       );
@@ -83,7 +90,7 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
   for (const slide of deck.slides) {
     for (const statement of supportedSlideSentences(slide, deck.sourceDocuments)) {
       const ref = slide.citations.find((c) => c.id === statement.citationId);
-      if (!ref || (!ref.doi && !ref.pmid)) continue;
+      if (!ref || (!ref.doi && !ref.pmid && ref.evidenceKind !== "textbook")) continue;
       // Excerpt fidelity alone is insufficient: deictic and first-person result
       // fragments cannot stand in for a topic explanation without their context.
       if (
@@ -106,6 +113,9 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
           pmid: ref.pmid,
           year: ref.year,
           guideline,
+          kind: statement.access === "textbook" ? "textbook" : guideline ? "guideline" : "primary",
+          chapter: statement.access === "textbook" ? ref.title : undefined,
+          retrievedAt: new Date(statement.checkedAt).toISOString().slice(0, 10),
         });
       const fact = {
         text: statement.text,
@@ -115,21 +125,25 @@ export function educationalNotesFromDeck(deck: Deck): EducationalNote {
           slide.claims?.flatMap((c) => c.evidence).find((e) => e.citationId === ref.id)?.locator ||
           "Retrieved passage",
       };
-      const index = treatment.test(fact.text)
-        ? 4
-        : /\b(?:defined as|refers to|means)\b/i.test(fact.text)
-          ? 0
-          : /misconception|not always|does not|cannot be/i.test(fact.text)
-            ? 6
-            : /diagnos|assay|detect|test(?:ing)?\b/i.test(fact.text)
-              ? 3
-              : /mechanis|pathogenes|transfer|replicat|process/i.test(fact.text)
-                ? 2
-                : /classif|structure|morpholog|wall|membrane/i.test(fact.text)
-                  ? 1
-                  : /\b(is|are|defined|refers)\b/i.test(fact.text)
-                    ? 0
-                    : 5;
+      const explicitSection = NOTE_HEADINGS.indexOf(slide.teachingPurpose || "");
+      const index =
+        explicitSection >= 0
+          ? explicitSection
+          : treatment.test(fact.text)
+            ? 4
+            : /\b(?:defined as|refers to|means)\b/i.test(fact.text)
+              ? 0
+              : /misconception|not always|does not|cannot be/i.test(fact.text)
+                ? 6
+                : /diagnos|assay|detect|test(?:ing)?\b/i.test(fact.text)
+                  ? 3
+                  : /mechanis|pathogenes|transfer|replicat|process/i.test(fact.text)
+                    ? 2
+                    : /classif|structure|morpholog|wall|membrane/i.test(fact.text)
+                      ? 1
+                      : /\b(is|are|defined|refers)\b/i.test(fact.text)
+                        ? 0
+                        : 5;
       sections[index].statements.push(fact);
     }
   }
@@ -181,7 +195,7 @@ export function noteText(note: EducationalNote) {
       note.sources
         .map(
           (s, i) =>
-            `${i + 1}. ${s.title} (${s.year}). ${s.doi ? `DOI: ${s.doi}` : `PMID: ${s.pmid}`}\n${s.url}`,
+            `${i + 1}. ${s.title} (${s.year}). ${s.doi ? `DOI: ${s.doi}` : s.pmid ? `PMID: ${s.pmid}` : `Textbook chapter: ${s.chapter}`}\n${s.url}`,
         )
         .join("\n\n"),
     "Glossary\n" +

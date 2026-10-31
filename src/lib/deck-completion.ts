@@ -55,6 +55,15 @@ export function assertCompleteDeck(deck: Deck, count: number) {
       )
   )
     throw new Error("A generated content slide is empty. Add source material and retry.");
+  const dense = usable.findIndex(
+    (s) =>
+      !["learning-objectives", "assessment", "bibliography"].includes(s.layout) &&
+      s.bullets.length + s.leftBullets.length + s.rightBullets.length > 5,
+  );
+  if (dense >= 0)
+    throw Error(
+      `Slide ${dense + 1} exceeds five bullets. Narrow the material or choose more slides; no content was truncated.`,
+    );
   if (usable.some((s, index) => (index > 0 || target === 1) && s.layout === "title"))
     throw new Error(
       "Only a multi-slide deck's opening may use the title layout; teaching slides need substantive visible content.",

@@ -1,3 +1,4 @@
+import { conceptFor, textbookConceptDeck } from "./textbook-concepts";
 import { educationalNotesFromDeck } from "./educational-notes";
 import { generateLocalDeck, dedicatedLecture } from "./generate-deck";
 import { enrichTopicEvidence } from "./topic-evidence";
@@ -29,7 +30,18 @@ export async function generateWritingNotes(
   };
   assertGenerationBiosafety(input);
   signal.throwIfAborted();
-  let deck = generateLocalDeck(input);
+  const bundled =
+    request.mode === "manual" && !request.sources.trim() ? conceptFor(topic) : undefined;
+  let deck = generateLocalDeck(bundled ? { ...input, count: bundled.concepts.length + 1 } : input);
+  if (bundled) {
+    progress(
+      `Using bundled textbook material: ${bundled.topic}. Educator approval remains pending.`,
+    );
+    signal.throwIfAborted();
+    return educationalNotesFromDeck(
+      textbookConceptDeck(deck, { ...input, count: bundled.concepts.length + 1 }, true),
+    );
+  }
   if (request.mode === "ai") {
     if (!ai) throw Error("Configure a local AI model in Settings, or choose Knowledge research.");
     progress("Writing topic notes with the configured model…");
@@ -38,9 +50,10 @@ export async function generateWritingNotes(
     progress("Searching publications and open full text for the notes topic…");
     deck = await enrichTopicEvidence(
       { ...deck, slides: deck.slides.filter((s) => s.layout === "title").slice(0, 1) },
-      input,
+      { ...input, count: 13 },
       signal,
       progress,
+      { notesOnly: true },
     );
   }
   signal.throwIfAborted();

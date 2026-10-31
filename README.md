@@ -72,3 +72,12 @@ Educational notes retain exact retrieved wording and DOI/PMID source links. They
 The collapsed **Source provenance** section under **Edit** recalculates wording links for the selected slide after edits. It includes bundled and AI slide IDs, speaker notes, mechanisms, protocol timings, table rows and chart values. Linked references alone do not approve a field; visual meaning and editorial bundled claims remain unverified. This read-only information introduces no Review menu or export gate. Complete-statement matching preserves qualifications and negation, but is not scientific entailment or a guarantee of correctness.
 
 Implementation and verification limits are recorded in the [release QA record](docs/QA.md), including source-first AI, notes quality, CI evidence and task commits.
+
+
+## Textbook concepts and Writing Notes
+
+The app covers topics with enough reviewable literature; it does not guarantee every microbiology topic or every requested count. Eight named pilot textbook files are bundled: Gram staining, bacterial transformation/natural competence, bacterial conjugation, bacterial growth curve, viral life cycle, fungal structure, protozoan life cycles and PCR. These are editorial selections from the attributed 2016 OpenStax edition, not department-approved or teacher-authored app curricula. The original edition and chapter locators are recorded per topic. Historical classifications and clinical guidance must be checked separately. Conjugation retains its existing 14-lesson editorial core.
+
+Writing Notes shows generated text and automatically prepares a persistent **Download notes PDF (A4 portrait)** link. It prepares saved notes again when reopened. PDF errors leave the note saved and expose a retry button. Online note retrieval gathers enough explanatory passages rather than requiring a three-slide outline; source scarcity still fails explicitly. Unattributed free text is preserved, but is not silently certified as a source-traced PDF. Bundled textbook notes work offline after the first cached load. All pages keep both draft disclosures, the faint crest, seal and attribution. Textbook chapters may have no DOI or PMID: the app supplies their real chapter/edition/URL instead of inventing an identifier.
+
+The department topic list has not been supplied. [The coverage contract](docs/TOPIC-COVERAGE.md) distinguishes pilot files, CI source/count checks and unclaimed subject approval. Generated evidence stays in [CI artefacts](https://github.com/Tajoor621/JUW-MicroSlides/actions).

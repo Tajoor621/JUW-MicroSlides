@@ -21,6 +21,7 @@ export const LAYOUTS = [
   "learning-objectives",
   "assessment",
   "key-takeaway",
+  "common-misconceptions",
   "growth-curve",
   "taxonomy-tree",
 ] as const;

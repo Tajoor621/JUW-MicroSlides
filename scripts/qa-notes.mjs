@@ -72,10 +72,7 @@ try {
     }),
   );
   await page.getByRole("button", { name: "Generate notes", exact: true }).click();
-  await page
-    .getByText("Notes ready. Prepare the A4 PDF; your slide deck is unchanged.", { exact: true })
-    .waitFor({ timeout: 60000 });
-  await page.getByRole("button", { name: "Prepare A4 notes PDF", exact: true }).click();
+  // A successful generation prepares a visible persistent download without another button tap.
   const link = page.getByRole("link", { name: "Download notes PDF (A4 portrait)", exact: true });
   await link.waitFor({ timeout: 60000 });
   const event = page.waitForEvent("download");
@@ -95,6 +92,7 @@ try {
   assert.equal(pages.length, count);
   for (const [i, p] of pages.entries()) {
     assert.match(p, /Unverified AI-assisted draft/);
+    assert.match(p, /Not yet expert-reviewed/);
     assert.match(p, /personal educational use/);
     assert(p.includes(`Page ${i + 1} of ${count}`));
     assert(p.trim().length > 100);

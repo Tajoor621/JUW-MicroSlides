@@ -94,3 +94,16 @@ test("natural-competence headings avoid infinitive verbs and dangling using clau
   assert.equal(label, "streptomycin resistance");
   assert(second.includes(label));
 });
+
+test("study extension headings prefer concepts to a repeated single drug name", () => {
+  const source = [
+    "An inhibitory effect of pravastatin, hesperetin, and dinoprost was observed on the conjugation frequency of plasmid R388.",
+  ];
+  const title = heading(
+    source,
+    "Bacterial conjugation",
+    new Set(["inhibitory effect", "conjugation frequency", "plasmid r388"]),
+  );
+  assert.notEqual(title, "pravastatin");
+  assert(title.split(/\s+/).length >= 2);
+});

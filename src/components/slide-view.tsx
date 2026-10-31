@@ -1,3 +1,5 @@
+import { sourcePresentation } from "@/lib/scientific-presentation";
+import { OPENSTAX_ATTRIBUTION } from "@/lib/textbook-concepts";
 import { ScientificText } from "./scientific-text";
 import { LectureSlideContent } from "./lecture-slide-content";
 import { slideEvidenceBasis } from "@/lib/evidence-basis";
@@ -207,6 +209,12 @@ export function SlideView({
                     <p className="slide-scope text-center text-ink-muted">{slide.subtitle}</p>
                   )}
                 </div>
+                {!!slide.learningObjectives?.length && (
+                  <p className="mb-3 text-center text-base text-ink">
+                    <strong>Learning outcome: </strong>
+                    {slide.learningObjectives[0]}
+                  </p>
+                )}
                 <div className="slide-course-meta ml-auto max-w-[70%] text-right">
                   <div className="mb-2.5 ml-auto h-1 w-9 bg-accent" />
                   <EditableText
@@ -268,6 +276,12 @@ export function SlideView({
                   />
                 )}
 
+                <p
+                  className="mt-1 text-sm text-ink-muted"
+                  aria-label="Source type and retrieval date"
+                >
+                  {sourcePresentation(slide)}
+                </p>
                 <div
                   className={cn(
                     "mt-3 min-h-0 flex-1",
@@ -296,6 +310,7 @@ export function SlideView({
                       "learning-objectives",
                       "assessment",
                       "key-takeaway",
+                      "common-misconceptions",
                       "growth-curve",
                       "taxonomy-tree",
                     ].includes(slide.layout) ? (
@@ -406,6 +421,7 @@ export function SlideView({
                 "learning-objectives",
                 "assessment",
                 "key-takeaway",
+                "common-misconceptions",
                 "growth-curve",
                 "taxonomy-tree",
               ].includes(slide.layout) && (
@@ -425,6 +441,12 @@ export function SlideView({
               </footer>
             )}
 
+            {slide.layout !== "assessment" && !!slide.assessment?.length && (
+              <p className="relative z-[1] shrink-0 px-8 pb-1 text-sm text-ink">
+                <strong>Self-check: </strong>
+                {slide.assessment[0].question.replace(/^Self-check:\s*/, "")}
+              </p>
+            )}
             {!draft && deck?.teachingVerification && (
               <p className="relative z-[1] px-8 text-right text-[9px] text-ink-muted">
                 Last verified by {deck.teachingVerification.instructor} on{" "}
@@ -438,6 +460,13 @@ export function SlideView({
                 role="status"
               >
                 {DRAFT_STAMP} · {EXPERT_STAMP}
+              </p>
+            )}
+            {deck?.slides.some((s) =>
+              s.citations.some((c) => c.publisher?.includes("OpenStax")),
+            ) && (
+              <p className="relative z-[1] shrink-0 px-8 text-[9px] text-ink-muted">
+                {OPENSTAX_ATTRIBUTION}
               </p>
             )}
             <div className="relative z-[1] shrink-0 px-8 text-right text-[9px] text-ink-muted">
