@@ -20,3 +20,7 @@ screenshots/
 gitleaks-report.*
 
 __pycache__/
+
+# Personal lecturer material and machine-generated lock marker
+attachments/
+.node_modules.lock

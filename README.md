@@ -55,7 +55,7 @@ See [script reference](docs/SCRIPTS.md) for required, optional and environment-d
 
 ## Qualification and permissions
 
-Software checks distinguish successful generation, source traceability and independent scientific review. Passing fixtures does not prove accuracy across all microbiology topics. Actual Microsoft PowerPoint rendering, representative classroom hardware, accessibility and independent scientific qualification have separate requirements in [scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md), [Windows qualification](docs/WINDOWS-QUALIFICATION.md) and the [classroom matrix](benchmarks/classroom-qualification.json). Historical reports retain their date and commit; do not treat them as a current release certificate or instructions for removed Review menus.
+Software checks distinguish successful generation, source traceability and independent scientific review. Passing fixtures does not prove accuracy across all microbiology topics. Actual Microsoft PowerPoint rendering, representative classroom hardware, accessibility and independent scientific qualification have separate requirements in [scientific qualification](docs/SCIENTIFIC-QUALIFICATION.md), [Windows qualification](docs/WINDOWS-QUALIFICATION.md) and the [physical-device checklist](docs/QA-PHONE-NOTE20.md). Historical reports retain their date and commit; do not treat them as a current release certificate or instructions for removed Review menus.
 
 University marks remain owner-supplied artwork. Inclusion does not establish institutional endorsement or third-party redistribution permission. See [permissions and attribution](docs/PERMISSIONS.md). Article/figure licences and third-party exclusions must be checked individually. The app does not grant blanket reuse rights or authenticate lecturer/reviewer identities.
 
@@ -71,4 +71,4 @@ Educational notes retain exact retrieved wording and DOI/PMID source links. They
 
 The collapsed **Source provenance** section under **Edit** recalculates wording links for the selected slide after edits. It includes bundled and AI slide IDs, speaker notes, mechanisms, protocol timings, table rows and chart values. Linked references alone do not approve a field; visual meaning and editorial bundled claims remain unverified. This read-only information introduces no Review menu or export gate. Complete-statement matching preserves qualifications and negation, but is not scientific entailment or a guarantee of correctness.
 
-Implementation and verification limits are recorded in the [30 October V6.2.1 continuation report](docs/WORKFLOW-REPORT-2026-10-30.md), including source-first AI, notes quality, CI evidence and task commits.
+Implementation and verification limits are recorded in the [release QA record](docs/QA.md), including source-first AI, notes quality, CI evidence and task commits.
