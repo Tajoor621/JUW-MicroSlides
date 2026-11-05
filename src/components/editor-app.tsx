@@ -9,7 +9,9 @@ import { useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
+  Copy,
   Download,
+  Keyboard,
   Library,
   Microscope,
   Moon,
@@ -26,7 +28,7 @@ import {
 import { toast, Toaster } from "sonner";
 import { JUW } from "@/lib/brand";
 import { useDeckStore } from "@/lib/deck-store";
-import { CITATION_STYLES, LAYOUTS, type CitationStyle, type Layout } from "@/lib/types";
+import { CITATION_STYLES, LAYOUTS, MAX_SLIDES, type CitationStyle, type Layout } from "@/lib/types";
 import { researchTheme, SLIDE_THEMES, THEME_TOKENS } from "@/lib/slide-themes";
 import { GenerateDialog } from "./generate-dialog";
 import { GeneratePanel } from "./generate-panel";
@@ -43,8 +45,21 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Tooltip, TooltipProvider } from "./ui/tooltip";
 
+const SHORTCUTS = [
+  ["Generate", "Ctrl or Cmd + N"],
+  ["Library", "Ctrl or Cmd + O"],
+  ["Save portable project", "Ctrl or Cmd + S"],
+  ["Undo", "Ctrl or Cmd + Z"],
+  ["Redo", "Ctrl or Cmd + Shift + Z, or Ctrl or Cmd + Y"],
+  ["Present", "F5"],
+  ["Previous or next slide", "Arrow keys, outside text fields"],
+  ["Blank the presented slide", "B or full stop, during Present"],
+  ["This list", "?"],
+] as const;
+
 export function EditorApp() {
   const [hydrated, setHydrated] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [online, setOnline] = useState(typeof navigator === "undefined" || navigator.onLine);
   useEffect(() => {
     const refresh = () => setOnline(navigator.onLine);
@@ -166,6 +181,11 @@ export function EditorApp() {
       }
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable)
         return;
+      if (e.key === "?" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) redo();
@@ -207,12 +227,35 @@ export function EditorApp() {
 
   if (!hydrated)
     return (
-      <div role="status" className="p-6">
-        {storageHealth.warning || "Opening your saved decks…"}
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-bg px-6 text-center text-fg">
+        <img src={JUW.crestMark} alt="Jinnah University for Women" className="size-16" />
+        <div>
+          <h1 className="font-serif text-2xl">{JUW.name}</h1>
+          <p className="mt-1 text-sm text-muted">{JUW.version} · local lecture editor</p>
+        </div>
+        <p role="status" className="text-sm">
+          {storageHealth.warning || "Opening your saved decks…"}
+        </p>
+        <p className="max-w-md text-sm text-muted">
+          Dedicated to Noor E Sahar. Decks stay on this device. Review scientific claims and
+          references before teaching.
+        </p>
       </div>
     );
   return (
     <TooltipProvider>
+      <a
+        href="#lecture-stage"
+        className="skip-link"
+        onClick={(event) => {
+          const stage = document.getElementById("lecture-stage");
+          if (!stage) return;
+          event.preventDefault();
+          stage.focus();
+        }}
+      >
+        Skip to lecture
+      </a>
       <div data-juw-editor className="flex h-[100dvh] flex-col overflow-hidden bg-bg text-fg">
         <div role="status" className="shrink-0 border-b border-border px-3 py-1 text-xs text-muted">
           {online ? "Online" : "Offline"} · {saveStatus} ·{" "}
@@ -276,7 +319,7 @@ export function EditorApp() {
           >
             {generationMode === "ai" ? "AI mode" : "Knowledge mode"}
           </span>
-          <div className="ml-auto flex items-center gap-1">
+          <nav aria-label="Lecture actions" className="ml-auto flex items-center gap-1">
             <Tooltip content="New deck">
               <Button variant="accent" size="sm" onClick={openGenerator}>
                 <Microscope className="size-3.5" />
@@ -369,6 +412,17 @@ export function EditorApp() {
                 <Settings />
               </Button>
             </Tooltip>
+            <Tooltip content="Keyboard shortcuts">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="hidden lg:inline-flex"
+                onClick={() => setShortcutsOpen(true)}
+                aria-label="Keyboard shortcuts"
+              >
+                <Keyboard />
+              </Button>
+            </Tooltip>
             <Button
               variant="ghost"
               size="icon-sm"
@@ -378,7 +432,7 @@ export function EditorApp() {
             >
               <PanelRight />
             </Button>
-          </div>
+          </nav>
         </header>
 
         <div className="relative flex min-h-0 flex-1">
@@ -392,6 +446,7 @@ export function EditorApp() {
           )}
 
           <aside
+            aria-label="Slides"
             className={`flex w-56 shrink-0 flex-col border-r border-border bg-surface max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:z-30 max-lg:shadow-panel ${railOpen ? "max-lg:flex" : "max-lg:hidden"} lg:flex`}
           >
             <div className="flex items-center justify-between px-3 py-2 text-xs uppercase tracking-wider text-muted">
@@ -399,26 +454,29 @@ export function EditorApp() {
                 Slides · {total} · {cited} cited
               </span>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+            <ul className="min-h-0 flex-1 overflow-y-auto px-2 pb-2" aria-label="Slide list">
               {deck?.slides.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    select(i);
-                    if (window.innerWidth < 1024) useDeckStore.getState().toggleRail();
-                  }}
-                  className={`mb-1.5 w-full rounded-sm border p-2 text-left ${i === index ? "border-accent bg-elevated" : "border-transparent hover:bg-elevated"}`}
-                >
-                  <span className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted">
-                    <span className="tabular-nums">{String(i + 1).padStart(2, "0")}</span>
-                    <span>{s.layout}</span>
-                  </span>
-                  <span className="mt-0.5 block truncate text-sm text-fg">{s.title}</span>
-                </button>
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    aria-current={i === index ? "true" : undefined}
+                    aria-label={`Slide ${i + 1}: ${s.title}`}
+                    onClick={() => {
+                      select(i);
+                      if (window.innerWidth < 1024) useDeckStore.getState().toggleRail();
+                    }}
+                    className={`mb-1.5 w-full rounded-sm border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${i === index ? "border-accent bg-elevated" : "border-transparent hover:bg-elevated"}`}
+                  >
+                    <span className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted">
+                      <span className="tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                      <span>{s.layout}</span>
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm text-fg">{s.title}</span>
+                  </button>
+                </li>
               ))}
-            </div>
-            <div className="flex gap-1 border-t border-border p-2">
+            </ul>
+            <div className="flex flex-wrap gap-1 border-t border-border p-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -454,12 +512,53 @@ export function EditorApp() {
                 <Trash2 />
               </Button>
             </div>
-            <p className="px-3 pb-2 text-[10px] leading-snug text-faint">
-              Arrow keys to navigate. Back up your work in Library.
+            <div className="space-y-1 px-2 pb-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                onClick={() => useDeckStore.getState().duplicateSlide()}
+                disabled={!deck || deck.slides.length >= MAX_SLIDES}
+              >
+                <Copy className="size-3.5" />
+                Duplicate
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                disabled={!deck}
+                onClick={() => {
+                  if (!deck) return;
+                  const text = [
+                    deck.title,
+                    "",
+                    ...deck.slides.map((item, i) => `${i + 1}. ${item.title}`),
+                  ].join("\n");
+                  void navigator.clipboard
+                    .writeText(text)
+                    .then(() => toast.message("Lecture outline copied."))
+                    .catch(() =>
+                      toast.error(
+                        "The browser blocked clipboard access. Copy the slide titles from the list instead.",
+                      ),
+                    );
+                }}
+              >
+                Copy outline
+              </Button>
+            </div>
+            <p className="px-3 pb-2 text-[10px] leading-snug text-muted">
+              Arrow keys move between slides. Press ? for keyboard shortcuts. Dedicated to Noor E
+              Sahar.
             </p>
           </aside>
 
-          <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto bg-bg p-3 sm:p-5">
+          <main
+            id="lecture-stage"
+            tabIndex={-1}
+            className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto bg-bg p-3 outline-none sm:p-5"
+          >
             <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-3">
               <div
                 className="rounded border border-border bg-surface px-3 py-2 text-sm"
@@ -670,6 +769,7 @@ export function EditorApp() {
       <GenerateDialog />
       <LibraryDialog />
       <SettingsDialog />
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <Presenter />
       {printing ? <PrintRoot /> : null}
       <Toaster
@@ -680,6 +780,50 @@ export function EditorApp() {
         duration={5000}
       />
     </TooltipProvider>
+  );
+}
+
+function ShortcutsDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Keyboard shortcuts</DialogTitle>
+          <DialogDescription>
+            These shortcuts work in the lecture editor. Text fields keep their own typing keys.
+          </DialogDescription>
+        </DialogHeader>
+        <table className="w-full text-sm">
+          <caption className="sr-only">Lecture editor keyboard shortcuts</caption>
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wider text-muted">
+              <th scope="col" className="py-1 font-medium">
+                Action
+              </th>
+              <th scope="col" className="py-1 font-medium">
+                Keys
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {SHORTCUTS.map(([action, keys]) => (
+              <tr key={action} className="border-t border-border">
+                <th scope="row" className="py-2 pr-3 text-left font-normal">
+                  {action}
+                </th>
+                <td className="py-2 text-muted">{keys}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -753,7 +897,7 @@ function SettingsDialog() {
           <DialogTitle>Studio settings</DialogTitle>
           <DialogDescription>
             Course header fields print on the official title slide. Citation style applies to the
-            inspector, footers, and PPTX.
+            inspector, footers, and PPTX. Press ? for keyboard shortcuts.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-1.5">

@@ -1,3 +1,4 @@
+import { cloneSlide } from "./clone-slide";
 import { taggedMedia, mediaAttachmentProblem } from "./lecture-media";
 import { toast } from "sonner";
 import { reconcileDeck, reconcileClaims } from "./deck-integrity";
@@ -73,6 +74,7 @@ interface DeckState {
   patchGenerateDraft: (patch: Partial<GenerateDraft>) => void;
   select: (index: number) => void;
   addSlide: () => void;
+  duplicateSlide: () => void;
   removeSlide: (index: number) => void;
   moveSlide: (index: number, dir: -1 | 1) => void;
   patchSlide: (index: number, patch: Partial<Slide>) => void;
@@ -244,6 +246,30 @@ export const useDeckStore = create<DeckState>()(
           library: get().library.map((x) => (x.id === next.id ? next : x)),
           selectedIndex: slides.length - 1,
         });
+      },
+      duplicateSlide: () => {
+        const d = get().deck();
+        if (!d) return;
+        if (d.slides.length >= MAX_SLIDES) {
+          toast.error(
+            d.slides.length > MAX_SLIDES
+              ? "This saved archive has more than 50 slides. Duplicate is unavailable; export a JSON backup to keep it."
+              : "This lecture already has 50 slides. Remove one before duplicating.",
+          );
+          return;
+        }
+        const index = Math.max(0, Math.min(get().selectedIndex, d.slides.length - 1));
+        const source = d.slides[index];
+        if (!source) return;
+        const copy = cloneSlide(source, { slide: uid("s"), next: (prefix) => uid(prefix) });
+        const slides = d.slides.slice();
+        slides.splice(index + 1, 0, copy);
+        const next = bump(d, slides);
+        set({
+          library: get().library.map((x) => (x.id === next.id ? next : x)),
+          selectedIndex: index + 1,
+        });
+        toast.message("Slide duplicated. Claims on the copy start unreviewed.");
       },
       removeSlide: (index) => {
         const d = get().deck();

@@ -1,8 +1,17 @@
 # JUW-MicroSlides V6.2.1
 
-JUW-MicroSlides is a local-first microbiology lecture editor. **The supported lecturer product is the client-only GitHub Pages app:** https://tajoor621.github.io/JUW-MicroSlides/. The application remains permanently locked to V6.2.1; commits identify revisions.
+**Dedicated to Noor E Sahar.**
+
+JUW-MicroSlides is a local-first microbiology lecture editor for personal educational use. Draft a lecture, keep retrieved sources beside each claim, and export an editable deck from the browser. Review scientific claims and references before teaching. **The supported lecturer product is the client-only GitHub Pages app:** https://tajoor621.github.io/JUW-MicroSlides/. The application remains permanently locked to V6.2.1; commits identify revisions.
 
 For personal educational use. Not for distribution. Not an official publication of Jinnah University for Women.
+
+- **Live editor:** https://tajoor621.github.io/JUW-MicroSlides/
+- **Version:** V6.2.1
+- **Account:** none. No sign-in and no hosted backend.
+- **Saved work:** IndexedDB in this browser. Export a JSON or portable-project backup before clearing site data.
+- **Slide count:** exactly 1–50 requested slides. Shortages fail explicitly and keep the current deck.
+- **Exports:** editable PPTX and PDF, each stamped “Unverified AI-assisted draft”.
 
 ## Supported runtime and cost
 
@@ -25,7 +34,7 @@ General **Bacterial conjugation** requests have a [source-linked teaching core](
 4. Use **PubMed** for reference discovery and **Evidence** for saved source passages, reference metadata and publication-status records. A valid DOI, a matching quotation or a successful metadata lookup is not independent confirmation of scientific correctness. Verify study context and applicable clinical guidance before teaching.
 5. In **Media**, collect related assets separately, inspect the original caption and reuse licence, then attach selected images explicitly. Commons and Openverse are provider searches. X, Facebook, Instagram, Pinterest and other shortcuts open public search/source pages; they are not authenticated scraping integrations. Direct downloads are limited to 25 MB and require provider/browser permission. Videos are downloadable collection items, not embedded PowerPoint video objects. Export includes the primary figure; additional provenance and references remain available in notes/backups.
 6. **Writing Notes** has its own topic and level. Generate using research or configured Ollama and download A4 portrait PDF. Notes are stored independently of decks. Generated source-traced notes remain in Saved notes and JSON backups. Refresh clears the current topic, searches and note editor, cancels stale requests and opens a blank workspace. Saved decks remain in **Library**.
-7. Use **Present**, **Export PPTX**, **Export PDF**, handouts or Teaching Pack from the lecture workspace. PPTX retains native editable text and vector diagrams where supported. PDF is for reading/printing. After export preparation, use the persistent **Download PowerPoint** or PDF link if the mobile browser suppresses the automatic download.
+7. Use **Present**, **Export PPTX**, **Export PDF**, handouts or Teaching Pack from the lecture workspace. PPTX retains native editable text and vector diagrams where supported. PDF is for reading/printing. After export preparation, use the persistent **Download PowerPoint** or PDF link if the mobile browser suppresses the automatic download. During Present, the elapsed clock stays on screen; **Blank screen** (B or full stop) hides the current slide without changing the deck. Duplicate a slide or copy the lecture outline from the slide list. Press **?** for the keyboard list.
 
 ## Draft status and exports
 

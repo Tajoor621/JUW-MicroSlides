@@ -2,6 +2,11 @@
 
 ## V6.2.1
 
+### Pages presentation — 5 November 2026
+
+- State the dedication to Noor E Sahar in the repository introduction, first-load screen and public page description. Complete Open Graph, Twitter and structured-data tags, the web app manifest, and a short notice for browsers with JavaScript disabled. The page remains the lecture editor.
+- Add duplicate slide, lecture-outline copy, keyboard-shortcut help, a skip link, and clearer focus treatment in the editor chrome. The web presenter shows elapsed time and can blank the current slide. Saved decks, generation, evidence and ungated exports are unchanged. A duplicated slide keeps the teaching text and starts with unreviewed claims.
+
 ### Retired desktop-report instructions — 31 October 2026
 
 - A final documentation search found superseded reviewed-export and reviewer-menu instructions in the Windows implementation report and visual-fidelity history. Replace them with current concise usage/verification guides and preserve the original reports, with all failures, from the fixed historical commit in CI artefacts. No archived data or current functionality is deleted.
