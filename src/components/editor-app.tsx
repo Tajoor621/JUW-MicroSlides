@@ -460,7 +460,6 @@ export function EditorApp() {
                   <button
                     type="button"
                     aria-current={i === index ? "true" : undefined}
-                    aria-label={`Slide ${i + 1}: ${s.title}`}
                     onClick={() => {
                       select(i);
                       if (window.innerWidth < 1024) useDeckStore.getState().toggleRail();
