@@ -2,6 +2,10 @@
 
 ## V6.2.1
 
+### Transparent opening-slide department mark — 11 November 2026
+
+- Use the full-resolution transparent microscope-and-lettering PNG on generated opening slides and in exports. Keep the original JPEG as a reference, without using it as the display asset. Refresh the asset and service-worker cache keys, and verify transparent preview corners and the complete embedded PNG in PowerPoint.
+
 ### Pages presentation — 5 November 2026
 
 - State the dedication to Noor E Sahar in the repository introduction, first-load screen and public page description. Complete Open Graph, Twitter and structured-data tags, the web app manifest, and a short notice for browsers with JavaScript disabled. The page remains the lecture editor.

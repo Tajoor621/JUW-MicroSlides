@@ -60,8 +60,8 @@ export async function exportPptx(
     : { headFontFace: "Georgia", bodyFontFace: "Arial" };
   const images = new Map<string, string | null>();
   async function imageData(src: string, width: number, height: number, cover: boolean) {
-    // Preserve every supplied source pixel; the microscope JPEG is not a vector.
-    if (src.includes("juw-department-microscope-1254.jpeg")) {
+    // Embed the full-resolution transparent department mark without flattening its alpha.
+    if (src.includes("juw-department-microscope-transparent.png")) {
       const response = await fetch(src);
       if (!response.ok)
         throw Error("Department artwork is unavailable. Reload the app and retry export.");
@@ -69,7 +69,7 @@ export async function exportPptx(
       let binary = "";
       for (let i = 0; i < bytes.length; i += 8192)
         binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-      return `data:image/jpeg;base64,${btoa(binary)}`;
+      return `data:image/png;base64,${btoa(binary)}`;
     }
     // Native SVG stays vector in PowerPoint: do not rasterize icons or topic art.
     if (/^data:image\/svg\+xml[;,]/i.test(src)) {
